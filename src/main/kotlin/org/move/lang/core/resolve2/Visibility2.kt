@@ -41,7 +41,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         val useSpeck = path.useSpeck
         if (useSpeck != null) {
             // inside import, all visibilities except for private work
-            if (visibility is Restricted) return@VisibilityFilter Visible
+            if (visibility !is Private) return@VisibilityFilter Visible
 
             // msl-only items are available from imports
             if (item.isMslOnlyItem) return@VisibilityFilter Visible
@@ -49,6 +49,9 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
             // consts are importable in tests
             if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible
         }
+
+        // #[test] functions cannot be used from non-imports
+        if (item is MvFunction && item.hasTestAttr) return@VisibilityFilter Invisible
 
         // #[test_only] items in non-test-only scope
         if (isTestOnly && !pathUsageScope.isTest) return@VisibilityFilter Invisible

@@ -10,10 +10,12 @@ import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
+import com.intellij.vcs.log.data.index.isIndexingEnabled
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotatorBase
@@ -63,7 +65,10 @@ class MvAnnotationTestFixture(
         checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = false)
 
     private fun configureByText(text: String): PsiFile {
-        return codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+        val psiFile = codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+        // build indexes
+        IndexingTestUtil.waitUntilIndexesAreReady(codeInsightFixture.project)
+        return psiFile
     }
 
     fun checkByText(
@@ -131,6 +136,7 @@ class MvAnnotationTestFixture(
             "No /*caret*/ comment, add it to the place where fix is expected"
         }
         val file = configureByText(before)
+
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
         applyQuickFix(fixName)
         codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))

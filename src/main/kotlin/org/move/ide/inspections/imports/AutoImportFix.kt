@@ -91,19 +91,19 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
 
 @Suppress("DataClassPrivateConstructor")
 data class ImportContext private constructor(
-    val pathElement: MvReferenceElement,
-    val namespaces: Set<Namespace>,
+    val pathElement: MvPath,
+    val ns: Set<Namespace>,
     val visibilities: Set<Visibility>,
     val contextScopeInfo: ContextScopeInfo,
 ) {
     companion object {
         fun from(
-            contextElement: MvReferenceElement,
-            namespaces: Set<Namespace>,
+            pathElement: MvPath,
+            ns: Set<Namespace>,
             visibilities: Set<Visibility>,
             contextScopeInfo: ContextScopeInfo
         ): ImportContext {
-            return ImportContext(contextElement, namespaces, visibilities, contextScopeInfo)
+            return ImportContext(pathElement, ns, visibilities, contextScopeInfo)
         }
 
         fun from(path: MvPath): ImportContext {

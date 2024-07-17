@@ -1005,4 +1005,72 @@ module 0x1::mod {
             }
         }
     """)
+
+    fun `test unresolved if main scope and test_only item`() = checkByCode("""
+module 0x1::minter {
+    struct S {}
+    public fun mint() {}    
+}        
+module 0x1::main {
+    #[test_only]
+    use 0x1::minter::{Self, mint};
+    
+    public fun main() {
+        mint();
+        //^ unresolved 
+    }
+}          
+    """)
+
+    fun `test unresolved if main scope and verify_only item`() = checkByCode("""
+module 0x1::minter {
+    struct S {}
+    public fun mint() {}    
+}        
+module 0x1::main {
+    #[verify_only]
+    use 0x1::minter::{Self, mint};
+    
+    public fun main() {
+        mint();
+        //^ unresolved 
+    }
+}          
+    """)
+
+    fun `test test function can be imported`() = checkByCode("""
+module 0x1::m1 {
+    #[test]
+    public fun test_a() {}
+                //X
+}  
+module 0x1::m2 {
+    use 0x1::m1::test_a;
+               //^
+}    """)
+
+    fun `test private test function cannot be imported`() = checkByCode("""
+module 0x1::m1 {
+    #[test]
+    fun test_a() {}
+}  
+module 0x1::m2 {
+    use 0x1::m1::test_a;
+               //^ unresolved
+}    """)
+
+    fun `test test function cannot be used`() = checkByCode("""
+module 0x1::m1 {
+    #[test]
+    public fun test_a() {}
+}  
+module 0x1::m2 {
+    use 0x1::m1::test_a;
+    
+    #[test_only]
+    fun main() {
+        test_a();
+        //^ unresolved
+    }
+}    """)
 }

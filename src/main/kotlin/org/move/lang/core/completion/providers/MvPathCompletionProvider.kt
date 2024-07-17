@@ -7,6 +7,7 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
+import org.move.ide.utils.imports.ImportCandidateCollector.getCompletionCandidates
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
@@ -153,9 +154,9 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 setOf(Visibility.Public),
                 contextScopeInfo
             )
-        val candidates = getImportCandidates(
+        val candidates = getCompletionCandidates(
             parameters,
-            result,
+            result.prefixMatcher,
             processedNames,
             importContext,
         )

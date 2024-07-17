@@ -3,14 +3,13 @@ package org.move.lang.core.resolve2.ref
 import com.intellij.psi.ResolveResult
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.processAddressPathResolveVariants
 import org.move.lang.core.resolve2.processItemDeclarations
 import org.move.lang.core.resolve2.processNestedScopesUpwards
 import org.move.lang.core.resolve2.ref.RsPathResolveKind.*
-import org.move.lang.core.types.Address
 import org.move.lang.moveProject
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -35,7 +34,7 @@ class Path2ReferenceImpl(element: MvPath):
     fun rawMultiResolveIfVisible(): List<RsPathResolveResult<MvElement>> =
         rawMultiResolve().filter { it.isVisible }
 
-//    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = Resolver.invoke(this.element)
+    //    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = Resolver.invoke(this.element)
     fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = rawCachedMultiResolve()
 
     private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
@@ -63,16 +62,13 @@ fun processPathResolveVariants(
     pathKind: RsPathResolveKind,
     processor: RsResolveProcessor
 ): Boolean {
-    val contextScopeAwareProcessor = processor.wrapWithFilter {
-        val element = it.element
-        element is MvNamedElement && ctx.contextScopeInfo.matches(element)
-    }
+    val contextProcessor = ctx.contextScopeInfo.wrapWithContextFilter(processor)
     return when (pathKind) {
         is UnqualifiedPath -> {
             // Self::
             if (processor.lazy("Self") { ctx.containingModule }) return true
             // local
-            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextScopeAwareProcessor)
+            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextProcessor)
         }
         is ModulePath -> {
             // 0x1::bar
@@ -80,7 +76,7 @@ fun processPathResolveVariants(
                 ctx.path,
                 ctx.moveProject,
                 pathKind.address,
-                contextScopeAwareProcessor
+                contextProcessor
             )
         }
         is QualifiedPath -> {
@@ -117,27 +113,13 @@ fun processQualifiedPathResolveVariants(
 ): Boolean {
     val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
     if (resolvedQualifier != null) {
-        val result =
-            processQualifiedPathResolveVariants1(ctx, ns, qualifier, resolvedQualifier, path, processor)
-        if (result) return true
-    }
-    return false
-}
+        if (resolvedQualifier is MvModule) {
+            if (processor.process("Self", resolvedQualifier)) return true
 
-private fun processQualifiedPathResolveVariants1(
-    ctx: PathResolutionContext,
-    ns: Set<Namespace>,
-    qualifier: MvPath,
-    resolvedQualifier: MvElement,
-    path: MvPath,
-    processor: RsResolveProcessor
-): Boolean {
-    if (resolvedQualifier is MvModule) {
-        if (processor.process("Self", resolvedQualifier)) return true
-
-        val block = resolvedQualifier.moduleBlock
-        if (block != null) {
-            if (processItemDeclarations(block, ns, processor)) return true
+            val moduleBlock = resolvedQualifier.moduleBlock
+            if (moduleBlock != null) {
+                if (processItemDeclarations(moduleBlock, ns, processor)) return true
+            }
         }
     }
     return false

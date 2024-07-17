@@ -164,4 +164,14 @@ class ModulesCompletionTest : CompletionTestCase() {
         use 0x1::He/*caret*/
     }    
     """)
+
+
+    fun `test no Self completion for fully qualified path`() = checkNoCompletion("""
+        module 0x1::m1 {}
+        module 0x1::m {
+            fun main() {
+                0x1::m1::Se/*caret*/;
+            }
+        }        
+    """)
 }

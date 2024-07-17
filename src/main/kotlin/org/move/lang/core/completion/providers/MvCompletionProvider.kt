@@ -18,29 +18,6 @@ import org.move.lang.index.MvNamedElementIndex
 
 abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>() {
     abstract val elementPattern: ElementPattern<out PsiElement>
-
-    protected fun getImportCandidates(
-        parameters: CompletionParameters,
-        result: CompletionResultSet,
-        processedPathNames: Set<String>,
-        importContext: ImportContext,
-        itemFilter: (PsiElement) -> Boolean = { true }
-    ): List<ImportCandidate> {
-        val project = parameters.position.project
-        val keys = hashSetOf<String>().apply {
-            val names = MvNamedElementIndex.getAllKeys(project)
-            addAll(names)
-            removeAll(processedPathNames)
-        }
-
-        return result.prefixMatcher.sortMatching(keys)
-            .flatMap {
-                ImportCandidateCollector
-                    .getImportCandidates(importContext, it)
-                    .distinctBy { it.element }
-                    .filter { itemFilter(it.element) }
-            }
-    }
 }
 
 class ImportInsertHandler(

@@ -7,6 +7,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
+import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPatterns.path
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
@@ -28,7 +29,6 @@ import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.resolve2.ref.classifyPath
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
-import java.util.*
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement> get() = path()
@@ -69,12 +69,17 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             }
         }
 
-        val ns =
+        val ns = buildSet {
+            add(MODULE)
             when (parentElement) {
-                is MvPathType -> EnumSet.of(MODULE, TYPE)
-                is MvSchemaLit -> EnumSet.of(MODULE, SCHEMA)
-                else -> EnumSet.of(MODULE, NAME, FUNCTION)
+                is MvPathType -> add(TYPE)
+                is MvSchemaLit -> add(SCHEMA)
+                else -> {
+                    add(NAME)
+                    add(FUNCTION)
+                }
             }
+        }
 
         addVariants(
             pathElement, parameters, completionContext, ns, result,
@@ -143,12 +148,13 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                 setOf(Visibility.Public),
                 completionContext.contextScopeInfo
             )
-        val candidates = getImportCandidates(
-            parameters,
-            result,
-            processedNames,
-            importContext,
-        )
+        val candidates =
+            ImportCandidateCollector.getCompletionCandidates(
+                parameters,
+                result.prefixMatcher,
+                processedNames,
+                importContext,
+            )
         candidates.forEach { candidate ->
             val entry = SimpleScopeEntry(candidate.qualName.itemName, candidate.element, ns)
             for (completionFilter in completionFilters) {

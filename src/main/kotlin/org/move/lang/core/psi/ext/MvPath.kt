@@ -29,6 +29,16 @@ tailrec fun MvPath.rootPath(): MvPath {
     return if (parent is MvPath) parent.rootPath() else this
 }
 
+val MvPath.length: Int get() {
+    var length = 1
+    var currentPath = this
+    while (currentPath.path != null) {
+        currentPath = currentPath.path!!
+        length += 1
+    }
+    return length
+}
+
 fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)

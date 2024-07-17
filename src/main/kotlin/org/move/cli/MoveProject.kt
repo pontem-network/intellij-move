@@ -1,5 +1,6 @@
 package org.move.cli
 
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts.Tooltip
 import com.intellij.openapi.util.UserDataHolderBase
@@ -20,6 +21,7 @@ import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
+import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.contentRoots
 import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
@@ -106,6 +108,16 @@ data class MoveProject(
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
+        if (isUnitTestMode
+            && searchScope == GlobalSearchScope.EMPTY_SCOPE
+        ) {
+            // add current file to the search scope for the tests
+            val currentFile =
+                FileEditorManager.getInstance(project).selectedTextEditor?.virtualFile
+            if (currentFile != null) {
+                searchScope = searchScope.uniteWith(GlobalSearchScope.fileScope(project, currentFile))
+            }
+        }
         return searchScope
     }
 
@@ -134,11 +146,12 @@ data class MoveProject(
     }
 
     sealed class UpdateStatus(private val priority: Int) {
-//        object UpToDate : UpdateStatus(0)
-        object NeedsUpdate : UpdateStatus(1)
-        class UpdateFailed(@Tooltip val reason: String) : UpdateStatus(2) {
+        //        object UpToDate : UpdateStatus(0)
+        object NeedsUpdate: UpdateStatus(1)
+        class UpdateFailed(@Tooltip val reason: String): UpdateStatus(2) {
             override fun toString(): String = reason
         }
+
         fun merge(status: UpdateStatus): UpdateStatus = if (priority >= status.priority) this else status
     }
 

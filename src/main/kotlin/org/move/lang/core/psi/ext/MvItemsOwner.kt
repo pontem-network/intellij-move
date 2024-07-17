@@ -14,12 +14,9 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-val MvItemsOwner.visibleItems: List<MvItemElement>
+val MvItemsOwner.itemElements: List<MvItemElement>
     get() {
-        return this.items()
-            .filterIsInstance<MvItemElement>()
-            .filterNot { (it as? MvFunction)?.hasTestAttr ?: false }
-            .toList()
+        return this.items().filterIsInstance<MvItemElement>().toList()
     }
 
 val MvModule.innerSpecItems: List<MvItemElement>

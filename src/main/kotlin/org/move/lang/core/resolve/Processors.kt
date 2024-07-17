@@ -3,7 +3,6 @@ package org.move.lang.core.resolve
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.SmartList
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
@@ -22,7 +21,7 @@ import org.move.stdext.intersects
  */
 interface ScopeEntry {
     val name: String
-    val element: MvElement
+    val element: MvNamedElement
     val namespaces: Set<Namespace>
     fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry
 }
@@ -176,18 +175,18 @@ private class BeforeProcessingProcessor<in T: ScopeEntry>(
 }
 
 
-fun <T : ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessor(
+fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessor(
     prevScope: Map<String, Set<Namespace>>,
     ns: Set<Namespace>,
 ): RsResolveProcessorBase<T> {
     return ShadowingProcessor(this, prevScope, ns)
 }
 
-private class ShadowingProcessor<in T : ScopeEntry>(
+private class ShadowingProcessor<in T: ScopeEntry>(
     private val originalProcessor: RsResolveProcessorBase<T>,
     private val prevScope: Map<String, Set<Namespace>>,
     private val ns: Set<Namespace>,
-) : RsResolveProcessorBase<T> {
+): RsResolveProcessorBase<T> {
     override val names: Set<String>? = originalProcessor.names
     override fun process(entry: T): Boolean {
         val prevNs = prevScope[entry.name]
@@ -195,10 +194,11 @@ private class ShadowingProcessor<in T : ScopeEntry>(
         val restNs = entry.namespaces.minus(prevNs)
         return ns.intersects(restNs) && originalProcessor.process(entry.copyWithNs(restNs))
     }
+
     override fun toString(): String = "ShadowingProcessor($originalProcessor, ns = $ns)"
 }
 
-fun <T : ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndUpdateScope(
+fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndUpdateScope(
     prevScope: Map<String, Set<Namespace>>,
     currScope: MutableMap<String, Set<Namespace>>,
     ns: Set<Namespace>,
@@ -206,12 +206,12 @@ fun <T : ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndUpda
     return ShadowingAndUpdateScopeProcessor(this, prevScope, currScope, ns)
 }
 
-private class ShadowingAndUpdateScopeProcessor<in T : ScopeEntry>(
+private class ShadowingAndUpdateScopeProcessor<in T: ScopeEntry>(
     private val originalProcessor: RsResolveProcessorBase<T>,
     private val prevScope: Map<String, Set<Namespace>>,
     private val currScope: MutableMap<String, Set<Namespace>>,
     private val ns: Set<Namespace>,
-) : RsResolveProcessorBase<T> {
+): RsResolveProcessorBase<T> {
     override val names: Set<String>? = originalProcessor.names
     override fun process(entry: T): Boolean {
         if (!originalProcessor.acceptsName(entry.name) || entry.name == "_") {
@@ -232,21 +232,22 @@ private class ShadowingAndUpdateScopeProcessor<in T : ScopeEntry>(
         currScope[entry.name] = prevNs?.let { it + newNs } ?: newNs
         return originalProcessor.process(entryWithIntersectedNs)
     }
+
     override fun toString(): String = "ShadowingAndUpdateScopeProcessor($originalProcessor, ns = $ns)"
 }
 
-fun <T : ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndImmediatelyUpdateScope(
+fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndImmediatelyUpdateScope(
     prevScope: MutableMap<String, Set<Namespace>>,
     ns: Set<Namespace>,
 ): RsResolveProcessorBase<T> {
     return ShadowingAndImmediatelyUpdateScopeProcessor(this, prevScope, ns)
 }
 
-private class ShadowingAndImmediatelyUpdateScopeProcessor<in T : ScopeEntry>(
+private class ShadowingAndImmediatelyUpdateScopeProcessor<in T: ScopeEntry>(
     private val originalProcessor: RsResolveProcessorBase<T>,
     private val prevScope: MutableMap<String, Set<Namespace>>,
     private val ns: Set<Namespace>,
-) : RsResolveProcessorBase<T> {
+): RsResolveProcessorBase<T> {
     override val names: Set<String>? = originalProcessor.names
     override fun process(entry: T): Boolean {
         if (entry.name in prevScope) return false
@@ -256,7 +257,9 @@ private class ShadowingAndImmediatelyUpdateScopeProcessor<in T : ScopeEntry>(
         }
         return result
     }
-    override fun toString(): String = "ShadowingAndImmediatelyUpdateScopeProcessor($originalProcessor, ns = $ns)"
+
+    override fun toString(): String =
+        "ShadowingAndImmediatelyUpdateScopeProcessor($originalProcessor, ns = $ns)"
 }
 
 fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvElement> {
@@ -389,7 +392,7 @@ fun collectCompletionVariants(
 private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
     private val context: CompletionContext,
-) : RsResolveProcessorBase<ScopeEntry> {
+): RsResolveProcessorBase<ScopeEntry> {
     override val names: Set<String>? get() = null
 
     override fun process(entry: ScopeEntry): Boolean {
@@ -469,7 +472,7 @@ private class CompletionVariantsCollector(
 
 data class SimpleScopeEntry(
     override val name: String,
-    override val element: MvElement,
+    override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
 //    override val subst: Substitution = emptySubstitution
 ): ScopeEntry {
@@ -520,7 +523,7 @@ enum class VisibilityStatus {
 
 data class ScopeEntryWithVisibility(
     override val name: String,
-    override val element: MvElement,
+    override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
     /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
     val visibilityFilter: VisibilityFilter,
@@ -531,7 +534,7 @@ data class ScopeEntryWithVisibility(
 
 fun RsResolveProcessor.process(
     name: String,
-    e: MvElement,
+    e: MvNamedElement,
     namespaces: Set<Namespace>,
     visibilityFilter: VisibilityFilter
 ): Boolean = process(ScopeEntryWithVisibility(name, e, namespaces, visibilityFilter))
@@ -540,7 +543,7 @@ fun RsResolveProcessor.process(
 fun RsResolveProcessor.process(
     name: String,
 //    namespaces: Set<Namespace>,
-    e: MvElement
+    e: MvNamedElement
 ): Boolean =
     process(SimpleScopeEntry(name, e, Namespace.none()))
 //    process(ScopeEntry(name, e, namespaces))
@@ -548,7 +551,7 @@ fun RsResolveProcessor.process(
 inline fun RsResolveProcessor.lazy(
     name: String,
 //    namespaces: Set<Namespace>,
-    e: () -> MvElement?
+    e: () -> MvNamedElement?
 ): Boolean {
     if (!acceptsName(name)) return false
     val element = e() ?: return false

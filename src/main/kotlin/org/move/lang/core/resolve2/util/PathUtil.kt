@@ -26,31 +26,3 @@ fun MvUseStmt.forEachLeafSpeck(consumer: LeafUseSpeckConsumer) {
         }
     }
 }
-
-fun MvUseStmt.leafSpecks(): List<MvUseSpeck> {
-    val specks = mutableListOf<MvUseSpeck>()
-    forEachLeafSpeck { path, useAlias ->
-        val useSpeck = path.parent as MvUseSpeck
-        specks.add(useSpeck)
-    }
-    return specks
-}
-
-
-
-
-///** return false if path is incomplete (has empty segments), e.g. `use std::;` */
-//private fun addPathSegments(path: MvPath, segments: ArrayList<String>): Boolean {
-//    val subpath = path.path
-//    if (subpath != null) {
-//        if (!addPathSegments(subpath, segments)) return false
-//    } else if (path.hasColonColon) {
-//        // absolute path: `::foo::bar`
-//        //                 ~~~~~ this
-//        segments += ""
-//    }
-//
-//    val segment = path.referenceName ?: return false
-//    segments += segment
-//    return true
-//}

@@ -6,6 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
+import org.move.ide.utils.imports.ImportCandidateCollector.getCompletionCandidates
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.IMPORTED_MODULE_PRIORITY
@@ -68,8 +69,8 @@ object ModulesCompletionProvider2: MvCompletionProvider() {
                 contextScopeInfo
             )
         val containingMod = path.containingModule
-        val candidates = getImportCandidates(parameters, result, processedNames, importContext,
-                                             itemFilter = {
+        val candidates = getCompletionCandidates(parameters, result.prefixMatcher, processedNames, importContext,
+                                                 itemFilter = {
                                                  containingMod != null && !it.equalsTo(
                                                      containingMod
                                                  )
@@ -78,7 +79,7 @@ object ModulesCompletionProvider2: MvCompletionProvider() {
             val lookupElement =
                 candidate.element.createLookupElement(
                     completionCtx,
-                    structAsType = Namespace.TYPE in importContext.namespaces,
+                    structAsType = Namespace.TYPE in importContext.ns,
                     priority = UNIMPORTED_ITEM_PRIORITY,
                     insertHandler = ImportInsertHandler(parameters, candidate)
                 )

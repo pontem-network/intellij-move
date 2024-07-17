@@ -146,6 +146,12 @@ class MvPsiFactory(val project: Project) {
         return useGroup.useSpeckList.first()
     }
 
+    fun useSpeckForGroupWithDummyAlias(text: String): MvUseSpeck {
+        val useGroup = createFromText<MvUseGroup>("module 0x1::_DummyModule { use 0x1::Module::{$text as dummy}; }")
+            ?: error("Failed to create an item import from text: `$text`")
+        return useGroup.useSpeckList.first()
+    }
+
     fun acquires(text: String): MvAcquiresType {
         return createFromText("module 0x1::_DummyModule { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")

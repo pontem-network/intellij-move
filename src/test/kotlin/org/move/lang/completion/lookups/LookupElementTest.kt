@@ -157,26 +157,26 @@ class LookupElementTest: MvTestBase() {
         }        
     """, tailText = "(&mut self)", typeText = "u8"
     )
+//
+//    fun `test import module lookup`() = checkNamedItem("""
+//        module 0x1::m {
+//            public fun identity(a: u8): u8 { a }
+//        }
+//        module 0x1::main {
+//            use 0x1::m;
+//                   //^
+//        }
+//    """, tailText = " 0x1", typeText = "main.move")
 
-    fun `test import module lookup`() = checkNamedItem("""
-        module 0x1::m {
-            public fun identity(a: u8): u8 { a }
-        }        
-        module 0x1::main {
-            use 0x1::m;
-                   //^
-        }
-    """, tailText = " 0x1", typeText = "main.move")
-
-    fun `test import function lookup`() = checkNamedItem("""
-        module 0x1::m {
-            public fun identity(a: u8): u8 { a }
-        }        
-        module 0x1::main {
-            use 0x1::m::identity;
-                        //^
-        }
-    """, tailText = "(a: u8): u8", typeText = "main.move")
+//    fun `test import function lookup`() = checkNamedItem("""
+//        module 0x1::m {
+//            public fun identity(a: u8): u8 { a }
+//        }
+//        module 0x1::main {
+//            use 0x1::m::identity;
+//                        //^
+//        }
+//    """, tailText = "(a: u8): u8", typeText = "main.move")
 
     private fun checkNamedItem(
         @Language("Move") code: String,

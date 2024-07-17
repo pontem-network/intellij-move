@@ -25,7 +25,7 @@ fun processNestedScopesUpwards(
     ) { cameFrom, scope ->
         processWithShadowingAndUpdateScope(prevScope, ns, processor) { shadowingProcessor ->
             processItemsInScope(
-                scope, cameFrom, ns, ctx.contextScopeInfo, shadowingProcessor
+                scope, cameFrom, ns, ctx, shadowingProcessor
             )
         }
     }
