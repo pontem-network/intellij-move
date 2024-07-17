@@ -6,8 +6,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.processAddressPathResolveVariants
 import org.move.lang.core.resolve2.processItemDeclarations
+import org.move.lang.core.resolve2.processModulePathResolveVariants
 import org.move.lang.core.resolve2.processNestedScopesUpwards
 import org.move.lang.core.resolve2.ref.RsPathResolveKind.*
 import org.move.lang.moveProject
@@ -72,7 +72,7 @@ fun processPathResolveVariants(
         }
         is ModulePath -> {
             // 0x1::bar
-            processAddressPathResolveVariants(
+            processModulePathResolveVariants(
                 ctx.path,
                 ctx.moveProject,
                 pathKind.address,
@@ -112,14 +112,21 @@ fun processQualifiedPathResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
-    if (resolvedQualifier != null) {
-        if (resolvedQualifier is MvModule) {
-            if (processor.process("Self", resolvedQualifier)) return true
+    if (resolvedQualifier == null) {
+        if (Namespace.MODULE in ns) {
+            // can be module, try for named address as a qualifier
+            val addressName = qualifier.referenceName ?: return false
+            val address = ctx.moveProject?.getNamedAddressOrNotInitialized(addressName) ?: return false
+            if (processModulePathResolveVariants(ctx.path, ctx.moveProject, address, processor)) return true
+        }
+        return false
+    }
+    if (resolvedQualifier is MvModule) {
+        if (processor.process("Self", resolvedQualifier)) return true
 
-            val moduleBlock = resolvedQualifier.moduleBlock
-            if (moduleBlock != null) {
-                if (processItemDeclarations(moduleBlock, ns, processor)) return true
-            }
+        val moduleBlock = resolvedQualifier.moduleBlock
+        if (moduleBlock != null) {
+            if (processItemDeclarations(moduleBlock, ns, processor)) return true
         }
     }
     return false

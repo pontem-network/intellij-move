@@ -370,4 +370,17 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test resolve attribute location for named address`() = checkByCode("""
+        module aptos_std::m {
+                  //X  
+            fun main() {
+            }
+            #[test(location=aptos_std::m)]
+                                     //^
+            fun test_main() {
+                
+            }
+        }        
+    """)
 }

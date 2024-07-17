@@ -90,6 +90,9 @@ data class MoveProject(
         return Address.Named(name, value, this)
     }
 
+    fun getNamedAddressOrNotInitialized(name: String): Address.Named =
+        getNamedAddress(name) ?: Address.Named(name, null, this)
+
     fun getAddressNamesForValue(addressValue: String): List<String> {
         val addressLit = AddressLit(addressValue)
         val names = mutableListOf<String>()

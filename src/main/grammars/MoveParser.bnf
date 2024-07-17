@@ -159,7 +159,7 @@
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 
-QualPathCodeFragmentElement ::= FQModulePathIdent? TypeArgumentList?
+QualPathCodeFragmentElement ::= PathImpl
 
 Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
@@ -513,7 +513,7 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-FriendDecl ::= Attr* friend FQModuleRef ';'
+FriendDecl ::= Attr* friend PathImpl ';'
 {
     pin = "friend"
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]

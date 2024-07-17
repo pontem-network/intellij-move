@@ -113,6 +113,7 @@ private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
         parent is MvPathType -> EnumSet.of(Namespace.TYPE)
         parent is MvCallExpr -> EnumSet.of(Namespace.FUNCTION)
 //        parent is MvRefExpr && parent.isAbortCodeConst() -> EnumSet.of(Namespace.CONST)
+        parent is MvRefExpr && rootPath.hasAncestor<MvAttrItem>() -> EnumSet.of(Namespace.NAME, Namespace.MODULE)
         parent is MvRefExpr -> EnumSet.of(Namespace.NAME)
 //        parent is MvRefExpr -> EnumSet.of(Namespace.NAME, Namespace.CONST)
         parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.TYPE)
@@ -120,6 +121,7 @@ private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
         parent is MvAccessSpecifier -> EnumSet.of(Namespace.TYPE)
         parent is MvAddressSpecifierArg -> EnumSet.of(Namespace.FUNCTION)
         parent is MvAddressSpecifierCallParam -> EnumSet.of(Namespace.NAME)
+        parent is MvFriendDecl -> EnumSet.of(Namespace.MODULE)
         parent is MvUseSpeck -> Namespace.all()
         else -> debugErrorOrFallback(
             "Cannot build path namespaces: unhandled parent type ${parent.elementType}",

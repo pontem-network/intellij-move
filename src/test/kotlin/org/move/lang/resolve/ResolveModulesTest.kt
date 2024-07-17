@@ -328,6 +328,36 @@ class ResolveModulesTest : ResolveTestCase() {
                //X
     """)
 
+    fun `test resolve friend module`() = checkByCode("""
+    module 0x1::myfriend {}
+                 //X
+    module 0x1::main {
+        friend 0x1::myfriend;
+                   //^ 
+    }    
+    """)
+
+    fun `test resolve friend module with named address`() = checkByCode("""
+    module aptos_std::myfriend {}
+                      //X
+    module 0x1::main {
+        friend aptos_std::myfriend;
+                           //^ 
+    }    
+    """)
+
+    fun `test cannot resolve path inside friend to a function`() = checkByCode("""
+    module 0x1::myfriend {
+        public fun call() {}
+    }
+    module 0x1::main {
+        use 0x1::myfriend;
+        
+        friend myfriend::call;
+                         //^ unresolved 
+    }    
+    """)
+
     fun `test friend no module resolution for test_only modules in non test_only case`() = checkByCode("""
     module 0x1::M {
         friend 0x1::MTest;

@@ -279,6 +279,23 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    fun `test resolve friend function with named address`() = checkByCode(
+        """
+        module aptos_std::original {
+            friend aptos_std::m;
+            public(friend) fun call() {}
+                             //X
+        }
+        module aptos_std::m {
+            use aptos_std::original;
+            fun main() {
+                original::call();
+                         //^
+            }
+        }    
+    """
+    )
+
     fun `test script function is unresolved in friend modules`() = checkByCode(
         """
         address 0x1 {

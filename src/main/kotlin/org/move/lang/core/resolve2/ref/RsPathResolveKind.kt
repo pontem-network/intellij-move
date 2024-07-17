@@ -24,6 +24,7 @@ sealed class RsPathResolveKind {
     class ModulePath(
         val path: MvPath,
         val address: Address,
+        val ns: Set<Namespace>,
     ): RsPathResolveKind()
 
     /** aptos_framework in `use aptos_framework::bar`*/
@@ -63,13 +64,13 @@ fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResol
     val qualifierName = qualifier.referenceName
 
     return when {
-        qualifierPath == null && pathAddress != null -> ModulePath(path, Address.Value(pathAddress.text))
+        qualifierPath == null && pathAddress != null -> ModulePath(path, Address.Value(pathAddress.text), ns)
         qualifierPath == null && isUseSpeck && qualifierName != null -> {
             val moveProject = qualifier.moveProject
             val namedAddress =
                 moveProject?.getNamedAddress(qualifierName)
                     ?: Address.Named(qualifierName, null, moveProject)
-            ModulePath(path, namedAddress)
+            ModulePath(path, namedAddress, ns)
         }
         else -> QualifiedPath(path, qualifier, ns)
     }

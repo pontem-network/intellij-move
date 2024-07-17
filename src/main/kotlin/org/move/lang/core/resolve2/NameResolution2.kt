@@ -1,10 +1,8 @@
 package org.move.lang.core.resolve2
 
-import com.intellij.psi.search.GlobalSearchScope
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.containingMoveFile
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.ref.PathResolutionContext
@@ -31,7 +29,7 @@ fun processNestedScopesUpwards(
     }
 }
 
-fun processAddressPathResolveVariants(
+fun processModulePathResolveVariants(
     element: MvElement,
     moveProject: MoveProject?,
     address: Address,

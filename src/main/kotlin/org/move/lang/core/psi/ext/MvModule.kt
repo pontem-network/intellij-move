@@ -39,15 +39,20 @@ fun MvModule.fqModule(): FQModule? {
 
 val MvModule.declaredFriendModules: Set<FQModule>
     get() {
-        val block = this.moduleBlock ?: return emptySet()
-        val friendModuleRefs = block.friendDeclList.mapNotNull { it.fqModuleRef }
-        val moveProj = block.moveProject
+        val moduleBlock = this.moduleBlock ?: return emptySet()
+        val friendModulePaths = moduleBlock.friendDeclList.mapNotNull { it.path }
+//        val moveProj = moduleBlock.moveProject
 
         val friends = mutableSetOf<FQModule>()
-        for (moduleRef in friendModuleRefs) {
-            val address = moduleRef.addressRef.address(moveProj) ?: continue
-            val identifier = moduleRef.identifier?.text ?: continue
-            friends.add(FQModule(address, identifier))
+        for (modulePath in friendModulePaths) {
+            val module = modulePath.reference?.resolve() as? MvModule ?: continue
+            val fqModule = module.fqModule() ?: continue
+            friends.add(fqModule)
+//            val pathAddress = modulePath.qualifier?.pathAddress ?: continue
+//            val address = Address.Value(pathAddress.text)
+////            val address = modulePath.addressRef.address(moveProj) ?: continue
+//            val identifier = modulePath.identifier?.text ?: continue
+//            friends.add(FQModule(address, identifier))
         }
         return friends
     }
