@@ -92,11 +92,12 @@ fun processItemsInScope(
                                     }
                             }
                             is MvSpecCodeBlock -> {
-                                when (ctx.contextScopeInfo.letStmtScope) {
+                                val letStmtScope = ctx.path.letStmtScope
+                                when (letStmtScope) {
                                     EXPR_STMT -> scope.allLetStmts
                                     LET_STMT, LET_POST_STMT -> {
                                         val letDecls =
-                                            if (ctx.contextScopeInfo.letStmtScope == LET_POST_STMT) {
+                                            if (letStmtScope == LET_POST_STMT) {
                                                 scope.allLetStmts
                                             } else {
                                                 scope.letStmts(false)
@@ -157,12 +158,12 @@ fun processItemsInScope(
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        val specFunctions = if (contextScopeInfo.isMslScope) {
+                        val specFunctions = if (ctx.contextScopeInfo.isMslScope) {
                             listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                         } else {
                             emptyList()
                         }
-                        val specInlineFunctions = if (contextScopeInfo.isMslScope) {
+                        val specInlineFunctions = if (ctx.contextScopeInfo.isMslScope) {
                             module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
                         } else {
                             emptyList()

@@ -2,7 +2,10 @@ package org.move.lang.core.resolve2
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.RsResolveProcessor
+import org.move.lang.core.resolve.createProcessor
+import org.move.lang.core.resolve.process
+import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.Namespace
 import java.util.*
 

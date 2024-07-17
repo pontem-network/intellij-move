@@ -225,11 +225,13 @@ fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
         val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
         val moduleName = it.name ?: return@getProjectPsiDependentCache emptyList()
-        val file = it.containingMoveFile ?: return@getProjectPsiDependentCache emptyList()
+//        val file = it.containingMoveFile ?: return@getProjectPsiDependentCache emptyList()
 
         val searchScope = moveProject.searchScope()
-        val moduleSpecs = file.moduleSpecs() +
-                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
+        // all `spec 0x1::m {}` for the current module
+        val moduleSpecs = MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
+//        val moduleSpecs = file.moduleSpecs() +
+//                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
         if (moduleSpecs.isEmpty()) return@getProjectPsiDependentCache emptyList()
 
         val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()

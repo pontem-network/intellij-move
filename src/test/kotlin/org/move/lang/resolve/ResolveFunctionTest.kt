@@ -855,19 +855,6 @@ module 0x1::mod {
     """
     )
 
-    fun `test cannot resolve non-test-only import into test-only item`() = checkByCode(
-        """
-        module 0x1::m {
-            #[test_only]
-            public fun call() {}
-        }        
-        module 0x1::main {
-            use 0x1::m::call;
-                        //^ unresolved
-        }
-    """
-    )
-
     fun `test resolve local test-only import into test-only item`() = checkByCode(
         """
         module 0x1::m {

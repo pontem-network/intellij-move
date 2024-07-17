@@ -44,7 +44,7 @@ data class MoveProject(
     fun movePackages(): Sequence<MovePackage> = currentPackage.wrapWithList().chain(depPackages())
     fun depPackages(): List<MovePackage> = dependencies.map { it.first }.reversed()
 
-    fun sourceFolders(): List<VirtualFile> {
+    fun allAccessibleMoveFolders(): List<VirtualFile> {
         val folders = currentPackage.moveFolders().toMutableList()
 
         val depFolders = dependencies.asReversed().flatMap { it.first.moveFolders() }
@@ -104,7 +104,7 @@ data class MoveProject(
 
     fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
-        for (folder in sourceFolders()) {
+        for (folder in allAccessibleMoveFolders()) {
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
@@ -132,7 +132,7 @@ data class MoveProject(
     val profiles: Set<String> = this.aptosConfigYaml?.profiles.orEmpty()
 
     fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
-        val folders = sourceFolders()
+        val folders = allAccessibleMoveFolders()
         var stopped = false
         for (folder in folders) {
             if (stopped) break

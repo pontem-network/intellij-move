@@ -47,15 +47,16 @@ fun processAddressPathResolveVariants(
     }
 
     // search modules in the current file first
-    val currentFile = element.containingMoveFile ?: return false
-    for (module in currentFile.modules()) {
-        if (equalAddressProcessor.process(module)) return true
-    }
+//    val currentFile = element.containingMoveFile ?: return false
+//    for (module in currentFile.modules()) {
+//        if (equalAddressProcessor.process(module)) return true
+//    }
 
     val project = element.project
-    val currentFileScope = GlobalSearchScope.fileScope(currentFile)
-    val searchScope =
-        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
+//    val currentFileScope = GlobalSearchScope.fileScope(currentFile)
+//    val searchScope =
+//        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
+    val searchScope = moveProject.searchScope()
 
     var stop = false
     for (name in processor.names.orEmpty()) {
