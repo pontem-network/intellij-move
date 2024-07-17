@@ -19,7 +19,6 @@ fun processItemsInScope(
 ): Boolean {
     for (namespace in namespaces) {
         val stop = when (namespace) {
-
             Namespace.CONST -> {
                 false
 //                val found = when (scope) {
@@ -160,19 +159,8 @@ fun processItemsInScope(
                         val module = scope.parent as MvModule
                         val specFunctions =
                             listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-//                        val specFunctions = if (ctx.contextScopeInfo.isMslScope) {
-//                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-//                        } else {
-//                            emptyList()
-//                        }
                         val specInlineFunctions = module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
-//                        val specInlineFunctions = if (ctx.contextScopeInfo.isMslScope) {
-//                            module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
-//                        } else {
-//                            emptyList()
-//                        }
                         processor.processAll(
-//                            contextScopeInfo,
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
                             specFunctions,
@@ -269,10 +257,11 @@ fun processItemsInScope(
                 else -> false
             }
         }
-        if (!stop && scope is MvItemsOwner) {
-            if (scope.processUseSpeckElements(namespaces, processor)) return true
-        }
         if (stop) return true
+    }
+
+    if (scope is MvItemsOwner) {
+        if (scope.processUseSpeckElements(namespaces, processor)) return true
     }
 
     return false
