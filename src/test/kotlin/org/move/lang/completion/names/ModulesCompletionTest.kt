@@ -50,7 +50,7 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
         
         script {
-            use 0x1::/*caret*/
+            use 0x1::Tra/*caret*/
         }
         """
     )

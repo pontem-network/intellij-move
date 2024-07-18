@@ -529,9 +529,7 @@ UseStmt ::= Attr* use UseSpeck ';' {
     extends = Stmt
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
-UseSpeck ::= PathImpl ( UseAlias | ('::' UseSpeckProjection) )?
-
-private UseSpeckProjection ::= UseGroup
+UseSpeck ::= PathImpl ( UseAlias | ('::' UseGroup) )?
 
 UseGroup ::= '{' UseSpeck_with_recover* '}'
 {

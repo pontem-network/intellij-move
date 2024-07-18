@@ -1,5 +1,6 @@
 package org.move.lang.resolve
 
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveFunctionTest: ResolveTestCase() {
@@ -279,6 +280,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    @NamedAddress("aptos_std", "0x1")
     fun `test resolve friend function with named address`() = checkByCode(
         """
         module aptos_std::original {

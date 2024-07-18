@@ -52,7 +52,7 @@ fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResol
                 return ValueAddressPath(Address.Value(value))
             } else {
                 val namedAddress =
-                    moveProject?.getNamedAddress(pathName) ?: Address.Named(pathName, null, moveProject)
+                    moveProject?.getNamedAddressTestAware(pathName) ?: Address.Named(pathName, null, moveProject)
                 return NamedAddressPath(namedAddress)
             }
         }
@@ -68,7 +68,7 @@ fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResol
         qualifierPath == null && isUseSpeck && qualifierName != null -> {
             val moveProject = qualifier.moveProject
             val namedAddress =
-                moveProject?.getNamedAddress(qualifierName)
+                moveProject?.getNamedAddressTestAware(qualifierName)
                     ?: Address.Named(qualifierName, null, moveProject)
             ModulePath(path, namedAddress, ns)
         }

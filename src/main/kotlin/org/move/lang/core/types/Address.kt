@@ -132,7 +132,7 @@ sealed class StubAddress {
                 if (moveProject == null) {
                     Address.Named(this.name, null, null)
                 } else {
-                    moveProject.getNamedAddress(this.name) ?: Address.Named(this.name, null, moveProject)
+                    moveProject.getNamedAddressTestAware(this.name) ?: Address.Named(this.name, null, moveProject)
                 }
             }
             is Value -> Address.Value(this.value)

@@ -1,5 +1,6 @@
 package org.move.cli
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts.Tooltip
@@ -26,6 +27,7 @@ import org.move.openapiext.contentRoots
 import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
 import org.move.stdext.wrapWithList
+import org.move.utils.tests.NamedAddressService
 import org.toml.lang.TomlLanguage
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
@@ -90,8 +92,15 @@ data class MoveProject(
         return Address.Named(name, value, this)
     }
 
-    fun getNamedAddressOrNotInitialized(name: String): Address.Named =
-        getNamedAddress(name) ?: Address.Named(name, null, this)
+    fun getNamedAddressTestAware(name: String): Address.Named? {
+        val namedAddress = getNamedAddress(name)
+        if (namedAddress != null) return namedAddress
+        if (isUnitTestMode) {
+            val namedAddressService = project.service<NamedAddressService>()
+            return namedAddressService.getNamedAddress(this, name)
+        }
+        return null
+    }
 
     fun getAddressNamesForValue(addressValue: String): List<String> {
         val addressLit = AddressLit(addressValue)

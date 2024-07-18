@@ -116,7 +116,7 @@ fun processQualifiedPathResolveVariants(
         if (Namespace.MODULE in ns) {
             // can be module, try for named address as a qualifier
             val addressName = qualifier.referenceName ?: return false
-            val address = ctx.moveProject?.getNamedAddressOrNotInitialized(addressName) ?: return false
+            val address = ctx.moveProject?.getNamedAddressTestAware(addressName) ?: return false
             if (processModulePathResolveVariants(ctx.path, ctx.moveProject, address, processor)) return true
         }
         return false
