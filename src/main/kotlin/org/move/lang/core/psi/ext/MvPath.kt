@@ -122,7 +122,8 @@ private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
         parent is MvAddressSpecifierArg -> EnumSet.of(Namespace.FUNCTION)
         parent is MvAddressSpecifierCallParam -> EnumSet.of(Namespace.NAME)
         parent is MvFriendDecl -> EnumSet.of(Namespace.MODULE)
-        parent is MvUseSpeck -> Namespace.all()
+        parent is MvModuleSpec -> EnumSet.of(Namespace.MODULE)
+            parent is MvUseSpeck -> Namespace.all()
         else -> debugErrorOrFallback(
             "Cannot build path namespaces: unhandled parent type ${parent.elementType}",
             EnumSet.of(Namespace.NAME)

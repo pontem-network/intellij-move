@@ -6,10 +6,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.processItemDeclarations
-import org.move.lang.core.resolve2.processModulePathResolveVariants
-import org.move.lang.core.resolve2.processNestedScopesUpwards
-import org.move.lang.core.resolve2.ref.RsPathResolveKind.*
+import org.move.lang.core.resolve2.*
+import org.move.lang.core.resolve2.PathKind.NamedAddress
+import org.move.lang.core.resolve2.PathKind.ValueAddress
 import org.move.lang.moveProject
 import kotlin.LazyThreadSafetyMode.NONE
 
@@ -52,40 +51,57 @@ class Path2ReferenceImpl(element: MvPath):
                 path = path,
                 contextScopeInfo = ContextScopeInfo.from(path)
             )
-            return resolvePath(ctx, path, classifyPath(path))
+            return resolvePath(ctx, path)
+//            return resolvePath(ctx, path, classifyPath(path))
         }
     }
 }
 
 fun processPathResolveVariants(
     ctx: PathResolutionContext,
-    pathKind: RsPathResolveKind,
+    pathKind: PathKind,
     processor: RsResolveProcessor
 ): Boolean {
     val contextProcessor = ctx.contextScopeInfo.wrapWithContextFilter(processor)
     return when (pathKind) {
-        is UnqualifiedPath -> {
+        is NamedAddress, is ValueAddress -> false
+        is PathKind.UnqualifiedPath -> {
             // Self::
             if (processor.lazy("Self") { ctx.containingModule }) return true
             // local
             processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextProcessor)
         }
-        is ModulePath -> {
-            // 0x1::bar
-            processModulePathResolveVariants(
-                ctx.path,
-                ctx.moveProject,
-                pathKind.address,
-                contextProcessor
-            )
+        is PathKind.QualifiedPath.Module -> {
+            processModulePathResolveVariants(ctx.path, ctx.moveProject, pathKind.address, contextProcessor)
         }
-        is QualifiedPath -> {
-            // foo::bar
+        is PathKind.QualifiedPath -> {
             processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
+//            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, contextProcessor)
         }
-        is NamedAddressPath -> return false
-        is ValueAddressPath -> return false
     }
+//    return when (pathKind) {
+//        is UnqualifiedPath -> {
+//            // Self::
+//            if (processor.lazy("Self") { ctx.containingModule }) return true
+//            // local
+//            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextProcessor)
+//        }
+//        is ModulePath -> {
+//            // 0x1::bar
+//            processModulePathResolveVariants(
+//                ctx.path,
+//                ctx.moveProject,
+//                pathKind.address,
+//                contextProcessor
+//            )
+//        }
+//        is QualifiedPath -> {
+//            // foo::bar
+//            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
+//        }
+//        is NamedAddressPath -> return false
+//        is ValueAddressPath -> return false
+//    }
 }
 
 //fun processPathResolveVariants(
@@ -169,13 +185,14 @@ class PathResolutionContext(
 private fun resolvePath(
     ctx: PathResolutionContext,
     path: MvPath,
-    kind: RsPathResolveKind
+//    kind: RsPathResolveKind
 ): List<RsPathResolveResult<MvElement>> {
+    val pathKind = path.pathKind()
     val result =
         // matches resolve variants against referenceName from path
         collectPathResolveVariants(ctx, path) {
             // actually emits resolve variants
-            processPathResolveVariants(ctx, kind, it)
+            processPathResolveVariants(ctx, pathKind, it)
         }
     return result
 //    return when (result.size) {

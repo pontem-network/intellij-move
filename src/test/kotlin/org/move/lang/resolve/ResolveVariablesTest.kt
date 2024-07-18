@@ -1,5 +1,6 @@
 package org.move.lang.resolve
 
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveVariablesTest : ResolveTestCase() {
@@ -371,6 +372,7 @@ module 0x1::string_tests {
         }        
     """)
 
+    @NamedAddress("aptos_std", "0x1")
     fun `test resolve attribute location for named address`() = checkByCode("""
         module aptos_std::m {
                   //X  

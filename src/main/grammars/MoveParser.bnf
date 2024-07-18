@@ -1188,7 +1188,8 @@ private to ::= <<toKeyword>>
 private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
-ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
+ModuleSpec ::= Attr* spec PathImpl ModuleSpecBlock
+//ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"

@@ -26,8 +26,8 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.wrapWithFilter
+import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.PathResolutionContext
-import org.move.lang.core.resolve2.ref.classifyPath
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
@@ -134,7 +134,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             true
         }
 
-        val pathKind = classifyPath(pathElement, overwriteNs = ns)
+        val pathKind = pathElement.pathKind(overwriteNs = ns)
+//        val pathKind = classifyPath(pathElement, overwriteNs = ns)
         processPathResolveVariants(resolutionCtx, pathKind, completionCollector)
 
         // disable auto-import in module specs for now

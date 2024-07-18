@@ -2,8 +2,6 @@ package org.move.ide.utils.imports
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve2.ref.RsPathResolveKind.ModulePath
-import org.move.lang.core.resolve2.ref.classifyPath
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkWriteAccessAllowed
 
@@ -156,7 +154,7 @@ private fun tryGroupWithItemSpeck(
     return true
 }
 
-private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
+private val <T: MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
 
 @Suppress("SameReturnValue")
 private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseStmt): Boolean {

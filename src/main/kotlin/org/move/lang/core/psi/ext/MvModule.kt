@@ -201,7 +201,7 @@ val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 ////    this.childrenOfType<MvItemSpec>()
 ////        .filter { it.itemSpecRef?.moduleKw != null }
 
-val MvModuleSpec.moduleItem: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
+val MvModuleSpec.moduleItem: MvModule? get() = this.path?.reference?.resolve() as? MvModule
 
 val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
 
@@ -242,7 +242,7 @@ fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
         val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
         moduleSpecs
             .filter { moduleSpec ->
-                val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
+                val module = moduleSpec.moduleItem ?: return@filter false
                 currentModule == module.fqModule()
             }
             .toList()
