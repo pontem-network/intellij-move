@@ -1,5 +1,7 @@
 package org.move.ide.inspections.imports
 
+import org.move.cli.settings.debugError
+import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.inspections.imports.UseItemType.*
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
@@ -34,11 +36,8 @@ val MvUseStmt.useItems: List<UseItem>
             when (pathKind) {
                 is PathKind.QualifiedPath.Module ->
                     items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
-//                is ModulePath -> {
-//                    items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
-//                }
                 is PathKind.QualifiedPath.ModuleItem -> {
-                    // cannot be
+                    debugError("not reachable, must be a bug")
                     return@forEachLeafSpeck false
                 }
                 is PathKind.QualifiedPath -> {
@@ -50,15 +49,6 @@ val MvUseStmt.useItems: List<UseItem>
                         items.add(UseItem(useSpeck, nameOrAlias, ITEM, stmtItemScope))
                     }
                 }
-//                is QualifiedPath -> {
-//                    if (kind.path.referenceName == "Self") {
-//                        val moduleName =
-//                            useAlias?.name ?: kind.qualifier.referenceName ?: return@forEachLeafSpeck false
-//                        items.add(UseItem(useSpeck, moduleName, SELF_MODULE, stmtItemScope))
-//                    } else {
-//                        items.add(UseItem(useSpeck, nameOrAlias, ITEM, stmtItemScope))
-//                    }
-//                }
                 else -> return@forEachLeafSpeck false
             }
             false

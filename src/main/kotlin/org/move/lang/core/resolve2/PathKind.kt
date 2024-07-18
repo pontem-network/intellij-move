@@ -6,6 +6,7 @@ import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.allowedNamespaces
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.isUseSpeck
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
 import org.move.lang.moveProject
@@ -101,12 +102,15 @@ fun MvPath.pathKind(overwriteNs: Set<Namespace>? = null): PathKind {
                     // known named address, can be module path
                     return PathKind.QualifiedPath.Module(this, qualifierPath, ns, namedAddress)
                 }
-            }
-            else -> {
-                // module::name
-                return PathKind.QualifiedPath.ModuleItem(this, qualifierPath, ns)
+                if (this.isUseSpeck) {
+                    // use std::main where std is the unknown named address
+                    val address = Address.Named(qualifierItemName, null, moveProject)
+                    return PathKind.QualifiedPath.Module(this, qualifierPath, ns, address)
+                }
             }
         }
+        // module::name
+        return PathKind.QualifiedPath.ModuleItem(this, qualifierPath, ns)
     }
 
     // three-element path

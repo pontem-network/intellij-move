@@ -127,6 +127,12 @@ fun Path?.isValidExecutable(): Boolean {
 
 fun isDebugModeEnabled(): Boolean = Registry.`is`("org.move.debug.enabled")
 
+fun debugError(message: String) {
+    if (isDebugModeEnabled()) {
+        error(message)
+    }
+}
+
 fun <T> debugErrorOrFallback(message: String, fallback: T): T {
     if (isDebugModeEnabled()) {
         error(message)
