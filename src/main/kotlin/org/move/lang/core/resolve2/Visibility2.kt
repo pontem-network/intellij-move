@@ -4,27 +4,32 @@ import org.move.cli.containingMovePackage
 import org.move.cli.settings.moveSettings
 import org.move.ide.inspections.imports.pathUsageScope
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ModInfo
 import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Invisible
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve.ref.Namespace.NAME
+import org.move.lang.core.resolve.ref.Namespace.TYPE
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
 data class ItemVisibilityInfo(
     val item: MvItemElement,
-    val isTestOnly: Boolean,
+    val usageScope: NamedItemScope,
     val vis: Visibility2,
 )
 
-val MvItemElement.visInfo: ItemVisibilityInfo get() =
-    ItemVisibilityInfo(this, isTestOnly = this.hasTestOnlyAttr, vis = this.visibility2)
+fun MvItemElement.visInfo(adjustmentScope: NamedItemScope = MAIN): ItemVisibilityInfo {
+    // todo: can be lazy
+    val itemUsageScope = this.itemScope.shrinkScope(adjustmentScope)
+    return ItemVisibilityInfo(this, usageScope = itemUsageScope, vis = this.visibility2)
+}
 
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
 fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
-    val (item, isTestOnly, visibility) = this
+    val (item, itemUsageScope, visibility) = this
     return VisibilityFilter { path, namespaces ->
 
         // inside msl everything is visible
@@ -38,6 +43,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         if (attrItem != null) return@VisibilityFilter Visible
 
         val pathUsageScope = path.pathUsageScope
+
         val useSpeck = path.useSpeck
         if (useSpeck != null) {
             // inside import, all visibilities except for private work
@@ -54,7 +60,11 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         if (item is MvFunction && item.hasTestAttr) return@VisibilityFilter Invisible
 
         // #[test_only] items in non-test-only scope
-        if (isTestOnly && !pathUsageScope.isTest) return@VisibilityFilter Invisible
+        if (itemUsageScope != MAIN) {
+            // cannot be used everywhere, need to check for scope compatibility
+            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
+        }
+//        if (isTestOnly && !pathUsageScope.isTest) return@VisibilityFilter Invisible
 
         // Self::method
         val itemModule = item.containingModule

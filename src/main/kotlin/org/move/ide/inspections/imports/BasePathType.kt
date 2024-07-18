@@ -43,6 +43,9 @@ val MvPath.pathUsageScope: NamedItemScope
             if (parentElement is MvDocAndAttributeOwner && parentElement.hasTestOnlyAttr) {
                 return NamedItemScope.TEST
             }
+            if (parentElement is MvDocAndAttributeOwner && parentElement.hasVerifyOnlyAttr) {
+                return NamedItemScope.VERIFY
+            }
             if (parentElement is MvFunction && parentElement.hasTestAttr) {
                 return NamedItemScope.TEST
             }
