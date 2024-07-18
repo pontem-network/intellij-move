@@ -1,23 +1,15 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MvElementImpl
-import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.psi.MvModuleRef
-import org.move.lang.core.psi.containingModule
-import org.move.lang.core.resolve.ref.MvModuleReferenceImpl
-import org.move.lang.core.resolve.ref.MvPolyVariantReference
+//val MvModuleRef.isSelfModuleRef: Boolean
+//    get() =
+//        this !is MvFQModuleRef
+//                && this.referenceName == "Self"
+//                && this.containingModule != null
 
-val MvModuleRef.isSelfModuleRef: Boolean
-    get() =
-        this !is MvFQModuleRef
-                && this.referenceName == "Self"
-                && this.containingModule != null
-
-abstract class MvModuleRefMixin(node: ASTNode) : MvElementImpl(node), MvModuleRef {
-
-    override fun getReference(): MvPolyVariantReference? = MvModuleReferenceImpl(this)
-}
+//abstract class MvModuleRefMixin(node: ASTNode) : MvElementImpl(node), MvModuleRef {
+//
+//    override fun getReference(): MvPolyVariantReference? = MvModuleReferenceImpl(this)
+//}
 
 //abstract class MvImportedModuleRefMixin(node: ASTNode) : MvReferenceElementImpl(node),
 //                                                           MvImportedModuleRef {

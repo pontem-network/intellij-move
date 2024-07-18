@@ -87,20 +87,20 @@ fun processModuleItems(
             contextScopeInfo.isMslScope && processModuleSpecItems(module, namespaces, contextScopeInfo, processor)
 }
 
-fun resolveModuleItem(
-    module: MvModule,
-    name: String,
-    namespaces: Set<Namespace>,
-    visibilities: Set<Visibility>,
-    contextScopeInfo: ContextScopeInfo,
-): List<MvNamedElement> {
-    val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, namespaces, visibilities, contextScopeInfo) {
-        if (it.name == name) {
-            resolved.add(it.element)
-            return@processModuleItems true
-        }
-        return@processModuleItems false
-    }
-    return resolved
-}
+//fun resolveModuleItem(
+//    module: MvModule,
+//    name: String,
+//    namespaces: Set<Namespace>,
+//    visibilities: Set<Visibility>,
+//    contextScopeInfo: ContextScopeInfo,
+//): List<MvNamedElement> {
+//    val resolved = mutableListOf<MvNamedElement>()
+//    processModuleItems(module, namespaces, visibilities, contextScopeInfo) {
+//        if (it.name == name) {
+//            resolved.add(it.element)
+//            return@processModuleItems true
+//        }
+//        return@processModuleItems false
+//    }
+//    return resolved
+//}

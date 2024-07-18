@@ -11,6 +11,7 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.namedItemScopes
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.ContextScopeInfo
@@ -41,7 +42,8 @@ object StructPatCompletionProvider: MvCompletionProvider() {
                 letStmtScope = LetStmtScope.NONE,
                 refItemScopes = bindingPat.namedItemScopes,
             )
-        val completionCtx = CompletionContext(bindingPat, contextScopeInfo)
+        val completionCtx = CompletionContext(bindingPat, bindingPat.isMsl())
+//        val completionCtx = CompletionContext(bindingPat, contextScopeInfo)
         processModuleItems(module, namespaces, setOf(Visibility.Internal), contextScopeInfo) {
             val lookup =
                 it.element.createLookupElement(completionCtx)

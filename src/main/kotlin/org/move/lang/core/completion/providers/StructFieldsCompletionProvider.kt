@@ -39,7 +39,8 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
 
         if (element is MvBindingPat) element = element.parent as MvElement
 
-        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
+        val completionCtx = CompletionContext(element, element.isMsl())
+//        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         when (element) {
             is MvStructPatField -> {
                 val structPat = element.structPat

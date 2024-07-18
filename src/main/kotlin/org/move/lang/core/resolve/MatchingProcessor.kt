@@ -34,8 +34,8 @@ fun interface MatchingProcessor<T: MvNamedElement> {
             .flatten()
             .any { match(contextScopeInfo, it) }
 
-    fun matchAll(vararg collections: Iterable<T>): Boolean =
-        sequenceOf(*collections)
-            .flatten()
-            .any { match(it) }
+//    fun matchAll(vararg collections: Iterable<T>): Boolean =
+//        sequenceOf(*collections)
+//            .flatten()
+//            .any { match(it) }
 }

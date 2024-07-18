@@ -14,21 +14,23 @@ import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.ext.isMslScope
-import org.move.lang.core.psi.ext.names
-import org.move.lang.core.psi.ext.rootPath
-import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
-import org.move.lang.core.resolve.SimpleScopeEntry
-import org.move.lang.core.resolve.createProcessor
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
+import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
+
+fun interface CompletionFilter {
+    fun removeEntry(entry: ScopeEntry, ctx: PathResolutionContext): Boolean
+}
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement> get() = path()
@@ -55,7 +57,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         val completionContext = CompletionContext(
             pathElement,
-            contextScopeInfo,
+//            contextScopeInfo,
+            msl,
             expectedTy,
             resolutionCtx = resolutionCtx
         )
@@ -146,8 +149,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             ImportContext.from(
                 originalPathElement,
                 ns,
-                setOf(Visibility.Public),
-                completionContext.contextScopeInfo
+//                setOf(Visibility.Public),
+//                completionContext.contextScopeInfo
             )
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
@@ -172,4 +175,20 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
     }
 
     private fun createSelfLookup() = LookupElementBuilder.create("Self").bold()
+}
+
+fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, msl: Boolean): Ty? {
+    for (ancestor in element.ancestors) {
+        if (element.endOffset < ancestor.endOffset) continue
+        if (element.endOffset > ancestor.endOffset) break
+        when (ancestor) {
+            is MvPathType,
+            is MvRefExpr,
+            is MvDotExpr -> {
+                val inference = (ancestor as MvElement).inference(msl) ?: return TyUnknown
+                return inferExpectedTy(ancestor, inference)
+            }
+        }
+    }
+    return null
 }

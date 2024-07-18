@@ -56,7 +56,7 @@ class MoveFmtBlock(
                     parentType == FUNCTION_PARAMETER_LIST -> chopListWrap
                     parentType == VALUE_ARGUMENT_LIST -> chopListWrap
                     parentType == ATTR_ITEM_LIST -> chopListWrap
-                    parentType == USE_ITEM_GROUP -> chopListWrap
+                    parentType == USE_GROUP -> chopListWrap
                     else -> null
                 }
 

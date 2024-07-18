@@ -575,11 +575,11 @@ UseItem ::= IDENTIFIER UseAlias?
 {
     pin = 1
     name = "item name"
-    implements = [
-        "org.move.lang.core.psi.MvNamedElement"
-        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
+//    implements = [
+//        "org.move.lang.core.psi.MvNamedElement"
+//        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
 }
 UseAlias ::= as IDENTIFIER
 {
@@ -1125,18 +1125,18 @@ private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
 
 ModuleRef ::= PATH_MODE_IDENTIFIER | FQModuleRef
 {
-    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
+//    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
 }
 
 FQModuleRef ::= AddressRef '::' PATH_MODE_IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
-    implements = [
-        "org.move.lang.core.resolve.ref.MvFQModuleReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvFQModuleReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
 
 AddressRef ::= NamedAddress

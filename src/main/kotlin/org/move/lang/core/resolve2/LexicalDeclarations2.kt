@@ -214,7 +214,7 @@ fun processItemsInScope(
                         val module = scope.parent as MvModule
                         processor.processAll(
 //                            contextScopeInfo,
-                            scope.allUseItems(),
+//                            scope.allUseItems(),
                             module.structs()
                         )
                     }
@@ -238,12 +238,12 @@ fun processItemsInScope(
             Namespace.SCHEMA -> when (scope) {
                 is MvModuleBlock -> processor.processAll(
 //                    contextScopeInfo,
-                    scope.allUseItems(),
+//                    scope.allUseItems(),
                     scope.schemaList
                 )
                 is MvModuleSpecBlock -> processor.processAll(
 //                    contextScopeInfo,
-                    scope.allUseItems(),
+//                    scope.allUseItems(),
                     scope.schemaList,
                     scope.specFunctionList
                 )

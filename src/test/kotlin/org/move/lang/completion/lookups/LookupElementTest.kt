@@ -198,7 +198,8 @@ class LookupElementTest: MvTestBase() {
         val element = myFixture.findElementInEditor<T>() as? MvNamedElement
             ?: error("Marker `^` should point to the MvNamedElement")
 
-        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
+        val completionCtx = CompletionContext(element, false)
+//        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         val lookup = element.createLookupElement(completionCtx)
         checkLookupPresentation(
             lookup,

@@ -50,7 +50,8 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         )
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
-        val ctx = CompletionContext(element, scopeInfo, expectedTy)
+        val ctx = CompletionContext(element, msl, expectedTy)
+//        val ctx = CompletionContext(element, scopeInfo, msl, expectedTy)
 
         val structTy = receiverTy.derefIfNeeded() as? TyStruct
         if (structTy != null) {

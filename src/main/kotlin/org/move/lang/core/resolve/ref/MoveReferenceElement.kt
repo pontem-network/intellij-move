@@ -61,9 +61,9 @@ interface MvNameAccessChainReferenceElement : MvReferenceElement {
     override fun getReference(): MvPath2Reference?
 }
 
-interface MvFQModuleReferenceElement : MvReferenceElement {
-    override fun getReference(): MvFQModuleReference?
-}
+//interface MvFQModuleReferenceElement : MvReferenceElement {
+//    override fun getReference(): MvFQModuleReference?
+//}
 
 interface MvStructPatFieldReferenceElement : MvMandatoryReferenceElement
 

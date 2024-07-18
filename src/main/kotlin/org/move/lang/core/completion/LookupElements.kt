@@ -55,12 +55,12 @@ fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
-@Suppress("UnusedReceiverParameter")
-fun MvModule.createSelfLookup(): LookupElement {
-    return LookupElementBuilder
-        .create("Self")
-        .withBoldness(true)
-}
+//@Suppress("UnusedReceiverParameter")
+//fun MvModule.createSelfLookup(): LookupElement {
+//    return LookupElementBuilder
+//        .create("Self")
+//        .withBoldness(true)
+//}
 
 fun MvNamedElement.getLookupElementBuilder(
     completionCtx: CompletionContext,
@@ -123,17 +123,17 @@ fun MvNamedElement.getLookupElementBuilder(
 
         // we need to do the resolve here and in the next one to get the underlying item,
         // but it should be cached in the most cases
-        is MvModuleUseSpeck -> {
-            this.fqModuleRef?.reference?.resolve()
-                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
-                ?: lookupElementBuilder
-        }
+//        is MvModuleUseSpeck -> {
+//            this.fqModuleRef?.reference?.resolve()
+//                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
+//                ?: lookupElementBuilder
+//        }
 
-        is MvUseItem -> {
-            this.reference.resolve()
-                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
-                ?: lookupElementBuilder
-        }
+//        is MvUseItem -> {
+//            this.reference.resolve()
+//                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
+//                ?: lookupElementBuilder
+//        }
 
         else -> lookupElementBuilder
     }
@@ -141,11 +141,13 @@ fun MvNamedElement.getLookupElementBuilder(
 
 data class CompletionContext(
     val contextElement: MvElement,
-    val contextScopeInfo: ContextScopeInfo,
+//    val contextScopeInfo: ContextScopeInfo,
+    val msl: Boolean,
     val expectedTy: Ty? = null,
     val resolutionCtx: PathResolutionContext? = null
 ) {
-    fun isMsl(): Boolean = contextScopeInfo.isMslScope
+//    fun isMsl(): Boolean = contextScopeInfo.isMslScope
+    fun isMsl(): Boolean = msl
 }
 
 

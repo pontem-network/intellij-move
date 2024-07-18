@@ -17,7 +17,7 @@ import org.move.lang.moveProject
 object ImportCandidateCollector {
 
     fun getImportCandidates(context: ImportContext, targetName: String): List<ImportCandidate> {
-        val (pathElement, namespaces, visibilities, itemVis) = context
+        val (pathElement, namespaces) = context
 
         val project = pathElement.project
         val moveProject = pathElement.moveProject ?: return emptyList()

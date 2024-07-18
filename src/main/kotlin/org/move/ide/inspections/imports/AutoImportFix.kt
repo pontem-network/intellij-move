@@ -93,37 +93,39 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
 data class ImportContext private constructor(
     val pathElement: MvPath,
     val ns: Set<Namespace>,
-    val visibilities: Set<Visibility>,
-    val contextScopeInfo: ContextScopeInfo,
+//    val visibilities: Set<Visibility>,
+//    val contextScopeInfo: ContextScopeInfo,
 ) {
     companion object {
         fun from(
             pathElement: MvPath,
             ns: Set<Namespace>,
-            visibilities: Set<Visibility>,
-            contextScopeInfo: ContextScopeInfo
+//            visibilities: Set<Visibility>,
+//            contextScopeInfo: ContextScopeInfo
         ): ImportContext {
-            return ImportContext(pathElement, ns, visibilities, contextScopeInfo)
+            return ImportContext(pathElement, ns)
+//            return ImportContext(pathElement, ns, visibilities, contextScopeInfo)
         }
 
         fun from(path: MvPath): ImportContext {
             val ns = path.importCandidateNamespaces()
-            val vs =
-                if (path.containingScript != null) {
-                    setOf(Visibility.Public, Visibility.PublicScript)
-                } else {
-                    val module = path.containingModule
-                    if (module != null) {
-                        setOf(Visibility.Public, Visibility.PublicFriend(module.asSmartPointer()))
-                    } else {
-                        setOf(Visibility.Public)
-                    }
-                }
-            val contextScopeInfo = ContextScopeInfo(
-                letStmtScope = path.letStmtScope,
-                refItemScopes = path.refItemScopes,
-            )
-            return ImportContext(path, ns, vs, contextScopeInfo)
+//            val vs =
+//                if (path.containingScript != null) {
+//                    setOf(Visibility.Public, Visibility.PublicScript)
+//                } else {
+//                    val module = path.containingModule
+//                    if (module != null) {
+//                        setOf(Visibility.Public, Visibility.PublicFriend(module.asSmartPointer()))
+//                    } else {
+//                        setOf(Visibility.Public)
+//                    }
+//                }
+//            val contextScopeInfo = ContextScopeInfo(
+//                letStmtScope = path.letStmtScope,
+//                refItemScopes = path.refItemScopes,
+//            )
+            return ImportContext(path, ns)
+//            return ImportContext(path, ns, vs, contextScopeInfo)
         }
     }
 }

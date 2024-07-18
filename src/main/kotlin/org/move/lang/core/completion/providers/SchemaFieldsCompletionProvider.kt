@@ -9,10 +9,7 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvSchemaLitField
-import org.move.lang.core.psi.ext.fieldBindings
-import org.move.lang.core.psi.ext.fieldNames
-import org.move.lang.core.psi.ext.schema
-import org.move.lang.core.psi.ext.schemaLit
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.withParent
 
@@ -33,7 +30,8 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
         val schema = schemaLit.schema ?: return
         val providedFieldNames = schemaLit.fieldNames
 
-        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
+        val completionCtx = CompletionContext(element, element.isMsl())
+//        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
         for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
             result.addElement(
                 fieldBinding.createLookupElement(completionCtx)
