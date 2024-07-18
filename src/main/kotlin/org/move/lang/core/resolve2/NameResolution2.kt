@@ -5,10 +5,12 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.index.MvNamedElementIndex
+import java.util.EnumSet
 
 fun processNestedScopesUpwards(
     scopeStart: MvElement,
@@ -38,29 +40,22 @@ fun processModulePathResolveVariants(
     // if no project, cannot use the index
     if (moveProject == null) return false
 
-    val equalAddressProcessor = processor.wrapWithFilter { e ->
+    val project = element.project
+    val searchScope = moveProject.searchScope()
+
+    val addressProcessor = processor.wrapWithFilter { e ->
         val candidate = e.element as? MvModule ?: return@wrapWithFilter false
         val candidateAddress = candidate.address(moveProject)
         address == candidateAddress
     }
 
-    // search modules in the current file first
-//    val currentFile = element.containingMoveFile ?: return false
-//    for (module in currentFile.modules()) {
-//        if (equalAddressProcessor.process(module)) return true
-//    }
-
-    val project = element.project
-//    val currentFileScope = GlobalSearchScope.fileScope(currentFile)
-//    val searchScope =
-//        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
-    val searchScope = moveProject.searchScope()
-
     var stop = false
-    for (name in processor.names.orEmpty()) {
+    for (targetModuleName in processor.names.orEmpty()) {
         MvNamedElementIndex
-            .processElementsByName(project, name, searchScope) {
-                stop = equalAddressProcessor.process(it)
+            .processElementsByName(project, targetModuleName, searchScope) {
+                val module = it
+                val visFilter = module.visInfo().createFilter()
+                stop = addressProcessor.process(targetModuleName, module, setOf(MODULE), visFilter)
                 // true to continue processing, if .process does not find anything, it returns false
                 !stop
             }

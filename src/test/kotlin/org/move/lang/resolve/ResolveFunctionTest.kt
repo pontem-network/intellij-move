@@ -496,9 +496,9 @@ class ResolveFunctionTest: ResolveTestCase() {
     }        
     module 0x1::M2 {
         use 0x1::M1;
-               //^ unresolved 
         fun call() {
             M1::call();
+           //^ unresolved
         }
     }
     """
@@ -861,7 +861,7 @@ module 0x1::mod {
     """
     )
 
-    fun `test verify_only not accessible in the regular code`() = checkByCode(
+    fun `test verify_only not accessible in the regular code for local functions`() = checkByCode(
         """
         module 0x1::m {
             #[verify_only]
@@ -870,9 +870,34 @@ module 0x1::mod {
                 let _ = call();
                        //^ unresolved
             }
-        }        
+        }
     """
     )
+
+    fun `test test_only not accessible in the regular code for local functions`() = checkByCode(
+        """
+        module 0x1::m {
+            #[test_only]
+            fun call(): u8 { 1 }
+            fun main() {
+                let _ = call();
+                       //^ unresolved
+            }
+        }
+    """
+    )
+
+//    fun `test entry function not accessible from non-entry code`() = checkByCode(
+//        """
+//        module 0x1::m {
+//            public(script) fun call() { 1 }
+//            fun main() {
+//                let _ = call();
+//                       //^ unresolved
+//            }
+//        }
+//    """
+//    )
 
     fun `test resolve local test-only import into test-only item`() = checkByCode(
         """

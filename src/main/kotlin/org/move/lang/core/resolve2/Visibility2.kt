@@ -16,15 +16,16 @@ import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
 data class ItemVisibilityInfo(
-    val item: MvItemElement,
+    val item: MvNamedElement,
     val usageScope: NamedItemScope,
     val vis: Visibility2,
 )
 
-fun MvItemElement.visInfo(adjustmentScope: NamedItemScope = MAIN): ItemVisibilityInfo {
+fun MvNamedElement.visInfo(adjustmentScope: NamedItemScope = MAIN): ItemVisibilityInfo {
     // todo: can be lazy
     val itemUsageScope = this.itemScope.shrinkScope(adjustmentScope)
-    return ItemVisibilityInfo(this, usageScope = itemUsageScope, vis = this.visibility2)
+    val visibility = (this as? MvVisibilityOwner)?.visibility2 ?: Public
+    return ItemVisibilityInfo(this, usageScope = itemUsageScope, vis = visibility)
 }
 
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
@@ -59,14 +60,18 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // #[test] functions cannot be used from non-imports
         if (item is MvFunction && item.hasTestAttr) return@VisibilityFilter Invisible
 
+        // todo: uncomment when ContextScopeInfo filter is removed
         // #[test_only] items in non-test-only scope
-        if (itemUsageScope != MAIN) {
-            // cannot be used everywhere, need to check for scope compatibility
-            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
-        }
-//        if (isTestOnly && !pathUsageScope.isTest) return@VisibilityFilter Invisible
+//        if (itemUsageScope != MAIN) {
+//            // cannot be used everywhere, need to check for scope compatibility
+//            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
+//        }
 
-        // Self::method
+        // todo: uncomment when ContextScopeInfo filter is removed
+        // we're in non-msl scope at this point, msl only items aren't available
+//        if (item !is MvModule && item is MslOnlyElement) return@VisibilityFilter Invisible
+
+        // local methods, Self::method - everything is visible
         val itemModule = item.containingModule
         val pathModule = path.containingModule
         if (itemModule == pathModule) return@VisibilityFilter Visible

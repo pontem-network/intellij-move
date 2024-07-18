@@ -31,7 +31,7 @@ val MvNamedElement.isMslOnlyItem: Boolean
         var element: PsiElement? = this
         while (element != null) {
             // use items always non-msl, otherwise import resolution doesn't work correctly
-            if (element is MvUseItem) return false
+//            if (element is MvUseItem) return false
 
             // module items
             if (element is MvModule

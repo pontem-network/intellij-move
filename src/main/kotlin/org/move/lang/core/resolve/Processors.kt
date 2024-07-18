@@ -8,8 +8,10 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.resolve2.ref.RsPathResolveResult
+import org.move.lang.core.resolve2.visInfo
 import org.move.stdext.intersects
 
 /**

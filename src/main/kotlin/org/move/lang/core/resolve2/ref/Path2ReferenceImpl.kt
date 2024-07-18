@@ -63,6 +63,7 @@ fun processPathResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     val contextProcessor = ctx.contextScopeInfo.wrapWithContextFilter(processor)
+//    val contextProcessor = processor
     return when (pathKind) {
         is NamedAddress, is ValueAddress -> false
         is PathKind.UnqualifiedPath -> {

@@ -3,10 +3,10 @@ package org.move.lang.core.resolve2
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.pathUsageScope
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
-import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
@@ -20,32 +20,11 @@ fun processItemsInScope(
 ): Boolean {
     for (namespace in namespaces) {
         val stop = when (namespace) {
-            Namespace.CONST -> {
-                false
-//                val found = when (scope) {
-//                    is MvModuleBlock -> {
-//                        val module = scope.parent as MvModule
-//                        processor.processAll(
-////                            contextScopeInfo,
-//                            module.consts(),
-//                        )
-//                    }
-//                    else -> false
-//                }
-////                if (!found) {
-////                    if (scope is MvItemsOwner) {
-////                        if (processor.processAll(scope.allUseItems())) return true
-////                    }
-////                }
-//                found
-            }
-
             Namespace.NAME -> {
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.processAll(
-//                            contextScopeInfo,
                             module.structs(),
                             module.consts(),
                         )
@@ -130,15 +109,10 @@ fun processItemsInScope(
                             }
                             !isVisited
                         }
-//                        val processorWithShadowing = MatchingProcessor { entry ->
-//                            ((entry.name !in visited)
-//                                    && processor.process(entry).also { visited += entry.name })
-//                        }
                         var found = shadowingProcessor.processAll(namedElements)
                         if (!found && scope is MvSpecCodeBlock) {
                             // if inside SpecCodeBlock, process also with builtin spec consts and global variables
                             found = shadowingProcessor.processAll(
-//                                contextScopeInfo,
                                 scope.builtinSpecConsts(),
                                 scope.globalVariables()
                             )
@@ -147,11 +121,6 @@ fun processItemsInScope(
                     }
                     else -> false
                 }
-//                if (!found) {
-//                    if (scope is MvItemsOwner) {
-//                        if (scope.processUseSpeckElements(namespaces, processor)) return true
-//                    }
-//                }
                 found
             }
             Namespace.FUNCTION -> {
@@ -172,7 +141,6 @@ fun processItemsInScope(
                         val specFunctions = scope.specFunctionList
                         val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
                         processor.processAll(
-//                            contextScopeInfo,
                             specFunctions,
                             specInlineFunctions
                         )
@@ -192,9 +160,6 @@ fun processItemsInScope(
                     }
                     else -> false
                 }
-//                if (!found) {
-//
-//                }
                 found
             }
 
@@ -213,11 +178,7 @@ fun processItemsInScope(
                     }
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        processor.processAll(
-//                            contextScopeInfo,
-//                            scope.allUseItems(),
-                            module.structs()
-                        )
+                        processor.processAll(module.structs())
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
@@ -228,35 +189,15 @@ fun processItemsInScope(
 
                     else -> false
                 }
-//                if (!found) {
-//                    if (scope is MvItemsOwner) {
-//                        if (scope.processUseSpeckElements(namespaces, processor)) return true
-//                    }
-//                }
                 found
             }
 
             Namespace.SCHEMA -> when (scope) {
-                is MvModuleBlock -> processor.processAll(
-//                    contextScopeInfo,
-//                    scope.allUseItems(),
-                    scope.schemaList
-                )
-                is MvModuleSpecBlock -> processor.processAll(
-//                    contextScopeInfo,
-//                    scope.allUseItems(),
-                    scope.schemaList,
-                    scope.specFunctionList
-                )
+                is MvModuleBlock -> processor.processAll(scope.schemaList)
+                is MvModuleSpecBlock -> processor.processAll(scope.schemaList, scope.specFunctionList)
                 else -> false
             }
-
-            Namespace.MODULE -> when (scope) {
-                is MvItemsOwner ->
-                    processor.processAll(emptyList())
-//                    processor.processAll(scope.moduleUseItems())
-                else -> false
-            }
+            else -> false
         }
         if (stop) return true
     }
@@ -296,8 +237,7 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
             val namespace = namedElement.namespace
             val importUsageScope = path.pathUsageScope
             val visibilityFilter =
-                (namedElement as? MvItemElement)?.visInfo(adjustmentScope = importUsageScope)?.createFilter()
-                    ?: VisibilityFilter { _, _ -> Visible }
+                namedElement.visInfo(adjustmentScope = importUsageScope).createFilter()
 
             if (namespace in ns && processor.process(name, element, ns, visibilityFilter)) {
                 stop = true
