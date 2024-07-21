@@ -15,6 +15,7 @@ import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
@@ -223,9 +224,9 @@ class MoveProjectsSyncTask(
             e.presentation.isEnabled = progress.isRunning
         }
 
-        override fun actionPerformed(e: AnActionEvent) {
-            progress.cancel()
-        }
+        override fun actionPerformed(e: AnActionEvent) = progress.cancel()
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
     }
 
     data class SyncContext(

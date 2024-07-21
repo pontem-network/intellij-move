@@ -1,7 +1,6 @@
 package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class ReplaceWithIndexExprInspectionTest: InspectionTestBase(ReplaceWithIndexExprInspection::class) {

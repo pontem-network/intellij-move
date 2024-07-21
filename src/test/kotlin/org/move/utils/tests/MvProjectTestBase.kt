@@ -16,7 +16,6 @@ import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.moveProjectsService
-import org.move.cli.settings.moveSettings
 import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile

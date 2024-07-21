@@ -88,9 +88,5 @@ fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project
 
 fun VirtualFile.toTomlFile(project: Project): TomlFile? = this.toPsiFile(project) as? TomlFile
 
-fun MoveFile.isTempFile(): Boolean =
-    this.virtualFile == null
-            || this.virtualFile.fileSystem is TempFileSystem
-
 inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =
     this.findElementAt(offset)?.ancestorOrSelf<T>()

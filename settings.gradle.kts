@@ -7,5 +7,4 @@ pluginManagement {
     }
 }
 
-include("plugin")
-include("ui-tests")
+//include("ui-tests")
