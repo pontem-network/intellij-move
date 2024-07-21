@@ -22,6 +22,8 @@ import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
 import org.move.openapiext.toPsiFile
+import org.move.utils.tests.FilesystemEntry.Directory
+import org.move.utils.tests.FilesystemEntry.File
 import org.move.utils.tests.resolve.TestResolveResult
 import org.move.utils.tests.resolve.checkResolvedFile
 
@@ -45,19 +47,19 @@ fun fileTreeFromText(@Language("Move") text: String): FileTree {
         "Have you placed `//- filename.rs` markers?"
     }
 
-    fun fillDirectory(dir: FilesystemEntry.Directory, path: List<String>, contents: String) {
+    fun fillDirectory(dir: Directory, path: List<String>, contents: String) {
         val name = path.first()
         if (path.size == 1) {
-            dir.children[name] = FilesystemEntry.File(contents)
+            dir.children[name] = File(contents)
         } else {
             val childDir =
-                dir.children.getOrPut(name) { FilesystemEntry.Directory(mutableMapOf()) } as FilesystemEntry.Directory
+                dir.children.getOrPut(name) { Directory(mutableMapOf()) } as Directory
             fillDirectory(childDir, path.drop(1), contents)
         }
     }
 
     val filesInfo =
-        FilesystemEntry.Directory(mutableMapOf()).apply {
+        Directory(mutableMapOf()).apply {
             val dirFiles = fileNames.map { it.split("/") }.zip(fileTexts)
             for ((path, contents) in dirFiles) {
                 fillDirectory(this, path, contents)
@@ -147,20 +149,20 @@ ${profilesYaml.joinToString("\n")}
     }
 }
 
-class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
+class FileTree(val rootDirInfo: Directory) {
     fun create(project: Project, directory: VirtualFile): TestProject {
         val filesWithCaret: MutableList<String> = mutableListOf()
         val filesWithNamedElement: MutableList<String> = mutableListOf()
 
         fun prepareFilesFromInfo(
-            dirInfo: FilesystemEntry.Directory,
+            dirInfo: Directory,
             root: VirtualFile,
             parentComponents: List<String> = emptyList()
         ) {
             for ((name, fsEntry) in dirInfo.children) {
                 val pathComponents = parentComponents + name
                 when (fsEntry) {
-                    is FilesystemEntry.File -> {
+                    is File -> {
                         val vFile = root.findChild(name) ?: root.createChildData(root, name)
                         VfsUtil.saveText(vFile, replaceCaretMarker(fsEntry.text))
 
@@ -172,7 +174,7 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
                             filesWithNamedElement += filePath
                         }
                     }
-                    is FilesystemEntry.Directory -> {
+                    is Directory -> {
                         prepareFilesFromInfo(fsEntry, root.createChildDirectory(root, name), pathComponents)
                     }
                 }
@@ -272,10 +274,10 @@ private class FileTreeBuilderImpl(
 
     override fun file(name: String, code: String) {
         check('/' !in name && '.' in name) { "Bad file name `$name`" }
-        directory[name] = FilesystemEntry.File(code.trimIndent())
+        directory[name] = File(code.trimIndent())
     }
 
-    fun intoDirectory() = FilesystemEntry.Directory(directory)
+    fun intoDirectory() = Directory(directory)
 }
 
 sealed class FilesystemEntry {
