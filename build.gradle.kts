@@ -1,11 +1,12 @@
-import org.jetbrains.intellij.tasks.PrepareSandboxTask
-import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
 import java.util.*
 
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 val publishingChannel = System.getenv("JB_PUB_CHANNEL") ?: "default"
+
 // set by default in Github Actions
 val isCI = System.getenv("CI") != null
 
@@ -40,7 +41,8 @@ fun gitTimestamp(): String {
 }
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val codeVersion = "1.37.0"
+val useInstaller = prop("useInstaller").toBooleanStrict()
+val codeVersion = "1.37.1"
 
 var pluginVersion = "$codeVersion.$shortPlatformVersion"
 if (publishingChannel != "default") {
@@ -52,6 +54,7 @@ if (publishingChannel != "default") {
 
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
+val pluginName = "intellij-move"
 val pluginJarName = "intellij-move-$pluginVersion"
 
 val kotlinReflectVersion = "1.9.10"
@@ -65,50 +68,45 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.9.22"
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.intellij.platform") version "2.0.0-rc1"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
     id("de.undercouch.download") version "5.5.0"
 }
 
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
-
-    implementation("io.sentry:sentry:7.2.0") {
-        exclude("org.slf4j")
-    }
-    implementation("com.github.ajalt.clikt:clikt:3.5.2")
-}
-
 allprojects {
     apply {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
-        plugin("org.jetbrains.intellij")
+        plugin("org.jetbrains.intellij.platform")
         plugin("de.undercouch.download")
     }
 
     repositories {
         mavenCentral()
-        maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
         gradlePluginPortal()
+        intellijPlatform {
+            defaultRepositories()
+            jetbrainsRuntime()
+        }
     }
 
-    intellij {
-        pluginName.set(pluginJarName)
-        type.set(prop("platformType"))
+    dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-        downloadSources.set(!isCI)
-        instrumentCode.set(false)
-        ideaDependencyCachePath.set(dependencyCachePath)
+        implementation("io.sentry:sentry:7.2.0") {
+            exclude("org.slf4j")
+        }
+        implementation("com.github.ajalt.clikt:clikt:3.5.2")
+        testImplementation("junit:junit:4.13.2")
 
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-        plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
-
-        version.set(prop("platformVersion"))
-//        localPath.set("/home/mkurnikov/pontem-ide/pontem-ide-2023.2/")
-//        localSourcesPath.set("/home/mkurnikov/pontem-ide/pontem-232.SNAPSHOT-source")
+        intellijPlatform {
+            create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+            testFramework(TestFrameworkType.Platform)
+            bundledPlugin("org.toml.lang")
+            jetbrainsRuntimeExplicit("jbr_jcef-17.0.11-linux-x64-b1207.30")
+        }
     }
 
     configure<JavaPluginExtension> {
@@ -132,6 +130,52 @@ allprojects {
         }
     }
 
+    intellijPlatform {
+        pluginConfiguration {
+            version.set(pluginVersion)
+            ideaVersion {
+                sinceBuild.set(prop("pluginSinceBuild"))
+                untilBuild.set(prop("pluginUntilBuild"))
+            }
+
+            val codeVersionForUrl = codeVersion.replace('.', '-')
+            changeNotes.set(
+                """
+    <body>
+        <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
+            Changelog for the Intellij-Move $codeVersion
+            </a></p>
+    </body>
+            """
+            )
+        }
+
+        instrumentCode.set(false)
+
+        publishing {
+            token.set(publishingToken)
+            channels.set(listOf(publishingChannel))
+        }
+
+        verifyPlugin {
+            if ("SNAPSHOT" !in shortPlatformVersion) {
+                ides {
+                    ide(prop("verifierIdeVersion").trim())
+                }
+            }
+            failureLevel.set(
+                EnumSet.complementOf(
+                    EnumSet.of(
+                        // these are the only issues we tolerate
+                        VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES,
+                        VerifyPluginTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+                        VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+                    )
+                )
+            )
+        }
+    }
+
     tasks {
         withType<KotlinCompile> {
             kotlinOptions {
@@ -141,12 +185,6 @@ allprojects {
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
-
-        // All these tasks don't make sense for non-root subprojects
-        // Root project (i.e. `:plugin`) enables them itself if needed
-        runIde { enabled = false }
-        prepareSandbox { enabled = false }
-        buildSearchableOptions { enabled = false }
 
         withType<Jar> {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -188,12 +226,7 @@ allprojects {
                 }
             }
         }
-    }
 
-}
-
-project(":") {
-    tasks {
         generateLexer {
             sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
             targetOutputDir.set(file("src/main/gen/org/move/lang"))
@@ -208,6 +241,23 @@ project(":") {
         }
         withType<KotlinCompile> {
             dependsOn(generateLexer, generateParser)
+        }
+
+        runIde {
+            systemProperty("org.move.debug.enabled", true)
+//            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
+//            systemProperty("org.move.aptos.bundled.force.unsupported", true)
+//            systemProperty("idea.log.debug.categories", "org.move.cli")
+        }
+
+        prepareSandbox {
+//            enabled = true
+            dependsOn("downloadAptosBinaries")
+            // copy bin/ directory inside the plugin zip file
+            from("$rootDir/bin") {
+                into("$pluginName/bin")
+                include("**")
+            }
         }
     }
 
@@ -228,133 +278,47 @@ project(":") {
     }
 }
 
-project(":plugin") {
-    dependencies {
-        implementation(project(":"))
-    }
+//project(":ui-tests") {
+//    dependencies {
+//        implementation("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
+//        implementation("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
+//        implementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+//
+//        implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+//
+//        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+//        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
+//
+//        implementation("com.automation-remarks:video-recorder-junit5:2.0")
+//    }
+//
+//    tasks.named<Test>("test") {
+//        useJUnitPlatform()
+//    }
+//
+//    tasks {
+//        ideaModule {
+//            enabled = false
+//        }
+//    }
 
-    tasks {
-        patchPluginXml {
-            version.set(pluginVersion)
-            val codeVersionForUrl = codeVersion.replace('.', '-')
-            changeNotes.set(
-                """
-    <body>
-        <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
-            Changelog for the Intellij-Move $codeVersion
-            </a></p>
-    </body>
-            """
-            )
-            sinceBuild.set(prop("pluginSinceBuild"))
-            untilBuild.set(prop("pluginUntilBuild"))
-        }
+//        downloadRobotServerPlugin {
+//            version.set(remoteRobotVersion)
+//        }
 
-        ideaModule {
-            enabled = false
-        }
-        runPluginVerifier {
-            if ("SNAPSHOT" !in shortPlatformVersion) {
-                ideVersions.set(
-                    prop("verifierIdeVersions")
-                        .split(',').map(String::trim).filter(String::isNotEmpty)
-                )
-            }
-            failureLevel.set(
-                EnumSet.complementOf(
-                    EnumSet.of(
-                        // these are the only issues we tolerate
-                        RunPluginVerifierTask.FailureLevel.DEPRECATED_API_USAGES,
-                        RunPluginVerifierTask.FailureLevel.EXPERIMENTAL_API_USAGES,
-                        RunPluginVerifierTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
-                    )
-                )
-            )
-        }
+//        runIdeForUiTests {
+//            systemProperty("robot-server.port", "8082")
+////            systemProperty "ide.mac.message.dialogs.as.sheets", "false"
+////            systemProperty "jb.privacy.policy.text", "<!--999.999-->"
+////            systemProperty "jb.consents.confirmation.enabled", "false"
+////            systemProperty "ide.mac.file.chooser.native", "false"
+////            systemProperty "jbScreenMenuBar.enabled", "false"
+////            systemProperty "apple.laf.useScreenMenuBar", "false"
+//            systemProperty("idea.trust.all.projects", "true")
+//            systemProperty("ide.show.tips.on.startup.default.value", "false")
+//        }
 
-        publishPlugin {
-            token.set(publishingToken)
-            channels.set(listOf(publishingChannel))
-        }
-
-        runIde {
-            enabled = true
-            systemProperty("org.move.debug.enabled", true)
-//            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
-//            systemProperty("org.move.aptos.bundled.force.unsupported", true)
-//            systemProperty("idea.log.debug.categories", "org.move.cli")
-        }
-        prepareSandbox { enabled = true }
-        buildSearchableOptions {
-            enabled = true
-            jbrVersion.set(prop("jbrVersion"))
-        }
-
-        buildPlugin {
-            dependsOn("downloadAptosBinaries")
-        }
-
-        withType<PrepareSandboxTask> {
-            // copy bin/ directory inside the plugin zip file
-            from("$rootDir/bin") {
-                into("${pluginName.get()}/bin")
-                include("**")
-            }
-        }
-
-        withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion.set(prop("jbrVersion"))
-
-            if (environment.getOrDefault("CLION_LOCAL", "false") == "true") {
-                val clionDir = File("/snap/clion/current")
-                if (clionDir.exists()) {
-                    ideDir.set(clionDir)
-                }
-            }
-        }
-
-        downloadRobotServerPlugin {
-            version.set(remoteRobotVersion)
-        }
-
-        runIdeForUiTests {
-            systemProperty("robot-server.port", "8082")
-//            systemProperty "ide.mac.message.dialogs.as.sheets", "false"
-//            systemProperty "jb.privacy.policy.text", "<!--999.999-->"
-//            systemProperty "jb.consents.confirmation.enabled", "false"
-//            systemProperty "ide.mac.file.chooser.native", "false"
-//            systemProperty "jbScreenMenuBar.enabled", "false"
-//            systemProperty "apple.laf.useScreenMenuBar", "false"
-            systemProperty("idea.trust.all.projects", "true")
-            systemProperty("ide.show.tips.on.startup.default.value", "false")
-        }
-    }
-}
-
-project(":ui-tests") {
-    dependencies {
-        implementation("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
-        implementation("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
-        implementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-
-        implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
-
-        implementation("com.automation-remarks:video-recorder-junit5:2.0")
-    }
-
-    tasks.named<Test>("test") {
-        useJUnitPlatform()
-    }
-
-    tasks {
-        ideaModule {
-            enabled = false
-        }
-    }
-}
+//}
 
 val Project.dependencyCachePath
     get(): String {

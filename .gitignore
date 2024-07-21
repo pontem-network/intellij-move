@@ -7,3 +7,4 @@ src/main/gen/
 /dove
 deps/
 bin/
+.intellijPlatform

@@ -1,3 +1,4 @@
+
 package org.move.utils.tests
 
 import com.intellij.lang.parameterInfo.ParameterInfoHandler
@@ -7,7 +8,7 @@ import com.intellij.testFramework.utils.parameterInfo.MockParameterInfoUIContext
 import com.intellij.testFramework.utils.parameterInfo.MockUpdateParameterInfoContext
 import org.intellij.lang.annotations.Language
 
-open class ParameterInfoHandlerTestCase<A : PsiElement, B>(
+abstract class ParameterInfoHandlerTestCase<A : PsiElement, B>(
     private val handler: ParameterInfoHandler<A, B>,
 ) : MvTestBase() {
     protected fun checkByText(@Language("Move") code: String, hint: String, index: Int) =
