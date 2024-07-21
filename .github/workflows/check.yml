@@ -60,7 +60,7 @@ jobs:
                 uses: gradle/gradle-build-action@v2.7.0
                 with:
                     gradle-version: wrapper
-                    arguments: ":plugin:verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
+                    arguments: ":verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
@@ -70,7 +70,7 @@ jobs:
                 uses: gradle/gradle-build-action@v2.7.0
                 with:
                     gradle-version: wrapper
-                    arguments: ":plugin:runPluginVerifier -Pkotlin.incremental=false --no-daemon"
+                    arguments: ":runPluginVerifier -Pkotlin.incremental=false --no-daemon"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
