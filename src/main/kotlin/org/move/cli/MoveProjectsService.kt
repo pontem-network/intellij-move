@@ -20,7 +20,7 @@ import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.ex.temp.TempFileSystem
+import com.intellij.openapi.vfs.ex.temp.TempFileSystemMarker
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -166,7 +166,7 @@ class MoveProjectsService(val project: Project): Disposable {
         val cached = this.fileToMoveProjectCache.get(file)
         if (cached is CacheEntry.Present) return cached.value
 
-        if (isUnitTestMode && file.fileSystem is TempFileSystem) return MoveProject.forTests(project)
+        if (isUnitTestMode && file.fileSystem is TempFileSystemMarker) return MoveProject.forTests(project)
 
         val filePath = file.toNioPathOrNull() ?: return null
 

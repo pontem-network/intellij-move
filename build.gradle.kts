@@ -14,6 +14,8 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
+fun propOrNull(name: String): String? = extra.properties[name] as? String
+
 fun gitCommitHash(): String {
     val byteOut = ByteArrayOutputStream()
     project.exec {
@@ -104,6 +106,7 @@ allprojects {
         intellijPlatform {
             create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
             testFramework(TestFrameworkType.Platform)
+            pluginVerifier()
             bundledPlugin("org.toml.lang")
             jetbrainsRuntimeExplicit("jbr_jcef-17.0.11-linux-x64-b1207.30")
         }
@@ -158,11 +161,14 @@ allprojects {
         }
 
         verifyPlugin {
-            if ("SNAPSHOT" !in shortPlatformVersion) {
-                ides {
-                    ide(prop("verifierIdeVersion").trim())
-                }
+            ides {
+                recommended()
             }
+//            if ("SNAPSHOT" !in shortPlatformVersion) {
+//                ides {
+//                    ide(prop("verifierIdeVersion").trim())
+//                }
+//            }
             failureLevel.set(
                 EnumSet.complementOf(
                     EnumSet.of(
