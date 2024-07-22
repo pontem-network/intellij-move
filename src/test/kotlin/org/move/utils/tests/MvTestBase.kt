@@ -13,6 +13,8 @@ import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
+import org.move.cli.tests.NamedAddressService
+import org.move.cli.tests.NamedAddressServiceTestImpl
 import org.move.ide.inspections.fixes.CompilerV2Feat
 import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.utils.tests.base.MvTestCase

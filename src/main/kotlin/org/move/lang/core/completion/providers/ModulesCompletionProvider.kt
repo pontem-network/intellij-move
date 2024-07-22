@@ -1,29 +1,5 @@
 package org.move.lang.core.completion.providers
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.patterns.ElementPattern
-import com.intellij.psi.PsiElement
-import com.intellij.util.ProcessingContext
-import org.move.ide.inspections.imports.ImportContext
-import org.move.ide.utils.imports.ImportCandidateCollector.getCompletionCandidates
-import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.IMPORTED_MODULE_PRIORITY
-import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.containingModuleSpec
-import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.ext.moduleRef
-import org.move.lang.core.psi.refItemScopes
-import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve.letStmtScope
-import org.move.lang.core.resolve.processItems
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
-
 //object ModulesCompletionProvider2: MvCompletionProvider() {
 //    override val elementPattern: ElementPattern<PsiElement>
 //        get() =

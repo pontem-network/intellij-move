@@ -2,36 +2,6 @@ package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
 
-val MvUseItem.itemUseSpeck: MvItemUseSpeck
-    get() = ancestorStrict() ?: error("MvUseItem outside MvItemUseSpeck")
-
-val MvUseItem.annotationItem: MvElement
-    get() {
-        val parent = this.parent
-        if (parent is MvUseItemGroup && parent.useItemList.size != 1) return this
-        return useStmt
-    }
-
-val MvUseItem.useStmt: MvUseStmt
-    get() =
-        ancestorStrict() ?: error("always has MvUseStmt as ancestor")
-
-val MvUseItem.nameOrAlias: String?
-    get() {
-        val alias = this.useAlias
-        if (alias != null) {
-            return alias.identifier?.text
-        }
-        return this.identifier.text
-    }
-
-//val MvUseItem.moduleName: String
-//    get() {
-//        val useStmt = this.ancestorStrict<MvUseStmt>()
-//        return useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
-//    }
-
-val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 val MvUseSpeck.isSelf: Boolean get() = this.path.identifier?.textMatches("Self") ?: false
 
 //class MvUseItemReferenceElement(

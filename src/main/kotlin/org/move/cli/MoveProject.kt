@@ -14,6 +14,7 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
+import org.move.cli.tests.NamedAddressService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.Address
@@ -27,7 +28,6 @@ import org.move.openapiext.contentRoots
 import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
 import org.move.stdext.wrapWithList
-import org.move.utils.tests.NamedAddressService
 import org.toml.lang.TomlLanguage
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path

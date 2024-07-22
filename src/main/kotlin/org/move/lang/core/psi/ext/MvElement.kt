@@ -49,8 +49,6 @@ val MvNamedElement.isMslOnlyItem: Boolean
 
 val MvMethodOrPath.isMslScope get() = this.isMslInner()
 
-val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
-
 fun PsiElement.isMsl(): Boolean = isMslInner()
 //fun PsiElement.isMslLegacy(): Boolean {
 //    return CachedValuesManager.getProjectPsiDependentCache(this) {
@@ -79,7 +77,7 @@ private fun PsiElement.isMslInner(): Boolean {
         var element: PsiElement? = it
         while (element != null) {
             // use items always non-msl, otherwise import resolution doesn't work correctly
-            if (element is MvUseItem) return@getProjectPsiDependentCache false
+            if (element is MvUseSpeck) return@getProjectPsiDependentCache false
 
             // module items
             if (element is MvModule

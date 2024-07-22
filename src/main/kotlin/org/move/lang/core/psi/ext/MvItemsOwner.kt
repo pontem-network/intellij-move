@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.*
 import org.move.stdext.buildList
 
@@ -24,53 +23,14 @@ val MvModule.innerSpecItems: List<MvItemElement>
         val module = this
         return buildList {
             addAll(module.allModuleSpecs()
-                .map {
-                    it.moduleItemSpecs()
-                        .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }
-                }
-                .flatten())
+                       .map {
+                           it.moduleItemSpecs()
+                               .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }
+                       }
+                       .flatten())
             addAll(module.specInlineFunctions())
         }
     }
-
-//fun MvItemsOwner.moduleUseItems(): List<MvNamedElement> =
-//    listOf<MvNamedElement>(
-////        moduleUseSpecksNoAliases(),
-////        moduleUseSpecksAliases(),
-////        selfModuleUseItemNoAliases(),
-////        selfModuleUseItemAliases(),
-//    )
-//    ).flatten()
-
-fun MvItemsOwner.moduleUseSpecksNoAliases(): List<MvModuleUseSpeck> =
-    moduleUseSpecks()
-        .filter { it.useAlias == null }
-
-//fun MvItemsOwner.moduleUseSpecksAliases(): List<MvUseAlias> =
-//    moduleUseSpecks().mapNotNull { it.useAlias }
-
-
-private fun MvItemsOwner.moduleUseSpecks(): List<MvModuleUseSpeck> {
-    return getProjectPsiDependentCache(this) {
-        useStmtList.mapNotNull { it.moduleUseSpeck }
-    }
-}
-
-//fun MvItemsOwner.psiUseItems(): List<MvUseItem> {
-//    return getProjectPsiDependentCache(this) { importsOwner ->
-//        importsOwner
-//            .useStmtList
-//            .mapNotNull { it.itemUseSpeck }
-//            .flatMap {
-//                val item = it.useItem
-//                if (item != null) {
-//                    listOf(item)
-//                } else
-//                    it.useItemGroup?.useItemList.orEmpty()
-//            }
-//
-//    }
-//}
 
 fun MvItemsOwner.allUseItems(): List<MvNamedElement> = emptyList()
 //    listOf(
@@ -110,12 +70,12 @@ fun MvItemsOwner.shortestPathText(item: MvNamedElement): String? {
 //    }
     val module = item.containingModule ?: return null
     val moduleName = module.name ?: return null
-    for (moduleImport in this.moduleUseSpecksNoAliases()) {
-        val importedModule = moduleImport.fqModuleRef?.reference?.resolve() ?: continue
-        if (importedModule == module) {
-            return "$moduleName::$itemName"
-        }
-    }
+//    for (moduleImport in this.moduleUseSpecksNoAliases()) {
+//        val importedModule = moduleImport.fqModuleRef?.reference?.resolve() ?: continue
+//        if (importedModule == module) {
+//            return "$moduleName::$itemName"
+//        }
+//    }
     val addressName = module.addressRef()?.text ?: return null
     return "$addressName::$moduleName::$itemName"
 }

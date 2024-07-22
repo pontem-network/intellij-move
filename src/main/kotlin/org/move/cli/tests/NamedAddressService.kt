@@ -1,16 +1,17 @@
-package org.move.utils.tests
+package org.move.cli.tests
 
 import org.move.cli.MoveProject
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 
 interface NamedAddressService {
-    fun getNamedAddress(moveProject: MoveProject, name: String): Named?
+    fun getNamedAddress(moveProject: MoveProject, name: String): Address.Named?
 }
 
 class NamedAddressServiceImpl: NamedAddressService {
-    override fun getNamedAddress(moveProject: MoveProject, name: String): Named? = null
+    override fun getNamedAddress(moveProject: MoveProject, name: String): Address.Named? = null
 }
+
 
 class NamedAddressServiceTestImpl: NamedAddressService {
     val namedAddresses: MutableMap<String, String> = mutableMapOf()

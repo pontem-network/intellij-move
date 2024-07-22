@@ -519,11 +519,6 @@ FriendDecl ::= Attr* friend PathImpl ';'
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
 
-UseStmt2 ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
-    pin = "use"
-    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
-}
-
 UseStmt ::= Attr* use UseSpeck ';' {
     pin = "use"
     extends = Stmt
@@ -544,43 +539,6 @@ private UseSpeck_with_recover ::= !'}' UseSpeck (','|&'}') {
 }
 private UseSpeck_recover ::= !('}' | '{' | IDENTIFIER | '::' )
 
-ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
-{
-    name = "qual path to module"
-    implements = [
-        "org.move.lang.core.psi.MvNamedElement"
-//        "org.move.lang.core.psi.MvUseSpeck"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleUseSpeckMixin"
-}
-ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
-{
-    pin = 2
-    name = "qual path to imported item"
-//    implements = [
-//        "org.move.lang.core.psi.MvUseSpeck"
-//    ]
-}
-
-UseItemGroup ::= '{' <<non_empty_comma_sep_items MultiItemUse_member_with_recovery>>? '}'
-{
-    pin = 1
-}
-private MultiItemUse_member_with_recovery ::= !('}' | ';' | <<eof>>) UseItem
-{
-    pin = 1
-}
-
-UseItem ::= IDENTIFIER UseAlias?
-{
-    pin = 1
-    name = "item name"
-//    implements = [
-//        "org.move.lang.core.psi.MvNamedElement"
-//        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
-}
 UseAlias ::= as IDENTIFIER
 {
     pin = 1
@@ -1111,33 +1069,17 @@ PathAddress ::= DIEM_ADDRESS
                 | BECH32_ADDRESS
                 | POLKADOT_ADDRESS
 
-private LocalPathIdent ::= PATH_MODE_IDENTIFIER
-private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
-{
-    pin = 2
-}
-private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
-{
-    pin = 1
-}
+//private LocalPathIdent ::= PATH_MODE_IDENTIFIER
+//private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
+//{
+//    pin = 2
+//}
+//private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
+//{
+//    pin = 1
+//}
 private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
                                 | (<<isPathMode 'WILDCARD' >> ('*' | IDENTIFIER))
-
-ModuleRef ::= PATH_MODE_IDENTIFIER | FQModuleRef
-{
-//    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
-}
-
-FQModuleRef ::= AddressRef '::' PATH_MODE_IDENTIFIER
-{
-    pin = 2
-    extends = ModuleRef
-//    implements = [
-//        "org.move.lang.core.resolve.ref.MvFQModuleReferenceElement"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
-}
 
 AddressRef ::= NamedAddress
                 | DIEM_ADDRESS
