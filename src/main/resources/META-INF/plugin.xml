@@ -46,9 +46,9 @@
     <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
 
     <!-- specifically to support named addresses in tests, does nothing in non-test environment -->
-    <projectService serviceInterface="org.move.utils.tests.NamedAddressService"
-                    serviceImplementation="org.move.utils.tests.NamedAddressServiceImpl"
-                    testServiceImplementation="org.move.utils.tests.NamedAddressServiceTestImpl" />
+    <projectService serviceInterface="org.move.cli.tests.NamedAddressService"
+                    serviceImplementation="org.move.cli.tests.NamedAddressServiceImpl"
+                    testServiceImplementation="org.move.cli.tests.NamedAddressServiceTestImpl" />
 
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
@@ -276,10 +276,6 @@
                      displayName="Unused test signer"
                      enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.UnusedTestSignerInspection" />
-    <localInspection language="Move" groupName="Move"
-                     displayName="Address by value inspection"
-                     enabledByDefault="false" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.AddressByValueImportInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Redundant type cast"
                      enabledByDefault="true" level="WARNING"
