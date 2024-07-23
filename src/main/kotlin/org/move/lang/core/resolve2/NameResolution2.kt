@@ -9,8 +9,7 @@ import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
-import org.move.lang.index.MvNamedElementIndex
-import java.util.EnumSet
+import org.move.lang.index.MvModuleIndex
 
 fun processNestedScopesUpwards(
     scopeStart: MvElement,
@@ -43,19 +42,32 @@ fun processModulePathResolveVariants(
     val project = element.project
     val searchScope = moveProject.searchScope()
 
-    val addressProcessor = processor.wrapWithFilter { e ->
+    val addrProcessor = processor.wrapWithFilter { e ->
         val candidate = e.element as? MvModule ?: return@wrapWithFilter false
         val candidateAddress = candidate.address(moveProject)
         address == candidateAddress
     }
 
+    val targetNames = addrProcessor.names
+    if (targetNames == null) {
+        // completion
+        val moduleNames = MvModuleIndex.getAllModuleNames(project)
+        moduleNames.forEach { moduleName ->
+            val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
+            for (module in modules) {
+                if (addrProcessor.process(moduleName, module)) return true
+            }
+        }
+        return false
+    }
+
     var stop = false
-    for (targetModuleName in processor.names.orEmpty()) {
-        MvNamedElementIndex
-            .processElementsByName(project, targetModuleName, searchScope) {
+    for (targetModuleName in targetNames) {
+        MvModuleIndex
+            .processModulesByName(project, targetModuleName, searchScope) {
                 val module = it
                 val visFilter = module.visInfo().createFilter()
-                stop = addressProcessor.process(targetModuleName, module, setOf(MODULE), visFilter)
+                stop = addrProcessor.process(targetModuleName, module, setOf(MODULE), visFilter)
                 // true to continue processing, if .process does not find anything, it returns false
                 !stop
             }

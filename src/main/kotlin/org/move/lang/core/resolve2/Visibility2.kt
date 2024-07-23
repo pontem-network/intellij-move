@@ -21,9 +21,9 @@ data class ItemVisibilityInfo(
     val vis: Visibility2,
 )
 
-fun MvNamedElement.visInfo(adjustmentScope: NamedItemScope = MAIN): ItemVisibilityInfo {
+fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityInfo {
     // todo: can be lazy
-    val itemUsageScope = this.itemScope.shrinkScope(adjustmentScope)
+    val itemUsageScope = this.itemScope.shrinkScope(adjustScope)
     val visibility = (this as? MvVisibilityOwner)?.visibility2 ?: Public
     return ItemVisibilityInfo(this, usageScope = itemUsageScope, vis = visibility)
 }
@@ -62,14 +62,14 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
 
         // todo: uncomment when ContextScopeInfo filter is removed
         // #[test_only] items in non-test-only scope
-//        if (itemUsageScope != MAIN) {
-//            // cannot be used everywhere, need to check for scope compatibility
-//            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
-//        }
+        if (itemUsageScope != MAIN) {
+            // cannot be used everywhere, need to check for scope compatibility
+            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
+        }
 
         // todo: uncomment when ContextScopeInfo filter is removed
         // we're in non-msl scope at this point, msl only items aren't available
-//        if (item !is MvModule && item is MslOnlyElement) return@VisibilityFilter Invisible
+        if (item is MslOnlyElement) return@VisibilityFilter Invisible
 
         // local methods, Self::method - everything is visible
         val itemModule = item.containingModule

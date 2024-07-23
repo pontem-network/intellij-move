@@ -20,6 +20,7 @@ import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
@@ -73,13 +74,24 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         }
 
         val ns = buildSet {
-            add(MODULE)
-            when (parentElement) {
-                is MvPathType -> add(TYPE)
-                is MvSchemaLit -> add(SCHEMA)
-                else -> {
-                    add(NAME)
-                    add(FUNCTION)
+            val pathKind = pathElement.pathKind()
+            if (resolutionCtx.isUseSpeck) {
+                when (pathKind) {
+                    is PathKind.QualifiedPath.Module -> add(MODULE)
+                    is PathKind.QualifiedPath -> addAll(Namespace.items())
+                    else -> {}
+                }
+            } else {
+                if (pathKind is PathKind.UnqualifiedPath) {
+                    add(MODULE)
+                }
+                when (parentElement) {
+                    is MvPathType -> add(TYPE)
+                    is MvSchemaLit -> add(SCHEMA)
+                    else -> {
+                        add(NAME)
+                        add(FUNCTION)
+                    }
                 }
             }
         }
@@ -138,20 +150,16 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         }
 
         val pathKind = pathElement.pathKind(overwriteNs = ns)
-//        val pathKind = classifyPath(pathElement, overwriteNs = ns)
         processPathResolveVariants(resolutionCtx, pathKind, completionCollector)
 
         // disable auto-import in module specs for now
         if (pathElement.containingModuleSpec != null) return
 
+        // no out-of-scope completions for use specks
+        if (pathElement.isUseSpeck) return
+
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
-        val importContext =
-            ImportContext.from(
-                originalPathElement,
-                ns,
-//                setOf(Visibility.Public),
-//                completionContext.contextScopeInfo
-            )
+        val importContext = ImportContext.from(originalPathElement, ns)
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
                 parameters,

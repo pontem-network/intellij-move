@@ -68,6 +68,7 @@ enum class Namespace {
         fun all(): Set<Namespace> {
             return EnumSet.of(NAME, FUNCTION, TYPE, SCHEMA, MODULE, CONST)
         }
+        fun items(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, SCHEMA, CONST)
 
         fun none(): Set<Namespace> = setOf()
     }

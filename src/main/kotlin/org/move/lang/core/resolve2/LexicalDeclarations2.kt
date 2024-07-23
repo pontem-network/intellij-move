@@ -3,7 +3,6 @@ package org.move.lang.core.resolve2
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.pathUsageScope
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
@@ -235,9 +234,9 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
 
             val element = alias ?: namedElement
             val namespace = namedElement.namespace
-            val importUsageScope = path.pathUsageScope
+            val useSpeckUsageScope = path.pathUsageScope
             val visibilityFilter =
-                namedElement.visInfo(adjustmentScope = importUsageScope).createFilter()
+                namedElement.visInfo(adjustScope = useSpeckUsageScope).createFilter()
 
             if (namespace in ns && processor.process(name, element, ns, visibilityFilter)) {
                 stop = true

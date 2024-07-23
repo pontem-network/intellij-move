@@ -103,7 +103,9 @@ sealed class Address {
                     val leftValue = left.value?.let { normalizeValue(it) }
                     val rightValue = right.value?.let { normalizeValue(it) }
                     if (leftValue == null && rightValue == null) {
-                        return left.name == right.name
+                        // null items cannot be equal
+                        return false
+//                        return left.name == right.name
                     }
                     return leftValue == rightValue
                 }

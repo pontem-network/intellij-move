@@ -163,9 +163,7 @@ class PathResolutionContext(
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
 
-    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) {
-        path.useSpeck
-    }
+    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path.useSpeck }
     val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
     val isUseSpeck: Boolean get() = useSpeck != null
 

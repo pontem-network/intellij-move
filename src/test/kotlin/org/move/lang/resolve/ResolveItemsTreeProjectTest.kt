@@ -284,7 +284,10 @@ class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
                 moveToml(
                     """
         [package]
-        name = "MoveStdlib"        
+        name = "MoveStdlib"       
+         
+        [addresses]
+        Std = "0x1"
                 """
                 )
                 sources {

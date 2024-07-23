@@ -5,46 +5,49 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
-import com.intellij.util.Processor
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.RsResolveProcessorBase
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.lazy
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.openapiext.checkCommitIsNotInProgress
 
-class MvNamedElementIndex: StringStubIndexExtension<MvNamedElement>() {
+class MvModuleIndex: StringStubIndexExtension<MvModule>() {
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
-    override fun getKey(): StubIndexKey<String, MvNamedElement> = KEY
+    override fun getKey(): StubIndexKey<String, MvModule> = KEY
 
     companion object {
-        val KEY: StubIndexKey<String, MvNamedElement> =
-            StubIndexKey.createIndexKey("org.move.index.NamedElementIndex")
+        val KEY: StubIndexKey<String, MvModule> =
+            StubIndexKey.createIndexKey("org.move.index.ModuleIndex")
 
-        fun getAllKeys(project: Project): Collection<String> {
+        fun getAllModuleNames(project: Project): Collection<String> {
             checkCommitIsNotInProgress(project)
             return StubIndex.getInstance().getAllKeys(KEY, project)
         }
 
-        fun processElementsByName(
+        fun processModulesByName(
             project: Project,
             target: String,
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project),
-            processor: (MvNamedElement) -> Boolean,
+            processor: (MvModule) -> Boolean,
         ) {
             checkCommitIsNotInProgress(project)
             StubIndex.getInstance()
-                .processElements(KEY, target, project, scope, MvNamedElement::class.java, processor)
+                .processElements(KEY, target, project, scope, MvModule::class.java, processor)
         }
 
-        fun getElementsByName(
+        fun getModulesByName(
             project: Project,
             name: String,
             scope: GlobalSearchScope,
-        ): Collection<MvNamedElement> {
+        ): Collection<MvModule> {
             checkCommitIsNotInProgress(project)
-            return StubIndex.getElements(KEY, name, project, scope, MvNamedElement::class.java)
+            return StubIndex.getElements(KEY, name, project, scope, MvModule::class.java)
+        }
+
+        fun getModuleByName(
+            project: Project,
+            name: String,
+            scope: GlobalSearchScope,
+        ): MvModule? {
+            return getModulesByName(project, name, scope).singleOrNull()
         }
     }
 }
