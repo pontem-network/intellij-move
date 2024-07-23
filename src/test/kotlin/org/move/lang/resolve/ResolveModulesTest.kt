@@ -429,4 +429,11 @@ module 0x1::string_tests {
                                //^ unresolved
         }        
     """)
+
+    fun `test cannot resolve named address in incomplete path use stmt`() = checkByCode("""
+        module 0x1::m {
+            use aptos_framework
+               //^ unresolved
+        }        
+    """)
 }

@@ -11,14 +11,16 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.cli.AddressVal
 import org.move.ide.MoveIcons
+import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.alreadyHasColonColon
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedAddress
+import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psiElement
 import org.move.lang.core.withParent
 import org.move.lang.moveProject
 
-object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
+object AddressInModuleDeclCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = PlatformPatterns
             .psiElement()
@@ -30,8 +32,7 @@ object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val element = parameters.position
-        val moveProject = element.moveProject ?: return
+        val moveProject = parameters.position.moveProject ?: return
         val addresses = moveProject.addressValues()
         for ((name, value) in addresses.entries.sortedBy { it.key }) {
             val lookup = LookupElementBuilder
@@ -49,7 +50,7 @@ object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
     }
 }
 
-object AddressesCompletionProvider : MvCompletionProvider() {
+object NamedAddressAtValueExprCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = PlatformPatterns
             .psiElement().withParent<MvNamedAddress>()
@@ -63,10 +64,31 @@ object AddressesCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val element = parameters.position
-        val moveProject = element.moveProject ?: return
-        val addresses = moveProject.addressValues()
-        for ((name, addressVal) in addresses.entries.sortedBy { it.key }) {
+        val moveProject = parameters.position.moveProject ?: return
+        val declaredNamedAddresses = moveProject.addresses().values
+        for ((name, addressVal) in declaredNamedAddresses.entries.sortedBy { it.key }) {
+            val lookup = addressVal.createCompletionLookupElement(name)
+            result.addElement(lookup)
+        }
+    }
+}
+
+object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
+    override val elementPattern: ElementPattern<out PsiElement>
+        get() = MvPsiPatterns.path()
+            .and(
+                PlatformPatterns.psiElement()
+                    .withSuperParent(3, psiElement<MvUseStmt>())
+            )
+
+    override fun addCompletions(
+        parameters: CompletionParameters,
+        context: ProcessingContext,
+        result: CompletionResultSet
+    ) {
+        val moveProject = parameters.position.moveProject ?: return
+        val declaredNamedAddresses = moveProject.addresses().values
+        for ((name, addressVal) in declaredNamedAddresses.entries.sortedBy { it.key }) {
             val lookup = addressVal.createCompletionLookupElement(name)
             result.addElement(lookup)
         }

@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve2
 
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseGroup
 import org.move.lang.core.psi.MvUseSpeck
@@ -7,6 +8,7 @@ import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.allowedNamespaces
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.isUseSpeck
+import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
 import org.move.lang.moveProject
@@ -44,55 +46,72 @@ sealed class PathKind {
 
 fun MvPath.pathKind(overwriteNs: Set<Namespace>? = null): PathKind {
     val ns = overwriteNs ?: this.allowedNamespaces()
-    val qualifierPath = this.path
+    // [0x1::foo]::bar
+    //     ^ qualifier
+    val qualifier = this.path
     val moveProject = this.moveProject
 
     val useGroup = this.ancestorStrict<MvUseGroup>()
     if (useGroup != null) {
         // use 0x1::m::{item}
         //                ^
-        val qualifier = (useGroup.parent as MvUseSpeck).path
-        return PathKind.QualifiedPath.UseGroupItem(this, qualifier, ns)
+        val useSpeckQualifier = (useGroup.parent as MvUseSpeck).path
+        return PathKind.QualifiedPath.UseGroupItem(this, useSpeckQualifier, ns)
     }
 
-    if (qualifierPath == null) {
-        val parentPath = this.parent as? MvPath
-        if (parentPath != null) {
-            // can be an address
-            val pathAddress = this.pathAddress
-            val referenceName = this.referenceName
-            when {
-                pathAddress != null -> return PathKind.ValueAddress(Address.Value(pathAddress.text))
-                moveProject != null && referenceName != null -> {
-                    // try for named address
-                    val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
-                    if (namedAddress != null) {
-                        return PathKind.NamedAddress(namedAddress)
-                    }
-                    // check whether it's a first item in use speck
-                    val speckParent = parentPath.parent as? MvUseSpeck
-                    if (speckParent != null && speckParent.parent is MvUseStmt) {
-                        // always a named address, even if unknown
-                        return PathKind.NamedAddress(Address.Named(referenceName, null, moveProject))
-                    }
-                }
+    if (qualifier == null) {
+        // one-element path
+
+        // if pathAddress exists, it means it has to be a value address
+        val pathAddress = this.pathAddress
+        if (pathAddress != null) {
+            return PathKind.ValueAddress(Address.Value(pathAddress.text))
+        }
+        val referenceName = this.referenceName ?: error("if pathAddress is null, reference has to be non-null")
+
+        // check whether it's a first element in use stmt, i.e. use [std]::module;
+        //                                                           ^
+        val useSpeck = this.useSpeck
+        if (useSpeck != null && useSpeck.parent is MvUseStmt) {
+            // if so, local path expr is a named address
+            val namedAddress = moveProject?.getNamedAddressTestAware(referenceName)
+            if (namedAddress != null) {
+                return PathKind.NamedAddress(namedAddress)
+            }
+            // and it can be with null value if absent, still a named address
+            return PathKind.NamedAddress(Address.Named(referenceName, null, moveProject))
+        }
+
+        // check whether it's inside use group, then it cannot be named address
+//        if (this.useSpeck?.useGroup != null) {
+//            return PathKind.UnqualifiedPath(ns)
+//        }
+
+        // outside use stmt context
+        if (moveProject != null) {
+            // try whether it's a named address
+            val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
+            if (namedAddress != null) {
+                return PathKind.NamedAddress(namedAddress)
             }
         }
+
+        // if it's not, then it just an unqualified path
         return PathKind.UnqualifiedPath(ns)
     }
 
-    val qualifierOfQualifier = qualifierPath.path
+    val qualifierOfQualifier = qualifier.path
 
     // two-element paths
     if (qualifierOfQualifier == null) {
-        val qualifierPathAddress = qualifierPath.pathAddress
-        val qualifierItemName = qualifierPath.referenceName
+        val qualifierPathAddress = qualifier.pathAddress
+        val qualifierItemName = qualifier.referenceName
         when {
             // 0x1::bar
             //       ^
             qualifierPathAddress != null -> {
                 val address = Address.Value(qualifierPathAddress.text)
-                return PathKind.QualifiedPath.Module(this, qualifierPath, ns, address)
+                return PathKind.QualifiedPath.Module(this, qualifier, ns, address)
             }
             // aptos_framework::bar
             //                  ^
@@ -100,19 +119,19 @@ fun MvPath.pathKind(overwriteNs: Set<Namespace>? = null): PathKind {
                 val namedAddress = moveProject.getNamedAddressTestAware(qualifierItemName)
                 if (namedAddress != null) {
                     // known named address, can be module path
-                    return PathKind.QualifiedPath.Module(this, qualifierPath, ns, namedAddress)
+                    return PathKind.QualifiedPath.Module(this, qualifier, ns, namedAddress)
                 }
                 if (this.isUseSpeck) {
                     // use std::main where std is the unknown named address
                     val address = Address.Named(qualifierItemName, null, moveProject)
-                    return PathKind.QualifiedPath.Module(this, qualifierPath, ns, address)
+                    return PathKind.QualifiedPath.Module(this, qualifier, ns, address)
                 }
             }
         }
         // module::name
-        return PathKind.QualifiedPath.ModuleItem(this, qualifierPath, ns)
+        return PathKind.QualifiedPath.ModuleItem(this, qualifier, ns)
     }
 
     // three-element path
-    return PathKind.QualifiedPath.FQModuleItem(this, qualifierPath, ns)
+    return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns)
 }

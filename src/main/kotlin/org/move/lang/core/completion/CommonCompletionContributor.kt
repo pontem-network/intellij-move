@@ -14,8 +14,12 @@ class CommonCompletionContributor : CompletionContributor() {
 //        extend(CompletionType.BASIC, FunctionsCompletionProvider)
 //        extend(CompletionType.BASIC, SchemasCompletionProvider)
         extend(CompletionType.BASIC, SpecItemCompletionProvider)
-        extend(CompletionType.BASIC, AddressesCompletionProvider)
+
+        // addresses
+        extend(CompletionType.BASIC, NamedAddressInUseStmtCompletionProvider)
+        extend(CompletionType.BASIC, NamedAddressAtValueExprCompletionProvider)
         extend(CompletionType.BASIC, AddressInModuleDeclCompletionProvider)
+
 //        extend(CompletionType.BASIC, TypesCompletionProvider)
 //        extend(CompletionType.BASIC, ImportsCompletionProvider)
 //        extend(CompletionType.BASIC, ModulesCompletionProvider)
@@ -24,16 +28,10 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, StructPatCompletionProvider)
         extend(CompletionType.BASIC, SchemaFieldsCompletionProvider)
         extend(CompletionType.BASIC, MvPathCompletionProvider2)
-        extend(
-            CompletionType.BASIC,
-            MvPsiPatterns.ability(),
-            AbilitiesCompletionProvider
-        )
-        extend(
-            CompletionType.BASIC,
-            MvPsiPatterns.refExpr(),
-            BoolsCompletionProvider
-        )
+
+        extend(CompletionType.BASIC, MvPsiPatterns.ability(), AbilitiesCompletionProvider)
+        extend(CompletionType.BASIC, MvPsiPatterns.refExpr(), BoolsCompletionProvider)
+
         extend(CompletionType.BASIC, MacrosCompletionProvider)
         extend(CompletionType.BASIC, VectorLiteralCompletionProvider)
         extend(CompletionType.BASIC, MethodOrFieldCompletionProvider)
