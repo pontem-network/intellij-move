@@ -145,7 +145,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             is MvStructLitExpr -> MvColor.STRUCT
             is MvStructPat -> MvColor.STRUCT
             is MvRefExpr -> {
-                val item = path.reference?.resolve() ?: return null
+                val item = path.reference?.resolveFollowingAliases() ?: return null
                 when {
                     item is MvConst -> MvColor.CONSTANT
                     else -> {
