@@ -253,4 +253,14 @@ class ModulesCompletionTest: CompletionTestCase() {
         }        
     """
     )
+
+    // todo: error from ::Self module completion, which is handled with the module name instead
+    fun `test no modules completion for item position`() = checkNoCompletion("""
+        module 0x1::Transaction {
+        }
+        module 0x1::M {
+            fun main(a: 0x1::Transaction::Tra/*caret*/) {
+            }
+        }
+    """)
 }
