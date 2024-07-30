@@ -23,9 +23,9 @@ data class ContextScopeInfo(
         return true
     }
 
-    fun <T: ScopeEntry> wrapWithContextFilter(processor: RsResolveProcessorBase<T>): RsResolveProcessorBase<T> {
-        return processor.wrapWithFilter { e: T -> this.matches(e.element) }
-    }
+//    fun <T: ScopeEntry> wrapWithContextFilter(processor: RsResolveProcessorBase<T>): RsResolveProcessorBase<T> {
+//        return processor.wrapWithFilter { e: T -> this.matches(e.element) }
+//    }
 
     companion object {
         /// really does not affect anything, created just to allow creating CompletionContext everywhere

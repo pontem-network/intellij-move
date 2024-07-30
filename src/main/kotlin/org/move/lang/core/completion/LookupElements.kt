@@ -233,7 +233,7 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): I
         when (element) {
             is MvFunctionLike -> {
                 // no suffix for imports
-                if (completionCtx?.resolutionCtx?.isUseSpeck ?: false) return
+                if (completionCtx?.resolutionCtx?.isUseSpeck == true) return
 
                 val isMethodCall = context.getElementOfType<MvMethodOrField>() != null
                 val requiresExplicitTypes =

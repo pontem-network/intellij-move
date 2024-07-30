@@ -77,43 +77,6 @@ class MvImportOptimizer : ImportOptimizer {
         }
     }
 
-//    private fun mergeItemGroups(useStmtOwner: MvItemsOwner) {
-//        val psiFactory = useStmtOwner.project.psiFactory
-//        val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
-//
-//        val useStmts = useStmtOwner.useStmtList
-//        useStmts
-//            .groupBy { Pair(it.fqModuleText, it.hasTestOnlyAttr) }
-//            .forEach { (key, stmts) ->
-//                val (fqModuleText, isTestOnly) = key
-//                if (fqModuleText == null) return@forEach
-//
-//                // special case: if single stmt and import like `use 0x1::Main::Self;`, change to `0x1::Main`
-////                if (stmts.size == 1) {
-////                    val stmt = stmts.single()
-////                    val useItem = stmt.childUseItems.singleOrNull()?.takeIf { it.text == "Self" }
-////                    if (useItem != null) {
-////                        val newStmt = psiFactory.useStmt(fqModuleText, isTestOnly)
-////                        stmt.replace(newStmt)
-////                    }
-////                    return@forEach
-////                }
-//
-//                val useItemNames = mutableListOf<String>()
-//                if (stmts.any { it.moduleUseSpeck != null }) {
-//                    useItemNames.add("Self")
-//                }
-//                useItemNames.addAll(stmts.flatMap { it.childUseItems }.map { it.text })
-//                val newStmt =
-//                    psiFactory.useStmt(
-//                        "$fqModuleText::{${useItemNames.joinToString(", ")}}",
-//                        isTestOnly
-//                    )
-//                useStmtOwner.addAfter(newStmt, leftBrace)
-//                stmts.forEach { it.delete() }
-//            }
-//    }
-
     /** Returns true if successfully removed, e.g. `use aaa::{bbb};` -> `use aaa::bbb;` */
     private fun removeCurlyBracesIfPossible(rootUseSpeck: MvUseSpeck, psiFactory: MvPsiFactory) {
         val itemUseSpeck = rootUseSpeck.useGroup?.asTrivial ?: return

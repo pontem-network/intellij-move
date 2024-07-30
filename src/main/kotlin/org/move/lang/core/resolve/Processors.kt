@@ -7,6 +7,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.ref.PathResolutionContext
@@ -350,7 +351,6 @@ private fun collectPathScopeEntry(
     val visibilityStatus = e.getVisibilityStatusFrom(ctx.path)
     val isVisible = visibilityStatus == VisibilityStatus.Visible
     result += RsPathResolveResult(element, isVisible)
-//    }
 }
 
 fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvElement? =
@@ -541,6 +541,16 @@ fun RsResolveProcessor.process(
     visibilityFilter: VisibilityFilter
 ): Boolean = process(ScopeEntryWithVisibility(name, e, namespaces, visibilityFilter))
 
+fun RsResolveProcessor.processAllItems(
+    namespaces: Set<Namespace>,
+    vararg collections: Iterable<MvItemElement>,
+): Boolean {
+    return sequenceOf(*collections).flatten().any { e ->
+        val name = e.name ?: return false
+        val visibilityFilter = e.visInfo().createFilter()
+        process(ScopeEntryWithVisibility(name, e, namespaces, visibilityFilter))
+    }
+}
 
 fun RsResolveProcessor.process(
     name: String,

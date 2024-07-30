@@ -13,23 +13,24 @@ import org.move.lang.core.resolve2.util.forEachLeafSpeck
 fun processItemsInScope(
     scope: MvElement,
     cameFrom: MvElement,
-    namespaces: Set<Namespace>,
+    ns: Set<Namespace>,
     ctx: PathResolutionContext,
     processor: RsResolveProcessor,
 ): Boolean {
-    for (namespace in namespaces) {
+    for (namespace in ns) {
         val stop = when (namespace) {
             Namespace.NAME -> {
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        processor.processAll(
+                        processor.processAllItems(
+                            ns,
                             module.structs(),
                             module.consts(),
                         )
                     }
-                    is MvModuleSpecBlock -> processor.processAll(scope.schemaList)
-                    is MvScript -> processor.processAll(scope.consts())
+                    is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList)
+                    is MvScript -> processor.processAllItems(ns, scope.consts())
                     is MvFunctionLike -> processor.processAll(scope.allParamsAsBindings)
                     is MvLambdaExpr -> processor.processAll(scope.bindingPatList)
                     is MvForExpr -> {
@@ -111,7 +112,8 @@ fun processItemsInScope(
                         var found = shadowingProcessor.processAll(namedElements)
                         if (!found && scope is MvSpecCodeBlock) {
                             // if inside SpecCodeBlock, process also with builtin spec consts and global variables
-                            found = shadowingProcessor.processAll(
+                            found = shadowingProcessor.processAllItems(
+                                ns,
                                 scope.builtinSpecConsts(),
                                 scope.globalVariables()
                             )
@@ -129,9 +131,10 @@ fun processItemsInScope(
                         val specFunctions =
                             listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                         val specInlineFunctions = module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
-                        processor.processAll(
-                            module.allNonTestFunctions(),
+                        processor.processAllItems(
+                            ns,
                             module.builtinFunctions(),
+                            module.allNonTestFunctions(),
                             specFunctions,
                             specInlineFunctions
                         )
@@ -139,7 +142,8 @@ fun processItemsInScope(
                     is MvModuleSpecBlock -> {
                         val specFunctions = scope.specFunctionList
                         val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-                        processor.processAll(
+                        processor.processAllItems(
+                            ns,
                             specFunctions,
                             specInlineFunctions
                         )
@@ -155,7 +159,7 @@ fun processItemsInScope(
                     }
                     is MvSpecCodeBlock -> {
                         val inlineFunctions = scope.specInlineFunctions().asReversed()
-                        return processor.processAll(inlineFunctions)
+                        processor.processAllItems(ns, inlineFunctions)
                     }
                     else -> false
                 }
@@ -177,7 +181,7 @@ fun processItemsInScope(
                     }
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        processor.processAll(module.structs())
+                        processor.processAllItems(ns, module.structs())
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
@@ -192,8 +196,8 @@ fun processItemsInScope(
             }
 
             Namespace.SCHEMA -> when (scope) {
-                is MvModuleBlock -> processor.processAll(scope.schemaList)
-                is MvModuleSpecBlock -> processor.processAll(scope.schemaList, scope.specFunctionList)
+                is MvModuleBlock -> processor.processAllItems(ns, scope.schemaList)
+                is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList, scope.specFunctionList)
                 else -> false
             }
             else -> false
@@ -202,7 +206,7 @@ fun processItemsInScope(
     }
 
     if (scope is MvItemsOwner) {
-        if (scope.processUseSpeckElements(namespaces, processor)) return true
+        if (scope.processUseSpeckElements(ns, processor)) return true
     }
 
     return false

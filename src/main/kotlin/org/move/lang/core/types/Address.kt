@@ -40,8 +40,10 @@ class AddressLit(val original: String) {
 
 sealed class Address {
 
-    abstract fun canonicalValue(moveProject: MoveProject): String?
     abstract fun text(): String
+    abstract fun canonicalValue(moveProject: MoveProject): String?
+
+    val is0x0 get() = this is Value && this.addressLit().original == "0x0"
 
     class Value(private val value: String) : Address() {
         fun addressLit(): AddressLit = AddressLit(value)

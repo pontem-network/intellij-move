@@ -74,6 +74,9 @@ fun MvModule.testFunctions(): List<MvFunction> =
         it.allFunctions().filter { f -> f.hasTestAttr }
     }
 
+val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
+val MvModule.isSpecBuiltins: Boolean get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
+
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
         val text = """

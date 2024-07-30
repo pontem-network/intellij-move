@@ -76,9 +76,8 @@ class MvPsiFactory(val project: Project) {
         createFromText("module 0x1::_DummyModule { $text }")
             ?: error("Failed to create const")
 
-    @Suppress("InvalidModuleDeclaration")
-    fun builtinConst(text: String): MvConst =
-        createFromText("module spec_builtins { $text }") ?: error("Failed to create const")
+    fun specBuiltinConst(text: String): MvConst =
+        createFromText("module 0x0::spec_builtins { $text }") ?: error("Failed to create const")
 
     inline fun <reified T : MvExpr> expr(text: String): T =
         createFromText("module 0x1::_DummyModule { fun call() { let _ = $text; } }")

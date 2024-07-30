@@ -10,12 +10,10 @@ import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import com.intellij.vcs.log.data.index.isIndexingEnabled
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotatorBase
@@ -26,7 +24,7 @@ class MvAnnotationTestFixture(
     val codeInsightFixture: CodeInsightTestFixture,
     private var annotatorClasses: List<KClass<out MvAnnotatorBase>> = emptyList(),
     private var inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
-) : BaseFixture() {
+): BaseFixture() {
     val project: Project get() = codeInsightFixture.project
     lateinit var enabledInspections: List<InspectionProfileEntry>
 
@@ -67,7 +65,7 @@ class MvAnnotationTestFixture(
     private fun configureByText(text: String): PsiFile {
         val psiFile = codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
         // build indexes
-        IndexingTestUtil.waitUntilIndexesAreReady(codeInsightFixture.project)
+//        IndexingTestUtil.waitUntilIndexesAreReady(codeInsightFixture.project)
         return psiFile
     }
 

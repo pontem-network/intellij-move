@@ -121,12 +121,13 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         result: CompletionResultSet,
         completionFilters: List<CompletionFilter> = emptyList()
     ) {
-//        val qualifier = pathElement.qualifier
         val structAsType = TYPE in ns
         val resolutionCtx = completionContext.resolutionCtx ?: error("always non-null in path completion")
 
         var completionCollector = createProcessor { e ->
             val element = e.element as? MvNamedElement ?: return@createProcessor
+            // check for visibility
+            if (!e.isVisibleFrom(pathElement)) return@createProcessor
             val lookup =
                 element.createLookupElement(
                     completionContext,

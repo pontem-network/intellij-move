@@ -60,20 +60,21 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // #[test] functions cannot be used from non-imports
         if (item is MvFunction && item.hasTestAttr) return@VisibilityFilter Invisible
 
-        // todo: uncomment when ContextScopeInfo filter is removed
+        val itemModule = item.containingModule
+        // 0x0::builtins module items are always visible
+        if (itemModule != null && itemModule.isBuiltins) return@VisibilityFilter Visible
+
         // #[test_only] items in non-test-only scope
         if (itemUsageScope != MAIN) {
             // cannot be used everywhere, need to check for scope compatibility
             if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
         }
 
-        // todo: uncomment when ContextScopeInfo filter is removed
         // we're in non-msl scope at this point, msl only items aren't available
         if (item is MslOnlyElement) return@VisibilityFilter Invisible
 
-        // local methods, Self::method - everything is visible
-        val itemModule = item.containingModule
         val pathModule = path.containingModule
+        // local methods, Self::method - everything is visible
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
         when (visibility) {
