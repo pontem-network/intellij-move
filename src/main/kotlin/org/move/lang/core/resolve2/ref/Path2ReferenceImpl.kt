@@ -46,14 +46,14 @@ class Path2ReferenceImpl(element: MvPath):
         override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
             // should not really happen
             if (path !is MvPath) return emptyList()
-            val resolutionCtx = PathResolutionContext(path)
+            val resolutionCtx = ResolutionContext(path)
             return resolvePath(resolutionCtx, path)
         }
     }
 }
 
 fun processPathResolveVariants(
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     pathKind: PathKind,
     processor: RsResolveProcessor
 ): Boolean {
@@ -65,10 +65,10 @@ fun processPathResolveVariants(
             // Self::
             if (processor.lazy("Self") { ctx.containingModule }) return true
             // local
-            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextProcessor)
+            processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, contextProcessor)
         }
         is PathKind.QualifiedPath.Module -> {
-            processModulePathResolveVariants(ctx.path, ctx.moveProject, pathKind.address, contextProcessor)
+            processModulePathResolveVariants(ctx.element, ctx.moveProject, pathKind.address, contextProcessor)
         }
         is PathKind.QualifiedPath -> {
             processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
@@ -117,7 +117,7 @@ fun processPathResolveVariants(
  * [qualifier]
  */
 fun processQualifiedPathResolveVariants(
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     ns: Set<Namespace>,
     path: MvPath,
     qualifier: MvPath,
@@ -129,7 +129,7 @@ fun processQualifiedPathResolveVariants(
             // can be module, try for named address as a qualifier
             val addressName = qualifier.referenceName ?: return false
             val address = ctx.moveProject?.getNamedAddressTestAware(addressName) ?: return false
-            if (processModulePathResolveVariants(ctx.path, ctx.moveProject, address, processor)) return true
+            if (processModulePathResolveVariants(ctx.element, ctx.moveProject, address, processor)) return true
         }
         return false
     }
@@ -144,27 +144,23 @@ fun processQualifiedPathResolveVariants(
     return false
 }
 
-class PathResolutionContext(val path: MvPath) {
+class ResolutionContext(val element: MvElement) {
 
     private var lazyContainingMoveProject: Lazy<MoveProject?> = lazy(NONE) {
-        path.moveProject
+        element.moveProject
     }
     val moveProject: MoveProject? get() = lazyContainingMoveProject.value
 
     private var lazyContainingModule: Lazy<MvModule?> = lazy(NONE) {
-        path.containingModule
+        element.containingModule
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
 
-    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path.useSpeck }
+    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path?.useSpeck }
     val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
     val isUseSpeck: Boolean get() = useSpeck != null
 
-//    var lazyContainingModInfo: Lazy<ModInfo?> = lazy(NONE) {
-//        val module = containingModule
-//        getModInfo(module)
-//    }
-
+    val path: MvPath? get() = element as? MvPath
 }
 
 //// todo: use in inference later
@@ -175,7 +171,7 @@ class PathResolutionContext(val path: MvPath) {
 //}
 
 private fun resolvePath(
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     path: MvPath,
 //    kind: RsPathResolveKind
 ): List<RsPathResolveResult<MvElement>> {

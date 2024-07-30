@@ -7,14 +7,14 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.ref.PathResolutionContext
+import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
 
 fun processItemsInScope(
     scope: MvElement,
     cameFrom: MvElement,
     ns: Set<Namespace>,
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     processor: RsResolveProcessor,
 ): Boolean {
     for (namespace in ns) {
@@ -71,7 +71,7 @@ fun processItemsInScope(
                                     }
                             }
                             is MvSpecCodeBlock -> {
-                                val letStmtScope = ctx.path.letStmtScope
+                                val letStmtScope = ctx.element.letStmtScope
                                 when (letStmtScope) {
                                     EXPR_STMT -> scope.allLetStmts
                                     LET_STMT, LET_POST_STMT -> {

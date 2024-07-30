@@ -3,10 +3,13 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.RsResolveProcessor
+import org.move.lang.core.resolve.SimpleScopeEntry
+import org.move.lang.core.resolve.collectResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve2.resolveBindingForFieldShorthand
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
@@ -18,31 +21,42 @@ inline fun <reified T: MvElement> MvSchemaLitField.resolveToElement(): T? =
 fun MvSchemaLitField.resolveToDeclaration(): MvSchemaFieldStmt? = resolveToElement()
 fun MvSchemaLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
-class MvSchemaFieldReferenceImpl(
-    element: MvSchemaLitField
-): MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
-    override fun multiResolveInner(): List<MvNamedElement> = collectSchemaLitFieldResolveVariants(element)
-}
+//class MvSchemaFieldReferenceImpl(
+//    element: MvSchemaLitField
+//): MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
+//    override fun multiResolveInner(): List<MvNamedElement> = collectSchemaLitFieldResolveVariants(element)
+//}
 
-class MvSchemaFieldShorthandReferenceImpl(
-    element: MvSchemaLitField
-): MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
-    override fun multiResolveInner(): List<MvNamedElement> {
-        return listOf(
-            collectSchemaLitFieldResolveVariants(element),
-            resolveLocalItem(element, setOf(Namespace.NAME))
-        ).flatten()
-    }
-}
+//class MvSchemaFieldShorthandReferenceImpl(
+//    element: MvSchemaLitField
+//): MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
+//    override fun multiResolveInner(): List<MvNamedElement> {
+//        return listOf(
+//            collectSchemaLitFieldResolveVariants(element),
+//            resolveLocalItem(element, setOf(Namespace.NAME))
+//        ).flatten()
+//    }
+//}
 
 abstract class MvSchemaLitFieldMixin(node: ASTNode): MvElementImpl(node),
                                                      MvSchemaLitField {
-    override fun getReference(): MvPolyVariantReference {
-        if (this.isShorthand) {
-            return MvSchemaFieldShorthandReferenceImpl(this)
-        } else {
-            return MvSchemaFieldReferenceImpl(this)
+    override fun getReference(): MvPolyVariantReference =
+        MvSchemaLitFieldReferenceImpl(this, shorthand = this.isShorthand)
+}
+
+class MvSchemaLitFieldReferenceImpl(
+    element: MvSchemaLitField,
+    val shorthand: Boolean,
+): MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
+    override fun multiResolveInner(): List<MvNamedElement> {
+        var variants = collectResolveVariants(element.referenceName) {
+            processSchemaLitFieldResolveVariants(element, it)
         }
+        if (shorthand) {
+            variants += resolveBindingForFieldShorthand(element)
+//            variants += resolveLocalItem(element, setOf(Namespace.NAME))
+        }
+        return variants
     }
 }
 
@@ -58,13 +72,3 @@ fun processSchemaLitFieldResolveVariants(
         }
 }
 
-fun collectSchemaLitFieldResolveVariants(literalField: MvSchemaLitField): List<MvNamedElement> {
-    val referenceName = literalField.referenceName
-    val items = mutableListOf<MvNamedElement>()
-    processSchemaLitFieldResolveVariants(literalField, createProcessor { e ->
-        if (e.name == referenceName) {
-            items.add(e.element)
-        }
-    })
-    return items
-}

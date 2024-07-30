@@ -12,7 +12,6 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 

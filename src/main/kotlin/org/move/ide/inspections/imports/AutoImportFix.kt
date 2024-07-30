@@ -9,13 +9,15 @@ import org.move.ide.inspections.DiagnosticFix
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve.letStmtScope
-import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.MvUseSpeck
+import org.move.lang.core.psi.MvUseStmt
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.hasAncestor
+import org.move.lang.core.psi.ext.importCandidateNamespaces
+import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),

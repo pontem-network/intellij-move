@@ -15,7 +15,6 @@ import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
-import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.MvTestBase

@@ -16,13 +16,12 @@ import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
-import org.move.lang.core.resolve2.ref.PathResolutionContext
+import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
@@ -30,7 +29,7 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
 fun interface CompletionFilter {
-    fun removeEntry(entry: ScopeEntry, ctx: PathResolutionContext): Boolean
+    fun removeEntry(entry: ScopeEntry, ctx: ResolutionContext): Boolean
 }
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
@@ -46,23 +45,9 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         if (parameters.position !== pathElement.referenceNameElement) return
 
         val parentElement = pathElement.rootPath().parent
-//        val contextScopeInfo =
-//            if (parentElement is MvSchemaLit)
-//                ContextScopeInfo(
-//                    refItemScopes = pathElement.itemScopes,
-//                    letStmtScope = EXPR_STMT
-//                ) else ContextScopeInfo.from(pathElement)
-        val resolutionCtx = PathResolutionContext(pathElement)
+        val resolutionCtx = ResolutionContext(pathElement)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
-
-        val completionContext = CompletionContext(
-            pathElement,
-//            contextScopeInfo,
-            msl,
-            expectedTy,
-            resolutionCtx = resolutionCtx
-        )
 
         // 0x1::m::{a, b, Self}
         //               //^
@@ -95,7 +80,15 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                 }
             }
         }
+        val structAsType = TYPE in ns
 
+        val completionContext = CompletionContext(
+            pathElement,
+            msl,
+            expectedTy,
+            resolutionCtx = resolutionCtx,
+            structAsType,
+        )
         addVariants(
             pathElement, parameters, completionContext, ns, result,
             listOf(
@@ -121,37 +114,28 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         result: CompletionResultSet,
         completionFilters: List<CompletionFilter> = emptyList()
     ) {
-        val structAsType = TYPE in ns
         val resolutionCtx = completionContext.resolutionCtx ?: error("always non-null in path completion")
-
-        var completionCollector = createProcessor { e ->
-            val element = e.element as? MvNamedElement ?: return@createProcessor
-            // check for visibility
-            if (!e.isVisibleFrom(pathElement)) return@createProcessor
-            val lookup =
-                element.createLookupElement(
-                    completionContext,
-                    structAsType = structAsType,
-                    priority = element.completionPriority
-                )
-            result.addElement(lookup)
-        }
-
         val processedNames = mutableSetOf<String>()
-        completionCollector = completionCollector.wrapWithFilter { e ->
-            // custom filters
-            for (completionFilter in completionFilters) {
-                if (completionFilter.removeEntry(e, resolutionCtx)) return@wrapWithFilter false
-            }
+        collectCompletionVariants(result, completionContext) {
+            val processor = it
+                .wrapWithFilter { e ->
+                    // custom completion filters
+                    for (completionFilter in completionFilters) {
+                        if (completionFilter.removeEntry(e, resolutionCtx)) return@wrapWithFilter false
+                    }
 
-            if (processedNames.contains(e.name)) return@wrapWithFilter false
-            processedNames.add(e.name)
+                    // drop already visited items
+                    if (processedNames.contains(e.name)) return@wrapWithFilter false
+                    processedNames.add(e.name)
 
-            true
+                    // drop invisible items
+                    if (!e.isVisibleFrom(pathElement)) return@wrapWithFilter false
+
+                    true
+                }
+            val pathKind = pathElement.pathKind(overwriteNs = ns)
+            processPathResolveVariants(resolutionCtx, pathKind, processor)
         }
-
-        val pathKind = pathElement.pathKind(overwriteNs = ns)
-        processPathResolveVariants(resolutionCtx, pathKind, completionCollector)
 
         // disable auto-import in module specs for now
         if (pathElement.containingModuleSpec != null) return
@@ -175,7 +159,6 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             }
             val lookupElement = candidate.element.createLookupElement(
                 completionContext,
-                structAsType = structAsType,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, candidate)
             )

@@ -7,13 +7,14 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.getOriginalOrSelf
-import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvSchemaLitField
-import org.move.lang.core.psi.completionPriority
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.createProcessor
+import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.processSchemaLitFieldResolveVariants
+import org.move.lang.core.psi.ext.schemaLit
+import org.move.lang.core.resolve.collectCompletionVariants
+import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
@@ -35,25 +36,9 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
             .map { it.referenceName }
 
         val completionCtx = CompletionContext(literalField, literalField.isMsl())
-        val completionCollector = createProcessor { e ->
-            val element = e.element as? MvNamedElement ?: return@createProcessor
-            // check for visibility
-//            if (!e.isVisibleFrom(pathElement)) return@createProcessor
-            if (e.name in existingFieldNames) return@createProcessor
-            val lookup =
-                element.createLookupElement(
-                    completionCtx,
-                    priority = element.completionPriority
-                )
-            result.addElement(lookup)
+        collectCompletionVariants(result, completionCtx) {
+            val processor = it.wrapWithFilter { e -> e.name !in existingFieldNames }
+            processSchemaLitFieldResolveVariants(literalField, processor)
         }
-        processSchemaLitFieldResolveVariants(literalField, completionCollector)
-
-//        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
-//        for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
-//            result.addElement(
-//                fieldBinding.createLookupElement(completionCtx)
-//            )
-//        }
     }
 }

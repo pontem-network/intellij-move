@@ -1,17 +1,15 @@
 package org.move.lang.core.resolve
 
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.psi.ResolveResult
 import com.intellij.util.SmartList
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvPath
+import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvItemElement
+import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.createFilter
-import org.move.lang.core.resolve2.ref.PathResolutionContext
+import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.RsPathResolveResult
 import org.move.lang.core.resolve2.visInfo
 import org.move.stdext.intersects
@@ -266,7 +264,7 @@ private class ShadowingAndImmediatelyUpdateScopeProcessor<in T: ScopeEntry>(
         "ShadowingAndImmediatelyUpdateScopeProcessor($originalProcessor, ns = $ns)"
 }
 
-fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvElement> {
+fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvNamedElement> {
     if (referenceName == null) return emptyList()
     val processor = ResolveVariantsCollector(referenceName)
     f(processor)
@@ -275,7 +273,7 @@ fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Un
 
 private class ResolveVariantsCollector(
     private val referenceName: String,
-    val result: MutableList<MvElement> = SmartList(),
+    val result: MutableList<MvNamedElement> = SmartList(),
 ): RsResolveProcessorBase<ScopeEntry> {
     override val names: Set<String> = setOf(referenceName)
 
@@ -318,7 +316,7 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
 }
 
 fun collectPathResolveVariants(
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     path: MvPath,
     f: (RsResolveProcessor) -> Unit
 ): List<RsPathResolveResult<MvElement>> {
@@ -329,7 +327,7 @@ fun collectPathResolveVariants(
 }
 
 private class SinglePathResolveVariantsCollector(
-    private val ctx: PathResolutionContext,
+    private val ctx: ResolutionContext,
     private val referenceName: String,
     val result: MutableList<RsPathResolveResult<MvElement>> = SmartList(),
 ): RsResolveProcessorBase<ScopeEntry> {
@@ -344,13 +342,13 @@ private class SinglePathResolveVariantsCollector(
 }
 
 private fun collectPathScopeEntry(
-    ctx: PathResolutionContext,
+    ctx: ResolutionContext,
     result: MutableList<RsPathResolveResult<MvElement>>,
     e: ScopeEntry
 ) {
     val element = e.element
-    val visibilityStatus = e.getVisibilityStatusFrom(ctx.path)
-    val isVisible = visibilityStatus == VisibilityStatus.Visible
+    val visibilityStatus = ctx.path?.let { e.getVisibilityStatusFrom(it) } ?: Visible
+    val isVisible = visibilityStatus == Visible
     result += RsPathResolveResult(element, isVisible)
 }
 
@@ -401,6 +399,14 @@ private class CompletionVariantsCollector(
     override fun process(entry: ScopeEntry): Boolean {
 //        addEnumVariantsIfNeeded(entry)
 //        addAssociatedItemsIfNeeded(entry)
+
+        val element = entry.element as? MvNamedElement ?: return false
+        val lookup =
+            element.createLookupElement(
+                context,
+                priority = element.completionPriority
+            )
+        result.addElement(lookup)
 
 //        (entry.element as? MvNamedElement)?.let {
 //            it.createLookupElement(context)
@@ -512,12 +518,12 @@ fun ScopeEntry.getVisibilityStatusFrom(path: MvPath): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
         visibilityFilter.filter(path, this.namespaces)
     } else {
-        VisibilityStatus.Visible
+        Visible
     }
 
 
 fun ScopeEntry.isVisibleFrom(context: MvPath): Boolean =
-    getVisibilityStatusFrom(context) == VisibilityStatus.Visible
+    getVisibilityStatusFrom(context) == Visible
 
 enum class VisibilityStatus {
     Visible,

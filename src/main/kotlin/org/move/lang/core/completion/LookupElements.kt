@@ -11,8 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve2.ref.PathResolutionContext
+import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
@@ -144,7 +143,8 @@ data class CompletionContext(
 //    val contextScopeInfo: ContextScopeInfo,
     val msl: Boolean,
     val expectedTy: Ty? = null,
-    val resolutionCtx: PathResolutionContext? = null
+    val resolutionCtx: ResolutionContext? = null,
+    val structAsType: Boolean = false
 ) {
 //    fun isMsl(): Boolean = contextScopeInfo.isMslScope
     fun isMsl(): Boolean = msl
@@ -154,7 +154,6 @@ data class CompletionContext(
 fun MvNamedElement.createLookupElement(
     completionContext: CompletionContext,
     subst: Substitution = emptySubstitution,
-    structAsType: Boolean = false,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
 ): LookupElement {
@@ -162,7 +161,7 @@ fun MvNamedElement.createLookupElement(
         this.getLookupElementBuilder(
             completionContext,
             subst = subst,
-            structAsType = structAsType
+            structAsType = completionContext.structAsType
         )
             .withInsertHandler(insertHandler)
             .withPriority(priority)
