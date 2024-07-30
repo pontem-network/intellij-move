@@ -15,9 +15,8 @@ import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = PlatformPatterns
-            .psiElement()
-            .withParent<MvSchemaLitField>()
+        get() =
+            PlatformPatterns.psiElement().withParent<MvSchemaLitField>()
 
     override fun addCompletions(
         parameters: CompletionParameters,

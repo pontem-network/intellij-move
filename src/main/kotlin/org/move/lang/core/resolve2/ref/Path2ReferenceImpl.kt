@@ -46,13 +46,8 @@ class Path2ReferenceImpl(element: MvPath):
         override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
             // should not really happen
             if (path !is MvPath) return emptyList()
-
-            val ctx = PathResolutionContext(
-                path = path,
-                contextScopeInfo = ContextScopeInfo.from(path)
-            )
-            return resolvePath(ctx, path)
-//            return resolvePath(ctx, path, classifyPath(path))
+            val resolutionCtx = PathResolutionContext(path)
+            return resolvePath(resolutionCtx, path)
         }
     }
 }
@@ -149,10 +144,8 @@ fun processQualifiedPathResolveVariants(
     return false
 }
 
-class PathResolutionContext(
-    val path: MvPath,
-    val contextScopeInfo: ContextScopeInfo,
-) {
+class PathResolutionContext(val path: MvPath) {
+
     private var lazyContainingMoveProject: Lazy<MoveProject?> = lazy(NONE) {
         path.moveProject
     }

@@ -22,23 +22,6 @@ data class ContextScopeInfo(
         ) return false
         return true
     }
-
-//    fun <T: ScopeEntry> wrapWithContextFilter(processor: RsResolveProcessorBase<T>): RsResolveProcessorBase<T> {
-//        return processor.wrapWithFilter { e: T -> this.matches(e.element) }
-//    }
-
-    companion object {
-        /// really does not affect anything, created just to allow creating CompletionContext everywhere
-//        fun default(): ContextScopeInfo = ContextScopeInfo(setOf(MAIN), NONE)
-//        fun msl(): ContextScopeInfo = ContextScopeInfo(setOf(VERIFY), EXPR_STMT)
-
-        fun from(element: MvElement): ContextScopeInfo {
-            return ContextScopeInfo(
-                refItemScopes = element.itemScopes,
-                letStmtScope = element.letStmtScope,
-            )
-        }
-    }
 }
 
 fun processItems(

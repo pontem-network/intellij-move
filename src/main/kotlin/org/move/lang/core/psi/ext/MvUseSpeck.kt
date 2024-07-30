@@ -9,3 +9,5 @@ val MvUseSpeck.qualifier: MvPath? get() {
     return parentUseSpeck.pathOrQualifier
 }
 val MvUseSpeck.pathOrQualifier: MvPath? get() = path ?: qualifier
+
+val MvUseSpeck.isSelf: Boolean get() = this.path.identifier?.textMatches("Self") ?: false

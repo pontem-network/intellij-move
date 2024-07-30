@@ -43,7 +43,6 @@ object StructPatCompletionProvider: MvCompletionProvider() {
                 refItemScopes = bindingPat.namedItemScopes,
             )
         val completionCtx = CompletionContext(bindingPat, bindingPat.isMsl())
-//        val completionCtx = CompletionContext(bindingPat, contextScopeInfo)
         processModuleItems(module, namespaces, setOf(Visibility.Internal), contextScopeInfo) {
             val lookup =
                 it.element.createLookupElement(completionCtx)

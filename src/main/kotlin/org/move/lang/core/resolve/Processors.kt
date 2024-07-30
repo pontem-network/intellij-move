@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve
 
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.psi.ResolveResult
 import com.intellij.util.SmartList
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.psi.MvElement

@@ -46,13 +46,13 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         if (parameters.position !== pathElement.referenceNameElement) return
 
         val parentElement = pathElement.rootPath().parent
-        val contextScopeInfo =
-            if (parentElement is MvSchemaLit)
-                ContextScopeInfo(
-                    refItemScopes = pathElement.itemScopes,
-                    letStmtScope = EXPR_STMT
-                ) else ContextScopeInfo.from(pathElement)
-        val resolutionCtx = PathResolutionContext(pathElement, contextScopeInfo)
+//        val contextScopeInfo =
+//            if (parentElement is MvSchemaLit)
+//                ContextScopeInfo(
+//                    refItemScopes = pathElement.itemScopes,
+//                    letStmtScope = EXPR_STMT
+//                ) else ContextScopeInfo.from(pathElement)
+        val resolutionCtx = PathResolutionContext(pathElement)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
 

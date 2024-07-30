@@ -44,10 +44,10 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
     fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
         val msl = element.isMsl()
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
-        val scopeInfo = ContextScopeInfo(
-            letStmtScope = element.letStmtScope,
-            refItemScopes = element.refItemScopes,
-        )
+//        val scopeInfo = ContextScopeInfo(
+//            letStmtScope = element.letStmtScope,
+//            refItemScopes = element.refItemScopes,
+//        )
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
         val ctx = CompletionContext(element, msl, expectedTy)
