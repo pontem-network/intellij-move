@@ -8,9 +8,12 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.getOriginalOrSelf
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvSchemaLitField
+import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
@@ -24,17 +27,33 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val pos = parameters.position
-        val element = pos.parent as? MvSchemaLitField ?: return
-        val schemaLit = element.schemaLit ?: return
-        val schema = schemaLit.schema ?: return
-        val providedFieldNames = schemaLit.fieldNames
+        val literalField = pos.parent as? MvSchemaLitField ?: return
 
-        val completionCtx = CompletionContext(element, element.isMsl())
-//        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
-        for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
-            result.addElement(
-                fieldBinding.createLookupElement(completionCtx)
-            )
+        val schemaLit = literalField.schemaLit?.getOriginalOrSelf() ?: return
+        val existingFieldNames = schemaLit.fields
+            .filter { !it.textRange.contains(pos.textOffset) }
+            .map { it.referenceName }
+
+        val completionCtx = CompletionContext(literalField, literalField.isMsl())
+        val completionCollector = createProcessor { e ->
+            val element = e.element as? MvNamedElement ?: return@createProcessor
+            // check for visibility
+//            if (!e.isVisibleFrom(pathElement)) return@createProcessor
+            if (e.name in existingFieldNames) return@createProcessor
+            val lookup =
+                element.createLookupElement(
+                    completionCtx,
+                    priority = element.completionPriority
+                )
+            result.addElement(lookup)
         }
+        processSchemaLitFieldResolveVariants(literalField, completionCollector)
+
+//        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
+//        for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
+//            result.addElement(
+//                fieldBinding.createLookupElement(completionCtx)
+//            )
+//        }
     }
 }
