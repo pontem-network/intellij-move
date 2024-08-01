@@ -4,7 +4,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer

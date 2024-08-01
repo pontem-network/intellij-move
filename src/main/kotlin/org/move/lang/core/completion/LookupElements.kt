@@ -11,7 +11,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty

@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.cli.AddressVal
 import org.move.ide.MoveIcons
-import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.alreadyHasColonColon
 import org.move.lang.core.psi.MvModule

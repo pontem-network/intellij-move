@@ -8,7 +8,10 @@ package org.move.ide.utils.imports
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.basePath
+import org.move.lang.core.psi.ext.hasTestOnlyAttr
+import org.move.lang.core.psi.ext.hasVerifyOnlyAttr
+import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.moveProject
 
 class UseStmtWrapper(val useStmt: MvUseStmt): Comparable<UseStmtWrapper> {

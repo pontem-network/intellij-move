@@ -10,7 +10,6 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.psi.ext.getFieldVariants
 import org.move.lang.core.psi.ext.inferReceiverTy
@@ -18,7 +17,6 @@ import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.tyInfers
 import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve2.processMethodResolveVariants
-import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.TyFunction

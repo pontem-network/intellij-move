@@ -1,6 +1,5 @@
 package org.move.utils.tests.base
 
-import org.move.utils.tests.base.TestCase.Companion
 import java.nio.file.Path
 import java.nio.file.Paths
 

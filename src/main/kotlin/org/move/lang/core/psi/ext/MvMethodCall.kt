@@ -7,13 +7,11 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
-import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve2.processItemDeclarations
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.*
-import org.move.lang.moveProject
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyVector
 import org.move.stdext.wrapWithList
 
 typealias MatchSequence<T> = Sequence<ScopeItem<T>>
@@ -40,30 +38,6 @@ fun Ty.itemModule(moveProject: MoveProject): MvModule? {
 fun MvModule.is0x1Address(moveProject: MoveProject): Boolean {
     val moduleAddress = this.address(moveProject)?.canonicalValue(moveProject)
     return moduleAddress == "0x00000000000000000000000000000001"
-}
-
-fun getMethodVariants(methodOrField: MvMethodOrField, receiverTy: Ty, msl: Boolean): MatchSequence<MvFunction> {
-    val moveProject = methodOrField.moveProject ?: return emptySequence()
-    val itemModule = receiverTy.itemModule(moveProject) ?: return emptySequence()
-
-    val elementScopes = Visibility.visibilityScopesForElement(methodOrField).toMutableSet()
-    if (methodOrField.containingModule == itemModule) {
-        elementScopes.add(Visibility.Internal)
-    }
-
-    val functions =
-        elementScopes
-            .flatMap { elementScope -> itemModule.functionsVisibleInScope(elementScope) }
-            .filter {
-                val selfTy = it.selfParamTy(msl) ?: return@filter false
-                // need to use TyVar here, loweredType() erases them
-                val selfTyWithTyVars =
-                    selfTy.foldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
-                TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
-            }
-    return functions
-        .filter { it.name != null }
-        .map { ScopeItem(it.name!!, it) }.asSequence()
 }
 
 class MvMethodCallReferenceImpl(

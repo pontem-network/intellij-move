@@ -2,7 +2,6 @@ package org.move.lang
 
 import org.move.cli.moveProjectsService
 import org.move.lang.core.psi.MvNamedAddress
-import org.move.lang.core.psi.MvPath
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor

@@ -16,7 +16,6 @@ import org.move.ide.annotator.pluralise
 import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.ide.inspections.fixes.EnableCompilerV2FeatureFix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.dotExpr
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.psi.ext.startOffset

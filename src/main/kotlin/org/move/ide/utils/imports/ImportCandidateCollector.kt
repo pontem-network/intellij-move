@@ -5,8 +5,6 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.core.psi.ext.MvItemElement
-import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.namespace

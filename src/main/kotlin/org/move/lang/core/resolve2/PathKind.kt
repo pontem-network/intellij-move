@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve2
 
-import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseGroup
 import org.move.lang.core.psi.MvUseSpeck

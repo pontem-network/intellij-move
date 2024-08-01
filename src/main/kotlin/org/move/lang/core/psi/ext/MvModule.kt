@@ -6,12 +6,9 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import org.move.cli.containingMovePackage
-import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
@@ -29,45 +26,17 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 fun MvModule.addressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
-data class FQModule(val address: Address, val name: String)
-
-fun MvModule.fqModule(): FQModule? {
-    val moveProj = this.moveProject ?: return null
-    val address = this.address(moveProj) ?: return null
-    val name = this.name ?: return null
-    return FQModule(address, name)
-}
-
-val MvModule.declaredFriendModules: Set<FQModule>
+val MvModule.friendModules: Set<MvModule>
     get() {
         val moduleBlock = this.moduleBlock ?: return emptySet()
         val friendModulePaths = moduleBlock.friendDeclList.mapNotNull { it.path }
-//        val moveProj = moduleBlock.moveProject
-
-        val friends = mutableSetOf<FQModule>()
+        val friends = mutableSetOf<MvModule>()
         for (modulePath in friendModulePaths) {
-            val module = modulePath.reference?.resolve() as? MvModule ?: continue
-            val fqModule = module.fqModule() ?: continue
-            friends.add(fqModule)
-//            val pathAddress = modulePath.qualifier?.pathAddress ?: continue
-//            val address = Address.Value(pathAddress.text)
-////            val address = modulePath.addressRef.address(moveProj) ?: continue
-//            val identifier = modulePath.identifier?.text ?: continue
-//            friends.add(FQModule(address, identifier))
+            val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
+            friends.add(module)
         }
         return friends
     }
-
-val MvModule.friendModules: Set<MvModule> get() {
-    val moduleBlock = this.moduleBlock ?: return emptySet()
-    val friendModulePaths = moduleBlock.friendDeclList.mapNotNull { it.path }
-    val friends = mutableSetOf<MvModule>()
-    for (modulePath in friendModulePaths) {
-        val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
-        friends.add(module)
-    }
-    return friends
-}
 
 fun MvModule.allFunctions(): List<MvFunction> {
     val stub = greenStub
@@ -87,7 +56,8 @@ fun MvModule.testFunctions(): List<MvFunction> =
     }
 
 val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
-val MvModule.isSpecBuiltins: Boolean get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
+val MvModule.isSpecBuiltins: Boolean
+    get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
@@ -112,43 +82,6 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
         val builtinFunctions = it.project.psiFactory.functions(text, moduleName = "builtins")
         builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
         builtinFunctions
-    }
-}
-
-fun MvModule.functionsVisibleInScope(visibility: Visibility): List<MvFunction> {
-    return when (visibility) {
-        is Visibility.Public ->
-            allNonTestFunctions()
-                .filter { it.visibility == FunctionVisibility.PUBLIC }
-        is Visibility.PublicScript ->
-            allNonTestFunctions()
-                .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
-        is Visibility.PublicFriend -> {
-            val friendFunctions =
-                allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
-            if (friendFunctions.isEmpty()) return emptyList()
-
-            val currentModule = visibility.currentModule.element
-            if (currentModule != null
-                && currentModule.fqModule() in this.declaredFriendModules
-            ) {
-                friendFunctions
-            } else {
-                emptyList()
-            }
-        }
-        is Visibility.PublicPackage -> {
-            if (!project.moveSettings.enablePublicPackage) {
-                return emptyList()
-            }
-            val modulePackage = this.containingMovePackage
-            if (visibility.originPackage == modulePackage) {
-                this.allNonTestFunctions()
-            } else {
-                emptyList()
-            }
-        }
-        is Visibility.Internal -> allNonTestFunctions()
     }
 }
 
@@ -270,12 +203,12 @@ fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
     return left.getOriginalOrSelf() == right.getOriginalOrSelf()
 }
 
-abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
-                               MvModule {
+abstract class MvModuleMixin: MvStubbedNamedElementImpl<MvModuleStub>,
+                              MvModule {
 
-    constructor(node: ASTNode) : super(node)
+    constructor(node: ASTNode): super(node)
 
-    constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+    constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 

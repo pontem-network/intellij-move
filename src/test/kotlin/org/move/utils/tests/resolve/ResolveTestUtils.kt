@@ -3,7 +3,6 @@ package org.move.utils.tests.resolve
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
-import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
 fun checkResolvedFile(

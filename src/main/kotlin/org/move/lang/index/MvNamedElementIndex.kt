@@ -5,12 +5,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
-import com.intellij.util.Processor
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.RsResolveProcessorBase
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.lazy
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.openapiext.checkCommitIsNotInProgress
 

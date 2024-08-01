@@ -1,7 +1,6 @@
 package org.move.ide.inspections.imports
 
 import org.move.cli.settings.debugError
-import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.inspections.imports.UseItemType.*
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt

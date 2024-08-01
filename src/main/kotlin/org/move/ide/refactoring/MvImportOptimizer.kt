@@ -9,7 +9,6 @@ import org.move.ide.inspections.imports.ImportAnalyzer2
 import org.move.ide.utils.imports.COMPARATOR_FOR_ITEMS_IN_USE_GROUP
 import org.move.ide.utils.imports.UseStmtWrapper
 import org.move.lang.MoveFile
-import org.move.lang.MvElementTypes.L_BRACE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.stdext.withNext

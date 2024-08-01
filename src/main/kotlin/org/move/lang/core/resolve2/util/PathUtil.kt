@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.childrenOfType
-import org.move.lang.core.psi.ext.hasColonColon
 
 fun interface LeafUseSpeckConsumer {
     fun consume(path: MvPath, useAlias: MvUseAlias?): Boolean

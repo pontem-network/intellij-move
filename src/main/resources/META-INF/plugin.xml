@@ -1,6 +1,6 @@
 <idea-plugin
     require-restart="true"
-    xmlns:xi="http://www.w3.org/2001/XInclude">
+>
   <id>org.move.lang</id>
   <name>Move on Aptos</name>
 
