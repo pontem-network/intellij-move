@@ -198,7 +198,6 @@ class StructsCompletionTest: CompletionTestCase() {
         }        
     """)
 
-    // todo: error from ::Self module completion, which is handled with the module name instead
     fun `test module struct completion in type position`() = doSingleCompletion("""
         module 0x1::Transaction {
             struct Type {

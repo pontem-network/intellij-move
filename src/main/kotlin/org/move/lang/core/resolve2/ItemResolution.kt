@@ -41,7 +41,7 @@ fun processItemDeclarations(
     // 2. for every item, use it's .visibility to create VisibilityFilter, even it's just a { false }
     val items = itemsOwner.itemElements +
             (itemsOwner as? MvModuleBlock)?.module?.innerSpecItems.orEmpty() +
-            (itemsOwner as? MvModuleBlock)?.let { getItemsFromModuleSpecs(it.module, ns) }.orEmpty()
+            (itemsOwner as? MvModuleBlock)?.module?.let { getItemsFromModuleSpecs(it, ns) }.orEmpty()
     for (item in items) {
         val name = item.name ?: continue
 

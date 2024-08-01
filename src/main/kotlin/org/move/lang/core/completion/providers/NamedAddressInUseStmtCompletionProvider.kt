@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.cli.AddressVal
 import org.move.ide.MoveIcons
+import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.alreadyHasColonColon
 import org.move.lang.core.psi.MvModule
@@ -78,6 +79,15 @@ object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
         get() = MvPsiPatterns.path()
             .and(
                 PlatformPatterns.psiElement()
+                    // use path::ident::
+                    //          ^ should not exist
+                    .andNot(
+                        PlatformPatterns.psiElement().afterLeaf("::")
+                    )
+                    // use [ident::]
+                    //           ^ path (1)
+                    //     ^ use speck (2)
+                    // ^ use stmt (3)
                     .withSuperParent(3, psiElement<MvUseStmt>())
             )
 
@@ -86,7 +96,8 @@ object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val moveProject = parameters.position.moveProject ?: return
+        val element = parameters.position
+        val moveProject = element.moveProject ?: return
         val declaredNamedAddresses = moveProject.addresses().values
         for ((name, addressVal) in declaredNamedAddresses.entries.sortedBy { it.key }) {
             val lookup = addressVal.createCompletionLookupElement(name)

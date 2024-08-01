@@ -4,7 +4,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.containingMovePackage
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
-import org.move.lang.core.psi.ScopeMslOnlyElement
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.VisKind.*
 import org.move.lang.core.resolve.ref.Visibility
@@ -56,8 +55,7 @@ val MvVisibilityOwner.visibility2: Visibility2
             FRIEND -> {
                 val module = this.containingModule ?: return Visibility2.Private
                 // todo: make lazy
-                val friendModules = module.declaredFriendModules
-                Visibility2.Restricted.Friend(friendModules)
+                Visibility2.Restricted.Friend(lazy { module.friendModules })
             }
             SCRIPT -> Visibility2.Restricted.Script
             PUBLIC -> Visibility2.Public

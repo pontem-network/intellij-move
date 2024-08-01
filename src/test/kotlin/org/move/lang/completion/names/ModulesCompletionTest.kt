@@ -121,6 +121,17 @@ class ModulesCompletionTest: CompletionTestCase() {
     """
     )
 
+    fun `test no item completion if already imported in use group`() = checkNoCompletion(
+        """
+    module 0x1::Signer {
+        public fun address_of(): address { @0x1 } 
+    } 
+    module 0x1::M {
+        use 0x1::Signer::{address_of, addr/*caret*/};
+    }    
+    """
+    )
+
     fun `test no Self completion if already imported in this block`() = checkNoCompletion(
         """
     module 0x1::Signer {} 
@@ -225,7 +236,6 @@ class ModulesCompletionTest: CompletionTestCase() {
     """
     )
 
-    // todo: to fix this, I need to get rid of ContextScopeInfo processor filter
     fun `test test_only module completion is possible in non test context inside use speck`() = doSingleCompletion(
         """
     #[test_only]    
@@ -254,7 +264,6 @@ class ModulesCompletionTest: CompletionTestCase() {
     """
     )
 
-    // todo: error from ::Self module completion, which is handled with the module name instead
     fun `test no modules completion for item position`() = checkNoCompletion("""
         module 0x1::Transaction {
         }

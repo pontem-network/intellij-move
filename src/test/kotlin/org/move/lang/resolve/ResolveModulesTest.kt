@@ -422,6 +422,16 @@ module 0x1::string_tests {
         }        
     """)
 
+    @NamedAddress("aptos_framework", "0x1")
+    fun `test resolve module from import with value address`() = checkByCode("""
+        module aptos_framework::m1 {}
+                              //X
+        module 0x1::m {
+            use 0x1::m1;
+                   //^
+        }        
+    """)
+
     fun `test cannot resolve module with unknown named address`() = checkByCode("""
         module aptos_framework::m1 {}
         module 0x1::m {

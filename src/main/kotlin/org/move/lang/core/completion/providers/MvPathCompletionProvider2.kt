@@ -2,7 +2,6 @@ package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
@@ -45,19 +44,12 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         if (parameters.position !== pathElement.referenceNameElement) return
 
         val parentElement = pathElement.rootPath().parent
-        val resolutionCtx = ResolutionContext(pathElement)
+        val resolutionCtx = ResolutionContext(pathElement, isCompletion = true)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
 
-        // 0x1::m::{a, b, Self}
-        //               //^
-        if (resolutionCtx.isUseSpeck) {
-            val useGroup = resolutionCtx.useSpeck?.parent as? MvUseGroup
-            if (useGroup != null && "Self" !in useGroup.names) {
-                result.addElement(createSelfLookup())
-            }
-        }
-
+        val useGroup = resolutionCtx.useSpeck?.parent as? MvUseGroup
+        val existingNames = useGroup?.names.orEmpty().toSet()
         val ns = buildSet {
             val pathKind = pathElement.pathKind()
             if (resolutionCtx.isUseSpeck) {
@@ -91,18 +83,23 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         )
         addVariants(
             pathElement, parameters, completionContext, ns, result,
-            listOf(
-                CompletionFilter { e, ctx ->
-                    // filter out current module, skips processing if true
-                    val element = e.element.getOriginalOrSelf()
-                    if (element is MvModule) {
-                        val containingModule = ctx.containingModule?.getOriginalOrSelf()
-                        if (containingModule != null) {
-                            return@CompletionFilter containingModule.equalsTo(element)
-                        }
+            CompletionFilter { e, ctx ->
+                // skip existing items, only non-empty for use groups
+                if (e.name in existingNames) return@CompletionFilter true
+
+                // drop Self completion for non-UseGroup items
+                if (e.name == "Self" && useGroup == null) return@CompletionFilter true
+
+                // filter out current module, skips processing (return true)
+                val element = e.element.getOriginalOrSelf()
+                if (element is MvModule) {
+                    val containingModule = ctx.containingModule?.getOriginalOrSelf()
+                    if (containingModule != null) {
+                        return@CompletionFilter containingModule.equalsTo(element)
                     }
-                    false
-                })
+                }
+                false
+            }
         )
     }
 
@@ -112,7 +109,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         completionContext: CompletionContext,
         ns: Set<Namespace>,
         result: CompletionResultSet,
-        completionFilters: List<CompletionFilter> = emptyList()
+        completionFilter: CompletionFilter? = null
     ) {
         val resolutionCtx = completionContext.resolutionCtx ?: error("always non-null in path completion")
         val processedNames = mutableSetOf<String>()
@@ -120,7 +117,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             val processor = it
                 .wrapWithFilter { e ->
                     // custom completion filters
-                    for (completionFilter in completionFilters) {
+                    if (completionFilter != null) {
                         if (completionFilter.removeEntry(e, resolutionCtx)) return@wrapWithFilter false
                     }
 
@@ -154,7 +151,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
         candidates.forEach { candidate ->
             val entry = SimpleScopeEntry(candidate.qualName.itemName, candidate.element, ns)
-            for (completionFilter in completionFilters) {
+            if (completionFilter != null) {
                 if (completionFilter.removeEntry(entry, resolutionCtx)) return@forEach
             }
             val lookupElement = candidate.element.createLookupElement(
@@ -165,8 +162,6 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             result.addElement(lookupElement)
         }
     }
-
-    private fun createSelfLookup() = LookupElementBuilder.create("Self").bold()
 }
 
 fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, msl: Boolean): Ty? {

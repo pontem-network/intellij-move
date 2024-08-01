@@ -7,6 +7,8 @@ import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.greenStub
+import org.move.lang.core.types.Address.Named
+import org.move.lang.core.types.Address.Value
 import org.move.lang.core.types.AddressLit.Companion.normalizeValue
 
 const val MAX_LENGTH = 32
@@ -45,21 +47,21 @@ sealed class Address {
 
     val is0x0 get() = this is Value && this.addressLit().original == "0x0"
 
-    class Value(private val value: String) : Address() {
+    class Value(private val value: String): Address() {
         fun addressLit(): AddressLit = AddressLit(value)
 
         override fun canonicalValue(moveProject: MoveProject): String = this.addressLit().canonical()
 
         override fun text(): String = this.addressLit().original
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is Value) return false
-            if (this.hashCode() != other.hashCode()) return false
-            return eq(this, other)
-        }
+//        override fun equals(other: Any?): Boolean {
+//            if (this === other) return true
+//            if (other !is Value) return false
+//            if (this.hashCode() != other.hashCode()) return false
+//            return eq(this, other)
+//        }
 
-        override fun hashCode(): Int = normalizeValue(value).hashCode()
+//        override fun hashCode(): Int = normalizeValue(value).hashCode()
 
         override fun toString(): String = "Address.Value($value)"
     }
@@ -68,7 +70,7 @@ sealed class Address {
         val name: String,
         val value: String?,
         private val declMoveProject: MoveProject?
-    ) : Address() {
+    ): Address() {
         fun value(moveProject: MoveProject? = null): String {
             return value
                 ?: this.declMoveProject?.getNamedAddressValue(name)
@@ -79,48 +81,57 @@ sealed class Address {
         fun addressLit(moveProject: MoveProject): AddressLit? =
             moveProject.getNamedAddressValue(this.name)?.let { AddressLit(it) }
 
-        override fun canonicalValue(moveProject: MoveProject): String? = this.addressLit(moveProject)?.canonical()
+        override fun canonicalValue(moveProject: MoveProject): String? =
+            this.addressLit(moveProject)?.canonical()
 
         override fun text(): String = "$name = ${value()}"
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is Named) return false
-//            if (this.hashCode() != other.hashCode()) return false
-            return eq(this, other)
-        }
+//        override fun equals(other: Any?): Boolean {
+//            if (this === other) return true
+//            if (other !is Named) return false
+////            if (this.hashCode() != other.hashCode()) return false
+//            return eq(this, other)
+//        }
 
-        override fun hashCode(): Int = name.hashCode()
+//        override fun hashCode(): Int = name.hashCode()
     }
 
     companion object {
         const val UNKNOWN: String = "0x0"
 
-        fun eq(left: Address?, right: Address?): Boolean {
+        fun equals(left: Address?, right: Address?): Boolean {
             if (left === right) return true
             if (left == null && right == null) return true
             return when {
-                left is Value && right is Value -> left.addressLit().canonical() == right.addressLit().canonical()
+                left is Value && right is Value ->
+                    left.addressLit().canonical() == right.addressLit().canonical()
                 left is Named && right is Named -> {
                     val leftValue = left.value?.let { normalizeValue(it) }
                     val rightValue = right.value?.let { normalizeValue(it) }
                     if (leftValue == null && rightValue == null) {
                         // null items cannot be equal
                         return false
-//                        return left.name == right.name
                     }
                     return leftValue == rightValue
                 }
+                left is Value && right is Named -> checkValueNamedEquals(left, right)
+                left is Named && right is Value -> checkValueNamedEquals(right, left)
                 else -> false
             }
+        }
+
+        private fun checkValueNamedEquals(value: Value, named: Named): Boolean {
+            val normalizedValue = value.addressLit().canonical()
+            val normalizedNamed = named.value?.let { normalizeValue(it) }
+            return normalizedValue == normalizedNamed
         }
     }
 }
 
 sealed class StubAddress {
-    object Unknown : StubAddress()
-    data class Value(val value: String) : StubAddress()
-    data class Named(val name: String) : StubAddress()
+    object Unknown: StubAddress()
+    data class Value(val value: String): StubAddress()
+    data class Named(val name: String): StubAddress()
 
     fun asInt(): Int {
         return when (this) {
@@ -134,9 +145,13 @@ sealed class StubAddress {
         return when (this) {
             is Named -> {
                 if (moveProject == null) {
-                    Address.Named(this.name, null, null)
+                    Named(this.name, null, null)
                 } else {
-                    moveProject.getNamedAddressTestAware(this.name) ?: Address.Named(this.name, null, moveProject)
+                    moveProject.getNamedAddressTestAware(this.name) ?: Named(
+                        this.name,
+                        null,
+                        moveProject
+                    )
                 }
             }
             is Value -> Address.Value(this.value)

@@ -57,6 +57,17 @@ val MvModule.declaredFriendModules: Set<FQModule>
         return friends
     }
 
+val MvModule.friendModules: Set<MvModule> get() {
+    val moduleBlock = this.moduleBlock ?: return emptySet()
+    val friendModulePaths = moduleBlock.friendDeclList.mapNotNull { it.path }
+    val friends = mutableSetOf<MvModule>()
+    for (modulePath in friendModulePaths) {
+        val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
+        friends.add(module)
+    }
+    return friends
+}
+
 fun MvModule.allFunctions(): List<MvFunction> {
     val stub = greenStub
     return stub?.childrenStubsOfType<MvFunctionStub>()?.map { it.psi }
@@ -230,30 +241,32 @@ fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
     this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
-    return getProjectPsiDependentCache(this) {
-        val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
-        val moduleName = it.name ?: return@getProjectPsiDependentCache emptyList()
-//        val file = it.containingMoveFile ?: return@getProjectPsiDependentCache emptyList()
+    val moveProject = this.moveProject ?: return emptyList()
+    val moduleName = this.name ?: return emptyList()
 
-        val searchScope = moveProject.searchScope()
-        // all `spec 0x1::m {}` for the current module
-        val moduleSpecs = MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
-//        val moduleSpecs = file.moduleSpecs() +
-//                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
-        if (moduleSpecs.isEmpty()) return@getProjectPsiDependentCache emptyList()
+    val searchScope = moveProject.searchScope()
+    // all `spec 0x1::m {}` for the current module
+    val moduleSpecs = MvModuleSpecIndex.getElementsByModuleName(this.project, moduleName, searchScope)
+    if (moduleSpecs.isEmpty()) return emptyList()
 
-        val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
-        moduleSpecs
-            .filter { moduleSpec ->
-                val module = moduleSpec.moduleItem ?: return@filter false
-                currentModule == module.fqModule()
-            }
-            .toList()
-    }
+//    val currentModule = this.fqModule() ?: return emptyList()
+    return moduleSpecs
+        .filter { moduleSpec ->
+            val specModule = moduleSpec.moduleItem ?: return@filter false
+            isModulesEqual(this, specModule)
+//            currentModule == specModule.fqModule()
+        }
+        .toList()
+//    return getProjectPsiDependentCache(this) {
+//    }
 }
 
 fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
     return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
+}
+
+fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
+    return left == right
 }
 
 abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,

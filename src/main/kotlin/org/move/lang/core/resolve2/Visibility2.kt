@@ -81,9 +81,11 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
             is Restricted -> {
                 when (visibility) {
                     is Restricted.Friend -> {
-                        val friends = visibility.friendModules
-                        val modInfo = pathModule?.fqModule()
-                        if (modInfo in friends) Visible else Invisible
+                        if (pathModule != null) {
+                            val friendModules = visibility.friendModules.value
+                            if (friendModules.any { isModulesEqual(it, pathModule) }) return@VisibilityFilter Visible
+                        }
+                        Invisible
                     }
                     is Restricted.Script -> {
                         val containingFunction = path.containingFunction

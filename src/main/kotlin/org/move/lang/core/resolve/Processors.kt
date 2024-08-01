@@ -398,22 +398,12 @@ private class CompletionVariantsCollector(
 
     override fun process(entry: ScopeEntry): Boolean {
 //        addEnumVariantsIfNeeded(entry)
-//        addAssociatedItemsIfNeeded(entry)
 
-        val element = entry.element as? MvNamedElement ?: return false
-        val lookup =
-            element.createLookupElement(
-                context,
-                priority = element.completionPriority
-            )
-        result.addElement(lookup)
-
-//        (entry.element as? MvNamedElement)?.let {
-//            it.createLookupElement(context)
-//        }
-//        result.addElement(createLookupElement(
-//            context = context
-//        ))
+        result.addElement(createLookupElement(
+            scopeEntry = entry,
+            completionContext = context,
+            priority = entry.element.completionPriority
+        ))
         return false
     }
 
@@ -436,27 +426,6 @@ private class CompletionVariantsCollector(
 //            }
 //            result.addAllElements(filtered)
 //        }
-//    }
-
-//    private fun addAssociatedItemsIfNeeded(entry: ScopeEntry) {
-//        if (entry.name != "Self") return
-//        val entryTrait = when (val traitOrImpl = entry.element as? RsTraitOrImpl) {
-//            is RsTraitItem -> traitOrImpl as? RsTraitItem ?: return
-//            is RsImplItem -> traitOrImpl.traitRef?.path?.reference?.resolve() as? RsTraitItem ?: return
-//            else -> return
-//        }
-//
-//        val associatedTypes = entryTrait
-//            .associatedTypesTransitively
-//            .mapNotNull { type ->
-//                val name = type.name ?: return@mapNotNull null
-//                val typeAlias = type.superItem ?: type
-//                createLookupElement(
-//                    SimpleScopeEntry("Self::$name", typeAlias, TYPES),
-//                    context,
-//                )
-//            }
-//        result.addAllElements(associatedTypes)
 //    }
 }
 

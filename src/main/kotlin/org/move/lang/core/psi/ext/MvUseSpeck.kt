@@ -6,8 +6,6 @@ import org.move.lang.core.psi.MvUseSpeck
 
 val MvUseSpeck.qualifier: MvPath? get() {
     val parentUseSpeck = (context as? MvUseGroup)?.parentUseSpeck ?: return null
-    return parentUseSpeck.pathOrQualifier
+    return parentUseSpeck.path
 }
-val MvUseSpeck.pathOrQualifier: MvPath? get() = path ?: qualifier
-
 val MvUseSpeck.isSelf: Boolean get() = this.path.identifier?.textMatches("Self") ?: false

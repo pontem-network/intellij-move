@@ -17,7 +17,7 @@ sealed class Visibility2 {
     data object Public: Visibility2()
     data object Private: Visibility2()
     sealed class Restricted: Visibility2() {
-        class Friend(val friendModules: Set<FQModule>): Restricted()
+        class Friend(val friendModules: Lazy<Set<MvModule>>): Restricted()
         class Package(val originPackage: MovePackage): Restricted()
         data object Script: Restricted()
     }

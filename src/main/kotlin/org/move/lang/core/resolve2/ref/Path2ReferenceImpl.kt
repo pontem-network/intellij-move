@@ -46,7 +46,7 @@ class Path2ReferenceImpl(element: MvPath):
         override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
             // should not really happen
             if (path !is MvPath) return emptyList()
-            val resolutionCtx = ResolutionContext(path)
+            val resolutionCtx = ResolutionContext(path, isCompletion = false)
             return resolvePath(resolutionCtx, path)
         }
     }
@@ -57,58 +57,22 @@ fun processPathResolveVariants(
     pathKind: PathKind,
     processor: RsResolveProcessor
 ): Boolean {
-//    val contextProcessor = ctx.contextScopeInfo.wrapWithContextFilter(processor)
-    val contextProcessor = processor
     return when (pathKind) {
         is NamedAddress, is ValueAddress -> false
         is PathKind.UnqualifiedPath -> {
             // Self::
             if (processor.lazy("Self") { ctx.containingModule }) return true
             // local
-            processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, contextProcessor)
+            processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, processor)
         }
         is PathKind.QualifiedPath.Module -> {
-            processModulePathResolveVariants(ctx.element, ctx.moveProject, pathKind.address, contextProcessor)
+            processModulePathResolveVariants(ctx, pathKind.address, processor)
         }
         is PathKind.QualifiedPath -> {
-            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
-//            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, contextProcessor)
+            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.qualifier, processor)
         }
     }
-//    return when (pathKind) {
-//        is UnqualifiedPath -> {
-//            // Self::
-//            if (processor.lazy("Self") { ctx.containingModule }) return true
-//            // local
-//            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextProcessor)
-//        }
-//        is ModulePath -> {
-//            // 0x1::bar
-//            processModulePathResolveVariants(
-//                ctx.path,
-//                ctx.moveProject,
-//                pathKind.address,
-//                contextProcessor
-//            )
-//        }
-//        is QualifiedPath -> {
-//            // foo::bar
-//            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
-//        }
-//        is NamedAddressPath -> return false
-//        is ValueAddressPath -> return false
-//    }
 }
-
-//fun processPathResolveVariants(
-//    path: MvPath,
-//    contextScopeInfo: ContextScopeInfo = ContextScopeInfo.from(path),
-//    processor: RsResolveProcessor,
-//): Boolean {
-//    val ctx = PathResolutionContext(path, contextScopeInfo = contextScopeInfo)
-//    val pathKind = classifyPath(path)
-//    return processPathResolveVariants(ctx, pathKind, processor)
-//}
 
 /**
  * foo::bar
@@ -119,7 +83,6 @@ fun processPathResolveVariants(
 fun processQualifiedPathResolveVariants(
     ctx: ResolutionContext,
     ns: Set<Namespace>,
-    path: MvPath,
     qualifier: MvPath,
     processor: RsResolveProcessor
 ): Boolean {
@@ -129,7 +92,7 @@ fun processQualifiedPathResolveVariants(
             // can be module, try for named address as a qualifier
             val addressName = qualifier.referenceName ?: return false
             val address = ctx.moveProject?.getNamedAddressTestAware(addressName) ?: return false
-            if (processModulePathResolveVariants(ctx.element, ctx.moveProject, address, processor)) return true
+            if (processModulePathResolveVariants(ctx, address, processor)) return true
         }
         return false
     }
@@ -144,7 +107,7 @@ fun processQualifiedPathResolveVariants(
     return false
 }
 
-class ResolutionContext(val element: MvElement) {
+class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
 
     private var lazyContainingMoveProject: Lazy<MoveProject?> = lazy(NONE) {
         element.moveProject

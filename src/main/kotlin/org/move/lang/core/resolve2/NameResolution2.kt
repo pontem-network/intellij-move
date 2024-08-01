@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve2
 
-import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -9,6 +8,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleIndex
 
@@ -16,7 +16,12 @@ fun resolveBindingForFieldShorthand(
     element: MvMandatoryReferenceElement,
 ): List<MvNamedElement> {
     return collectResolveVariants(element.referenceName) {
-        processNestedScopesUpwards(element, setOf(Namespace.NAME), ResolutionContext(element), it)
+        processNestedScopesUpwards(
+            element,
+            setOf(Namespace.NAME),
+            ResolutionContext(element, isCompletion = false),
+            it
+        )
     }
 }
 
@@ -40,21 +45,29 @@ fun processNestedScopesUpwards(
 }
 
 fun processModulePathResolveVariants(
-    element: MvElement,
-    moveProject: MoveProject?,
+    ctx: ResolutionContext,
     address: Address,
     processor: RsResolveProcessor,
 ): Boolean {
     // if no project, cannot use the index
+    val moveProject = ctx.moveProject
     if (moveProject == null) return false
 
-    val project = element.project
+    val project = ctx.element.project
     val searchScope = moveProject.searchScope()
 
     val addrProcessor = processor.wrapWithFilter { e ->
         val candidate = e.element as? MvModule ?: return@wrapWithFilter false
         val candidateAddress = candidate.address(moveProject)
-        address == candidateAddress
+        val sameValues = Address.equals(address, candidateAddress)
+
+        if (ctx.isCompletion && sameValues) {
+            // compare named addresses by name in case of the same values for the completion
+            if (address is Named && candidateAddress is Named && address.name != candidateAddress.name)
+                return@wrapWithFilter false
+        }
+
+        sameValues
     }
 
     val targetNames = addrProcessor.names

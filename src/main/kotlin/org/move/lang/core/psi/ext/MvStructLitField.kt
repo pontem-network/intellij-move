@@ -43,7 +43,7 @@ class MvStructRefFieldReferenceImpl(
 ): MvPolyVariantReferenceCached<MvStructRefField>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        val referenceName = element.referenceName ?: return emptyList()
+        val referenceName = element.referenceName
         var variants = collectResolveVariants(referenceName) {
             processStructRefFieldResolveVariants(element, it)
         }

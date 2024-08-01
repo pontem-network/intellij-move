@@ -60,7 +60,7 @@ fun getLookupElementProperties(
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
-        val msl = context.isMsl()
+        val msl = context.msl
         val declaredTy =
             when (element) {
                 is MvFunctionLike -> element.declaredType(msl).retType
