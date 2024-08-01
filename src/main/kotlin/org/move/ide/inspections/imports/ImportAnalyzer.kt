@@ -25,7 +25,7 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
         val paths = rootItemOwnerWithSiblings
             .flatMap { it.descendantsOfType<MvPath>() }
             .filter { it.basePath() == it }
-            .filter { it.pathUsageScope == itemScope }
+            .filter { it.usageScope == itemScope }
             .filter { !it.hasAncestor<MvUseSpeck>() }
 
         for (path in paths) {

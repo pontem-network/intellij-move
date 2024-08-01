@@ -2,11 +2,14 @@ package org.move.lang.core.resolve2
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.createProcessor
-import org.move.lang.core.resolve.process
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.moveProject
 import java.util.*
 
 val MvNamedElement.namespaces: Set<Namespace>
@@ -30,6 +33,26 @@ val MvNamedElement.namespace
         is MvGlobalVariableStmt -> Namespace.NAME
         else -> error("when should be exhaustive, $this is not covered")
     }
+
+fun processMethodResolveVariants(
+    methodOrField: MvMethodOrField,
+    receiverTy: Ty,
+    msl: Boolean,
+    processor: RsResolveProcessor
+): Boolean {
+    val moveProject = methodOrField.moveProject ?: return false
+    val itemModule = receiverTy.itemModule(moveProject) ?: return false
+    return processor
+        .wrapWithFilter { e ->
+            val function = e.element as? MvFunction ?: return@wrapWithFilter false
+            val selfTy = function.selfParamTy(msl) ?: return@wrapWithFilter false
+            // need to use TyVar here, loweredType() erases them
+            val selfTyWithTyVars =
+                selfTy.foldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
+            TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
+        }
+        .processAllItems(setOf(Namespace.FUNCTION), itemModule.allNonTestFunctions())
+}
 
 fun processItemDeclarations(
     itemsOwner: MvItemsOwner,

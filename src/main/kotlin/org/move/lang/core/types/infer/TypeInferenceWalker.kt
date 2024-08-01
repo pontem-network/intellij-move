@@ -9,8 +9,10 @@ import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
+import org.move.lang.core.resolve2.processMethodResolveVariants
+import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.ty.*
-import org.move.lang.core.types.ty.TyInfer.TyVar
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
 import org.move.stdext.chain
@@ -413,10 +415,14 @@ class TypeInferenceWalker(
     }
 
     fun inferMethodCallTy(receiverTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
-        val refName = methodCall.referenceName
-        val methodVariants = getMethodVariants(methodCall, receiverTy, ctx.msl)
-        val genericItem = methodVariants.filterByName(refName).firstOrNull()
 
+        val resolutionCtx = ResolutionContext(methodCall, isCompletion = false)
+        val resolvedMethods =
+            collectMethodOrPathResolveVariants(methodCall, resolutionCtx) {
+                processMethodResolveVariants(methodCall, receiverTy, msl, it)
+            }
+        val genericItem =
+            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.firstOrNull()
         ctx.resolvedMethodCalls[methodCall] = genericItem
 
         val baseTy =

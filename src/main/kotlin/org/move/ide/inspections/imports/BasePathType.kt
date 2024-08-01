@@ -35,7 +35,7 @@ fun MvPath.basePathType(): BasePathType? {
 }
 
 // only Main/Test for now
-val MvPath.pathUsageScope: NamedItemScope
+val MvElement.usageScope: NamedItemScope
     get() {
         var parentElement = this.parent
         while (parentElement != null) {

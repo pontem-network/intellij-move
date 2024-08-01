@@ -3,6 +3,7 @@ package org.move.lang.core.resolve2.ref
 import com.intellij.psi.ResolveResult
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
@@ -123,6 +124,7 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
     val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
     val isUseSpeck: Boolean get() = useSpeck != null
 
+    val methodOrPath: MvMethodOrPath? get() = element as? MvMethodOrPath
     val path: MvPath? get() = element as? MvPath
 }
 
@@ -141,7 +143,7 @@ private fun resolvePath(
     val pathKind = path.pathKind()
     val result =
         // matches resolve variants against referenceName from path
-        collectPathResolveVariants(ctx, path) {
+        collectMethodOrPathResolveVariants(path, ctx) {
             // actually emits resolve variants
             processPathResolveVariants(ctx, pathKind, it)
         }

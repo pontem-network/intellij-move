@@ -8,6 +8,7 @@ import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve2.processItemDeclarations
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
@@ -41,17 +42,18 @@ fun MvModule.is0x1Address(moveProject: MoveProject): Boolean {
     return moduleAddress == "0x00000000000000000000000000000001"
 }
 
-fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): MatchSequence<MvFunction> {
-    val moveProject = element.moveProject ?: return emptySequence()
-    val receiverTyItemModule = receiverTy.itemModule(moveProject) ?: return emptySequence()
+fun getMethodVariants(methodOrField: MvMethodOrField, receiverTy: Ty, msl: Boolean): MatchSequence<MvFunction> {
+    val moveProject = methodOrField.moveProject ?: return emptySequence()
+    val itemModule = receiverTy.itemModule(moveProject) ?: return emptySequence()
 
-    val elementScopes = Visibility.visibilityScopesForElement(element).toMutableSet()
-    if (element.containingModule == receiverTyItemModule) {
+    val elementScopes = Visibility.visibilityScopesForElement(methodOrField).toMutableSet()
+    if (methodOrField.containingModule == itemModule) {
         elementScopes.add(Visibility.Internal)
     }
+
     val functions =
         elementScopes
-            .flatMap { elementScope -> receiverTyItemModule.functionsVisibleInScope(elementScope) }
+            .flatMap { elementScope -> itemModule.functionsVisibleInScope(elementScope) }
             .filter {
                 val selfTy = it.selfParamTy(msl) ?: return@filter false
                 // need to use TyVar here, loweredType() erases them

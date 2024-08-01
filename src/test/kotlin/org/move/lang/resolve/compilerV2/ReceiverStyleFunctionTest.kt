@@ -1,5 +1,6 @@
 package org.move.lang.resolve.compilerV2
 
+import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
 import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.resolve.ResolveTestCase
@@ -188,5 +189,51 @@ class ReceiverStyleFunctionTest: ResolveTestCase() {
                   //^ unresolved
             }
         }                
+    """)
+
+    fun `test friend function method`() = checkByCode("""
+        module 0x1::m {
+            friend 0x1::main;
+            struct S { x: u64 }
+            public(friend) fun receiver(self: &S): u64 { self.x }
+                               //X
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.receiver();
+                  //^
+            }
+        }        
+    """)
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS, PUBLIC_PACKAGE)
+    fun `test public package method`() = checkByCode("""
+        module 0x1::m {
+            struct S { x: u64 }
+            public(package) fun receiver(self: &S): u64 { self.x }
+                                  //X
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.receiver();
+                  //^
+            }
+        }        
+    """)
+
+    fun `test friend function method unresolved`() = checkByCode("""
+        module 0x1::m {
+            struct S { x: u64 }
+            public(friend) fun receiver(self: &S): u64 { self.x }
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.receiver();
+                  //^ unresolved
+            }
+        }        
     """)
 }

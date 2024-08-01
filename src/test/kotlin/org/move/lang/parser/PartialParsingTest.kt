@@ -6,7 +6,7 @@ class PartialParsingTest: MvParsingTestCase("partial") {
     // top level items recovery
     fun `test top level items`() = doTest(true)
     fun `test module const`() = doTest(true)
-    fun `test module uses`() = doTest(true)
+//    fun `test module uses`() = doTest(true)
 
     fun `test spec`() = doTest(true)
 

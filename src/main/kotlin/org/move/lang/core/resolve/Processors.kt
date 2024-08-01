@@ -6,6 +6,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvItemElement
+import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.createFilter
@@ -315,12 +316,13 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
     }
 }
 
-fun collectPathResolveVariants(
+/// checks for visibility of items
+fun collectMethodOrPathResolveVariants(
+    methodOrPath: MvMethodOrPath,
     ctx: ResolutionContext,
-    path: MvPath,
     f: (RsResolveProcessor) -> Unit
 ): List<RsPathResolveResult<MvElement>> {
-    val referenceName = path.referenceName ?: return emptyList()
+    val referenceName = methodOrPath.referenceName ?: return emptyList()
     val processor = SinglePathResolveVariantsCollector(ctx, referenceName)
     f(processor)
     return processor.result
@@ -335,25 +337,25 @@ private class SinglePathResolveVariantsCollector(
 
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
-            collectPathScopeEntry(ctx, result, entry)
+            collectMethodOrPathScopeEntry(ctx, result, entry)
         }
         return false
     }
 }
 
-private fun collectPathScopeEntry(
+private fun collectMethodOrPathScopeEntry(
     ctx: ResolutionContext,
     result: MutableList<RsPathResolveResult<MvElement>>,
     e: ScopeEntry
 ) {
     val element = e.element
-    val visibilityStatus = ctx.path?.let { e.getVisibilityStatusFrom(it) } ?: Visible
+    val visibilityStatus = ctx.methodOrPath?.let { e.getVisibilityStatusFrom(it) } ?: Visible
     val isVisible = visibilityStatus == Visible
     result += RsPathResolveResult(element, isVisible)
 }
 
-fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvElement? =
-    pickFirstResolveEntry(referenceName, f)?.element
+//fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvElement? =
+//    pickFirstResolveEntry(referenceName, f)?.element
 
 fun pickFirstResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
     if (referenceName == null) return null
@@ -477,22 +479,21 @@ fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
 }
 
 fun interface VisibilityFilter {
-    fun filter(path: MvPath, ns: Set<Namespace>): VisibilityStatus
+    fun filter(methodOrPath: MvMethodOrPath, ns: Set<Namespace>): VisibilityStatus
 }
 
 //typealias VisibilityFilter = (MvPath, Set<Namespace>) -> VisibilityStatus
 //typealias VisibilityFilter = (MvElement, Lazy<ModInfo?>?) -> VisibilityStatus
 
-fun ScopeEntry.getVisibilityStatusFrom(path: MvPath): VisibilityStatus =
+fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
-        visibilityFilter.filter(path, this.namespaces)
+        visibilityFilter.filter(methodOrPath, this.namespaces)
     } else {
         Visible
     }
 
 
-fun ScopeEntry.isVisibleFrom(context: MvPath): Boolean =
-    getVisibilityStatusFrom(context) == Visible
+fun ScopeEntry.isVisibleFrom(context: MvPath): Boolean = getVisibilityStatusFrom(context) == Visible
 
 enum class VisibilityStatus {
     Visible,

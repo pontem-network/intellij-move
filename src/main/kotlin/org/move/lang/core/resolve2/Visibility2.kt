@@ -2,7 +2,7 @@ package org.move.lang.core.resolve2
 
 import org.move.cli.containingMovePackage
 import org.move.cli.settings.moveSettings
-import org.move.ide.inspections.imports.pathUsageScope
+import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
@@ -31,30 +31,33 @@ fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityIn
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
 fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
     val (item, itemUsageScope, visibility) = this
-    return VisibilityFilter { path, namespaces ->
+    return VisibilityFilter { element, namespaces ->
 
         // inside msl everything is visible
-        if (path.isMsl()) return@VisibilityFilter Visible
+        if (element.isMsl()) return@VisibilityFilter Visible
 
         // types are always visible, their correct usage is checked in a separate inspection
         if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
 
         // if inside MvAttrItem like abort_code=
-        val attrItem = path.ancestorStrict<MvAttrItem>()
+        val attrItem = element.ancestorStrict<MvAttrItem>()
         if (attrItem != null) return@VisibilityFilter Visible
 
-        val pathUsageScope = path.pathUsageScope
+        val pathUsageScope = element.usageScope
 
-        val useSpeck = path.useSpeck
-        if (useSpeck != null) {
-            // inside import, all visibilities except for private work
-            if (visibility !is Private) return@VisibilityFilter Visible
+        val path = element as? MvPath
+        if (path != null) {
+            val useSpeck = path.useSpeck
+            if (useSpeck != null) {
+                // inside import, all visibilities except for private work
+                if (visibility !is Private) return@VisibilityFilter Visible
 
-            // msl-only items are available from imports
-            if (item.isMslOnlyItem) return@VisibilityFilter Visible
+                // msl-only items are available from imports
+                if (item.isMslOnlyItem) return@VisibilityFilter Visible
 
-            // consts are importable in tests
-            if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible
+                // consts are importable in tests
+                if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible
+            }
         }
 
         // #[test] functions cannot be used from non-imports
@@ -73,7 +76,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // we're in non-msl scope at this point, msl only items aren't available
         if (item is MslOnlyElement) return@VisibilityFilter Invisible
 
-        val pathModule = path.containingModule
+        val pathModule = element.containingModule
         // local methods, Self::method - everything is visible
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
@@ -88,19 +91,19 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
                         Invisible
                     }
                     is Restricted.Script -> {
-                        val containingFunction = path.containingFunction
+                        val containingFunction = element.containingFunction
                         if (containingFunction != null) {
                             if (containingFunction.isEntry || containingFunction.isPublicScript
                             ) return@VisibilityFilter Visible
                         }
-                        if (path.containingScript != null) return@VisibilityFilter Visible
+                        if (element.containingScript != null) return@VisibilityFilter Visible
                         Invisible
                     }
                     is Restricted.Package -> {
                         if (!item.project.moveSettings.enablePublicPackage) {
                             return@VisibilityFilter Invisible
                         }
-                        val pathPackage = path.containingMovePackage ?: return@VisibilityFilter Invisible
+                        val pathPackage = element.containingMovePackage ?: return@VisibilityFilter Invisible
                         if (visibility.originPackage == pathPackage) Visible else Invisible
                     }
                 }

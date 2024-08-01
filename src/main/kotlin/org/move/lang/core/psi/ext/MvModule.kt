@@ -9,6 +9,7 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.cli.containingMovePackage
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
+import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.stubs.MvFunctionStub
@@ -76,9 +77,9 @@ fun MvModule.allFunctions(): List<MvFunction> {
 
 fun MvModule.allNonTestFunctions(): List<MvFunction> =
 //    allFunctions().filter { f -> !f.isTest }
-    getProjectPsiDependentCache(this) {
-        it.allFunctions().filter { f -> !f.hasTestAttr }
-    }
+    this.allFunctions().filter { f -> !f.hasTestAttr }
+//    getProjectPsiDependentCache(this) {
+//    }
 
 fun MvModule.testFunctions(): List<MvFunction> =
     getProjectPsiDependentCache(this) {
@@ -266,7 +267,7 @@ fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
 }
 
 fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
-    return left == right
+    return left.getOriginalOrSelf() == right.getOriginalOrSelf()
 }
 
 abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,

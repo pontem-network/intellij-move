@@ -1,7 +1,7 @@
 package org.move.lang.core.resolve2
 
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.ide.inspections.imports.pathUsageScope
+import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -238,7 +238,7 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
 
             val element = alias ?: namedElement
             val namespace = namedElement.namespace
-            val useSpeckUsageScope = path.pathUsageScope
+            val useSpeckUsageScope = path.usageScope
             val visibilityFilter =
                 namedElement.visInfo(adjustScope = useSpeckUsageScope).createFilter()
 
