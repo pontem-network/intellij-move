@@ -31,13 +31,14 @@ class UiDebouncer(
      * @param onUiThread: callback to be executed in EDT with **any** modality state.
      * Use it only for UI updates
      */
-    @Suppress("DEPRECATION")
     fun <T> update(onPooledThread: () -> T, onUiThread: (T) -> Unit) {
+        @Suppress("DEPRECATION")
         if (Disposer.isDisposed(parentDisposable)) return
         alarm.cancelAllRequests()
         alarm.addRequest({
                              val r = onPooledThread()
                              invokeLater(ModalityState.any()) {
+                                 @Suppress("DEPRECATION")
                                  if (!Disposer.isDisposed(parentDisposable)) {
                                      onUiThread(r)
                                  }
@@ -75,23 +76,6 @@ fun JTextField.addTextChangeListener(listener: (DocumentEvent) -> Unit) {
     )
 }
 
-fun selectElement(element: MvElement, editor: Editor) {
-    val start = element.textRange.startOffset
-    val unwrappedEditor = editor
-//    val unwrappedEditor = if (editor is RsIntentionInsideMacroExpansionEditor && element.containingFile != editor.psiFileCopy) {
-//        if (element.containingFile != editor.originalFile) return
-//        editor.originalEditor
-//    } else {
-//        editor
-//    }
-    unwrappedEditor.caretModel.moveToOffset(start)
-    unwrappedEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
-    unwrappedEditor.selectionModel.setSelection(start, element.textRange.endOffset)
-}
-
 fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
     return cell(component).align(AlignX.FILL)
 }
-
-val JBTextField.trimmedText: String
-    get() = text.trim()
