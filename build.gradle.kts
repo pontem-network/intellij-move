@@ -109,7 +109,7 @@ allprojects {
             testFramework(TestFrameworkType.Platform)
             pluginVerifier("1.371")
             bundledPlugin("org.toml.lang")
-            jetbrainsRuntimeExplicit("jbr_jcef-17.0.11-linux-x64-b1207.30")
+            jetbrainsRuntime("17.0.11b1207.30")
         }
     }
 
