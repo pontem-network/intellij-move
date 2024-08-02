@@ -54,9 +54,8 @@ class CreateMoveFileActionTest : MvProjectTestBase() {
         moduleName: String,
         @Language("Move") expectedText: String
     ) {
-        val dir = this._testProject?.rootDirectory
-            ?.findChild("sources")
-            ?.toPsiDirectory(this.project)!!
+        val dir = this.rootDirectory
+            ?.findChild("sources")?.toPsiDirectory(this.project)!!
 
         val template = FileTemplateManager.getInstance(this.project).getInternalTemplate(templateName)
         val resultFile = CreateMoveFileAction().createFileFromTemplate(dir, moduleName, template)!!
