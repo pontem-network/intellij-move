@@ -47,7 +47,7 @@ jobs:
                     java-version: 17
 
             -   name: Setup Gradle and dependencies
-                uses: gradle/actions/setup-gradle@v3.1.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     cache-read-only: false
@@ -58,7 +58,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
@@ -68,7 +68,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Publish to EAP channel
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: ":publishPlugin -Pkotlin.incremental=false --no-daemon --stacktrace"
