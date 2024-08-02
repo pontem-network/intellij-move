@@ -44,11 +44,11 @@ data class FunctionSignature(
         fun resolve(callable: MvCallable): FunctionSignature? =
             when (callable) {
                 is MvCallExpr -> {
-                    val function = callable.path.reference?.resolveWithAliases() as? MvFunction
+                    val function = callable.path.reference?.resolveFollowingAliases() as? MvFunction
                     function?.getSignature()
                 }
                 is MvMethodCall -> {
-                    val function = callable.reference.resolveWithAliases() as? MvFunction
+                    val function = callable.reference.resolveFollowingAliases() as? MvFunction
                     function?.getSignature()
                 }
                 else -> null

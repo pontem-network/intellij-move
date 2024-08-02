@@ -2,9 +2,6 @@ package org.move.ide.inspections
 
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInspection.*
-import com.intellij.model.SideEffectGuard
-import com.intellij.model.SideEffectGuard.EffectType.EXEC
-import com.intellij.model.SideEffectGuard.EffectType.SETTINGS
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement

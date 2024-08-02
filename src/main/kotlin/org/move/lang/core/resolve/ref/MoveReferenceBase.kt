@@ -39,7 +39,7 @@ abstract class MvPolyVariantReferenceBase<T: MvReferenceElement>(element: T):
         return element
     }
 
-    final override fun resolve(): MvNamedElement? = super.resolve() as? MvNamedElement
+    override fun resolve(): MvNamedElement? = super.resolve() as? MvNamedElement
 
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         multiResolve().map { PsiElementResolveResult(it) }.toTypedArray()

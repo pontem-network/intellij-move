@@ -9,11 +9,14 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.refItemScopes
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.ext.MvMethodOrField
+import org.move.lang.core.psi.ext.getFieldVariants
+import org.move.lang.core.psi.ext.inferReceiverTy
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.tyInfers
-import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve.letStmtScope
+import org.move.lang.core.resolve.createProcessor
+import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.TyFunction
@@ -44,13 +47,14 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
     fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
         val msl = element.isMsl()
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
-        val scopeInfo = ContextScopeInfo(
-            letStmtScope = element.letStmtScope,
-            refItemScopes = element.refItemScopes,
-        )
+//        val scopeInfo = ContextScopeInfo(
+//            letStmtScope = element.letStmtScope,
+//            refItemScopes = element.refItemScopes,
+//        )
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
-        val ctx = CompletionContext(element, scopeInfo, expectedTy)
+        val ctx = CompletionContext(element, msl, expectedTy)
+//        val ctx = CompletionContext(element, scopeInfo, msl, expectedTy)
 
         val structTy = receiverTy.derefIfNeeded() as? TyStruct
         if (structTy != null) {
@@ -63,23 +67,26 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
                     result.addElement(lookupElement)
                 }
         }
-        getMethodVariants(element, receiverTy, msl)
-            .forEach { (_, function) ->
-                val subst = function.tyInfers
-                val declaredFuncTy = function.declaredType(msl).substitute(subst) as TyFunction
-                val declaredSelfTy = declaredFuncTy.paramTypes.first()
-                val autoborrowedReceiverTy =
-                    TyReference.autoborrow(receiverTy, declaredSelfTy)
-                        ?: error("unreachable, references always compatible")
 
-                val inferenceCtx = InferenceContext(msl)
-                inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
+        processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->
+            val function = e.element as? MvFunction ?: return@createProcessor
+            val subst = function.tyInfers
+            val declaredFuncTy = function.declaredType(msl).substitute(subst) as TyFunction
+            val declaredSelfTy = declaredFuncTy.paramTypes.first()
+            val autoborrowedReceiverTy =
+                TyReference.autoborrow(receiverTy, declaredSelfTy)
+                    ?: error("unreachable, references always compatible")
 
-                val lookupElement = function.createLookupElement(
+            val inferenceCtx = InferenceContext(msl)
+            inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
+
+            result.addElement(
+                createLookupElement(
+                    e,
                     ctx,
                     subst = inferenceCtx.resolveTypeVarsIfPossible(subst)
                 )
-                result.addElement(lookupElement)
-            }
+            )
+        })
     }
 }

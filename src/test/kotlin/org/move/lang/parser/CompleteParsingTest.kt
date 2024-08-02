@@ -44,6 +44,8 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test macros`() = doTest()
     fun `test loops`() = doTest()
 
+    fun `test paths`() = doTest()
+
     // compiler v2
     fun `test index expr`() = doTest()
     fun `test public package`() = doTest()

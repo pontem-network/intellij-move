@@ -6,12 +6,15 @@
 package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
+import org.move.cli.tests.NamedAddressService
+import org.move.cli.tests.NamedAddressServiceTestImpl
 import org.move.ide.inspections.fixes.CompilerV2Feat
 import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.utils.tests.base.MvTestCase
@@ -36,6 +39,11 @@ annotation class WithEnabledInspections(vararg val inspections: KClass<out Inspe
 @Retention(AnnotationRetention.RUNTIME)
 annotation class CompilerV2Features(vararg val features: CompilerV2Feat)
 
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class NamedAddress(val name: String, val value: String)
+
 fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
     val enabledCompilerV2 = this.findAnnotationInstance<CompilerV2Features>()
     if (enabledCompilerV2 != null) {
@@ -50,6 +58,14 @@ fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
                 }
             }
         }
+    }
+}
+
+fun UsefulTestCase.handleNamedAddressAnnotations(project: Project) {
+    val namedAddresses = this.findAnnotationInstances<NamedAddress>()
+    val namedAddressService = project.service<NamedAddressService>() as NamedAddressServiceTestImpl
+    for (namedAddress in namedAddresses) {
+        namedAddressService.namedAddresses[namedAddress.name] = namedAddress.value
     }
 }
 

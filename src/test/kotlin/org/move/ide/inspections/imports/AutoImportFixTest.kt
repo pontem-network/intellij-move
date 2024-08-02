@@ -388,7 +388,7 @@ module 0x1::main {
 }        
     """)
 
-    fun `test cannot auto import test function from same file`() = checkAutoImportFixIsUnavailable("""
+    fun `test cannot auto import test function from the same file`() = checkAutoImportFixIsUnavailable("""
 module 0x1::m1 {
     #[test]
     public fun test_a() {}

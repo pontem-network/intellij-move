@@ -2,7 +2,7 @@ package org.move.lang.completion.names.project
 
 import org.move.utils.tests.completion.CompletionProjectTestCase
 
-class ModulesCompletionProjectTest : CompletionProjectTestCase() {
+class ModulesCompletionProjectTest: CompletionProjectTestCase() {
 
     fun `test complete modules from all the files in imports`() =
         checkContainsCompletionsExact(listOf("M1", "M2")) {
@@ -121,7 +121,7 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
         }
     }
 
-    fun `test named address is identified only with name`() = checkNoCompletion {
+    fun `test no named address completion in module position`() = checkNoCompletion {
         moveToml(
             """
         [package]
@@ -129,21 +129,78 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
 
         [addresses]
         Std = "0x1"
-        Pontem = "0x1"
+        Pontem = "0x2"
         """
         )
         sources {
             move(
                 "mod.move", """
             module Std::StdMod {}
-            module Pontem::PontemMod {}
+            module Pontem::MyMod {}
             module 0x1::MyMod {
-                use 0x1::Pont/*caret*/
+                use 0x2::Pont/*caret*/
             }    
             """
             )
         }
     }
+
+    fun `test no named address completion in item position`() = checkNoCompletion {
+        moveToml(
+            """
+        [package]
+        name = "package"
+
+        [addresses]
+        Std = "0x1"
+        Pontem = "0x2"
+        """
+        )
+        sources {
+            move(
+                "mod.move", """
+            module Std::StdMod {}
+            module Pontem::MyMod {}
+            module 0x1::MyMod {
+                use 0x2::MyMod::Pont/*caret*/
+            }    
+            """
+            )
+        }
+    }
+
+    fun `test completion for value address is available if identified with name`() = doSingleCompletion(
+        {
+            moveToml(
+                """
+        [package]
+        name = "package"
+
+        [addresses]
+        Std = "0x1"
+        Pontem = "0x2"
+        """
+            )
+            sources {
+                move(
+                    "mod.move", """
+            module Std::StdMod {}
+            module Pontem::PontemMod {}
+            module 0x1::MyMod {
+                use 0x2::Pont/*caret*/
+            }    
+            """
+                )
+            }
+        },
+        """
+            module Std::StdMod {}
+            module Pontem::PontemMod {}
+            module 0x1::MyMod {
+                use 0x2::PontemMod/*caret*/
+            }    
+        """
+    )
 
     fun `test modules from tests directory should not be in completion of sources`() = checkNoCompletion {
         namedMoveToml("MyPackage")
@@ -205,11 +262,13 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
         """
         )
         sources {
-            main("""
+            main(
+                """
             module 0x1::M {
                 use aptos_std::de/*caret*/;
             }    
-            """)
+            """
+            )
             move(
                 "debug.move", """
             module std::debug {

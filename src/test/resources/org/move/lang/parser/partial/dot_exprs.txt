@@ -124,7 +124,7 @@ FILE
           MvExprStmtImpl(EXPR_STMT)
             MvCallExprImpl(CALL_EXPR)
               MvPathImpl(PATH)
-                MvModuleRefImpl(MODULE_REF)
+                MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('aptos_token')
                 PsiElement(::)('::')
                 PsiElement(IDENTIFIER)('get_token')

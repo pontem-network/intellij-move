@@ -123,14 +123,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
 
     fun `test public and public(friend) completions for module`() = completionFixture.checkContainsCompletion(
         """
-        address 0x1 {
-        module Transaction {
+        module 0x1::Transaction {
             friend 0x1::M;
             public(friend) fun create_friend() {}
             public fun create() {}
         }
-        }
-        
         module 0x1::M {
             fun main() {
                 0x1::Transaction::cr/*caret*/

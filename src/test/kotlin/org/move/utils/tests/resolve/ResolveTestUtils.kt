@@ -3,6 +3,7 @@ package org.move.utils.tests.resolve
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
 fun checkResolvedFile(
     actualResolveFile: VirtualFile,
@@ -31,9 +32,17 @@ sealed class TestResolveResult {
 
 fun PsiElement.findReference(offset: Int): PsiReference? = findReferenceAt(offset - textRange.startOffset)
 
-fun PsiElement.checkedResolve(offset: Int): PsiElement {
+fun PsiElement.checkedResolve(offset: Int, errorMessagePrefix: String = ""): PsiElement {
     val reference = findReference(offset) ?: error("element doesn't have reference")
-    val resolved = reference.resolve() ?: error("Failed to resolve `$text`")
+    val resolved = reference.resolve() ?: run {
+        val multiResolve = (reference as? MvPolyVariantReference)?.multiResolve().orEmpty()
+        check(multiResolve.size != 1)
+        if (multiResolve.isEmpty()) {
+            error("${errorMessagePrefix}Failed to resolve $text")
+        } else {
+            error("${errorMessagePrefix}Failed to resolve $text, multiple variants:\n${multiResolve.joinToString()}")
+        }
+    }
 
     check(reference.isReferenceTo(resolved)) {
         "Incorrect `isReferenceTo` implementation in `${reference.javaClass.name}`"

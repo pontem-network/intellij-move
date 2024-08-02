@@ -13,7 +13,7 @@ class TyLowering {
     fun lowerTy(moveType: MvType, msl: Boolean): Ty {
         return when (moveType) {
             is MvPathType -> {
-                val genericItem = moveType.path.reference?.resolveWithAliases()
+                val genericItem = moveType.path.reference?.resolveFollowingAliases()
                 lowerPath(moveType.path, genericItem, msl)
             }
             is MvRefType -> {

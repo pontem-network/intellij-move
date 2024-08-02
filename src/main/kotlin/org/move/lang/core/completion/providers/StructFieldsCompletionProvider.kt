@@ -12,7 +12,6 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
@@ -39,7 +38,8 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
 
         if (element is MvBindingPat) element = element.parent as MvElement
 
-        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
+        val completionCtx = CompletionContext(element, element.isMsl())
+//        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         when (element) {
             is MvStructPatField -> {
                 val structPat = element.structPat

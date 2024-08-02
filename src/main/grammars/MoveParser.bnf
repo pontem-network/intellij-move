@@ -159,7 +159,7 @@
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 
-QualPathCodeFragmentElement ::= FQModulePathIdent? TypeArgumentList?
+QualPathCodeFragmentElement ::= PathImpl
 
 Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
@@ -185,7 +185,7 @@ Script ::= SCRIPT_KW ScriptBlock { pin = 1 }
 ScriptBlock ::= '{' ScriptBlockItems '}' {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
 }
 private ScriptBlockItems ::= ScriptItem*
@@ -241,7 +241,7 @@ ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
 }
 private ModuleBlockItems ::= ModuleItem*
@@ -255,6 +255,7 @@ private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
+//                            | UseStmt
                             | FriendDecl
                             | StructItem
                             | FunctionItem
@@ -269,8 +270,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
     pin = "CONST_KW"
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
@@ -289,6 +289,7 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
@@ -320,6 +321,7 @@ fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
@@ -355,9 +357,8 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
 {
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
-        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeParametersOwner"
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
     stubClass = "org.move.lang.core.stubs.MvStructStub"
@@ -389,6 +390,7 @@ fake Function ::= Attr* native? VisibilityModifier? entry? inline?
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MvModificationTrackerOwner"
     ]
@@ -465,17 +467,17 @@ ResourceAccessItemList ::= <<isResourceAccessEnabled>> ResourceAccessItem*
 ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
 
 AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
-AccessSpecifier ::= <<pathMode 'WILDCARD' Path>> AddressSpecifier?
+AccessSpecifier ::= <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
 
 AddressSpecifier ::= '(' AddressSpecifierArg ')' { pin = 1 }
 AddressSpecifierArg ::= '*'
                         | AddressSpecifierLit
-                        | <<pathMode 'VALUE' (Path '(' AddressSpecifierCallParam ')')>>
+                        | <<pathMode 'VALUE' (PathImpl '(' AddressSpecifierCallParam ')')>>
                         | IDENTIFIER
 AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
 
-AddressSpecifierCallParam ::= AddressSpecifierParamPath
-AddressSpecifierParamPath ::= LocalPathIdent { elementType = Path }
+AddressSpecifierCallParam ::= AddressSpecifierCallParamImpl
+AddressSpecifierCallParamImpl ::= PathIdent { elementType = Path }
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
@@ -511,53 +513,32 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-FriendDecl ::= Attr* friend FQModuleRef ';'
+FriendDecl ::= Attr* friend PathImpl ';'
 {
     pin = "friend"
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
 
-UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
+UseStmt ::= Attr* use UseSpeck ';' {
     pin = "use"
+    extends = Stmt
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
-ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
-{
-    name = "qual path to module"
-    implements = [
-        "org.move.lang.core.psi.MvNamedElement"
-//        "org.move.lang.core.psi.MvUseSpeck"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleUseSpeckMixin"
-}
-ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
-{
-    pin = 2
-    name = "qual path to imported item"
-//    implements = [
-//        "org.move.lang.core.psi.MvUseSpeck"
-//    ]
-}
+UseSpeck ::= PathImpl ( UseAlias | ('::' UseGroup) )?
 
-UseItemGroup ::= '{' <<non_empty_comma_sep_items MultiItemUse_member_with_recovery>>? '}'
+UseGroup ::= '{' UseSpeck_with_recover* '}'
 {
     pin = 1
 }
-private MultiItemUse_member_with_recovery ::= !('}' | ';' | <<eof>>) UseItem
-{
-    pin = 1
-}
+// todo:
+private PathWithoutTypeArgs ::= PathImpl
 
-UseItem ::= IDENTIFIER UseAlias?
-{
-    pin = 1
-    name = "item name"
-    implements = [
-        "org.move.lang.core.psi.MvNamedElement"
-        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
+private UseSpeck_with_recover ::= !'}' UseSpeck (','|&'}') {
+  pin = 1
+  recoverWhile = UseSpeck_recover
 }
+private UseSpeck_recover ::= !('}' | '{' | IDENTIFIER | '::' )
+
 UseAlias ::= as IDENTIFIER
 {
     pin = 1
@@ -583,7 +564,7 @@ RefType ::= RefTypeStart Type
 }
 RefTypeStart ::= '&' mut?
 
-PathType ::= Path
+PathType ::= PathImpl
 {
     name = "type"
 }
@@ -657,7 +638,7 @@ BindingPat ::= IDENTIFIER {
 
 TuplePat ::= '(' <<non_empty_comma_sep_items Pat>>? ')'
 
-StructPat ::= Path StructPatFieldsBlock
+StructPat ::= PathImpl StructPatFieldsBlock
 StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}' { pin = 1 }
 
 private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
@@ -672,7 +653,7 @@ StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
-        "org.move.lang.core.resolve.ref.MvStructRefField"
+        "org.move.lang.core.psi.ext.MvStructRefField"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
 }
@@ -745,7 +726,7 @@ CodeBlock ::= '{' CodeBlock_items '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
         "org.move.lang.core.psi.AnyBlock"
     ]
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
@@ -903,7 +884,7 @@ VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
     pin = 1
 }
 
-StructLitExpr ::= <<includeStmtModeFalse>> Path StructLitFieldsBlock
+StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
 {
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
@@ -920,7 +901,7 @@ StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructFieldLitReferenceElement"
-        "org.move.lang.core.resolve.ref.MvStructRefField"
+        "org.move.lang.core.psi.ext.MvStructRefField"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }
@@ -965,7 +946,7 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= (Path &'(') ValueArgumentList {
+CallExpr ::= (PathImpl &'(') ValueArgumentList {
     pin = 1
     implements = [
         "org.move.lang.core.psi.PathExpr"
@@ -1045,46 +1026,60 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= Path !'{' {
+RefExpr ::= PathImpl !'{' {
+//RefExpr ::= Path !'{' {
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
 
-Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+//Path3Impl ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+//{
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+//        "org.move.lang.core.psi.ext.MvMethodOrPath"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvPathMixin"
+//}
+
+fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
 {
     implements = [
-        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+        "org.move.lang.core.resolve.ref.MvNameAccessChainReferenceElement"
         "org.move.lang.core.psi.ext.MvMethodOrPath"
     ]
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
-private LocalPathIdent ::= PATH_MODE_IDENTIFIER
-private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
+private PathImpl ::= PathStart PathSegment*
+
+PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
 {
+    name = "path"
+    elementType = Path
+}
+// negation for UseSpeck
+left PathSegment ::= '::' !'{' PathIdent TypeArgumentList? {
     pin = 2
+    elementType = Path
 }
-private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
-{
-    pin = 1
-}
+
+private PathIdent ::= PATH_MODE_IDENTIFIER
+PathAddress ::= DIEM_ADDRESS
+                | INTEGER_LITERAL
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
+
+//private LocalPathIdent ::= PATH_MODE_IDENTIFIER
+//private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
+//{
+//    pin = 2
+//}
+//private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
+//{
+//    pin = 1
+//}
 private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
                                 | (<<isPathMode 'WILDCARD' >> ('*' | IDENTIFIER))
-
-ModuleRef ::= PATH_MODE_IDENTIFIER | FQModuleRef
-{
-    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
-}
-
-FQModuleRef ::= AddressRef '::' PATH_MODE_IDENTIFIER
-{
-    pin = 2
-    extends = ModuleRef
-    implements = [
-        "org.move.lang.core.resolve.ref.MvFQModuleReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
-}
 
 AddressRef ::= NamedAddress
                 | DIEM_ADDRESS
@@ -1135,7 +1130,8 @@ private to ::= <<toKeyword>>
 private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
-ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
+ModuleSpec ::= Attr* spec PathImpl ModuleSpecBlock
+//ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"
@@ -1148,7 +1144,7 @@ ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
         "org.move.lang.core.psi.AnyBlock"
     ]
@@ -1228,18 +1224,19 @@ ItemSpecRef ::= IDENTIFIER
     mixin = "org.move.lang.core.psi.ext.MvItemSpecRefMixin"
 }
 
-Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
-    pin = 1
+Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
+    pin = 2
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.MvQualNamedElement"
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
+        "org.move.lang.core.psi.ext.MvItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
     stubClass = "org.move.lang.core.stubs.MvSchemaStub"
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
 ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
@@ -1252,7 +1249,7 @@ SpecCodeBlock ::= '{' ItemSpecBlock_items '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
         "org.move.lang.core.psi.AnyBlock"
         "org.move.lang.core.psi.MslOnlyElement"
     ]
@@ -1294,13 +1291,14 @@ SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
     elementType = SchemaFieldStmt
 }
 
-GlobalVariableStmt ::= global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
 {
-    pin = 1
+    pin = 2
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
         "org.move.lang.core.psi.MslOnlyElement"
+        "org.move.lang.core.psi.ext.MvItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvGlobalVariableMixin"
 }
@@ -1411,7 +1409,7 @@ IfElseIncludeItem ::= if Condition SchemaLit else SchemaLit
     extends = IncludeItem
 }
 
-SchemaLit ::= Path SchemaFieldsBlock?
+SchemaLit ::= PathImpl SchemaFieldsBlock?
 {
     implements = [
         "org.move.lang.core.psi.MslOnlyElement"
@@ -1499,7 +1497,7 @@ ApplyExcept ::= except <<non_empty_comma_sep_items FunctionPattern>> {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
 
-SchemaRef ::= Path ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
+SchemaRef ::= PathImpl ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
 {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }

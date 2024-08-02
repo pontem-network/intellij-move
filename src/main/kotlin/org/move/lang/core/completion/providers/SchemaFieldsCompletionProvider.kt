@@ -7,20 +7,20 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.MvSchemaLitField
-import org.move.lang.core.psi.ext.fieldBindings
-import org.move.lang.core.psi.ext.fieldNames
-import org.move.lang.core.psi.ext.schema
+import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.processSchemaLitFieldResolveVariants
 import org.move.lang.core.psi.ext.schemaLit
-import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve.collectCompletionVariants
+import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = PlatformPatterns
-            .psiElement()
-            .withParent<MvSchemaLitField>()
+        get() =
+            PlatformPatterns.psiElement().withParent<MvSchemaLitField>()
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -28,16 +28,17 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val pos = parameters.position
-        val element = pos.parent as? MvSchemaLitField ?: return
-        val schemaLit = element.schemaLit ?: return
-        val schema = schemaLit.schema ?: return
-        val providedFieldNames = schemaLit.fieldNames
+        val literalField = pos.parent as? MvSchemaLitField ?: return
 
-        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
-        for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
-            result.addElement(
-                fieldBinding.createLookupElement(completionCtx)
-            )
+        val schemaLit = literalField.schemaLit?.getOriginalOrSelf() ?: return
+        val existingFieldNames = schemaLit.fields
+            .filter { !it.textRange.contains(pos.textOffset) }
+            .map { it.referenceName }
+
+        val completionCtx = CompletionContext(literalField, literalField.isMsl())
+        collectCompletionVariants(result, completionCtx) {
+            val processor = it.wrapWithFilter { e -> e.name !in existingFieldNames }
+            processSchemaLitFieldResolveVariants(literalField, processor)
         }
     }
 }

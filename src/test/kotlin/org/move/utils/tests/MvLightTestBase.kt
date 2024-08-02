@@ -10,5 +10,6 @@ abstract class MvLightTestBase: BasePlatformTestCase() {
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
         this.handleCompilerV2Annotations(project)
+        this.handleNamedAddressAnnotations(project)
     }
 }

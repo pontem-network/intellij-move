@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.openapiext.checkCommitIsNotInProgress
 
-class MvNamedElementIndex : StringStubIndexExtension<MvNamedElement>() {
+class MvNamedElementIndex: StringStubIndexExtension<MvNamedElement>() {
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
     override fun getKey(): StubIndexKey<String, MvNamedElement> = KEY
 

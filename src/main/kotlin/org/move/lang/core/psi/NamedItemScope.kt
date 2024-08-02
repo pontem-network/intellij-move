@@ -11,6 +11,15 @@ enum class NamedItemScope {
     TEST,
     VERIFY;
 
+    val isTest get() = this == TEST
+
+    fun shrinkScope(adjustmentScope: NamedItemScope): NamedItemScope {
+        if (this == MAIN) {
+            return adjustmentScope
+        }
+        return this
+    }
+
     companion object {
         fun all(): Set<NamedItemScope> = setOf(MAIN, TEST, VERIFY)
     }

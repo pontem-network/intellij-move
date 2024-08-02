@@ -1,9 +1,7 @@
 package org.move.ide.utils.imports
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.childrenOfType
-import org.move.lang.core.psi.ext.hasTestOnlyAttr
-import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkWriteAccessAllowed
 
@@ -22,7 +20,7 @@ fun ImportCandidate.import(context: MvElement) {
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
-private fun MvImportsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
+private fun MvItemsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
 
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
@@ -41,62 +39,125 @@ private fun MvImportsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolea
 }
 
 private fun tryInsertingIntoExistingUseStmt(
-    mod: MvImportsOwner,
-    usePath: ItemQualName,
+    mod: MvItemsOwner,
+    itemQualName: ItemQualName,
     testOnly: Boolean
 ): Boolean {
-    if (usePath.moduleName == null) return false
+    if (itemQualName.moduleName == null) return false
     val psiFactory = mod.project.psiFactory
-    return mod
-        .useStmtList
-        .filter { it.hasTestOnlyAttr == testOnly }
-        .mapNotNull { it.itemUseSpeck }
-        .any { tryGroupWithItemSpeck(psiFactory, it, usePath) }
+    val useStmts = mod.useStmtList.filter { it.hasTestOnlyAttr == testOnly }
+    return useStmts
+        .any { tryGroupWithItemSpeck(psiFactory, it, itemQualName) }
 }
 
 private fun tryGroupWithItemSpeck(
-    psiFactory: MvPsiFactory, itemUseSpeck: MvItemUseSpeck, usePath: ItemQualName
+    psiFactory: MvPsiFactory, useStmt: MvUseStmt, itemQualName: ItemQualName
 ): Boolean {
-    val fqModuleName = usePath.editorModuleFqName() ?: error("checked in the upper level")
-    if (!itemUseSpeck.fqModuleRef.textMatches(fqModuleName)) return false
+    val rootUseSpeck = useStmt.useSpeck ?: return false
 
-    val itemName = usePath.itemName
-    if (itemName in itemUseSpeck.names()) return true
+    val useGroup = rootUseSpeck.useGroup
+    // 0x1::m -> module imports does not support groups, can't insert
+    if (useGroup == null && rootUseSpeck.path.length < 3) return false
 
-    val useItem = psiFactory.useItem(itemName)
-    val useItemGroup = itemUseSpeck.useItemGroup
-    if (useItemGroup != null) {
+    // searching for the statement with the same module qualifier
+    val itemModulePath = itemQualName.editorModuleFqName() ?: error("moduleName cannot be zero")
+    if (useGroup == null) {
+        val modulePath = rootUseSpeck.path.qualifier ?: return false
+        if (!modulePath.textMatches(itemModulePath)) return false
+    } else {
+        val modulePath = rootUseSpeck.path
+        if (!modulePath.textMatches(itemModulePath)) return false
+    }
+
+    val itemName = itemQualName.itemName
+    val newUseSpeck = psiFactory.useSpeckForGroup(itemName)
+
+    if (useGroup == null) {
+        // 0x1::dummy::{}
+        val useSpeckWithGroup = psiFactory.useSpeckWithEmptyUseGroup()
+
+        // [0x1::m]::item
+        //  ^ qualifier
+        val qualifier = rootUseSpeck.path.qualifier ?: return false
+        // 0x1::dummy::{} -> 0x1::m::{}
+        useSpeckWithGroup.path.replace(qualifier)
+
+        // 0x1::m::{} -> 0x1::m::{item as dummy}
+        val existingItemName = rootUseSpeck.path.referenceName ?: return false
+        val groupItemUseSpeck = psiFactory.useSpeckForGroupWithDummyAlias(existingItemName)
+
+        // 0x1::m::{item as dummy} -> 0x1::m::{item as myitem}
+        val existingUseAlias = rootUseSpeck.useAlias
+        if (existingUseAlias != null) {
+            groupItemUseSpeck.useAlias?.replace(existingUseAlias)
+        } else {
+            groupItemUseSpeck.useAlias?.delete()
+        }
+
+        val newUseGroup = useSpeckWithGroup.useGroup!!
+        newUseGroup.addAfter(groupItemUseSpeck, newUseGroup.lBrace)
+
+        // 0x1::m::{item as myitem} -> 0x1::m::{item as myitem, }
+        val comma = newUseGroup.addBefore(psiFactory.createComma(), newUseGroup.rBrace)
+
+        // 0x1::m::{item as myitem, } -> 0x1::m::{item as myitem, item2}
+        newUseGroup.addAfter(newUseSpeck, comma)
+
+        useSpeckWithGroup.useGroup?.replace(newUseGroup)
+        useStmt.useSpeck?.replace(useSpeckWithGroup)
+    } else {
         // add after the last item
-        val itemList = useItemGroup.useItemList
-        if (itemList.isEmpty()) {
+        val useSpeckList = useGroup.useSpeckList
+        if (useSpeckList.isEmpty()) {
             // use 0x1::m::{};
-            useItemGroup.addAfter(useItem, useItemGroup.lBrace)
+            useGroup.addAfter(newUseSpeck, useGroup.lBrace)
         } else {
             // use 0x1::m::{item1} -> use 0x1::m::{item1, item2}
-            val lastItem = itemList.last()
-            useItemGroup.addAfter(
-                useItem,
-                useItemGroup.addAfter(psiFactory.createComma(), lastItem)
-            )
+            val lastItem = useSpeckList.last()
+            val newComma = useGroup.addAfter(psiFactory.createComma(), lastItem)
+            useGroup.addAfter(newUseSpeck, newComma)
         }
-    } else {
-        val existingItem = itemUseSpeck.useItem ?: return true
-
-        val existingItemCopy = existingItem.copy()
-        val itemGroup = existingItem.replace(psiFactory.useItemGroup(listOf())) as MvUseItemGroup
-
-        val comma = itemGroup.addAfter(
-            psiFactory.createComma(),
-            itemGroup.addAfter(existingItemCopy, itemGroup.lBrace)
-        )
-        itemGroup.addAfter(useItem, comma)
     }
+
+//    val useItems = useStmt.useItems
+//    if (useItems.all { it.type == MODULE }) return false
+//
+//    val itemUseItem = useItems.firstOrNull() ?: return false
+//    val itemUseSpeck = itemUseItem.useSpeck
+//    val qualifier = itemUseSpeck.qualifier ?: itemUseSpeck.path.qualifier ?: return false
+//
+//    val fqModuleName = usePath.editorModuleFqName() ?: error("checked in the upper level")
+//    if (!qualifier.textMatches(fqModuleName)) return false
+
+//    val itemName = usePath.itemName
+//    val useStmtNames = useItems.map { it.nameOrAlias }
+//    if (itemName in useStmtNames) return true
+
+//    val useGroup = itemUseSpeck.useGroup
+//    val useSpeck = psiFactory.useSpeckForGroup(itemName)
+//    if (useGroup != null) {
+//        // add after the last item
+//        val useSpeckList = useGroup.useSpeckList
+//        if (useSpeckList.isEmpty()) {
+//            // use 0x1::m::{};
+//            useGroup.addAfter(useSpeck, useGroup.lBrace)
+//        } else {
+//            // use 0x1::m::{item1} -> use 0x1::m::{item1, item2}
+//            val lastItem = useSpeckList.last()
+//            useGroup.addAfter(
+//                useSpeck,
+//                useGroup.addAfter(psiFactory.createComma(), lastItem)
+//            )
+//        }
+//    } else {
+//    }
     return true
 }
 
-private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
+private val <T: MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
 
-private fun insertUseStmtAtTheCorrectLocation(mod: MvImportsOwner, useStmt: MvUseStmt): Boolean {
+@Suppress("SameReturnValue")
+private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseStmt): Boolean {
     val psiFactory = MvPsiFactory(mod.project)
     val newline = psiFactory.createNewline()
     val useStmts = mod.childrenOfType<MvUseStmt>().map(::UseStmtWrapper)

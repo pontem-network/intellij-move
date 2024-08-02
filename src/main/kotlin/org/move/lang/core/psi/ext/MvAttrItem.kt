@@ -8,6 +8,8 @@ import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 
 val MvAttrItem.attr: MvAttr? get() = this.parent as? MvAttr
 
+val MvAttrItem.isAbortCode: Boolean get() = this.identifier.textMatches("abort_code")
+
 class AttrItemReferenceImpl(
     element: MvAttrItem,
     val ownerFunction: MvFunction

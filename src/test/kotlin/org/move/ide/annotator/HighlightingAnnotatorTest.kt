@@ -174,17 +174,20 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     """
     )
 
-    fun `test imported Self as keyword`() = checkHighlighting(
+    fun `test Self as keyword`() = checkHighlighting(
         """
-    module M {
-        use 0x1::Transaction::<KEYWORD>Self</KEYWORD>
+    module 0x1::m {
+        use 0x1::Transaction::<KEYWORD>Self</KEYWORD>;
+        fun main() {
+            <KEYWORD>Self</KEYWORD>::call();
+        }
     }
         """
     )
 
     fun `test copy is keyword`() = checkHighlighting(
         """
-    module M {
+    module 0x1::m {
         struct S has copy {}
         fun main() {
             let a = <KEYWORD>copy</KEYWORD> 1;
@@ -324,10 +327,10 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
         """
         module 0x1::m {
             struct S { field: u8 }
-            fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
+            fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S): u8 { 
                 <SELF_PARAMETER>self</SELF_PARAMETER>.field 
             }
-            fun main(s: S) {
+            fun main(s: S, <VARIABLE>self</VARIABLE>: u8) {
                 s.<METHOD_CALL>receiver</METHOD_CALL>();
             }
         }        
@@ -338,10 +341,10 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
         """
         module 0x1::m {
             struct S { field: u8 }
-            fun <FUNCTION>receiver</FUNCTION>(<VARIABLE>self</VARIABLE>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
+            fun <FUNCTION>receiver</FUNCTION>(<VARIABLE>self</VARIABLE>: S): u8 { 
                 <VARIABLE>self</VARIABLE>.field 
             }
-            fun main(s: S) {
+            fun main(s: S, <VARIABLE>self</VARIABLE>: u8) {
                 s.<METHOD_CALL>receiver</METHOD_CALL>();
             }
         }        

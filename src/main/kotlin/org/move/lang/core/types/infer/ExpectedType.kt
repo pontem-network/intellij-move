@@ -27,7 +27,7 @@ fun inferExpectedTypeArgumentTy(typeArgument: MvTypeArgument): Ty? {
             if (paramIndex == -1) return null
 
             val path = typeArgumentList.parent as MvPath
-            val genericItem = path.reference?.resolveWithAliases() as? MvTypeParametersOwner ?: return null
+            val genericItem = path.reference?.resolveFollowingAliases() as? MvTypeParametersOwner ?: return null
             genericItem.typeParameters
                 .getOrNull(paramIndex)
                 ?.let { TyInfer.TyVar(TyTypeParameter(it)) }

@@ -284,7 +284,10 @@ class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
                 moveToml(
                     """
         [package]
-        name = "MoveStdlib"        
+        name = "MoveStdlib"       
+         
+        [addresses]
+        Std = "0x1"
                 """
                 )
                 sources {
@@ -346,7 +349,7 @@ class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
         }
     }
 
-    fun `test resolve module by address value`() = checkByFileTree {
+    fun `test resolve module by address value with different address name`() = checkByFileTree {
         moveToml(
             """
         [package]

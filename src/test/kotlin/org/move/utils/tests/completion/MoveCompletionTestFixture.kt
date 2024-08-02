@@ -16,6 +16,7 @@ class MvCompletionTestFixture(
     fun invokeCompletion(@Language("Move") code: String): List<LookupElement> {
         prepare(code)
         val completions = myFixture.completeBasic()
+        check(completions != null) { "Only a single completion item" }
         return completions.toList()
     }
 
@@ -69,6 +70,10 @@ class MvCompletionTestFixture(
         val lookups = myFixture.completeBasic()
 
         checkNotNull(lookups) {
+            "Only a single completion returned, cannot be used with this test, " +
+                    "possibly change the test to doSingleCompletion()"
+        }
+        check(lookups.isNotEmpty()) {
             "Expected completions that contain $variants, but no completions found"
         }
         for (variant in variants) {

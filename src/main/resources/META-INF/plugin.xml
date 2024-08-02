@@ -1,6 +1,6 @@
 <idea-plugin
     require-restart="true"
-    xmlns:xi="http://www.w3.org/2001/XInclude">
+>
   <id>org.move.lang</id>
   <name>Move on Aptos</name>
 
@@ -45,6 +45,11 @@
 
     <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
 
+    <!-- specifically to support named addresses in tests, does nothing in non-test environment -->
+    <projectService serviceInterface="org.move.cli.tests.NamedAddressService"
+                    serviceImplementation="org.move.cli.tests.NamedAddressServiceImpl"
+                    testServiceImplementation="org.move.cli.tests.NamedAddressServiceTestImpl" />
+
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
     <configurationType
@@ -68,6 +73,7 @@
     <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
     <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
     <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />
+    <stubIndex implementation="org.move.lang.index.MvModuleIndex" />
     <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
     <lang.documentationProvider language="Move"
@@ -152,7 +158,7 @@
     <annotator language="Move"
                implementationClass="org.move.ide.annotator.HighlightingAnnotator" />
 
-    <highlightingPassFactory implementation="org.move.ide.annotator.RsHighlightingPassFactoryRegistrar"/>
+    <highlightingPassFactory implementation="org.move.ide.annotator.RsHighlightingPassFactoryRegistrar" />
 
     <annotator language="TOML"
                implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
@@ -199,7 +205,7 @@
 
     <statusBarWidgetFactory id="moveExternalLinterWidget"
                             implementation="org.move.cli.externalLinter.RsExternalLinterWidgetFactory"
-                            order="first"/>
+                            order="first" />
 
 
     <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
@@ -236,10 +242,6 @@
                      enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection" />
     <localInspection language="Move" groupName="Move"
-                     displayName="Redundant qualifier"
-                     enabledByDefault="false" level="WARNING"
-                     implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection" />
-    <localInspection language="Move" groupName="Move"
                      displayName="Type checking"
                      enabledByDefault="true" level="ERROR"
                      implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
@@ -272,10 +274,6 @@
                      enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.UnusedTestSignerInspection" />
     <localInspection language="Move" groupName="Move"
-                     displayName="Address by value inspection"
-                     enabledByDefault="false" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.AddressByValueImportInspection" />
-    <localInspection language="Move" groupName="Move"
                      displayName="Redundant type cast"
                      enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.RedundantTypeCastInspection" />
@@ -292,7 +290,7 @@
     <globalInspection language="Move" groupName="Move"
                       enabledByDefault="true" level="ERROR"
                       implementationClass="org.move.ide.inspections.MvExternalLinterInspection"
-                      displayName="External linter"/>
+                      displayName="External linter" />
 
     <!-- Color Settings -->
     <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage" />
@@ -312,9 +310,9 @@
 
     <postStartupActivity
         implementation="org.move.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen" />
-<!--     background = 5 seconds delayed  -->
-<!--    <postStartupActivity-->
-<!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
+    <!--     background = 5 seconds delayed  -->
+    <!--    <postStartupActivity-->
+    <!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
 
 
     <projectConfigurable instance="org.move.cli.settings.PerProjectAptosConfigurable"
@@ -343,7 +341,7 @@
 
     <!-- Notifications -->
     <notificationGroup id="Move Language" displayType="BALLOON" />
-    <notificationGroup id="Move Compile Log" displayType="NONE"/>
+    <notificationGroup id="Move Compile Log" displayType="NONE" />
     <editorNotificationProvider
         implementation="org.move.ide.notifications.InvalidBlockchainCliConfiguration" />
     <editorNotificationProvider
@@ -390,19 +388,19 @@
     <registryKey key="org.move.debug.enabled"
                  defaultValue="false"
                  restartRequired="false"
-                 description="Enable debug mode for Move"/>
+                 description="Enable debug mode for Move" />
     <registryKey key="org.move.external.linter.max.duration"
                  defaultValue="3000"
                  restartRequired="false"
-                 description="Show notification warning if the external linter is running longer than the set value (ms)"/>
+                 description="Show notification warning if the external linter is running longer than the set value (ms)" />
     <registryKey key="org.move.aptos.bundled.force.supported"
                  defaultValue="false"
                  restartRequired="false"
-                 description="Force-enable support for pre-compiled bundled Aptos CLI (imitate non-MacOS)"/>
+                 description="Force-enable support for pre-compiled bundled Aptos CLI (imitate non-MacOS)" />
     <registryKey key="org.move.aptos.bundled.force.unsupported"
                  defaultValue="false"
                  restartRequired="false"
-                 description="Force-disable support for pre-compiled bundled Aptos CLI (imitate MacOS)"/>
+                 description="Force-disable support for pre-compiled bundled Aptos CLI (imitate MacOS)" />
 
     <advancedSetting
         id="org.move.aptos.test.tool.window"
@@ -419,7 +417,7 @@
               topic="org.move.cli.settings.MvProjectSettingsServiceBase$MoveSettingsListener"
               activeInTestMode="false" />
     <listener class="org.move.cli.externalLinter.RsExternalLinterWidgetUpdater"
-              topic="org.move.cli.MoveProjectsService$MoveProjectsListener"/>
+              topic="org.move.cli.MoveProjectsService$MoveProjectsListener" />
   </projectListeners>
 
   <actions>
@@ -460,14 +458,14 @@
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
-      <separator/>
-      <reference id="Move.RunExternalLinter"/>
-      <separator/>
-      <reference id="ExpandAll"/>
-      <reference id="CollapseAll"/>
-      <separator/>
+      <separator />
+      <reference id="Move.RunExternalLinter" />
+      <separator />
+      <reference id="ExpandAll" />
+      <reference id="CollapseAll" />
+      <separator />
       <reference id="Move.FetchAptosPackage" />
-      <separator/>
+      <separator />
       <reference id="Move.ShowSettings" />
     </group>
   </actions>

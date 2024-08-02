@@ -24,7 +24,7 @@ class MvAnnotationTestFixture(
     val codeInsightFixture: CodeInsightTestFixture,
     private var annotatorClasses: List<KClass<out MvAnnotatorBase>> = emptyList(),
     private var inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
-) : BaseFixture() {
+): BaseFixture() {
     val project: Project get() = codeInsightFixture.project
     lateinit var enabledInspections: List<InspectionProfileEntry>
 
@@ -63,7 +63,10 @@ class MvAnnotationTestFixture(
         checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = false)
 
     private fun configureByText(text: String): PsiFile {
-        return codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+        val psiFile = codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+        // build indexes
+//        IndexingTestUtil.waitUntilIndexesAreReady(codeInsightFixture.project)
+        return psiFile
     }
 
     fun checkByText(
@@ -131,6 +134,7 @@ class MvAnnotationTestFixture(
             "No /*caret*/ comment, add it to the place where fix is expected"
         }
         val file = configureByText(before)
+
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
         applyQuickFix(fixName)
         codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))

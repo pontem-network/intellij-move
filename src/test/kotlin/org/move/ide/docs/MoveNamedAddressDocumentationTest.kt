@@ -2,7 +2,7 @@ package org.move.ide.docs
 
 import org.move.utils.tests.MvDocumentationProviderProjectTestCase
 
-class MvNamedAddressDocumentationTest : MvDocumentationProviderProjectTestCase() {
+class MvNamedModulePathDocumentationTest : MvDocumentationProviderProjectTestCase() {
     fun `test value of named address accessible from documentation`() = doTestByFileTree(
         {
             moveToml(

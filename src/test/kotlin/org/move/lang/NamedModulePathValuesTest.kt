@@ -6,49 +6,63 @@ import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
 
-class NamedAddressValuesTest : MvProjectTestBase() {
+class NamedModulePathValuesTest: MvProjectTestBase() {
     fun `test named address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [addresses]
         Std = "0x1"
-        """)
+        """
+        )
         sources {
-            move("main.move", """
+            move(
+                "main.move", """
             module Std::Module {}
                    //^ Std = 0x1
-            """)
+            """
+            )
         }
     }
 
     fun `test placeholder address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [addresses]
         Std = "_"
-        """)
+        """
+        )
         sources {
-            move("main.move", """
+            move(
+                "main.move", """
             module Std::Module {}
                    //^ Std = _
-            """)
+            """
+            )
         }
     }
 
     fun `test dependency address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [dependencies]
         Stdlib = { local = "./stdlib" }
-        """)
+        """
+        )
         dir("stdlib") {
-            moveToml("""
+            moveToml(
+                """
             [addresses]
             Std = "0x1"
-            """)
+            """
+            )
         }
         sources {
-            move("main.move", """
+            move(
+                "main.move", """
             module Std::Module {}
                    //^ Std = 0x1
-            """)
+            """
+            )
         }
     }
 
@@ -129,9 +143,8 @@ class NamedAddressValuesTest : MvProjectTestBase() {
         sources {
             move(
                 "main.move", """
-            module 0x1::M {
-                use Std::Reflect;
-                    //^ Std = 0x2
+            module Std::M {
+                  //^ Std = 0x2
             }
             """
             )
@@ -157,27 +170,33 @@ class NamedAddressValuesTest : MvProjectTestBase() {
     fun `test named address from git dependency`() = checkByFileTree {
         dotMove {
             git("https://github.com/pontem-network/move-stdlib.git", "main") {
-                moveToml("""
+                moveToml(
+                    """
                 [package]
                 name = "Stdlib"
                 
                 [addresses]
                 Std = "0x2"    
-                """)
+                """
+                )
             }
         }
-        moveToml("""
+        moveToml(
+            """
     [package]
     name = "Module"
             
     [dependencies]
     Stdlib = { git = "https://github.com/pontem-network/move-stdlib.git", rev = "main"}          
-        """)
+        """
+        )
         sources {
-            move("main.move", """
+            move(
+                "main.move", """
             module Std::Module {}
                   //^ Std = 0x2
-            """)
+            """
+            )
         }
     }
 

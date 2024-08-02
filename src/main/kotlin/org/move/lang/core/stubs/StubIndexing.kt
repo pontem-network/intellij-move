@@ -6,6 +6,9 @@ import org.move.lang.index.*
 import org.move.lang.moveProject
 
 fun IndexSink.indexModuleStub(stub: MvModuleStub) {
+    stub.name?.let {
+        occurrence(MvModuleIndex.KEY, it)
+    }
     indexNamedStub(stub)
 }
 

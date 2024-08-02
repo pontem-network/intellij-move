@@ -209,7 +209,7 @@ class SpecsCompletionTest: CompletionTestCase() {
     module 0x1::M {
         fun call() {}
         spec call {
-            include MySchema { ad/*caret*/ }
+            include MySchema { ad/*caret*/ };
         }
         spec schema MySchema {
             addr: address;
@@ -219,7 +219,53 @@ class SpecsCompletionTest: CompletionTestCase() {
     module 0x1::M {
         fun call() {}
         spec call {
-            include MySchema { addr/*caret*/ }
+            include MySchema { addr/*caret*/ };
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """)
+
+    fun `test autocomplete fields in include schema if full field name is provided`() = doSingleCompletion("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { addr/*caret*/ };
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """, """
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { addr/*caret*/ };
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """)
+
+    fun `test no completion if field already used`() = checkNoCompletion("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { addr, ad/*caret*/ };
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """)
+
+    fun `test no completion if field already used at the end`() = checkNoCompletion("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { ad/*caret*/, addr };
         }
         spec schema MySchema {
             addr: address;

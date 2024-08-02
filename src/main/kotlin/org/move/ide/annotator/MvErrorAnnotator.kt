@@ -193,13 +193,13 @@ class MvErrorAnnotator: MvAnnotatorBase() {
     }
 
     private fun checkMethodOrPath(methodOrPath: MvMethodOrPath, holder: MvAnnotationHolder) {
-        val item = methodOrPath.reference?.resolveWithAliases()
+        val item = methodOrPath.reference?.resolveFollowingAliases()
         val msl = methodOrPath.isMslScope
         val realCount = methodOrPath.typeArguments.size
 
         val parent = methodOrPath.parent
         if (item == null && methodOrPath is MvPath
-            && methodOrPath.nullModuleRef && methodOrPath.identifierName == "vector"
+            && methodOrPath.qualifier == null && methodOrPath.identifierName == "vector"
         ) {
             val expectedCount = 1
             if (realCount != expectedCount) {
@@ -302,7 +302,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
         val itemLabel = qualName.editorText()
         val realCount = typeArgumentList.typeArgumentList.size
-        assert(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
+        check(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
 
         // if any type param is passed, inference is disabled, so check fully
         when {

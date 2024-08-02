@@ -40,6 +40,14 @@ class FindUsagesTest : MvTestBase() {
         }
     }    
     """)
+//
+//    fun `test module`() = doTestByText("""
+//    module 0x1::m {}
+//              //^
+//    module 0x1::main {
+//        use 0x1::m;  // - module
+//    }
+//    """)
 
     private fun doTestByText(@Language("Move") code: String) {
         InlineFile(code)

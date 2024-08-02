@@ -351,4 +351,17 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test module resolution not available on type position`() = checkByCode("""
+        module 0x1::Transaction {
+            struct Type {
+                val: u8                   
+            }
+        }
+        module 0x1::M {
+            fun main(a: 0x1::Transaction::Transaction) {
+                                           //^ unresolved
+            }
+        }
+    """)
 }

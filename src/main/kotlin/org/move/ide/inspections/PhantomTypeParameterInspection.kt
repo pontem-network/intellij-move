@@ -31,7 +31,7 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                         // stop if empty
                         if (path.typeArguments.isEmpty()) continue
                         // determine phantom status of every argument, drop if phantom
-                        val outerStruct = path.reference?.resolveWithAliases() as? MvStruct ?: continue
+                        val outerStruct = path.reference?.resolveFollowingAliases() as? MvStruct ?: continue
                         for ((i, typeArg) in path.typeArguments.withIndex()) {
                             val outerTypeParam = outerStruct.typeParameters.getOrNull(i) ?: continue
                             if (outerTypeParam.isPhantom) {

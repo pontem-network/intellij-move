@@ -15,5 +15,7 @@ script {
         while (true) {}
         return
         0hello
+
+        RMRK:: ::;
     }
 }

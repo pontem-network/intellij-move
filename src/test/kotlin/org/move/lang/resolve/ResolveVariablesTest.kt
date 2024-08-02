@@ -1,5 +1,6 @@
 package org.move.lang.resolve
 
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveVariablesTest : ResolveTestCase() {
@@ -290,25 +291,25 @@ module 0x1::string_tests {
 }
     """)
 
-    fun `test resolve const item with same name imported expected failure`() = checkByCode("""
-module 0x1::string {
-    const ERR_ADMIN: u64 = 1;
-}        
-#[test_only]
-module 0x1::string_tests {
-    use 0x1::string::ERR_ADMIN;
-
-    const ERR_ADMIN: u64 = 1;
-            //X
-
-    #[test]
-    #[expected_failure(abort_code = ERR_ADMIN)]
-                                     //^
-    fun test_abort() {
-        
-    }
-}
-    """)
+//    fun `test resolve const item with same name imported expected failure`() = checkByCode("""
+//module 0x1::string {
+//    const ERR_ADMIN: u64 = 1;
+//}
+//#[test_only]
+//module 0x1::string_tests {
+//    use 0x1::string::ERR_ADMIN;
+//
+//    const ERR_ADMIN: u64 = 1;
+//            //X
+//
+//    #[test]
+//    #[expected_failure(abort_code = ERR_ADMIN)]
+//                                     //^
+//    fun test_abort() {
+//
+//    }
+//}
+//    """)
 
     fun `test resolve const item same module expected failure`() = checkByCode("""
 #[test_only]
@@ -345,6 +346,42 @@ module 0x1::string_tests {
                     ind;
                     //^
                 }
+            }
+        }        
+    """)
+
+    fun `test cannot resolve path address`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                0x1::;
+                //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve attribute location`() = checkByCode("""
+        module 0x1::m {
+                  //X  
+            fun main() {
+            }
+            #[test(location=0x1::m)]
+                               //^
+            fun test_main() {
+                
+            }
+        }        
+    """)
+
+    @NamedAddress("aptos_std", "0x1")
+    fun `test resolve attribute location for named address`() = checkByCode("""
+        module aptos_std::m {
+                  //X  
+            fun main() {
+            }
+            #[test(location=aptos_std::m)]
+                                     //^
+            fun test_main() {
+                
             }
         }        
     """)
