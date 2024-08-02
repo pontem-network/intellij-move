@@ -302,7 +302,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
         val itemLabel = qualName.editorText()
         val realCount = typeArgumentList.typeArgumentList.size
-        assert(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
+        check(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
 
         // if any type param is passed, inference is disabled, so check fully
         when {

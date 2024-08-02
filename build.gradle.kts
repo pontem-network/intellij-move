@@ -70,7 +70,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.9.22"
-    id("org.jetbrains.intellij.platform") version "2.0.0-rc1"
+    id("org.jetbrains.intellij.platform") version "2.0.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
@@ -106,7 +106,7 @@ allprojects {
         intellijPlatform {
             create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
             testFramework(TestFrameworkType.Platform)
-            pluginVerifier()
+            pluginVerifier("1.371")
             bundledPlugin("org.toml.lang")
             jetbrainsRuntimeExplicit("jbr_jcef-17.0.11-linux-x64-b1207.30")
         }
@@ -160,7 +160,7 @@ allprojects {
             channels.set(listOf(publishingChannel))
         }
 
-        verifyPlugin {
+        pluginVerification {
             ides {
                 recommended()
             }
