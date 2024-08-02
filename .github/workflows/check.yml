@@ -17,16 +17,16 @@ jobs:
             ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
 
             -   name: Set up JDK 17
-                uses: actions/setup-java@v3
+                uses: actions/setup-java@v4
                 with:
                     distribution: 'corretto'
                     java-version: 17
 
             -   name: Setup Gradle and dependencies
-                uses: gradle/actions/setup-gradle@v3.1.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     cache-read-only: false
@@ -37,7 +37,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
@@ -47,7 +47,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Tests
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
@@ -57,7 +57,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin.xml
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: ":verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
@@ -67,7 +67,7 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3
                 with:
                     gradle-version: wrapper
                     arguments: ":verifyPlugin -Pkotlin.incremental=false --no-daemon"
