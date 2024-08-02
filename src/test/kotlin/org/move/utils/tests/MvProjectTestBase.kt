@@ -25,7 +25,8 @@ import org.move.utils.tests.base.TestCase
 fun setRegistryKey(key: String, value: Boolean) = Registry.get(key).setValue(value)
 
 abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
-    var _testProject: TestProject? = null
+
+//    var isProjectInitialized: Boolean = false
 
     override fun setUp() {
         super.setUp()
@@ -36,10 +37,10 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         this.handleCompilerV2Annotations(project)
     }
 
-    override fun tearDown() {
-        _testProject = null
-        super.tearDown()
-    }
+//    override fun tearDown() {
+////        isProjectInitialized = false
+//        super.tearDown()
+//    }
 
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
@@ -59,9 +60,9 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
     }
 
     private fun testProject(fileTree: FileTree): TestProject {
-        val rootDirectory = myModule.rootManager.contentRoots.first()
+        val rootDirectory = this.rootDirectory ?: error("myModule should exist")
+
         val testProject = fileTree.create(myFixture.project, rootDirectory)
-        this._testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
 
         SystemProperties.setProperty("user.home", testProject.rootDirectory.path)
@@ -69,6 +70,8 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
 
         return testProject
     }
+
+    val rootDirectory: VirtualFile? get() = myModule?.rootManager?.contentRoots?.firstOrNull()
 
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {
         val fileWithCaret =
@@ -98,9 +101,8 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
     }
 
     private fun findVirtualFile(path: String): VirtualFile {
-        val rootDirectory = this._testProject?.rootDirectory ?: error("no root")
         val parts = FileUtil.splitPath(path, '/')
-        var res = rootDirectory
+        var res = this.rootDirectory ?: error("no root")
         for (part in parts) {
             res = res.findChild(part) ?: error("cannot find $path")
         }

@@ -10,7 +10,7 @@ package org.move.lang.core.resolve.ref
 import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -190,8 +190,7 @@ class MvResolveCache(project: Project) : Disposable {
     }
 
     companion object {
-        fun getInstance(project: Project): MvResolveCache =
-            ServiceManager.getService(project, MvResolveCache::class.java)
+        fun getInstance(project: Project): MvResolveCache = project.service<MvResolveCache>()
     }
 }
 

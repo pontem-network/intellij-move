@@ -55,10 +55,11 @@ if (publishingChannel != "default") {
 }
 
 val pluginGroup = "org.move"
-val javaVersion = JavaVersion.VERSION_17
 val pluginName = "intellij-move"
 val pluginJarName = "intellij-move-$pluginVersion"
 
+val javaVersion = JavaVersion.VERSION_17
+//val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
 val aptosVersion = "3.4.1"
 
@@ -69,7 +70,7 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.25"
     id("org.jetbrains.intellij.platform") version "2.0.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"

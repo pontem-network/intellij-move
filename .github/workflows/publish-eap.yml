@@ -29,7 +29,7 @@ jobs:
         needs: [ check-for-tests-success ]
         strategy:
             matrix:
-                gradle-properties-version: [ 233, 241 ]
+                gradle-properties-version: [ 241, 242 ]
 
         runs-on: ubuntu-latest
         env:
@@ -71,7 +71,7 @@ jobs:
                 uses: gradle/gradle-build-action@v2.7.0
                 with:
                     gradle-version: wrapper
-                    arguments: ":plugin:publishPlugin -Pkotlin.incremental=false --no-daemon --stacktrace"
+                    arguments: ":publishPlugin -Pkotlin.incremental=false --no-daemon --stacktrace"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea

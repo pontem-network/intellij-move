@@ -10,7 +10,7 @@ jobs:
     tests:
         strategy:
             matrix:
-                gradle-properties-version: [ 233, 241, 242 ]
+                gradle-properties-version: [ 241, 242 ]
 
         runs-on: ubuntu-latest
         env:
