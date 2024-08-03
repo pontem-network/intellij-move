@@ -114,6 +114,7 @@
         STRUCT_KW     = 'struct_kw'
         CONST_KW     = 'const_kw'
         SCHEMA_KW     = 'schema_kw'
+        ENUM_KW     = 'enum_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -251,13 +252,14 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry | inline
+private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | '#'
+                        | "friend"  | "entry" | "inline" | "enum"
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
-//                            | UseStmt
                             | FriendDecl
                             | StructItem
+                            | Enum
                             | FunctionItem
                             | SpecFunctionItem
                             | Const
@@ -382,6 +384,17 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
+Enum ::= enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
+{
+    pin = "enum"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+EnumBody ::= '{' (EnumVariant ','?)* '}'
+{
+    pin = 1
+}
+EnumVariant ::= Attr* IDENTIFIER StructBlock?
+
 fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? (ResourceAccessItemList | AcquiresType)?
@@ -429,6 +442,7 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 private friend ::= <<friendKeyword>>
+private enum ::= <<enumKeyword>>
 private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
 
