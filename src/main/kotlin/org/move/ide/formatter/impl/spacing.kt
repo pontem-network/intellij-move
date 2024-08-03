@@ -25,7 +25,7 @@ import org.move.lang.core.tokenSetOf
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
-        .afterInside(COMMA, STRUCT_BLOCK).parentDependentLFSpacing(1, 1, true, 1)
+        .afterInside(COMMA, BLOCK_FIELDS).parentDependentLFSpacing(1, 1, true, 1)
         .after(COMMA).spacing(1, 1, 0, true, 0)
         .before(COMMA).spaceIf(false)
         .after(COLON).spaceIf(true)

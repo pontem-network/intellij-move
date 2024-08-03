@@ -73,7 +73,7 @@ FILE
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('SomeStruct')
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')

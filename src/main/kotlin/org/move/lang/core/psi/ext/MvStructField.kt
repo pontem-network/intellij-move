@@ -4,22 +4,22 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import org.move.ide.MoveIcons
+import org.move.lang.core.psi.MvBlockFields
+import org.move.lang.core.psi.MvNamedFieldDecl
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvStructBlock
-import org.move.lang.core.psi.MvStructField
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import javax.swing.Icon
 
-val MvStructField.fieldsDefBlock: MvStructBlock?
+val MvNamedFieldDecl.fieldsDefBlock: MvBlockFields?
     get() =
-        parent as? MvStructBlock
+        parent as? MvBlockFields
 
-val MvStructField.structItem: MvStruct
+val MvNamedFieldDecl.structItem: MvStruct
     get() =
         fieldsDefBlock?.parent as MvStruct
 
-abstract class MvStructFieldMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
-                                                   MvStructField {
+abstract class MvNamedFieldDeclMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
+                                                      MvNamedFieldDecl {
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT_FIELD
 

@@ -240,7 +240,7 @@ private fun MvNamedElement.getLookupElementBuilder(
                 .withTypeText(this.containingFile?.name)
         }
 
-        is MvStructField -> {
+        is MvNamedFieldDecl -> {
             val fieldTy = this.type?.loweredType(msl)?.substitute(subst) ?: TyUnknown
             lookupElementBuilder
                 .withTypeText(fieldTy.text(false))

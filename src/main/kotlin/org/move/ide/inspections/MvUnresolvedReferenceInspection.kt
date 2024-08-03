@@ -120,7 +120,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             }
             if (litField.isShorthand) {
                 val resolvedItems = litField.reference.multiResolve()
-                val resolvedStructField = resolvedItems.find { it is MvStructField }
+                val resolvedStructField = resolvedItems.find { it is MvNamedFieldDecl }
                 if (resolvedStructField == null) {
                     holder.registerProblem(
                         litField.referenceNameElement,

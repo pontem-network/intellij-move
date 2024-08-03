@@ -114,6 +114,7 @@
         STRUCT_KW     = 'struct_kw'
         CONST_KW     = 'const_kw'
         SCHEMA_KW     = 'schema_kw'
+        ENUM_KW     = 'enum_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -251,13 +252,14 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry | inline
+private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | '#'
+                        | "friend"  | "entry" | "inline" | "enum"
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
-//                            | UseStmt
                             | FriendDecl
                             | StructItem
+                            | Enum
                             | FunctionItem
                             | SpecFunctionItem
                             | Const
@@ -353,7 +355,7 @@ SpecInlineFunctionStmt ::= SpecInlineFunctionInner
 }
 
 fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
-                        (';' | StructBlock)?
+                        (';' | BlockFields)?
 {
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
@@ -367,7 +369,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
 
 private StructInnerFirst ::= STRUCT_KW
 StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
-                            StructBlock
+                            BlockFields
 {
     pin = StructInnerFirst
     elementType = Struct
@@ -381,6 +383,35 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private StructItem ::= StructInner | NativeStructInner
+
+Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
+{
+    pin = "enum"
+    implements = [
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvEnumMixin"
+    stubClass = "org.move.lang.core.stubs.MvEnumStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+EnumBody ::= '{' (EnumVariant ','?)* '}'
+{
+    pin = 1
+}
+EnumVariant ::= Attr* IDENTIFIER BlockFields?
+{
+    pin = 2
+    implements = [
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvEnumVariantMixin"
+    stubClass = "org.move.lang.core.stubs.MvEnumVariantStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
@@ -429,8 +460,12 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 private friend ::= <<friendKeyword>>
+private enum ::= <<enumKeyword>>
 private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
+
+private AttrsAndVis_first ::= '#'
+//private AttrsAndVis_first ::= '#' | public
 
 private FunctionModifierSetInner ::= <<functionModifierSet VisibilityModifier>>
 private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet VisibilityModifier>>
@@ -493,15 +528,15 @@ Ability ::= copy | IDENTIFIER
     name = "ability"
 }
 
-StructBlock ::= '{' StructField_with_recover* '}' { pin = 1 }
-private StructField_with_recover ::= !'}' StructField (',' | &'}')
+BlockFields ::= '{' NamedFieldDecl_with_recover* '}' { pin = 1 }
+private NamedFieldDecl_with_recover ::= !'}' NamedFieldDecl (',' | &'}')
 {
     pin = 1
-    recoverWhile = StructField_recover
+    recoverWhile = NamedFieldDecl_recover
 }
-private StructField_recover ::= !('}' | IDENTIFIER)
+private NamedFieldDecl_recover ::= !('}' | NamedFieldDecl_first)
 
-StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
+NamedFieldDecl ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 2
     implements = [
@@ -509,9 +544,10 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvStructFieldMixin"
+    mixin = "org.move.lang.core.psi.ext.MvNamedFieldDeclMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+private NamedFieldDecl_first ::= AttrsAndVis_first | IDENTIFIER
 
 FriendDecl ::= Attr* friend PathImpl ';'
 {

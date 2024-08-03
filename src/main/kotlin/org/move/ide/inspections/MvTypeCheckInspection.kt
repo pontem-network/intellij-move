@@ -60,7 +60,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     }
             }
 
-            override fun visitStructField(field: MvStructField) {
+            override fun visitNamedFieldDecl(field: MvNamedFieldDecl) {
                 val structItem = field.structItem
                 for (innerType in field.type?.descendantsOfType<MvPathType>().orEmpty()) {
                     val typeItem = innerType.path.reference?.resolve() as? MvStruct ?: continue

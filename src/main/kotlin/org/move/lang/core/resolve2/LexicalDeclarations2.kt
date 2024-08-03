@@ -181,7 +181,11 @@ fun processItemsInScope(
                     }
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        processor.processAllItems(ns, module.structs())
+                        processor.processAllItems(
+                            ns,
+                            module.structs(),
+                            module.enums()
+                        )
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
@@ -200,6 +204,7 @@ fun processItemsInScope(
                 is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList, scope.specFunctionList)
                 else -> false
             }
+
             else -> false
         }
         if (stop) return true

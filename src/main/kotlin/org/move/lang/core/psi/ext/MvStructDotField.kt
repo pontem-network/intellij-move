@@ -9,7 +9,11 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.wrapWithList
 
-fun getFieldVariants(element: MvMethodOrField, receiverTy: TyStruct, msl: Boolean): MatchSequence<MvStructField> {
+fun getFieldVariants(
+    element: MvMethodOrField,
+    receiverTy: TyStruct,
+    msl: Boolean
+): MatchSequence<MvNamedFieldDecl> {
     val structItem = receiverTy.item
     if (!msl) {
         // cannot resolve field if not in the same module as struct definition
