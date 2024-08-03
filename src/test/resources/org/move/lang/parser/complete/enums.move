@@ -21,4 +21,6 @@ module 0x1::enums {
         One{i: Inner},
         Two{i: Inner, b: Box},
     }
+
+    fun main(one: 0x1::m::S::One, two: m::S::Two) {}
 }

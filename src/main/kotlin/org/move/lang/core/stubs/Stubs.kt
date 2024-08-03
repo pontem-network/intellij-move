@@ -280,6 +280,72 @@ class MvStructStub(
     }
 }
 
+class MvEnumStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    override val name: String?,
+    override val flags: Int,
+) : MvAttributeOwnerStubBase<MvEnum>(parent, elementType), MvNamedStub {
+
+    object Type : MvStubElementType<MvEnumStub, MvEnum>("ENUM") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvEnumStub {
+            val name = dataStream.readNameAsString()
+            val flags = dataStream.readInt()
+            return MvEnumStub(parentStub, this, name, flags)
+        }
+
+        override fun serialize(stub: MvEnumStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeName(stub.name)
+                writeInt(stub.flags)
+            }
+
+        override fun createPsi(stub: MvEnumStub): MvEnum =
+            MvEnumImpl(stub, this)
+
+        override fun createStub(psi: MvEnum, parentStub: StubElement<*>?): MvEnumStub {
+            val attrs = QueryAttributes(psi.attrList.asSequence())
+            val flags = MvAttributeOwnerStub.extractFlags(attrs)
+            return MvEnumStub(parentStub, this, psi.name, flags)
+        }
+
+        override fun indexStub(stub: MvEnumStub, sink: IndexSink) = sink.indexEnumStub(stub)
+    }
+}
+
+class MvEnumVariantStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    override val name: String?,
+    override val flags: Int,
+) : MvAttributeOwnerStubBase<MvEnumVariant>(parent, elementType), MvNamedStub {
+
+    object Type : MvStubElementType<MvEnumVariantStub, MvEnumVariant>("ENUM_VARIANT") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvEnumVariantStub {
+            val name = dataStream.readNameAsString()
+            val flags = dataStream.readInt()
+            return MvEnumVariantStub(parentStub, this, name, flags)
+        }
+
+        override fun serialize(stub: MvEnumVariantStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeName(stub.name)
+                writeInt(stub.flags)
+            }
+
+        override fun createPsi(stub: MvEnumVariantStub): MvEnumVariant =
+            MvEnumVariantImpl(stub, this)
+
+        override fun createStub(psi: MvEnumVariant, parentStub: StubElement<*>?): MvEnumVariantStub {
+            val attrs = QueryAttributes(psi.attrList.asSequence())
+            val flags = MvAttributeOwnerStub.extractFlags(attrs)
+            return MvEnumVariantStub(parentStub, this, psi.name, flags)
+        }
+
+        override fun indexStub(stub: MvEnumVariantStub, sink: IndexSink) = sink.indexEnumVariantStub(stub)
+    }
+}
+
 class MvSchemaStub(
     parent: StubElement<*>?,
     elementType: IStubElementType<*, *>,
@@ -376,6 +442,8 @@ fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "FUNCTION" -> MvFunctionStub.Type
     "SPEC_FUNCTION" -> MvSpecFunctionStub.Type
     "STRUCT" -> MvStructStub.Type
+    "ENUM" -> MvEnumStub.Type
+    "ENUM_VARIANT" -> MvEnumVariantStub.Type
     "SCHEMA" -> MvSchemaStub.Type
     "CONST" -> MvConstStub.Type
     "MODULE_SPEC" -> MvModuleSpecStub.Type

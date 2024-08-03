@@ -384,9 +384,16 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-Enum ::= enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
+Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
 {
     pin = "enum"
+    implements = [
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvEnumMixin"
+    stubClass = "org.move.lang.core.stubs.MvEnumStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 EnumBody ::= '{' (EnumVariant ','?)* '}'
@@ -394,6 +401,17 @@ EnumBody ::= '{' (EnumVariant ','?)* '}'
     pin = 1
 }
 EnumVariant ::= Attr* IDENTIFIER BlockFields?
+{
+    pin = 2
+    implements = [
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvEnumVariantMixin"
+    stubClass = "org.move.lang.core.stubs.MvEnumVariantStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?

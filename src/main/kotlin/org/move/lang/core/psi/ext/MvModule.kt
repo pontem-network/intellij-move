@@ -97,6 +97,8 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
 }
 
+fun MvModule.enums(): List<MvEnum> = this.moduleBlock?.enumList.orEmpty()
+
 fun MvModule.structs(): List<MvStruct> {
     return getProjectPsiDependentCache(this) {
         val stub = it.greenStub

@@ -5,6 +5,7 @@ import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.psi.ext.useSpeck
+import org.move.lang.core.psi.ext.variants
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.*
@@ -61,8 +62,10 @@ fun processPathResolveVariants(
     return when (pathKind) {
         is NamedAddress, is ValueAddress -> false
         is PathKind.UnqualifiedPath -> {
-            // Self::
-            if (processor.lazy("Self") { ctx.containingModule }) return true
+            if (Namespace.MODULE in pathKind.ns) {
+                // Self::
+                if (processor.lazy("Self") { ctx.containingModule }) return true
+            }
             // local
             processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, processor)
         }
@@ -99,11 +102,13 @@ fun processQualifiedPathResolveVariants(
     }
     if (resolvedQualifier is MvModule) {
         if (processor.process("Self", resolvedQualifier)) return true
-
         val moduleBlock = resolvedQualifier.moduleBlock
         if (moduleBlock != null) {
             if (processItemDeclarations(moduleBlock, ns, processor)) return true
         }
+    }
+    if (resolvedQualifier is MvEnum) {
+        if (processor.processAll(resolvedQualifier.variants)) return true
     }
     return false
 }

@@ -10,6 +10,7 @@ import org.move.ide.inspections.imports.basePathType
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPath2Reference
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve2.ref.Path2ReferenceImpl
 import java.util.*
 
@@ -42,11 +43,6 @@ fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
 
-//fun MvPath.isAttrItem(): Boolean {
-//    val attrItem = this.ancestorStrict<MvAttrItem>() ?: return false
-//    return attrItem.name == "expected_failure"
-//}
-
 fun MvPath.isSpecPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS
@@ -68,64 +64,42 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-//val MvPath.nullModuleRef: Boolean
-//    get() =
-//        identifier != null && this.moduleRef == null
-
 val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
 fun MvPath.allowedNamespaces(): Set<Namespace> {
-    val parent = this.parent
-//    return when (parent) {
-//        is MvPath,
-//        is MvPathType -> TYPES
-//        else -> VALUES
-//    }
-    return if (parent is MvPath) EnumSet.of(Namespace.MODULE) else rootNamespace(this)
-//    return when {
-//        parent is MvSchemaLit || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
-//        parent is MvPathType -> setOf(Namespace.TYPE)
-//        parent is MvCallExpr -> setOf(Namespace.FUNCTION)
-//        parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.CONST)
-//        parent is MvRefExpr -> setOf(Namespace.NAME)
-////            parent is MvRefExpr && this.nullModuleRef -> setOf(Namespace.NAME)
-////            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
-//        // TODO: it's own namespace?
-//        parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
-//        parent is MvAccessSpecifier -> setOf(Namespace.TYPE)
-//        parent is MvAddressSpecifierArg -> setOf(Namespace.FUNCTION)
-//        parent is MvAddressSpecifierCallParam -> setOf(Namespace.NAME)
-//        else -> debugErrorOrFallback(
-//            "Cannot build path namespaces: unhandled parent type ${parent.elementType}",
-//            setOf(Namespace.NAME)
-//        )
-//    }
-}
+    val qualifierPath = this.path
+    val parentElement = this.parent
 
-private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
-    val parent = rootPath.parent
-    check(parent !is MvPath)
+    // m::S, S::One
+    // ^     ^
+    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
+
+    // m::S::One
+    // ^
+    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
+
+    // m::S::One
+    //    ^
+    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
+
     return when {
-        parent is MvSchemaLit || parent is MvSchemaRef -> EnumSet.of(Namespace.SCHEMA)
-        parent is MvPathType -> EnumSet.of(Namespace.TYPE)
-        parent is MvCallExpr -> EnumSet.of(Namespace.FUNCTION)
-//        parent is MvRefExpr && parent.isAbortCodeConst() -> EnumSet.of(Namespace.CONST)
-        parent is MvRefExpr && rootPath.hasAncestor<MvAttrItem>() -> EnumSet.of(Namespace.NAME, Namespace.MODULE)
-        parent is MvRefExpr -> EnumSet.of(Namespace.NAME)
-//        parent is MvRefExpr -> EnumSet.of(Namespace.NAME, Namespace.CONST)
-        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.TYPE)
-//        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.NAME)
-        parent is MvAccessSpecifier -> EnumSet.of(Namespace.TYPE)
-        parent is MvAddressSpecifierArg -> EnumSet.of(Namespace.FUNCTION)
-        parent is MvAddressSpecifierCallParam -> EnumSet.of(Namespace.NAME)
-        parent is MvFriendDecl -> EnumSet.of(Namespace.MODULE)
-        parent is MvModuleSpec -> EnumSet.of(Namespace.MODULE)
-            parent is MvUseSpeck -> Namespace.all()
+        parentElement is MvSchemaLit || parentElement is MvSchemaRef -> EnumSet.of(SCHEMA)
+        parentElement is MvPathType -> EnumSet.of(TYPE)
+        parentElement is MvCallExpr -> EnumSet.of(FUNCTION)
+        parentElement is MvRefExpr && this.hasAncestor<MvAttrItem>() -> EnumSet.of(NAME, MODULE)
+        parentElement is MvRefExpr -> EnumSet.of(NAME)
+        parentElement is MvStructLitExpr || parentElement is MvStructPat -> EnumSet.of(TYPE)
+        parentElement is MvAccessSpecifier -> EnumSet.of(TYPE)
+        parentElement is MvAddressSpecifierArg -> EnumSet.of(FUNCTION)
+        parentElement is MvAddressSpecifierCallParam -> EnumSet.of(NAME)
+        parentElement is MvFriendDecl -> EnumSet.of(MODULE)
+        parentElement is MvModuleSpec -> EnumSet.of(MODULE)
+        parentElement is MvUseSpeck -> Namespace.all()
         else -> debugErrorOrFallback(
-            "Cannot build path namespaces: unhandled parent type ${parent.elementType}",
-            EnumSet.of(Namespace.NAME)
+            "Cannot build path namespaces: unhandled parent type ${parentElement.elementType}",
+            EnumSet.of(NAME)
         )
     }
 }
@@ -149,13 +123,13 @@ abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 fun MvPath.importCandidateNamespaces(): Set<Namespace> {
     val parent = this.parent
     return when (parent) {
-        is MvPathType -> setOf(Namespace.TYPE)
-        is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+        is MvPathType -> setOf(TYPE)
+        is MvSchemaLit, is MvSchemaRef -> setOf(SCHEMA)
         else -> {
             val baseBaseType = this.basePathType()
             when (baseBaseType) {
-                is BasePathType.Module -> EnumSet.of(Namespace.MODULE)
-                else -> EnumSet.of(Namespace.NAME, Namespace.FUNCTION)
+                is BasePathType.Module -> EnumSet.of(MODULE)
+                else -> EnumSet.of(NAME, FUNCTION)
             }
         }
     }

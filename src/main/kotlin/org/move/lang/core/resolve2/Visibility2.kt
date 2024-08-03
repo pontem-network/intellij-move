@@ -36,9 +36,6 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // inside msl everything is visible
         if (element.isMsl()) return@VisibilityFilter Visible
 
-        // types are always visible, their correct usage is checked in a separate inspection
-        if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
-
         // if inside MvAttrItem like abort_code=
         val attrItem = element.ancestorStrict<MvAttrItem>()
         if (attrItem != null) return@VisibilityFilter Visible
@@ -79,6 +76,9 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         val pathModule = element.containingModule
         // local methods, Self::method - everything is visible
         if (itemModule == pathModule) return@VisibilityFilter Visible
+
+        // types visibility is ignored, their correct usage is checked in a separate inspection
+        if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
 
         when (visibility) {
             is Restricted -> {
