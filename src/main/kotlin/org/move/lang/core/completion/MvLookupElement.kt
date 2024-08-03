@@ -72,7 +72,7 @@ fun getLookupElementProperties(
                     // so changing to infallible getPatTypeOrUnknown()
                     inference?.getPatTypeOrUnknown(element) ?: TyUnknown
                 }
-                is MvStructField -> element.type?.loweredType(msl) ?: TyUnknown
+                is MvNamedFieldDecl -> element.type?.loweredType(msl) ?: TyUnknown
                 else -> TyUnknown
             }
         val itemTy = declaredTy.substitute(subst)

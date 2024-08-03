@@ -34,7 +34,7 @@ FILE
         PsiErrorElement:IDENTIFIER expected, got '{'
           <empty list>
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n    ')

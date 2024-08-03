@@ -355,7 +355,7 @@ SpecInlineFunctionStmt ::= SpecInlineFunctionInner
 }
 
 fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
-                        (';' | StructBlock)?
+                        (';' | BlockFields)?
 {
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
@@ -369,7 +369,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
 
 private StructInnerFirst ::= STRUCT_KW
 StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
-                            StructBlock
+                            BlockFields
 {
     pin = StructInnerFirst
     elementType = Struct
@@ -393,7 +393,7 @@ EnumBody ::= '{' (EnumVariant ','?)* '}'
 {
     pin = 1
 }
-EnumVariant ::= Attr* IDENTIFIER StructBlock?
+EnumVariant ::= Attr* IDENTIFIER BlockFields?
 
 fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
@@ -445,6 +445,9 @@ private friend ::= <<friendKeyword>>
 private enum ::= <<enumKeyword>>
 private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
+
+private AttrsAndVis_first ::= '#'
+//private AttrsAndVis_first ::= '#' | public
 
 private FunctionModifierSetInner ::= <<functionModifierSet VisibilityModifier>>
 private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet VisibilityModifier>>
@@ -507,15 +510,15 @@ Ability ::= copy | IDENTIFIER
     name = "ability"
 }
 
-StructBlock ::= '{' StructField_with_recover* '}' { pin = 1 }
-private StructField_with_recover ::= !'}' StructField (',' | &'}')
+BlockFields ::= '{' NamedFieldDecl_with_recover* '}' { pin = 1 }
+private NamedFieldDecl_with_recover ::= !'}' NamedFieldDecl (',' | &'}')
 {
     pin = 1
-    recoverWhile = StructField_recover
+    recoverWhile = NamedFieldDecl_recover
 }
-private StructField_recover ::= !('}' | IDENTIFIER)
+private NamedFieldDecl_recover ::= !('}' | NamedFieldDecl_first)
 
-StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
+NamedFieldDecl ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 2
     implements = [
@@ -523,9 +526,10 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvStructFieldMixin"
+    mixin = "org.move.lang.core.psi.ext.MvNamedFieldDeclMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+private NamedFieldDecl_first ::= AttrsAndVis_first | IDENTIFIER
 
 FriendDecl ::= Attr* friend PathImpl ';'
 {

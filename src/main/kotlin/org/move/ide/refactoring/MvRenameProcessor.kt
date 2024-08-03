@@ -36,7 +36,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                     }
                 }
             }
-            is MvStructField -> {
+            is MvNamedFieldDecl -> {
                 usages.forEach {
                     val usage = it.element
                     when {

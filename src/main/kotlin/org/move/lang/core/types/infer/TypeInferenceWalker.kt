@@ -298,7 +298,7 @@ class TypeInferenceWalker(
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
-            is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
+            is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStruct -> {
                 if (project.moveSettings.enableIndexExpr && refExpr.parent is MvIndexExpr) {
                     TyLowering.lowerPath(refExpr.path, item, ctx.msl)

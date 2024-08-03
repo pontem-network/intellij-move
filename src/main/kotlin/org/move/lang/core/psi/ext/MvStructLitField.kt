@@ -21,7 +21,7 @@ val MvStructLitField.isShorthand: Boolean
 inline fun <reified T: MvElement> MvStructLitField.resolveToElement(): T? =
     reference.multiResolve().filterIsInstance<T>().singleOrNull()
 
-fun MvStructLitField.resolveToDeclaration(): MvStructField? = resolveToElement()
+fun MvStructLitField.resolveToDeclaration(): MvNamedFieldDecl? = resolveToElement()
 fun MvStructLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
 interface MvStructRefField: MvMandatoryReferenceElement
@@ -30,11 +30,6 @@ abstract class MvStructLitFieldMixin(node: ASTNode): MvElementImpl(node),
                                                      MvStructLitField {
     override fun getReference(): MvPolyVariantReference =
         MvStructRefFieldReferenceImpl(this, shorthand = this.isShorthand)
-//        if (this.isShorthand) {
-//            return MvStructLitShorthandFieldReferenceImpl(this)
-//        } else {
-//            return MvStructRefFieldReferenceImpl(this)
-//        }
 }
 
 class MvStructRefFieldReferenceImpl(
@@ -47,16 +42,10 @@ class MvStructRefFieldReferenceImpl(
         var variants = collectResolveVariants(referenceName) {
             processStructRefFieldResolveVariants(element, it)
         }
-//        var variants = resolveIntoStructField(element)
         if (shorthand) {
             variants += resolveBindingForFieldShorthand(element)
-//            variants += resolveLocalItem(element, setOf(Namespace.NAME))
         }
         return variants
-//        return listOf(
-//            resolveIntoStructField(element),
-//            resolveLocalItem(element, setOf(Namespace.NAME))
-//        ).flatten()
     }
 }
 
@@ -69,13 +58,6 @@ fun processStructRefFieldResolveVariants(
         .any { field ->
             processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))
         }
-}
-
-fun resolveIntoStructField(element: MvStructRefField): List<MvNamedElement> {
-    val structItem = element.maybeStruct ?: return emptyList()
-    val referenceName = element.referenceName
-    return structItem.fields
-        .filter { it.name == referenceName }
 }
 
 private val MvStructRefField.maybeStruct: MvStruct?

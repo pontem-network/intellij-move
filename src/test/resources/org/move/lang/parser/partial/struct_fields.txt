@@ -12,20 +12,20 @@ FILE
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('T')
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
-          PsiErrorElement:<struct field> expected, got ':'
+          PsiErrorElement:<named field decl> expected, got ':'
             <empty list>
           PsiWhiteSpace('\n        ')
           PsiElement(:)(':')
           PsiWhiteSpace(' ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('u8')
             PsiErrorElement:<type annotation> expected, got ','
               <empty list>
           PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('my_field')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -41,10 +41,10 @@ FILE
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('T')
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('my_field')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -53,7 +53,7 @@ FILE
           PsiWhiteSpace(' ')
           PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('my_field')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -69,10 +69,10 @@ FILE
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('T')
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('my_field')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -83,7 +83,7 @@ FILE
             PsiErrorElement:',', '::', <type arguments> or '}' expected, got 'my_field'
               <empty list>
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('my_field')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -99,16 +99,16 @@ FILE
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('NoTypesFields')
         PsiWhiteSpace(' ')
-        MvStructBlockImpl(STRUCT_BLOCK)
+        MvBlockFieldsImpl(BLOCK_FIELDS)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('field1')
             PsiErrorElement:<type annotation> expected, got ','
               <empty list>
           PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('field2')
             MvTypeAnnotationImpl(TYPE_ANNOTATION)
               PsiElement(:)(':')
@@ -116,7 +116,7 @@ FILE
                 <empty list>
           PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
-          MvStructFieldImpl(STRUCT_FIELD)
+          MvNamedFieldDeclImpl(NAMED_FIELD_DECL)
             PsiElement(IDENTIFIER)('field3')
             PsiErrorElement:<type annotation> expected, got '}'
               <empty list>

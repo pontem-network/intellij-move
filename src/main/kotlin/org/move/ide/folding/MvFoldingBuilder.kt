@@ -87,8 +87,8 @@ class MvFoldingBuilder: CustomFoldingBuilder(), DumbAware {
                 fold(o)
         }
 
-        override fun visitStructBlock(o: MvStructBlock) {
-            if (o.structFieldList.isNotEmpty())
+        override fun visitBlockFields(o: MvBlockFields) {
+            if (o.namedFieldDeclList.isNotEmpty())
                 fold(o)
         }
 

@@ -32,7 +32,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
             override fun visitModule(o: MvModule) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructField(o: MvStructField) = checkDuplicates(moveHolder, o)
+            override fun visitNamedFieldDecl(o: MvNamedFieldDecl) = checkDuplicates(moveHolder, o)
 
             override fun visitPath(o: MvPath) = checkMethodOrPath(o, moveHolder)
             override fun visitMethodCall(o: MvMethodCall) = checkMethodOrPath(o, moveHolder)
