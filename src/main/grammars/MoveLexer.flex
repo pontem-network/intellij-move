@@ -119,6 +119,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "|"        { return OR; }
       "@"        { return AT; }
       "#"        { return HASH; }
+      "=>"       { return FAT_ARROW; }
 
       // keywords
       "script"         { return SCRIPT_KW; }
