@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -107,7 +108,7 @@ allprojects {
         intellijPlatform {
             create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
             testFramework(TestFrameworkType.Platform)
-            pluginVerifier("1.371")
+            pluginVerifier(Constraints.LATEST_VERSION)
             bundledPlugin("org.toml.lang")
             jetbrainsRuntime("17.0.11b1207.30")
         }
