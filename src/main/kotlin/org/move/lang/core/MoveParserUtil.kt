@@ -97,16 +97,11 @@ object MoveParserUtil: GeneratedParserUtilBase() {
         return true
     }
 
-    enum class PathParsingMode {
-        VALUE, WILDCARD;
-    }
+    enum class PathParsingMode { VALUE, WILDCARD }
 
     @JvmStatic
     fun isPathMode(b: PsiBuilder, level: Int, mode: PathParsingMode): Boolean =
         mode == getPathMod(b.flags)
-
-    private val PATH_MODE_VALUE: Int = makeBitMask(2)
-    private val PATH_MODE_WILDCARD: Int = makeBitMask(3)
 
     private fun setPathMod(flags: Int, mode: PathParsingMode): Int {
         val flag = when (mode) {
@@ -317,6 +312,15 @@ object MoveParserUtil: GeneratedParserUtilBase() {
         return true
     }
 
+    @JvmStatic
+    fun remapContextualKwOnRollback(b: PsiBuilder, level: Int, p: Parser): Boolean {
+        val result = p.parse(b, level)
+        if (!result && b.tokenType in CONTEXTUAL_KEYWORDS) {
+            b.remapCurrentToken(IDENTIFIER)
+        }
+        return result
+    }
+
     @Suppress("FunctionName")
     @JvmStatic
     fun VECTOR_IDENTIFIER(b: PsiBuilder, level: Int): Boolean {
@@ -354,6 +358,9 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
     @JvmStatic
     fun enumKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "enum", ENUM_KW)
+
+    @JvmStatic
+    fun matchKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "match", MATCH_KW)
 
     @JvmStatic
     fun packageKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "package", PACKAGE)
@@ -455,7 +462,7 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
     private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
     private var PsiBuilder.flags: Int
-        get() = getUserData(FLAGS) ?: TOP_LEVEL
+        get() = getUserData(FLAGS) ?: DEFAULT_FLAGS
         set(value) = putUserData(FLAGS, value)
 
     private fun Int.setFlag(flag: Int, mode: Boolean): Int =
@@ -464,6 +471,14 @@ object MoveParserUtil: GeneratedParserUtilBase() {
     // flags
     private val TOP_LEVEL: Int = makeBitMask(0)
     private val INCLUDE_STMT_MODE: Int = makeBitMask(1)
+
+    private val PATH_MODE_VALUE: Int = makeBitMask(2)
+    private val PATH_MODE_WILDCARD: Int = makeBitMask(3)
+
+//    private val STRUCT_ALLOWED: Int = makeBitMask(4)
+
+    private val DEFAULT_FLAGS: Int = TOP_LEVEL
+//    private val DEFAULT_FLAGS: Int = TOP_LEVEL or STRUCT_ALLOWED
 
     // msl
     private val MSL_LEVEL: Key<Int> = Key("MoveParserUtil.MSL_LEVEL")

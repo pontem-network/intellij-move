@@ -16,7 +16,8 @@
     tokenTypeClass="org.move.lang.core.MvTokenType"
 
     extends(".*Expr")=Expr
-    extends(".*Pat")=Pat
+    extends("(Struct|Binding|Tuple|Wild|EnumVariant)Pat")=Pat
+//    extends(".*Pat")=Pat
     extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
@@ -96,6 +97,7 @@
         EQ_EQ_GT        = '==>'
         LT_EQ_EQ_GT     = '<==>'
         DOT_DOT     = '..'
+        FAT_ARROW       = '=>'
 
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
@@ -115,6 +117,7 @@
         CONST_KW     = 'const_kw'
         SCHEMA_KW     = 'schema_kw'
         ENUM_KW     = 'enum_kw'
+        MATCH_KW     = 'match_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -163,6 +166,8 @@ File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 QualPathCodeFragmentElement ::= PathImpl
 
 Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
+private Attr_first ::= '#'
+
 AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
 {
     implements = [
@@ -361,6 +366,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.ext.MvItemElement"
+        "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
     stubClass = "org.move.lang.core.stubs.MvStructStub"
@@ -406,6 +412,7 @@ EnumVariant ::= Attr* IDENTIFIER BlockFields?
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvEnumVariantMixin"
     stubClass = "org.move.lang.core.stubs.MvEnumVariantStub"
@@ -461,6 +468,7 @@ private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_fi
 
 private friend ::= <<friendKeyword>>
 private enum ::= <<enumKeyword>>
+private match ::= <<matchKeyword>>
 private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
 
@@ -663,9 +671,12 @@ Pat ::= TuplePat
         | WildPat
         | BindingPat
 
+MatchPat ::= Pat | EnumVariantPat
+EnumVariantPat ::= PathImpl !('{')
+
 WildPat ::= '_'
 
-BindingPat ::= IDENTIFIER {
+BindingPat ::= IDENTIFIER !'::' {
     implements = [
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
     ]
@@ -675,7 +686,7 @@ BindingPat ::= IDENTIFIER {
 TuplePat ::= '(' <<non_empty_comma_sep_items Pat>>? ')'
 
 StructPat ::= PathImpl StructPatFieldsBlock
-StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}' { pin = 1 }
+StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}'
 
 private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
 {
@@ -694,6 +705,8 @@ StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
     mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
 }
 StructPatFieldBinding ::= ':' Pat
+
+private Pat_first ::= '_' | '(' | Path_first | AnyLitToken_first
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Stmts
@@ -820,7 +833,7 @@ private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
 private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
-private ControlFlowExpr_items ::= IfExpr | LoopExpr | WhileExpr | ForExpr
+private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
@@ -1001,6 +1014,28 @@ ValueArgument ::= !')' Expr &(',' | ')') {
 }
 private ValueArgument_recover ::= !(<<mslOnly SpecExpr_first>> | Expr_first | ')' | '}' | ';' | ',')
 
+MatchExpr ::= Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody)>>
+{
+    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+// argument is fake, provided just to satisfy usage checker
+//private MatchExprImpl ::= <<remapMatchOnRollback (match '(' Expr ')' MatchBody)>>
+//private MatchExprImplInner ::= match '(' Expr ')' MatchBody
+MatchArgument ::= '(' Expr ')'
+
+MatchBody ::= '{' MatchArm_with_recover* '}' { pin = 1 }
+MatchArm ::= Attr* MatchPat '=>' Expr ','?
+{
+    pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+private MatchArm_with_recover ::= !'}' MatchArm
+{
+    pin = 1
+    recoverWhile = MatchArm_recover
+}
+private MatchArm_recover ::= !(Pat_first | Attr_first | '}')
+
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 
 Condition ::= '(' ConditionBody ')' { pin = 1 }
@@ -1086,6 +1121,7 @@ fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
 }
 
 private PathImpl ::= PathStart PathSegment*
+private Path_first ::= PATH_MODE_IDENTIFIER | DIEM_ADDRESS | INTEGER_LITERAL
 
 PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
 {

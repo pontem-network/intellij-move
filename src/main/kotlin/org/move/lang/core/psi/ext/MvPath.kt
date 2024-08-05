@@ -90,7 +90,9 @@ fun MvPath.allowedNamespaces(): Set<Namespace> {
         parentElement is MvCallExpr -> EnumSet.of(FUNCTION)
         parentElement is MvRefExpr && this.hasAncestor<MvAttrItem>() -> EnumSet.of(NAME, MODULE)
         parentElement is MvRefExpr -> EnumSet.of(NAME)
-        parentElement is MvStructLitExpr || parentElement is MvStructPat -> EnumSet.of(TYPE)
+        parentElement is MvStructLitExpr
+                || parentElement is MvStructPat
+                || parentElement is MvEnumVariantPat -> EnumSet.of(TYPE)
         parentElement is MvAccessSpecifier -> EnumSet.of(TYPE)
         parentElement is MvAddressSpecifierArg -> EnumSet.of(FUNCTION)
         parentElement is MvAddressSpecifierCallParam -> EnumSet.of(NAME)

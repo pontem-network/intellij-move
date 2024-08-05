@@ -53,18 +53,22 @@ fun processStructRefFieldResolveVariants(
     fieldRef: MvStructRefField,
     processor: RsResolveProcessor
 ): Boolean {
-    val structItem = fieldRef.maybeStruct ?: return false
-    return structItem.fields
+    val fieldsOwnerItem = fieldRef.fieldOwner ?: return false
+    return fieldsOwnerItem.fields
         .any { field ->
             processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))
         }
 }
 
-private val MvStructRefField.maybeStruct: MvStruct?
+private val MvStructRefField.fieldOwner: MvFieldsOwner?
     get() {
         return when (this) {
-            is MvStructPatField -> this.structPat.structItem
-            is MvStructLitField -> this.structLitExpr.path.maybeStruct
+            is MvStructPatField -> {
+                this.structPat.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+            }
+            is MvStructLitField -> {
+                this.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+            }
             else -> null
         }
     }
