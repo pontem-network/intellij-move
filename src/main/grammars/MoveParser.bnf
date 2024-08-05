@@ -16,7 +16,8 @@
     tokenTypeClass="org.move.lang.core.MvTokenType"
 
     extends(".*Expr")=Expr
-    extends(".*Pat")=Pat
+    extends("(Struct|Binding|Tuple|Wild|EnumVariant)Pat")=Pat
+//    extends(".*Pat")=Pat
     extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
@@ -365,6 +366,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.ext.MvItemElement"
+        "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
     stubClass = "org.move.lang.core.stubs.MvStructStub"
@@ -410,6 +412,7 @@ EnumVariant ::= Attr* IDENTIFIER BlockFields?
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvEnumVariantMixin"
     stubClass = "org.move.lang.core.stubs.MvEnumVariantStub"
@@ -683,7 +686,7 @@ BindingPat ::= IDENTIFIER !'::' {
 TuplePat ::= '(' <<non_empty_comma_sep_items Pat>>? ')'
 
 StructPat ::= PathImpl StructPatFieldsBlock
-StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}' { pin = 1 }
+StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}'
 
 private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
 {

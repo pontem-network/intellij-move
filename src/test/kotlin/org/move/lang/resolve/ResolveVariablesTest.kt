@@ -385,4 +385,237 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test resolve variable in match expr`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let m = 1;
+                  //X
+                match (m) {
+                     //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve function with match name`() = checkByCode("""
+        module 0x1::m {
+            fun match() {}
+              //X
+            fun main() {
+                match();
+                  //^
+            }
+        }
+    """)
+
+
+    fun `test resolve type in match arm 1`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+               //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One => true
+                  //^  
+                    S::Two => false
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve type in match arm 2`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                    //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One => true
+                      //^
+                    S::Two => false
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve type in match arm 3`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                         //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One => true
+                    S::Two => false
+                      //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve item in match arm body`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main() {
+                let m = 1;
+                  //X
+                match (m) {
+                    S::One => m
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve fields for enum variant in match arm`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                           //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One { field: f } => f
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve shortcut field for enum variant in match arm`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                           //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One { field } => field
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve binding for field reassignment for enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One { field: myfield }
+                                    //X
+                        => myfield
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve binding for shortcut field for enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One { field }
+                            //X
+                        => field
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve field for struct pat in enum`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                            //X
+            fun main(s: S::One) {
+                let S::One { field } = s;
+                            //^
+            }
+        }        
+    """)
+
+    fun `test resolve field reassignment for struct pat in enum`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                            //X
+            fun main(s: S::One) {
+                let S::One { field: f } = s;
+                            //^
+            }
+        }        
+    """)
+
+    fun `test resolve field reassignment for struct pat in enum binding`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main(s: S::One) {
+                let S::One { field: f } = s;
+                                  //X
+                f;
+              //^  
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant for struct lit`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                           //X
+            fun main(s: S::One) {
+                let f = 1;
+                let s = S::One { field: f };
+                                 //^
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant for struct pat`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+               //X
+            fun main(s: S::One) {
+                let S::One { field } = s;
+                  //^
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant for struct pat 2`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                   //X
+            fun main(s: S::One) {
+                let S::One { field } = s;
+                      //^
+            }
+        }        
+    """)
+
+    fun `test resolve field reassignment for struct lit enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                           //X
+            fun main(s: S::One) {
+                let f = 1;
+                let s = S::One { field: f };
+                                 //^
+            }
+        }        
+    """)
+
+    fun `test resolve field reassignment for struct lit enum variant binding`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main(s: S::One) {
+                let f = 1;
+                  //X
+                let s = S::One { field: f };
+                                      //^
+            }
+        }        
+    """)
 }

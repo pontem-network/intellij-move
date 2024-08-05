@@ -41,12 +41,16 @@ fun processItemsInScope(
                             false
                         }
                     }
+                    is MvMatchArm -> {
+                        if (cameFrom is MvMatchPat) continue
+                        // only use those bindings for the match arm rhs
+                        processor.processAll(scope.matchPat.pat.bindings.toList())
+                    }
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
                             is MvFunction -> {
                                 processor.processAll(
-//                                    contextScopeInfo,
                                     item.valueParamsAsBindings,
                                     item.specResultParameters.map { it.bindingPat },
                                 )
