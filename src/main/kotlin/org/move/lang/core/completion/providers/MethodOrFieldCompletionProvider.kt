@@ -10,11 +10,9 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.MvMethodOrField
-import org.move.lang.core.psi.ext.getFieldVariants
-import org.move.lang.core.psi.ext.inferReceiverTy
-import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.tyInfers
+import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
@@ -47,25 +45,15 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
     fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
         val msl = element.isMsl()
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
-//        val scopeInfo = ContextScopeInfo(
-//            letStmtScope = element.letStmtScope,
-//            refItemScopes = element.refItemScopes,
-//        )
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
         val ctx = CompletionContext(element, msl, expectedTy)
-//        val ctx = CompletionContext(element, scopeInfo, msl, expectedTy)
 
         val structTy = receiverTy.derefIfNeeded() as? TyStruct
         if (structTy != null) {
-            getFieldVariants(element, structTy, msl)
-                .forEach { (_, field) ->
-                    val lookupElement = field.createLookupElement(
-                        ctx,
-                        subst = structTy.substitution
-                    )
-                    result.addElement(lookupElement)
-                }
+            collectCompletionVariants(result, ctx, subst = structTy.substitution) {
+                processNamedFieldVariants(element, structTy, msl, it)
+            }
         }
 
         processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->

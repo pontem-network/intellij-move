@@ -13,6 +13,8 @@ import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.RsPathResolveResult
 import org.move.lang.core.resolve2.visInfo
+import org.move.lang.core.types.infer.Substitution
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.stdext.intersects
 
 /**
@@ -354,8 +356,8 @@ private fun collectMethodOrPathScopeEntry(
     result += RsPathResolveResult(element, isVisible)
 }
 
-//fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvElement? =
-//    pickFirstResolveEntry(referenceName, f)?.element
+fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
+    pickFirstResolveEntry(referenceName, f)?.element
 
 fun pickFirstResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
     if (referenceName == null) return null
@@ -383,17 +385,44 @@ private class PickFirstScopeEntryCollector(
 }
 
 
+fun resolveSingleResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
+    resolveSingleResolveEntry(referenceName, f).singleOrNull()?.element
+
+fun resolveSingleResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<ScopeEntry> {
+    if (referenceName == null) return emptyList()
+    val processor = ResolveSingleScopeEntryCollector(referenceName)
+    f(processor)
+    return processor.result
+}
+
+private class ResolveSingleScopeEntryCollector(
+    private val referenceName: String,
+    val result: MutableList<ScopeEntry> = SmartList(),
+): RsResolveProcessorBase<ScopeEntry> {
+    override val names: Set<String> = setOf(referenceName)
+
+    override fun process(entry: ScopeEntry): Boolean {
+        if (entry.name == referenceName) {
+            result += entry
+        }
+        return result.isNotEmpty()
+    }
+}
+
+
 fun collectCompletionVariants(
     result: CompletionResultSet,
     context: CompletionContext,
+    subst: Substitution = emptySubstitution,
     f: (RsResolveProcessor) -> Unit
 ) {
-    val processor = CompletionVariantsCollector(result, context)
+    val processor = CompletionVariantsCollector(result, subst, context)
     f(processor)
 }
 
 private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
+    private val subst: Substitution,
     private val context: CompletionContext,
 ): RsResolveProcessorBase<ScopeEntry> {
     override val names: Set<String>? get() = null
@@ -401,11 +430,14 @@ private class CompletionVariantsCollector(
     override fun process(entry: ScopeEntry): Boolean {
 //        addEnumVariantsIfNeeded(entry)
 
-        result.addElement(createLookupElement(
-            scopeEntry = entry,
-            completionContext = context,
-            priority = entry.element.completionPriority
-        ))
+        result.addElement(
+            createLookupElement(
+                scopeEntry = entry,
+                completionContext = context,
+                priority = entry.element.completionPriority,
+                subst = subst,
+            )
+        )
         return false
     }
 

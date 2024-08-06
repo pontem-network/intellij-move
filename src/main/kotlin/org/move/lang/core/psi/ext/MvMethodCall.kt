@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.address
@@ -14,13 +13,13 @@ import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyVector
 import org.move.stdext.wrapWithList
 
-typealias MatchSequence<T> = Sequence<ScopeItem<T>>
+//typealias MatchSequence<T> = Sequence<ScopeItem<T>>
 
-fun <T: MvNamedElement> MatchSequence<T>.filterByName(refName: String): Sequence<T> {
-    return this
-        .filter { it.name == refName }
-        .map { it.element }
-}
+//fun <T: MvNamedElement> MatchSequence<T>.filterByName(refName: String): Sequence<T> {
+//    return this
+//        .filter { it.name == refName }
+//        .map { it.element }
+//}
 
 fun Ty.itemModule(moveProject: MoveProject): MvModule? {
     val norefTy = this.derefIfNeeded()

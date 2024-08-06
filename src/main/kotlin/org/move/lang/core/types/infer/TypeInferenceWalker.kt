@@ -10,6 +10,7 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
+import org.move.lang.core.resolve.resolveSingleResolveVariant
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.ty.*
@@ -406,8 +407,9 @@ class TypeInferenceWalker(
         val structTy =
             receiverTy.derefIfNeeded() as? TyStruct ?: return TyUnknown
 
-        val field =
-            getFieldVariants(dotField, structTy, msl).filterByName(dotField.referenceName).singleOrNull()
+        val field = resolveSingleResolveVariant(dotField.referenceName) {
+            processNamedFieldVariants(dotField, structTy, msl, it)
+        } as? MvNamedFieldDecl
         ctx.resolvedFields[dotField] = field
 
         val fieldTy = field?.type?.loweredType(msl)?.substitute(structTy.typeParameterValues)

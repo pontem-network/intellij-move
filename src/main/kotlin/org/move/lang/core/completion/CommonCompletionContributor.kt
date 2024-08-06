@@ -10,9 +10,6 @@ import org.move.lang.core.psi.MvModule
 class CommonCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
-//        extend(CompletionType.BASIC, NamesCompletionProvider)
-//        extend(CompletionType.BASIC, FunctionsCompletionProvider)
-//        extend(CompletionType.BASIC, SchemasCompletionProvider)
         extend(CompletionType.BASIC, SpecItemCompletionProvider)
 
         // addresses
@@ -20,10 +17,6 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, NamedAddressAtValueExprCompletionProvider)
         extend(CompletionType.BASIC, AddressInModuleDeclCompletionProvider)
 
-//        extend(CompletionType.BASIC, TypesCompletionProvider)
-//        extend(CompletionType.BASIC, ImportsCompletionProvider)
-//        extend(CompletionType.BASIC, ModulesCompletionProvider)
-//        extend(CompletionType.BASIC, FQModuleCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(CompletionType.BASIC, StructPatCompletionProvider)
         extend(CompletionType.BASIC, SchemaFieldsCompletionProvider)
