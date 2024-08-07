@@ -1821,4 +1821,40 @@ module 0x1::main {
             }
         }                
     """)
+
+    fun `test no unification error for vector literal in specs with unknown type`() = testExpr("""
+        module 0x1::option {
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            spec fun spec_some<Element>(e: Element): Option<Element> {
+                Option { vec: vector[] }
+            }
+            spec module {
+                let addr1 = unknown_variable;  // has unknown type
+                let addr2 = @0x1;
+                addr1 == spec_some(addr2);
+                addr2;
+                //^ address
+            }
+        }        
+    """)
+
+    fun `test no unification error for vec(e) in specs with unknown type`() = testExpr("""
+        module 0x1::option {
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            spec fun spec_some<Element>(e: Element): Option<Element> {
+                Option { vec: vec(e) }
+            }
+            spec module {
+                let addr1 = unknown_variable;  // has unknown type
+                let addr2 = @0x1;
+                addr1 == spec_some(addr2);
+                addr2;
+                //^ address
+            }
+        }        
+    """)
 }

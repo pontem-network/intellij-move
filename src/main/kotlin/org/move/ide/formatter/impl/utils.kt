@@ -2,6 +2,7 @@ package org.move.ide.formatter.impl
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MoveFile
@@ -25,7 +26,7 @@ val PAREN_DELIMITED_BLOCKS = ts(
     FUNCTION_PARAMETER_LIST, VALUE_ARGUMENT_LIST, ATTR_ITEM_LIST,
     ITEM_SPEC_FUNCTION_PARAMETER_LIST
 )
-val PAREN_LISTS = orSet(PAREN_DELIMITED_BLOCKS, /*ts(PAT_TUPLE_STRUCT)*/)
+val PAREN_LISTS = orSet(PAREN_DELIMITED_BLOCKS /*ts(PAT_TUPLE_STRUCT)*/)
 
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST, ITEM_SPEC_TYPE_PARAMETER_LIST)
 val ANGLE_LISTS = orSet(ANGLE_DELIMITED_BLOCKS)
@@ -34,6 +35,7 @@ val BRACK_DELIMITED_BLOCKS = ts(VECTOR_LIT_ITEMS)
 val BRACK_LISTS = orSet(BRACK_DELIMITED_BLOCKS, ts(INDEX_EXPR))
 
 val STRUCT_LITERAL_BLOCKS = ts(STRUCT_LIT_FIELDS_BLOCK)
+
 //val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
     /*SCRIPT_BLOCK, */ADDRESS_BLOCK, /*MODULE_BLOCK, */CODE_BLOCK,
@@ -91,15 +93,34 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     }
 }
 
-data class PsiLocation(val line: Int, val column: Int)
+data class PsiLocation(val line: Int, val column: Int) {
+    override fun toString(): String {
+        return "line=$line, column=$column"
+    }
+}
+
+val PsiElement.fileWithLocation: Pair<PsiFile, PsiLocation>?
+    get() {
+        val elementOffset = this.textOffset
+        val file = this.containingFile ?: return null
+        val location = file.document?.getOffsetPosition(elementOffset) ?: return null
+        return file to PsiLocation(location.first, location.second)
+    }
 
 /// Returns null if element does not belong to any file
-val PsiElement.location: PsiLocation? get() {
-    val elementOffset = this.textOffset
-    val file = this.containingFile ?: return null
-    val location = file.document?.getOffsetPosition(elementOffset) ?: return null
-    return PsiLocation(location.first, location.second)
+val PsiElement.location: PsiLocation?
+    get() {
+        val elementOffset = this.textOffset
+        val file = this.containingFile ?: return null
+        val location = file.document?.getOffsetPosition(elementOffset) ?: return null
+        return PsiLocation(location.first, location.second)
+    }
+
+fun PsiFile.elementLocation(psiElement: PsiElement): PsiLocation {
+    val (line, col) = document?.getOffsetPosition(psiElement.textOffset) ?: (-1 to -1)
+    return PsiLocation(line, col)
 }
+
 
 val ASTNode.isFlatBraceBlock: Boolean
     get() = elementType in FLAT_BRACE_BLOCKS

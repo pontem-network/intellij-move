@@ -15,10 +15,7 @@ interface PsiReferenceElement : PsiElement {
 
     override fun getReference(): PsiReference?
 
-    val unresolved: Boolean
-        get() = reference?.resolve() == null
-
-    val resolvable: Boolean get() = !this.unresolved
+    val unresolved: Boolean get() = reference?.resolve() == null
 }
 
 interface PsiMandatoryReferenceElement : PsiElement {

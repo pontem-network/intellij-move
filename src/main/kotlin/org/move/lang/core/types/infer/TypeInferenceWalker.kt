@@ -130,7 +130,7 @@ class TypeInferenceWalker(
                 val pat = stmt.pat
                 val inferredTy =
                     if (expr != null) {
-                        val inferredTy = inferExprTy(expr, Expectation.maybeHasType(explicitTy))
+                        val inferredTy = expr.inferType(Expectation.maybeHasType(explicitTy))
                         val coercedTy = if (explicitTy != null && coerce(expr, inferredTy, explicitTy)) {
                             explicitTy
                         } else {
@@ -160,12 +160,22 @@ class TypeInferenceWalker(
         }
     }
 
-    private fun MvExpr.inferType(expected: Ty?): Ty {
-        return inferExprTy(this, Expectation.maybeHasType(expected))
-    }
+    private fun MvExpr.inferType(expected: Ty?): Ty = this.inferType(Expectation.maybeHasType(expected))
 
     private fun MvExpr.inferType(expected: Expectation = Expectation.NoExpectation): Ty {
-        return inferExprTy(this, expected)
+        try {
+            return inferExprTy(this, expected)
+        } catch (e: UnificationError) {
+            if (e.context == null) {
+                e.context = PsiErrorContext.fromElement(this)
+            }
+            throw e
+        } catch (e: InferenceError) {
+            if (e.context == null) {
+                e.context = PsiErrorContext.fromElement(this)
+            }
+            throw e
+        }
     }
 
     // returns inferred
@@ -328,7 +338,8 @@ class TypeInferenceWalker(
         val expectedInnerTy = (expected.onlyHasTy(ctx) as? TyReference)?.referenced
         val hint = Expectation.maybeHasType(expectedInnerTy)
 
-        val innerExprTy = inferExprTy(innerExpr, hint)
+        val innerExprTy = innerExpr.inferType(expected = hint)
+//        val innerExprTy = inferExprTy(innerExpr, hint)
         val innerRefTy = when (innerExprTy) {
             is TyReference, is TyTuple -> {
                 ctx.reportTypeError(TypeError.ExpectedNonReferenceType(innerExpr, innerExprTy))
@@ -388,7 +399,7 @@ class TypeInferenceWalker(
         // callableType TyVar are meaningful mostly for "needs type annotation" error.
         // if value parameter is missing, we don't want to show that error, so we cover
         // unknown parameters with TyUnknown here
-        ctx.freezeUnificationTable {
+        ctx.freezeUnification {
             val valueArguments = callable.valueArguments
             val paramTypes = funcTy.paramTypes.drop(if (method) 1 else 0)
             for ((i, paramType) in paramTypes.withIndex()) {
@@ -475,7 +486,8 @@ class TypeInferenceWalker(
             when (inferArg) {
                 is InferArg.ArgExpr -> {
                     val argExpr = inferArg.expr ?: continue
-                    val argExprTy = inferExprTy(argExpr, expectation)
+                    val argExprTy = argExpr.inferType(expected = expectation)
+//                    val argExprTy = inferExprTy(argExpr, expectation)
 //                        val coercedTy =
 //                            resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
                     coerce(argExpr, argExprTy, expectedTy)
@@ -542,7 +554,7 @@ class TypeInferenceWalker(
         // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
         // because we don't produce new type variables during unification
         // https://github.com/rust-lang/rust/blob/50cf76c24bf6f266ca6d253a/compiler/rustc_infer/src/infer/fudge.rs#L98
-        return ctx.freezeUnificationTable {
+        return ctx.freezeUnification {
             if (ctx.combineTypes(retTy, resolvedFormalRet).isOk) {
                 formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
             } else {
@@ -590,7 +602,7 @@ class TypeInferenceWalker(
         val structItem = path.maybeStruct
         if (structItem == null) {
             for (field in litExpr.fields) {
-                field.expr?.let { inferExprTy(it) }
+                field.expr?.inferType()
             }
             return TyUnknown
         }
@@ -620,7 +632,7 @@ class TypeInferenceWalker(
         val schemaItem = path.maybeSchema
         if (schemaItem == null) {
             for (field in schemaLit.fields) {
-                field.expr?.let { inferExprTy(it) }
+                field.expr?.inferType()
             }
             return TyUnknown
         }
@@ -789,9 +801,9 @@ class TypeInferenceWalker(
         val rightExpr = binaryExpr.right
         val op = binaryExpr.binaryOp.op
 
-        val leftTy = leftExpr.inferType()
+        val leftTy = ctx.resolveTypeVarsIfPossible(leftExpr.inferType())
         if (rightExpr != null) {
-            val rightTy = rightExpr.inferType()
+            val rightTy = ctx.resolveTypeVarsIfPossible(rightExpr.inferType())
 
             // if any of the types has TyUnknown and TyInfer, combineTyVar will fail
             // it only happens in buggy situation, but it's annoying for the users, so return if not in devMode
@@ -818,13 +830,15 @@ class TypeInferenceWalker(
         val op = binaryExpr.binaryOp.op
 
         var typeErrorEncountered = false
-        val leftTy = inferExprTy(leftExpr)
+        val leftTy = leftExpr.inferType()
+//        val leftTy = inferExprTy(leftExpr)
         if (!leftTy.supportsOrdering()) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
-            val rightTy = inferExprTy(rightExpr)
+            val rightTy = rightExpr.inferType()
+//            val rightTy = inferExprTy(rightExpr)
             if (!rightTy.supportsOrdering()) {
                 ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true

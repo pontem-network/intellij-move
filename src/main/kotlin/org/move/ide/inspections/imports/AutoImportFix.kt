@@ -76,7 +76,7 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
 
         fun findApplicableContext(path: MvPath): Context? {
             if (path.reference == null) return null
-            if (path.resolvable) return null
+            if (!path.unresolved) return null
             if (path.ancestorStrict<MvUseSpeck>() != null) return null
             if (path.qualifier != null) return null
 

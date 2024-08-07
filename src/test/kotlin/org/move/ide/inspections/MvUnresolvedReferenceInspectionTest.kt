@@ -1,6 +1,7 @@
 package org.move.ide.inspections
 
 import org.move.utils.tests.DebugMode
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
@@ -451,4 +452,13 @@ module 0x1::m {
 //            }
 //        }
 //    """)
+
+    @NamedAddress("std", "0x1")
+    fun `test no unresolved reference for named address in use`() = checkByText("""
+        module std::m {
+        }
+        module std::main {
+            use std::m;
+        }
+    """)
 }
