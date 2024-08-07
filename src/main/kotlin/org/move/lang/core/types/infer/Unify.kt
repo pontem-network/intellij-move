@@ -5,16 +5,21 @@
 
 package org.move.lang.core.types.infer
 
-import org.move.ide.formatter.impl.location
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import io.ktor.http.*
+import org.move.ide.formatter.impl.PsiLocation
+import org.move.ide.formatter.impl.elementLocation
+import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.toNioPathOrNull
 
 interface NodeOrValue
-interface Node : NodeOrValue {
+interface Node: NodeOrValue {
     var parent: NodeOrValue
 }
 
-data class VarValue<out V>(val value: V?, val rank: Int) : NodeOrValue
+data class VarValue<out V>(val value: V?, val rank: Int): NodeOrValue
 
 /**
  * [UnificationTable] is map from [K] to [V] with additional ability
@@ -31,11 +36,11 @@ data class VarValue<out V>(val value: V?, val rank: Int) : NodeOrValue
  * <http://en.wikipedia.org/wiki/Disjoint-set_data_structure>.
  */
 @Suppress("UNCHECKED_CAST")
-class UnificationTable<K : Node, V> {
+class UnificationTable<K: Node, V> {
     private val undoLog: MutableList<UndoLogEntry> = mutableListOf()
 
     @Suppress("UNCHECKED_CAST")
-    private data class Root<out K : Node, out V>(val key: K) {
+    private data class Root<out K: Node, out V>(val key: K) {
         private val varValue: VarValue<V> = key.parent as VarValue<V>
         val rank: Int get() = varValue.rank
         val value: V? get() = varValue.value
@@ -99,7 +104,7 @@ class UnificationTable<K : Node, V> {
         val newVal = if (val1 != null && val2 != null) {
             if (val1 != val2) {
                 // must be solved on the upper level
-                error("Unification error: unifying $key1 -> $key2")
+                unificationError("Unification error: unifying $key1 -> $key2")
             }
             val1
         } else {
@@ -116,14 +121,15 @@ class UnificationTable<K : Node, V> {
             when (key) {
                 is TyInfer.TyVar -> {
                     val origin = key.origin?.origin
-                    val originFilePath = origin?.containingFile?.toNioPathOrNull()
-                    error(
-                        "TyVar unification error: " +
-                                "unifying $key (with origin at $originFilePath ${origin?.location}) " +
-                                "-> $value, node.value = ${node.value}"
-                    )
+//                    val originFilePath = origin?.containingFile?.toNioPathOrNull()
+                    unificationError("unifying $key -> $value, node.value = ${node.value}",
+                                     origin = origin)
+//                    unificationError(
+//                        "TyVar unification error: unifying $key -> $value" +
+//                                " (with origin at $originFilePath ${origin?.location}), node.value = ${node.value}"
+//                    )
                 }
-                else -> error("Unification error: unifying $key -> $value")
+                else -> unificationError("Unification error: unifying $key -> $value")
             }
         }
         setValue(node, value)
@@ -133,14 +139,14 @@ class UnificationTable<K : Node, V> {
         if (isSnapshot()) undoLog.add(UndoLogEntry.SetParent(node, node.parent))
     }
 
-    private fun isSnapshot(): Boolean = !undoLog.isEmpty()
+    private fun isSnapshot(): Boolean = undoLog.isNotEmpty()
 
     fun startSnapshot(): Snapshot {
         undoLog.add(UndoLogEntry.OpenSnapshot)
         return SnapshotImpl(undoLog.size - 1)
     }
 
-    private inner class SnapshotImpl(val position: Int) : Snapshot {
+    private inner class SnapshotImpl(val position: Int): Snapshot {
         override fun commit() {
             assertOpenSnapshot(this)
             if (position == 0) {
@@ -166,6 +172,61 @@ class UnificationTable<K : Node, V> {
     }
 }
 
+fun unificationError(message: String, origin: MvTypeParameter? = null): Nothing {
+    if (origin == null) {
+        throw UnificationError(message, origin = null)
+    }
+    val file = origin.containingFile
+    val error = if (file != null) {
+        UnificationError(message, origin = PsiErrorContext(origin.text, file, file.elementLocation(origin)))
+    } else {
+        UnificationError(message, PsiErrorContext(origin.text, null, null))
+    }
+    throw error
+}
+
+data class PsiErrorContext(val text: String, val file: PsiFile?, val location: PsiLocation?) {
+    override fun toString(): String {
+        return "${text.quote()} \n(at ${file?.toNioPathOrNull()} $location)"
+    }
+
+    companion object {
+        fun fromElement(element: PsiElement): PsiErrorContext {
+            val elementText = element.text
+            val file = element.containingFile
+            if (file != null) {
+                return PsiErrorContext(elementText, file, file.elementLocation(element))
+            } else {
+                return PsiErrorContext(elementText, null, null)
+            }
+        }
+    }
+}
+
+class UnificationError(
+    message: String,
+    val origin: PsiErrorContext? = null,
+    var context: PsiErrorContext? = null,
+):
+    IllegalStateException(message) {
+
+    override fun toString(): String {
+        var message = super.toString()
+        val origin = origin
+        if (origin != null) {
+            message += ", \ntype parameter origin: \n$origin"
+        }
+        val context = context
+        if (context != null) {
+            message += ", \ncontext: \n$context"
+        }
+//        val combine = combine
+//        if (combine != null) {
+//            message += ", \ncombine types: ${combine.ty1} <-> ${combine.ty2}"
+//        }
+        return message
+    }
+}
 
 interface Snapshot {
     fun commit()
@@ -176,27 +237,27 @@ interface Snapshot {
 private sealed class UndoLogEntry {
     abstract fun rollback()
 
-    object OpenSnapshot : UndoLogEntry() {
+    object OpenSnapshot: UndoLogEntry() {
         override fun rollback() {
-            error("Cannot rollback an uncommitted snapshot")
+            unificationError("Cannot rollback an uncommitted snapshot")
         }
     }
 
-    object CommittedSnapshot : UndoLogEntry() {
+    object CommittedSnapshot: UndoLogEntry() {
         override fun rollback() {
             // This occurs when there are nested snapshots and
             // the inner is committed but outer is rolled back.
         }
     }
 
-    data class SetParent(val node: Node, val oldParent: NodeOrValue) : UndoLogEntry() {
+    data class SetParent(val node: Node, val oldParent: NodeOrValue): UndoLogEntry() {
         override fun rollback() {
             node.parent = oldParent
         }
     }
 }
 
-class CombinedSnapshot(private vararg val snapshots: Snapshot) : Snapshot {
+class CombinedSnapshot(private vararg val snapshots: Snapshot): Snapshot {
     override fun rollback() = snapshots.forEach { it.rollback() }
     override fun commit() = snapshots.forEach { it.commit() }
 }

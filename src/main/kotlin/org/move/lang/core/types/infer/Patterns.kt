@@ -78,8 +78,8 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }
             val structFields = structItem.fields.associateBy { it.name }
-            for (patField in this.patFields) {
-                val kind = patField.kind
+            for (fieldPat in this.fieldPatList) {
+                val kind = fieldPat.kind
                 val fieldType = structFields[kind.fieldName]
                     ?.type
                     ?.loweredType(fctx.msl)

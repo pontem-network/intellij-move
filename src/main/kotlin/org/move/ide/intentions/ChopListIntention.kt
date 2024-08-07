@@ -71,9 +71,3 @@ class ChopStructLiteralIntention : ChopListIntentionBase<MvStructLitFieldsBlock,
     MvStructLitField::class.java,
     "Put fields on separate lines"
 )
-
-class ChopStructPatIntention : ChopListIntentionBase<MvStructPatFieldsBlock, MvStructPatField>(
-    MvStructPatFieldsBlock::class.java,
-    MvStructPatField::class.java,
-    "Put fields on separate lines"
-)

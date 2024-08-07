@@ -618,4 +618,34 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test shadow global spec variable with local one`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                global supply<CoinType>: num;
+            }
+            fun main() {
+                let supply = 1;
+                    //X
+                spec {
+                    supply;
+                    //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test outer block variable with inner block variable`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let supply = 1;
+                spec {
+                    let supply = 2;
+                        //X
+                    supply;
+                    //^ 
+                }
+            }
+        }        
+    """)
 }

@@ -6,6 +6,8 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve2.PathKind.*
+import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -41,66 +43,43 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
     }
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object: MvVisitor() {
-//        override fun visitModuleRef(moduleRef: MvModuleRef) {
-//            if (moduleRef.isMslScope && !isDebugModeEnabled()) {
-//                return
-//            }
-//            // skip this check, as it will be checked in MvPath visitor
-//            if (moduleRef.ancestorStrict<MvPath>() != null) return
-//
-//            // skip those two, checked in UseSpeck checks later
-//            if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
-//            if (moduleRef is MvFQModuleRef) return
-//
-//            if (moduleRef.unresolved) {
-//                holder.registerUnresolvedReferenceError(moduleRef)
-//            }
-//        }
 
         override fun visitPath(path: MvPath) {
             // skip specs in non-dev mode, too many false-positives
-            if (path.isMslScope && !isDebugModeEnabled()) {
-                return
-            }
-//            if (path.isMslLegacy() && path.isResult) return
+            if (path.isMslScope && !isDebugModeEnabled()) return
             if (path.isMslScope && path.isSpecPrimitiveType()) return
             if (path.isUpdateFieldArg2) return
-
             if (path.isPrimitiveType()) return
             // destructuring assignment like `Coin { val1: _ } = get_coin()`
             if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
             // assert macro
             if (path.text == "assert") return
-
             // attribute values are special case
             if (path.hasAncestor<MvAttrItem>()) return
 
-            val qualifier = path.qualifier
-            if (qualifier != null
-                // AddressPath, should be checked here
-                && qualifier.pathAddress == null
-            ) {
-                if (qualifier.reference?.resolve() == null) {
-                    return
+            val pathReference = path.reference ?: return
+            val pathKind = path.pathKind()
+            when (pathKind) {
+                is NamedAddress, is ValueAddress -> return
+                is UnqualifiedPath -> {
+                    if (pathReference.resolve() == null) {
+                        holder.registerUnresolvedReferenceError(path)
+                    }
                 }
-            }
-//            val qualifier = path.qualifier
-//            if (qualifier)
-
-//            val moduleRef = path.moduleRef
-//            if (moduleRef != null) {
-//                if (moduleRef is MvFQModuleRef) return
-//                if (moduleRef.unresolved) {
-//                    holder.registerUnresolvedReferenceError(moduleRef)
-//                    return
-//                }
-//            }
-            if (path.unresolved) {
-                holder.registerUnresolvedReferenceError(path)
+                is QualifiedPath -> {
+                    if (pathKind !is QualifiedPath.Module) {
+                        val qualifier = pathKind.qualifier
+                        // qualifier is unresolved, no need to resolve current path
+                        if (qualifier.reference?.resolve() == null) return
+                    }
+                    if (pathReference.resolve() == null) {
+                        holder.registerUnresolvedReferenceError(path)
+                    }
+                }
             }
         }
 
-        override fun visitStructPatField(patField: MvStructPatField) {
+        override fun visitFieldPat(patField: MvFieldPat) {
             if (patField.isMsl() && !isDebugModeEnabled()) {
                 return
             }
@@ -186,7 +165,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             if (receiverTy is TyUnknown) return
 
             val dotField = dotExpr.structDotField ?: return
-            if (!dotField.resolvable) {
+            if (dotField.unresolved) {
                 holder.registerProblem(
                     dotField.referenceNameElement,
                     "Unresolved field: `${dotField.referenceName}`",

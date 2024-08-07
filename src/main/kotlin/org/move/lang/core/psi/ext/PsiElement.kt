@@ -270,6 +270,9 @@ fun PsiElement?.getPrevNonWhitespaceSibling(): PsiElement? =
 fun PsiElement?.getNextNonWhitespaceSibling(): PsiElement? =
     PsiTreeUtil.skipWhitespacesForward(this)
 
+val PsiElement.prevNonWsSibling get() = getPrevNonWhitespaceSibling()
+val PsiElement.nextNonWsSibling get() = getNextNonWhitespaceSibling()
+
 fun PsiElement.isWhitespace(): Boolean =
     this is PsiWhiteSpace || this is PsiComment
 

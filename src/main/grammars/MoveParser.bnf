@@ -187,25 +187,30 @@ AttrItemInitializer ::= '=' Expr { pin = 1 }
 
 NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
-Script ::= SCRIPT_KW ScriptBlock { pin = 1 }
-ScriptBlock ::= '{' ScriptBlockItems '}' {
+Script ::= SCRIPT_KW '{' ScriptItem_with_recover* '}'
+{
     pin = 1
     implements = [
         "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
 }
-private ScriptBlockItems ::= ScriptItem*
+ScriptBlock ::= '{' ScriptItem_with_recover* '}' {
+//    pin = 1
+//    implements = [
+//        "org.move.lang.core.psi.ext.MvItemsOwner"
+//    ]
+}
 
-private ScriptItem ::= !('}' | <<eof>>) ScriptItem_item
+private ScriptItem_with_recover ::= !('}' | <<eof>>) ScriptItem
 {
     pin = 1
     recoverWhile = ScriptItem_recover
 }
 // top-level recovery
-private ScriptItemFirst ::= use | CONST_KW | fun
-private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
+private ScriptItem_recover ::= !('}' | ScriptItem_first)
+private ScriptItem_first ::= use | CONST_KW | fun
 
-private ScriptItem_item ::= UseStmt | Const | FunctionInner
+private ScriptItem ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
@@ -228,7 +233,7 @@ private AddressBlockItems ::= Module*
 }
 private AddressBlockItems_recover ::= !'}'
 
-Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
+Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER '{' ModuleItem_with_recover* '}'
 {
     pin = "MODULE_KW"
     name = "module declaration"
@@ -236,6 +241,7 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
     stubClass = "org.move.lang.core.stubs.MvModuleStub"
@@ -243,34 +249,33 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-ModuleBlock ::= '{' ModuleBlockItems '}'
+ModuleBlock ::= '{' ModuleItem_with_recover* '}'
 {
     pin = 1
     implements = [
         "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
 }
-private ModuleBlockItems ::= ModuleItem*
-private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
+private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
 {
     pin = 1
-    recoverWhile = Item_recover
+    recoverWhile = ModuleItem_recover
 }
+private ModuleItem_recover ::= !('}' | ModuleItem_first)
 // top-level recovery
-private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | '#'
-                        | "friend"  | "entry" | "inline" | "enum"
-private Item_recover ::= !('}' | <<eof>> | Item_first)
+private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
+                            | Attr_first | "friend"  | "entry" | "inline" | "enum"
 
-private ModuleItem_item ::= UseStmt
-                            | FriendDecl
-                            | StructItem
-                            | Enum
-                            | FunctionItem
-                            | SpecFunctionItem
-                            | Const
-                            | Schema
-                            | ModuleItemSpec
-                            | ItemSpec
+private ModuleItem ::= UseStmt
+                        | FriendDecl
+                        | StructItem
+                        | Enum
+                        | FunctionItem
+                        | SpecFunctionItem
+                        | Const
+                        | Schema
+                        | ModuleItemSpec
+                        | ItemSpec
 
 Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
 {
@@ -464,7 +469,7 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 {
     recoverWhile = "FunctionSignatureInner_recover"
 }
-private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
+private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | ModuleItem_first)
 
 private friend ::= <<friendKeyword>>
 private enum ::= <<enumKeyword>>
@@ -683,28 +688,33 @@ BindingPat ::= IDENTIFIER !'::' {
     mixin = "org.move.lang.core.psi.ext.MvBindingPatMixin"
 }
 
-TuplePat ::= '(' <<non_empty_comma_sep_items Pat>>? ')'
+TuplePat ::= '(' ParenListElemPat_with_recover* ')'
+private ParenListElemPat_with_recover ::= !')' Pat (',' | &')') {
+  pin = 1
+  recoverWhile = ParenListElemPat_recover
+}
+private ParenListElemPat_recover ::= !(')' | Pat_first)
 
-StructPat ::= PathImpl StructPatFieldsBlock
-StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}'
+StructPat ::= PathImpl '{' FieldPat_with_recover* '}'
+//StructPatFieldsBlock ::= '{' FieldPat_with_recover* '}'
 
-private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
+private FieldPat_with_recover ::= !'}' FieldPat (',' | &'}')
 {
     pin = 1
-    recoverWhile = StructPatField_recover
+    recoverWhile = FieldPat_recover
 
 }
-private StructPatField_recover ::= !('}' | IDENTIFIER)
+private FieldPat_recover ::= !('}' | IDENTIFIER)
 
-StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
+FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
-        "org.move.lang.core.psi.ext.MvStructRefField"
+        "org.move.lang.core.psi.ext.MvFieldRef"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
+    mixin = "org.move.lang.core.psi.ext.MvFieldPatMixin"
 }
-StructPatFieldBinding ::= ':' Pat
+FieldPatBinding ::= ':' Pat
 
 private Pat_first ::= '_' | '(' | Path_first | AnyLitToken_first
 
@@ -950,7 +960,7 @@ StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructFieldLitReferenceElement"
-        "org.move.lang.core.psi.ext.MvStructRefField"
+        "org.move.lang.core.psi.ext.MvFieldRef"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }

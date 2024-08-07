@@ -64,8 +64,9 @@ class MvFoldingBuilder: CustomFoldingBuilder(), DumbAware {
     ): MvVisitor() {
 
         override fun visitCodeBlock(o: MvCodeBlock) = fold(o)
-        override fun visitScriptBlock(o: MvScriptBlock) = fold(o)
-        override fun visitModuleBlock(o: MvModuleBlock) = fold(o)
+
+        override fun visitModule(o: MvModule) = foldBetween(o, o.lBrace, o.rBrace)
+        override fun visitScript(o: MvScript) = foldBetween(o, o.lBrace, o.rBrace)
 
         override fun visitSpecCodeBlock(block: MvSpecCodeBlock) {
             if (block.children.isNotEmpty()) {
@@ -83,16 +84,18 @@ class MvFoldingBuilder: CustomFoldingBuilder(), DumbAware {
         }
 
         override fun visitFunctionParameterList(o: MvFunctionParameterList) {
-            if (o.functionParameterList.isNotEmpty())
-                fold(o)
+            if (o.functionParameterList.isEmpty()) return
+            fold(o)
         }
 
-        override fun visitBlockFields(o: MvBlockFields) {
-            if (o.namedFieldDeclList.isNotEmpty())
-                fold(o)
-        }
+        override fun visitBlockFields(o: MvBlockFields) = fold(o)
+        override fun visitEnumBody(o: MvEnumBody) = fold(o)
+        override fun visitMatchBody(o: MvMatchBody) = fold(o)
+        override fun visitStructLitFieldsBlock(o: MvStructLitFieldsBlock) = fold(o)
 
         override fun visitUseStmt(o: MvUseStmt) = foldRepeatingItems(o, o.use, o.use, usesRanges)
+        override fun visitUseGroup(o: MvUseGroup) = fold(o)
+
         override fun visitConst(o: MvConst) = foldRepeatingItems(o, o.constKw, o.constKw, constRanges)
 
         private fun fold(element: PsiElement) {

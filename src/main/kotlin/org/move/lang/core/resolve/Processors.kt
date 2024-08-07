@@ -8,11 +8,14 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
+import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.RsPathResolveResult
 import org.move.lang.core.resolve2.visInfo
+import org.move.lang.core.types.infer.Substitution
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.stdext.intersects
 
 /**
@@ -222,16 +225,19 @@ private class ShadowingAndUpdateScopeProcessor<in T: ScopeEntry>(
         }
         val prevNs = prevScope[entry.name]
         val newNs = entry.namespaces
-        val entryWithIntersectedNs = if (prevNs != null) {
-            val restNs = newNs.minus(prevNs)
-            if (ns.intersects(restNs)) {
-                entry.copyWithNs(restNs)
+        // drop entries from namespaces that were encountered before
+        val entryWithIntersectedNs =
+            if (prevNs != null) {
+                val restNs = newNs.minus(prevNs)
+                if (ns.intersects(restNs)) {
+                    entry.copyWithNs(restNs)
+                } else {
+                    return false
+                }
             } else {
-                return false
+                entry
             }
-        } else {
-            entry
-        }
+        // save encountered namespaces to the currScope
         currScope[entry.name] = prevNs?.let { it + newNs } ?: newNs
         return originalProcessor.process(entryWithIntersectedNs)
     }
@@ -354,8 +360,8 @@ private fun collectMethodOrPathScopeEntry(
     result += RsPathResolveResult(element, isVisible)
 }
 
-//fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvElement? =
-//    pickFirstResolveEntry(referenceName, f)?.element
+fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
+    pickFirstResolveEntry(referenceName, f)?.element
 
 fun pickFirstResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
     if (referenceName == null) return null
@@ -383,17 +389,44 @@ private class PickFirstScopeEntryCollector(
 }
 
 
+fun resolveSingleResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
+    resolveSingleResolveEntry(referenceName, f).singleOrNull()?.element
+
+fun resolveSingleResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<ScopeEntry> {
+    if (referenceName == null) return emptyList()
+    val processor = ResolveSingleScopeEntryCollector(referenceName)
+    f(processor)
+    return processor.result
+}
+
+private class ResolveSingleScopeEntryCollector(
+    private val referenceName: String,
+    val result: MutableList<ScopeEntry> = SmartList(),
+): RsResolveProcessorBase<ScopeEntry> {
+    override val names: Set<String> = setOf(referenceName)
+
+    override fun process(entry: ScopeEntry): Boolean {
+        if (entry.name == referenceName) {
+            result += entry
+        }
+        return result.isNotEmpty()
+    }
+}
+
+
 fun collectCompletionVariants(
     result: CompletionResultSet,
     context: CompletionContext,
+    subst: Substitution = emptySubstitution,
     f: (RsResolveProcessor) -> Unit
 ) {
-    val processor = CompletionVariantsCollector(result, context)
+    val processor = CompletionVariantsCollector(result, subst, context)
     f(processor)
 }
 
 private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
+    private val subst: Substitution,
     private val context: CompletionContext,
 ): RsResolveProcessorBase<ScopeEntry> {
     override val names: Set<String>? get() = null
@@ -401,11 +434,14 @@ private class CompletionVariantsCollector(
     override fun process(entry: ScopeEntry): Boolean {
 //        addEnumVariantsIfNeeded(entry)
 
-        result.addElement(createLookupElement(
-            scopeEntry = entry,
-            completionContext = context,
-            priority = entry.element.completionPriority
-        ))
+        result.addElement(
+            createLookupElement(
+                scopeEntry = entry,
+                completionContext = context,
+                priority = entry.element.completionPriority,
+                subst = subst,
+            )
+        )
         return false
     }
 
@@ -514,9 +550,9 @@ data class ScopeEntryWithVisibility(
 fun RsResolveProcessor.process(
     name: String,
     e: MvNamedElement,
-    namespaces: Set<Namespace>,
+    ns: Set<Namespace>,
     visibilityFilter: VisibilityFilter
-): Boolean = process(ScopeEntryWithVisibility(name, e, namespaces, visibilityFilter))
+): Boolean = process(ScopeEntryWithVisibility(name, e, ns, visibilityFilter))
 
 fun RsResolveProcessor.processAllItems(
     namespaces: Set<Namespace>,
@@ -531,46 +567,41 @@ fun RsResolveProcessor.processAllItems(
 
 fun RsResolveProcessor.process(
     name: String,
-//    namespaces: Set<Namespace>,
+    namespaces: Set<Namespace>,
     e: MvNamedElement
 ): Boolean =
-    process(SimpleScopeEntry(name, e, Namespace.none()))
-//    process(ScopeEntry(name, e, namespaces))
+    process(SimpleScopeEntry(name, e, namespaces))
 
 inline fun RsResolveProcessor.lazy(
     name: String,
-//    namespaces: Set<Namespace>,
+    namespaces: Set<Namespace>,
     e: () -> MvNamedElement?
 ): Boolean {
     if (!acceptsName(name)) return false
     val element = e() ?: return false
-    return process(name, element)
+    return process(name, namespaces, element)
 }
 
 fun RsResolveProcessor.process(
     e: MvNamedElement,
-//    namespaces: Set<Namespace>
+    ns: Set<Namespace>
 ): Boolean {
     val name = e.name ?: return false
-    return process(name, e)
+    return process(name, ns, e)
 }
 
 fun RsResolveProcessor.processAll(
     elements: List<MvNamedElement>,
-//    namespaces: Set<Namespace>
+    namespaces: Set<Namespace> = Namespace.none(),
 ): Boolean {
-    return elements.any { process(it) }
+    return elements.any { process(it, namespaces) }
 }
 
 fun RsResolveProcessor.processAll(
     vararg collections: Iterable<MvNamedElement>,
-//    namespaces: Set<Namespace>
+    ns: Set<Namespace> = NONE,
 ): Boolean {
-    return sequenceOf(*collections).flatten().any { process(it) }
-}
-
-fun processAllScopeEntries(elements: List<SimpleScopeEntry>, processor: RsResolveProcessor): Boolean {
-    return elements.any { processor.process(it) }
+    return sequenceOf(*collections).flatten().any { process(it, ns) }
 }
 
 

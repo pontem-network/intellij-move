@@ -16,9 +16,9 @@ import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.GenericTy
 import org.move.lang.core.types.ty.TyUnknown
 
-class MvAbilityCheckInspection : MvLocalInspectionTool() {
+class MvAbilityCheckInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
-        object : MvVisitor() {
+        object: MvVisitor() {
             override fun visitValueArgumentList(o: MvValueArgumentList) {
                 if (o.isMsl()) return
 
@@ -61,7 +61,7 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
                         val message = "The type '${actualType.text()}' does not have required " +
                                 "${pluralise(missingAbilities.size, "ability", "abilities")} " +
                                 "'$abilitiesText'"
-                                holder.registerProblem(typeArgument, message, ProblemHighlightType.GENERIC_ERROR)
+                        holder.registerProblem(typeArgument, message, ProblemHighlightType.GENERIC_ERROR)
                     }
                 }
             }

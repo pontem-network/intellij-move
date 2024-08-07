@@ -5,19 +5,18 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
-val MvStructPatField.structPat: MvStructPat
+
+val MvFieldPat.structPat: MvStructPat
     get() = ancestorStrict()!!
 
-val MvStructPatField.pat: MvPat?
-    get() {
-        return this.bindingPat ?: this.structPatFieldBinding?.pat
-    }
+val MvFieldPat.pat: MvPat? get() =
+    this.bindingPat ?: this.fieldPatBinding?.pat
 
-val MvStructPatField.isShorthand: Boolean get() = this.structPatFieldBinding == null
+val MvFieldPat.isShorthand: Boolean get() = this.fieldPatBinding == null
 
-val MvStructPatField.kind: PatFieldKind
+val MvFieldPat.kind: PatFieldKind
     get() = bindingPat?.let { PatFieldKind.Shorthand(it) }
-        ?: PatFieldKind.Full(this.identifier!!, this.structPatFieldBinding?.pat!!)
+        ?: PatFieldKind.Full(this.identifier!!, this.fieldPatBinding?.pat!!)
 
 // PatField ::= identifier ':' Pat | box? PatBinding
 sealed class PatFieldKind {
@@ -42,9 +41,8 @@ val PatFieldKind.fieldName: String
         is PatFieldKind.Shorthand -> binding.name
     }
 
-
-abstract class MvStructPatFieldMixin(node: ASTNode): MvElementImpl(node),
-                                                     MvStructPatField {
+abstract class MvFieldPatMixin(node: ASTNode): MvElementImpl(node),
+                                               MvFieldPat {
     override val referenceNameElement: PsiElement
         get() {
             val bindingPat = this.bindingPat
@@ -56,10 +54,5 @@ abstract class MvStructPatFieldMixin(node: ASTNode): MvElementImpl(node),
         }
 
     override fun getReference(): MvPolyVariantReference =
-        MvStructRefFieldReferenceImpl(this, shorthand = this.isShorthand)
-//        return if (this.isShorthand) {
-//            MvStructPatShorthandFieldReferenceImpl(this)
-//        } else {
-//            MvStructRefFieldReferenceImpl(this)
-//        }
+        MvFieldReferenceImpl(this, shorthand = this.isShorthand)
 }

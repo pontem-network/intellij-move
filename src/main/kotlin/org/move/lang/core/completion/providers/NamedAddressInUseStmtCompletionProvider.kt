@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.cli.AddressVal
 import org.move.ide.MoveIcons
-import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.alreadyHasColonColon
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedAddress
@@ -75,7 +75,7 @@ object NamedAddressAtValueExprCompletionProvider: MvCompletionProvider() {
 
 object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = MvPsiPatterns.path()
+        get() = MvPsiPattern.path()
             .and(
                 PlatformPatterns.psiElement()
                     // use path::ident::

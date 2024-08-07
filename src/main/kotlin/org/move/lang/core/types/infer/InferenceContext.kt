@@ -181,7 +181,7 @@ class InferenceContext(
         varUnificationTable.startSnapshot(),
     )
 
-    inline fun <T> freezeUnificationTable(action: () -> T): T {
+    inline fun <T> freezeUnification(action: () -> T): T {
         val snapshot = startSnapshot()
         try {
             return action()
@@ -309,7 +309,16 @@ class InferenceContext(
     }
 
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
-        return combineTypesResolved(shallowResolve(ty1), shallowResolve(ty2))
+//        try {
+        val resolvedTy1 = shallowResolve(ty1)
+        val resolvedTy2 = shallowResolve(ty2)
+        return combineTypesResolved(resolvedTy1, resolvedTy2)
+//        } catch (e: UnificationError) {
+//            if (e.combine == null) {
+//                e.combine = CombiningContext(ty1, ty2)
+//            }
+//            throw e
+//        }
     }
 
     @Suppress("NAME_SHADOWING")
@@ -375,44 +384,43 @@ class InferenceContext(
     }
 
     fun combineTypesNoVars(ty1: Ty, ty2: Ty): RelateResult {
-        val ty1msl = ty1
-        val ty2msl = ty2
         return when {
             ty1 === ty2 -> Ok(Unit)
-            ty1msl is TyNever || ty2msl is TyNever -> Ok(Unit)
-            ty1msl is TyUnknown || ty2msl is TyUnknown -> {
-                ty1msl.hasTyInfer && ty1msl.visitTyVarWith {
-                    combineTyVar(it, TyUnknown); false
-                }
-                ty2msl.hasTyInfer && ty2msl.visitTyVarWith {
-                    combineTyVar(it, TyUnknown); false
-                }
+            ty1 is TyNever || ty2 is TyNever -> Ok(Unit)
+
+            // assign TyUnknown to all TyVars if other type is unknown
+            ty1 is TyUnknown -> {
+                ty2.visitTyVarWith { combineTyVar(it, TyUnknown); false }
+                Ok(Unit)
+            }
+            ty2 is TyUnknown -> {
+                ty1.visitTyVarWith { combineTyVar(it, TyUnknown); false }
                 Ok(Unit)
             }
 
-            ty1msl is TyTypeParameter && ty2msl is TyTypeParameter && ty1msl == ty2msl -> Ok(Unit)
-            ty1msl is TyUnit && ty2msl is TyUnit -> Ok(Unit)
-            ty1msl is TyInteger && ty2msl is TyInteger
-                    && isCompatibleIntegers(ty1msl, ty2msl) -> Ok(Unit)
-            ty1msl is TyPrimitive && ty2msl is TyPrimitive && ty1msl.name == ty2msl.name -> Ok(Unit)
+            ty1 is TyTypeParameter && ty2 is TyTypeParameter && ty1 == ty2 -> Ok(Unit)
+            ty1 is TyUnit && ty2 is TyUnit -> Ok(Unit)
+            ty1 is TyInteger && ty2 is TyInteger
+                    && isCompatibleIntegers(ty1, ty2) -> Ok(Unit)
+            ty1 is TyPrimitive && ty2 is TyPrimitive && ty1.name == ty2.name -> Ok(Unit)
 
-            ty1msl is TyVector && ty2msl is TyVector -> combineTypes(ty1msl.item, ty2msl.item)
-            ty1msl is TyRange && ty2msl is TyRange -> Ok(Unit)
+            ty1 is TyVector && ty2 is TyVector -> combineTypes(ty1.item, ty2.item)
+            ty1 is TyRange && ty2 is TyRange -> Ok(Unit)
 
-            ty1msl is TyReference && ty2msl is TyReference
+            ty1 is TyReference && ty2 is TyReference
                     // inferredTy permissions should be a superset of expectedTy permissions
-                    && coerceMutability(ty1msl, ty2msl) ->
-                combineTypes(ty1msl.referenced, ty2msl.referenced)
+                    && coerceMutability(ty1, ty2) ->
+                combineTypes(ty1.referenced, ty2.referenced)
 
-            ty1msl is TyStruct && ty2msl is TyStruct
-                    && ty1msl.item == ty2msl.item ->
-                combineTypePairs(ty1msl.typeArguments.zip(ty2msl.typeArguments))
+            ty1 is TyStruct && ty2 is TyStruct
+                    && ty1.item == ty2.item ->
+                combineTypePairs(ty1.typeArguments.zip(ty2.typeArguments))
 
-            ty1msl is TyTuple && ty2msl is TyTuple
-                    && ty1msl.types.size == ty2msl.types.size ->
-                combineTypePairs(ty1msl.types.zip(ty2msl.types))
+            ty1 is TyTuple && ty2 is TyTuple
+                    && ty1.types.size == ty2.types.size ->
+                combineTypePairs(ty1.types.zip(ty2.types))
 
-            else -> Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))
+            else -> Err(CombineTypeError.TypeMismatch(ty1, ty2))
         }
     }
 
@@ -491,9 +499,20 @@ fun inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
         // pragma statements are not supported for now
 //        inferredElement.hasAncestorOrSelf<MvPragmaSpecStmt>() -> TyUnknown
         // error out if debug mode is enabled
-        isDebugModeEnabled() -> error(inferredElement.inferenceErrorMessage)
+        isDebugModeEnabled() -> throw InferenceError(inferredElement.inferenceErrorMessage)
         else -> TyUnknown
     }
+
+class InferenceError(message: String, var context: PsiErrorContext? = null): IllegalStateException(message) {
+    override fun toString(): String {
+        var message = super.toString()
+        val context = context
+        if (context != null) {
+            message += ", \ncontext: \n$context"
+        }
+        return message
+    }
+}
 
 private val MvElement.inferenceErrorMessage: String
     get() {

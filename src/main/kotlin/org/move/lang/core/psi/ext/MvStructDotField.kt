@@ -2,26 +2,27 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ScopeItem
+import org.move.lang.core.resolve.RsResolveProcessor
+import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.wrapWithList
 
-fun getFieldVariants(
+fun processNamedFieldVariants(
     element: MvMethodOrField,
     receiverTy: TyStruct,
-    msl: Boolean
-): MatchSequence<MvNamedFieldDecl> {
+    msl: Boolean,
+    processor: RsResolveProcessor
+): Boolean {
     val structItem = receiverTy.item
     if (!msl) {
         // cannot resolve field if not in the same module as struct definition
-        val dotExprModule = element.namespaceModule ?: return emptySequence()
-        if (structItem.containingModule != dotExprModule) return emptySequence()
+        val dotExprModule = element.namespaceModule ?: return false
+        if (structItem.containingModule != dotExprModule) return false
     }
-    return structItem.fields
-        .map { ScopeItem(it.name, it) }.asSequence()
+    return processor.processAll(structItem.namedFields)
 }
 
 class MvStructDotFieldReferenceImpl(

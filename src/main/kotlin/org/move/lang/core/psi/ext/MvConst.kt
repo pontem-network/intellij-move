@@ -12,11 +12,7 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import javax.swing.Icon
 
-val MvConst.module: MvModule?
-    get() {
-        val moduleBlock = this.parent
-        return moduleBlock.parent as? MvModule
-    }
+val MvConst.module: MvModule? get() = this.parent as? MvModule
 
 abstract class MvConstMixin : MvStubbedNamedElementImpl<MvConstStub>,
                               MvConst {

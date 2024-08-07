@@ -3,6 +3,7 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
@@ -63,8 +64,8 @@ fun processItemDeclarations(
     // 1. loop over all items in module (item is anything accessible with MODULE:: )
     // 2. for every item, use it's .visibility to create VisibilityFilter, even it's just a { false }
     val items = itemsOwner.itemElements +
-            (itemsOwner as? MvModuleBlock)?.module?.innerSpecItems.orEmpty() +
-            (itemsOwner as? MvModuleBlock)?.module?.let { getItemsFromModuleSpecs(it, ns) }.orEmpty()
+            (itemsOwner as? MvModule)?.innerSpecItems.orEmpty() +
+            (itemsOwner as? MvModule)?.let { getItemsFromModuleSpecs(it, ns) }.orEmpty()
     for (item in items) {
         val name = item.name ?: continue
 
@@ -96,6 +97,7 @@ fun processItemsFromModuleSpecs(
                     processor.processAll(
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions(),
+                        ns = FUNCTIONS
                     )
                 Namespace.SCHEMA -> processor.processAll(moduleSpec.schemas())
                 else -> false

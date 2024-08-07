@@ -8,6 +8,7 @@ import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.psi.ext.variants
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve2.*
 import org.move.lang.core.resolve2.PathKind.NamedAddress
 import org.move.lang.core.resolve2.PathKind.ValueAddress
@@ -62,9 +63,9 @@ fun processPathResolveVariants(
     return when (pathKind) {
         is NamedAddress, is ValueAddress -> false
         is PathKind.UnqualifiedPath -> {
-            if (Namespace.MODULE in pathKind.ns) {
+            if (MODULE in pathKind.ns) {
                 // Self::
-                if (processor.lazy("Self") { ctx.containingModule }) return true
+                if (processor.lazy("Self", MODULES) { ctx.containingModule }) return true
             }
             // local
             processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, processor)
@@ -92,7 +93,7 @@ fun processQualifiedPathResolveVariants(
 ): Boolean {
     val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
     if (resolvedQualifier == null) {
-        if (Namespace.MODULE in ns) {
+        if (MODULE in ns) {
             // can be module, try for named address as a qualifier
             val addressName = qualifier.referenceName ?: return false
             val address = ctx.moveProject?.getNamedAddressTestAware(addressName) ?: return false
@@ -101,11 +102,10 @@ fun processQualifiedPathResolveVariants(
         return false
     }
     if (resolvedQualifier is MvModule) {
-        if (processor.process("Self", resolvedQualifier)) return true
-        val moduleBlock = resolvedQualifier.moduleBlock
-        if (moduleBlock != null) {
-            if (processItemDeclarations(moduleBlock, ns, processor)) return true
-        }
+        if (processor.process("Self", MODULES, resolvedQualifier)) return true
+
+        val module = resolvedQualifier
+        if (processItemDeclarations(module, ns, processor)) return true
     }
     if (resolvedQualifier is MvEnum) {
         if (processor.processAll(resolvedQualifier.variants)) return true

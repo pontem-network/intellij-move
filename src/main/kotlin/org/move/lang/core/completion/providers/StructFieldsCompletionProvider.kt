@@ -7,7 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MvPsiPatterns.bindingPat
+import org.move.lang.core.MvPsiPattern.bindingPat
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
@@ -23,9 +23,9 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 .withParent<MvStructLitField>(),
             PlatformPatterns
                 .psiElement()
-                .withParent<MvStructPatField>(),
+                .withParent<MvFieldPat>(),
             bindingPat()
-                .withSuperParent<MvStructPatField>(2),
+                .withSuperParent<MvFieldPat>(2),
         )
 
     override fun addCompletions(
@@ -41,7 +41,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         val completionCtx = CompletionContext(element, element.isMsl())
 //        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         when (element) {
-            is MvStructPatField -> {
+            is MvFieldPat -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,

@@ -15,8 +15,8 @@ open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : 
     operator fun get(key: TyTypeParameter): Ty? = typeSubst[key]
     operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter(psi)]
 
-    fun typeParameterByName(name: String): TyTypeParameter? =
-        typeSubst.keys.find { it.toString() == name }
+//    fun typeParameterByName(name: String): TyTypeParameter? =
+//        typeSubst.keys.find { it.toString() == name }
 
     fun substituteInValues(map: Substitution): Substitution =
         Substitution(

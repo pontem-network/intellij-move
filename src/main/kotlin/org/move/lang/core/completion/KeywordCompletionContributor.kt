@@ -6,21 +6,20 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
-import com.intellij.patterns.PsiElementPattern
-import com.intellij.psi.PsiElement
 import org.move.cli.settings.moveSettings
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.MvPsiPatterns.addressBlock
-import org.move.lang.core.MvPsiPatterns.anySpecStart
-import org.move.lang.core.MvPsiPatterns.codeStmt
-import org.move.lang.core.MvPsiPatterns.function
-import org.move.lang.core.MvPsiPatterns.itemSpecStmt
-import org.move.lang.core.MvPsiPatterns.moduleBlock
-import org.move.lang.core.MvPsiPatterns.moduleSpecBlock
-import org.move.lang.core.MvPsiPatterns.scriptBlock
-import org.move.lang.core.MvPsiPatterns.toplevel
-import org.move.lang.core.MvPsiPatterns.typeParameter
+import org.move.lang.core.MvPsiPattern
+import org.move.lang.core.MvPsiPattern.anySpecStart
+import org.move.lang.core.MvPsiPattern.codeStatementPattern
+import org.move.lang.core.MvPsiPattern.function
+import org.move.lang.core.MvPsiPattern.identifierStatementBeginningPattern
+import org.move.lang.core.MvPsiPattern.itemSpecStmt
+import org.move.lang.core.MvPsiPattern.module
+import org.move.lang.core.MvPsiPattern.moduleSpecBlock
+import org.move.lang.core.MvPsiPattern.onStatementBeginning
+import org.move.lang.core.MvPsiPattern.script
+import org.move.lang.core.MvPsiPattern.toplevel
+import org.move.lang.core.MvPsiPattern.typeParameter
 import org.move.lang.core.TYPES
 import org.move.lang.core.completion.providers.KeywordCompletionProvider
 
@@ -28,17 +27,12 @@ class KeywordCompletionContributor: CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,
-            toplevel().and(onStmtBeginning()),
+            toplevel().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider("address", "module", "script", "spec")
         )
         extend(
             CompletionType.BASIC,
-            addressBlock().and(onStmtBeginning()),
-            KeywordCompletionProvider("module")
-        )
-        extend(
-            CompletionType.BASIC,
-            scriptBlock().and(onStmtBeginning()),
+            script().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
                 "public",
                 "fun",
@@ -48,23 +42,23 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStmtBeginning()),
+            module().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
-                *VISIBILITY_MODIFIERS,
+                *VIS_MODIFIERS,
+                *FUNCTION_MODIFIERS,
                 "native",
-                "entry",
-                "inline",
                 "fun",
                 "struct",
                 "const",
                 "use",
                 "spec",
                 "friend",
+                "enum",
             )
         )
         extend(
             CompletionType.BASIC,
-            moduleSpecBlock().and(onStmtBeginning()),
+            moduleSpecBlock().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
                 "use",
                 "spec",
@@ -72,37 +66,39 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPatterns.AfterSibling(VISIBILITY_MODIFIER)),
-            KeywordCompletionProvider("fun", "entry", "inline")
+            function().with(MvPsiPattern.AfterSibling(VISIBILITY_MODIFIER)),
+            KeywordCompletionProvider("fun", *FUNCTION_MODIFIERS)
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPatterns.AfterSibling(NATIVE)),
+            function().with(MvPsiPattern.AfterSibling(NATIVE)),
             KeywordCompletionProvider("fun")
         )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStmtBeginning("native")),
-            KeywordCompletionProvider(*VISIBILITY_MODIFIERS, "fun", "struct")
+            module().and(identifierStatementBeginningPattern("native")),
+            KeywordCompletionProvider(*VIS_MODIFIERS, "fun", "struct")
         )
         extend(
             CompletionType.BASIC,
-            codeStmt().and(onStmtBeginning()),
+            codeStatementPattern().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
                 "let",
                 "loop",
-                "if",
                 "while",
-                "abort",
-                "return",
                 "continue",
                 "break",
-                "else"
+                "if",
+                "else",
+                "abort",
+                "return",
+                "for",
+                "match",
             )
         )
         extend(
             CompletionType.BASIC,
-            itemSpecStmt().and(onStmtBeginning()),
+            itemSpecStmt().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
                 "pragma",
                 "let",
@@ -123,9 +119,9 @@ class KeywordCompletionContributor: CompletionContributor() {
             CompletionType.BASIC,
             PlatformPatterns.or(
                 psiElement()
-                    .with(MvPsiPatterns.AfterSibling(FUNCTION_PARAMETER_LIST)),
+                    .with(MvPsiPattern.AfterSibling(FUNCTION_PARAMETER_LIST)),
                 psiElement()
-                    .with(MvPsiPatterns.AfterAnySibling(TYPES))
+                    .with(MvPsiPattern.AfterAnySibling(TYPES))
             ),
             KeywordCompletionProvider {
                 buildList {
@@ -148,22 +144,20 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
     }
 
-    private fun onStmtBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
-        psiElement(IDENTIFIER).and(MvPsiPatterns.onStmtBeginning(*startWords))
-
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         super.fillCompletionVariants(
             parameters,
             CommonCompletionContributor.withSorter(parameters, result)
         )
     }
-
-    companion object {
-        private val VISIBILITY_MODIFIERS = arrayOf(
-            "public",
-            "public(script)",
-            "public(friend)",
-            "public(package)"
-        )
-    }
 }
+
+private val VIS_MODIFIERS = arrayOf(
+    "public",
+    "public(script)",
+    "public(friend)",
+    "public(package)"
+)
+
+private val FUNCTION_MODIFIERS = arrayOf("entry", "inline")
+

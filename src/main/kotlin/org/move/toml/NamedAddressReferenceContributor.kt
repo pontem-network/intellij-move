@@ -2,7 +2,7 @@ package org.move.toml
 
 import com.intellij.psi.*
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.lang.core.resolve.ref.NamedAddressReference
 
@@ -19,7 +19,7 @@ class NamedAddressReferenceProvider : PsiReferenceProvider() {
 class NamedAddressReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerReferenceProvider(
-            MvPsiPatterns.namedAddress(), NamedAddressReferenceProvider()
+            MvPsiPattern.namedAddress(), NamedAddressReferenceProvider()
         )
     }
 }

@@ -16,12 +16,12 @@ sealed class FieldShorthandFix<T : MvElement>(field: T) : DiagnosticFix<T>(field
         }
     }
 
-    class StructPat(field: MvStructPatField) : FieldShorthandFix<MvStructPatField>(field) {
+    class StructPat(field: MvFieldPat) : FieldShorthandFix<MvFieldPat>(field) {
         override fun getText(): String = "Use pattern shorthand"
 
-        override fun invoke(project: Project, file: PsiFile, element: MvStructPatField) {
+        override fun invoke(project: Project, file: PsiFile, element: MvFieldPat) {
             val fieldIdent = element.identifier ?: return
-            element.structPatFieldBinding?.delete()
+            element.fieldPatBinding?.delete()
             fieldIdent.replace(project.psiFactory.bindingPat(fieldIdent.text))
         }
     }
