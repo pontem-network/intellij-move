@@ -9,7 +9,7 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
-import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.AngleBracketsInsertHandler
 import org.move.lang.core.completion.PRIMITIVE_TYPE_PRIORITY
 import org.move.lang.core.completion.withPriority
@@ -23,7 +23,7 @@ object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
 
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
-            MvPsiPatterns.nameTypeIdentifier()
+            MvPsiPattern.nameTypeIdentifier()
 
     override fun addCompletions(
         parameters: CompletionParameters,

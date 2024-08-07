@@ -9,7 +9,7 @@ fun MoveFmtBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elemen
         MvAlignmentStrategy
             .shared()
             .alignUnlessBlockDelim()
-            .alignIf(blockCtx.commonSettings.ALIGN_MULTILINE_PARAMETERS)
+            .alignIf(ctx.commonSettings.ALIGN_MULTILINE_PARAMETERS)
     TYPE_PARAMETER_LIST ->
         MvAlignmentStrategy
             .wrap()

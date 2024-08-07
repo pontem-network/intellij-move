@@ -99,18 +99,14 @@ val MvFunctionLike.module: MvModule?
                 if (moduleStub != null) {
                     moduleStub.psi
                 } else {
-                    this.parent?.parent as? MvModule
+                    this.parent as? MvModule
                 }
             }
             // TODO:
             else -> null
         }
 
-val MvFunctionLike.script: MvScript?
-    get() {
-        val scriptBlock = this.parent ?: return null
-        return scriptBlock.parent as? MvScript
-    }
+val MvFunctionLike.script: MvScript? get() = this.parent as? MvScript
 
 val MvFunctionLike.signatureText: String
     get() {

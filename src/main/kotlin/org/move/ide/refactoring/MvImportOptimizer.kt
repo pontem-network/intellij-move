@@ -70,7 +70,7 @@ class MvImportOptimizer : ImportOptimizer {
                     it.useGroup?.sortUseSpecks()
                 }
             }
-            if (stmtOwner is MvModuleBlock) {
+            if (stmtOwner is MvModule) {
                 reorderUseStmtsIntoGroups(stmtOwner)
             }
         }
@@ -93,23 +93,21 @@ class MvImportOptimizer : ImportOptimizer {
         rootUseSpeck.replace(newUseSpeck)
     }
 
-    private fun reorderUseStmtsIntoGroups(useScope: MvItemsOwner) {
-        val useStmts = useScope.useStmtList
-        val first = useScope.childrenOfType<MvElement>()
-            .firstOrNull { it !is MvAttr && it !is PsiComment } ?: return
-        val psiFactory = useScope.project.psiFactory
+    private fun reorderUseStmtsIntoGroups(itemsOwner: MvItemsOwner) {
+        val useStmts = itemsOwner.useStmtList
+        val firstItem = itemsOwner.firstItem ?: return
+        val psiFactory = itemsOwner.project.psiFactory
         val sortedUses = useStmts
             .asSequence()
             .map { UseStmtWrapper(it) }
             .sorted()
         for ((useWrapper, nextUseWrapper) in sortedUses.withNext()) {
-            val addedUseItem = useScope.addBefore(useWrapper.useStmt, first)
-            useScope.addAfter(psiFactory.createNewline(), addedUseItem)
+            val addedUseItem = itemsOwner.addBefore(useWrapper.useStmt, firstItem)
+            itemsOwner.addAfter(psiFactory.createNewline(), addedUseItem)
             val addNewLine =
                 useWrapper.packageGroupLevel != nextUseWrapper?.packageGroupLevel
-//                            && (nextUseWrapper != null || useScope is MvModuleBlock)
             if (addNewLine) {
-                useScope.addAfter(psiFactory.createNewline(), addedUseItem)
+                itemsOwner.addAfter(psiFactory.createNewline(), addedUseItem)
             }
         }
         useStmts.forEach {

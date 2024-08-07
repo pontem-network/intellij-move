@@ -99,7 +99,6 @@ val InsertionContext.alreadyHasAngleBrackets: Boolean
 
 fun InsertionContext.nextCharIs(c: Char): Boolean =
     nextCharIs(c, 0)
-//    document.charsSequence.indexOfSkippingSpace(c, tailOffset) != null
 
 fun InsertionContext.nextCharIs(c: Char, offset: Int): Boolean =
     document.charsSequence.indexOfSkippingSpace(c, tailOffset + offset) != null

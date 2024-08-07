@@ -9,8 +9,10 @@ import org.move.stdext.chain
 
 class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
 
-    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner(o)
-    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner(o)
+    override fun visitModule(o: MvModule) = analyzeImportsOwner(o)
+//    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner(o)
+    override fun visitScript(o: MvScript) = analyzeImportsOwner(o)
+//    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner(o)
     override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
 
     fun analyzeImportsOwner(importsOwner: MvItemsOwner) {
@@ -102,15 +104,15 @@ fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<Use
 val MvItemsOwner.itemsOwnerWithSiblings: List<MvItemsOwner>
     get() {
         return when (this) {
-            is MvModuleBlock -> {
+            is MvModule -> {
                 // add all module spec blocks
-                listOf(this).chain(this.module.allModuleSpecBlocks()).toList()
+                listOf(this).chain(this.allModuleSpecBlocks()).toList()
             }
             is MvModuleSpecBlock -> {
                 // add module block
-                val moduleBlock = this.moduleSpec.moduleItem?.moduleBlock
-                if (moduleBlock != null) {
-                    listOf(moduleBlock, this)
+                val moduleItem = this.moduleSpec.moduleItem
+                if (moduleItem != null) {
+                    listOf(moduleItem, this)
                 } else {
                     listOf(this)
                 }

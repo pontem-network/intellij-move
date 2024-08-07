@@ -21,16 +21,16 @@ fun processItemsInScope(
         val stop = when (namespace) {
             Namespace.NAME -> {
                 val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
+                    is MvModule -> {
+//                        val module = scope.parent as MvModule
                         processor.processAllItems(
                             ns,
-                            module.structs(),
-                            module.consts(),
+                            scope.structs(),
+                            scope.consts(),
                         )
                     }
                     is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList)
-                    is MvScript -> processor.processAllItems(ns, scope.consts())
+                    is MvScript -> processor.processAllItems(ns, scope.constList)
                     is MvFunctionLike -> processor.processAll(scope.allParamsAsBindings)
                     is MvLambdaExpr -> processor.processAll(scope.bindingPatList)
                     is MvForExpr -> {
@@ -130,15 +130,14 @@ fun processItemsInScope(
             }
             Namespace.FUNCTION -> {
                 val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
+                    is MvModule -> {
                         val specFunctions =
-                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-                        val specInlineFunctions = module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+                            listOf(scope.specFunctions(), scope.builtinSpecFunctions()).flatten()
+                        val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
                         processor.processAllItems(
                             ns,
-                            module.builtinFunctions(),
-                            module.allNonTestFunctions(),
+                            scope.builtinFunctions(),
+                            scope.allNonTestFunctions(),
                             specFunctions,
                             specInlineFunctions
                         )
@@ -183,12 +182,11 @@ fun processItemsInScope(
                             false
                         }
                     }
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
+                    is MvModule -> {
                         processor.processAllItems(
                             ns,
-                            module.structs(),
-                            module.enums()
+                            scope.structs(),
+                            scope.enumList
                         )
                     }
                     is MvApplySchemaStmt -> {
@@ -204,7 +202,7 @@ fun processItemsInScope(
             }
 
             Namespace.SCHEMA -> when (scope) {
-                is MvModuleBlock -> processor.processAllItems(ns, scope.schemaList)
+                is MvModule -> processor.processAllItems(ns, scope.schemaList)
                 is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList, scope.specFunctionList)
                 else -> false
             }

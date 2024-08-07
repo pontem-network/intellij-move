@@ -24,18 +24,18 @@ inline fun <reified T: MvElement> MvStructLitField.resolveToElement(): T? =
 fun MvStructLitField.resolveToDeclaration(): MvNamedFieldDecl? = resolveToElement()
 fun MvStructLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
-interface MvStructRefField: MvMandatoryReferenceElement
+interface MvFieldRef: MvMandatoryReferenceElement
 
 abstract class MvStructLitFieldMixin(node: ASTNode): MvElementImpl(node),
                                                      MvStructLitField {
     override fun getReference(): MvPolyVariantReference =
-        MvStructRefFieldReferenceImpl(this, shorthand = this.isShorthand)
+        MvFieldReferenceImpl(this, shorthand = this.isShorthand)
 }
 
-class MvStructRefFieldReferenceImpl(
-    element: MvStructRefField,
+class MvFieldReferenceImpl(
+    element: MvFieldRef,
     var shorthand: Boolean,
-): MvPolyVariantReferenceCached<MvStructRefField>(element) {
+): MvPolyVariantReferenceCached<MvFieldRef>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
         val referenceName = element.referenceName
@@ -50,7 +50,7 @@ class MvStructRefFieldReferenceImpl(
 }
 
 fun processStructRefFieldResolveVariants(
-    fieldRef: MvStructRefField,
+    fieldRef: MvFieldRef,
     processor: RsResolveProcessor
 ): Boolean {
     val fieldsOwnerItem = fieldRef.fieldOwner ?: return false
@@ -60,10 +60,10 @@ fun processStructRefFieldResolveVariants(
         }
 }
 
-private val MvStructRefField.fieldOwner: MvFieldsOwner?
+private val MvFieldRef.fieldOwner: MvFieldsOwner?
     get() {
         return when (this) {
-            is MvStructPatField -> {
+            is MvFieldPat -> {
                 this.structPat.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
             }
             is MvStructLitField -> {

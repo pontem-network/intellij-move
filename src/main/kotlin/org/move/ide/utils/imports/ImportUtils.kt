@@ -11,9 +11,7 @@ import org.move.openapiext.checkWriteAccessAllowed
  */
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
-    val insertionScope = context.containingModule?.moduleBlock
-        ?: context.containingScript?.scriptBlock
-        ?: return
+    val insertionScope = context.containingModule ?: context.containingScript ?: return
     val insertTestOnly =
         insertionScope.itemScope == NamedItemScope.MAIN
                 && context.itemScope == NamedItemScope.TEST
@@ -162,7 +160,7 @@ private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseS
     val newline = psiFactory.createNewline()
     val useStmts = mod.childrenOfType<MvUseStmt>().map(::UseStmtWrapper)
     if (useStmts.isEmpty()) {
-        val anchor = mod.items().first()
+        val anchor = mod.firstItem
         mod.addAfter(newline, mod.addBefore(useStmt, anchor))
         return true
     }

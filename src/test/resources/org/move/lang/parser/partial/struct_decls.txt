@@ -7,74 +7,73 @@ FILE
     PsiElement(::)('::')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
-    MvModuleBlockImpl(MODULE_BLOCK)
-      PsiElement({)('{')
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(struct_kw)('struct')
-        PsiErrorElement:IDENTIFIER expected, got 'native'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(native)('native')
-        PsiWhiteSpace(' ')
-        PsiElement(struct_kw)('struct')
-        PsiErrorElement:IDENTIFIER expected, got 'struct'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(struct_kw)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('S')
-        PsiErrorElement:<type parameters> or '{' expected, got 'struct'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(struct_kw)('struct')
-        PsiErrorElement:IDENTIFIER expected, got '{'
-          <empty list>
-        PsiWhiteSpace(' ')
-        MvBlockFieldsImpl(BLOCK_FIELDS)
-          PsiElement({)('{')
-          PsiElement(})('}')
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(native)('native')
-        PsiWhiteSpace(' ')
-        PsiElement(struct_kw)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('S1')
-        PsiErrorElement:';' or <type parameters> expected, got 'struct'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(struct_kw)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('S')
-        MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
-          PsiElement(<)('<')
-          MvTypeParameterImpl(TYPE_PARAMETER)
-            PsiElement(phantom)('phantom')
-            PsiErrorElement:IDENTIFIER expected, got '>'
-              <empty list>
-          PsiElement(>)('>')
-      PsiWhiteSpace('\n    ')
-      MvStructImpl(STRUCT)
-        PsiElement(struct_kw)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('S')
-        MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
-          PsiElement(<)('<')
-          MvTypeParameterImpl(TYPE_PARAMETER)
-            PsiElement(phantom)('phantom')
-            PsiWhiteSpace(' ')
-            PsiElement(IDENTIFIER)('Type')
-          PsiElement(,)(',')
+    PsiElement({)('{')
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiErrorElement:IDENTIFIER expected, got 'native'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(native)('native')
+      PsiWhiteSpace(' ')
+      PsiElement(struct_kw)('struct')
+      PsiErrorElement:IDENTIFIER expected, got 'struct'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('S')
+      PsiErrorElement:<type parameters> or '{' expected, got 'struct'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiErrorElement:IDENTIFIER expected, got '{'
+        <empty list>
+      PsiWhiteSpace(' ')
+      MvBlockFieldsImpl(BLOCK_FIELDS)
+        PsiElement({)('{')
+        PsiElement(})('}')
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(native)('native')
+      PsiWhiteSpace(' ')
+      PsiElement(struct_kw)('struct')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('S1')
+      PsiErrorElement:';' or <type parameters> expected, got 'struct'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('S')
+      MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
+        PsiElement(<)('<')
+        MvTypeParameterImpl(TYPE_PARAMETER)
+          PsiElement(phantom)('phantom')
+          PsiErrorElement:IDENTIFIER expected, got '>'
+            <empty list>
+        PsiElement(>)('>')
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('S')
+      MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
+        PsiElement(<)('<')
+        MvTypeParameterImpl(TYPE_PARAMETER)
+          PsiElement(phantom)('phantom')
           PsiWhiteSpace(' ')
-          MvTypeParameterImpl(TYPE_PARAMETER)
-            PsiElement(phantom)('phantom')
-            PsiErrorElement:IDENTIFIER expected, got '>'
-              <empty list>
-          PsiElement(>)('>')
-      PsiWhiteSpace('\n')
-      PsiElement(})('}')
+          PsiElement(IDENTIFIER)('Type')
+        PsiElement(,)(',')
+        PsiWhiteSpace(' ')
+        MvTypeParameterImpl(TYPE_PARAMETER)
+          PsiElement(phantom)('phantom')
+          PsiErrorElement:IDENTIFIER expected, got '>'
+            <empty list>
+        PsiElement(>)('>')
+    PsiWhiteSpace('\n')
+    PsiElement(})('}')

@@ -28,12 +28,12 @@ class MvPsiFactory(val project: Project) {
     }
 
     fun structLitField(fieldName: String, expr: String): MvStructLitField =
-        createFromText("module _M { fun m() { S { $fieldName: $expr }; }}")
+        createFromText("module 0x1::_M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
 
-    fun structPatField(fieldName: String, alias: String): MvStructPatField =
-        createFromText("module _M { fun m() { let S { $fieldName: $alias } = 1; }}")
-            ?: error("Failed to create MvStructPatField")
+    fun fieldPat(fieldName: String, binding: String): MvFieldPat =
+        createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
+            ?: error("Failed to create MvFieldPat")
 
     fun schemaLitField(fieldName: String, expr: String): MvSchemaLitField =
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
@@ -173,7 +173,7 @@ class MvPsiFactory(val project: Project) {
                 MoveFileType,
                 "module 0x0::$moduleName { $text }"
             ) as MoveFile
-        val functions = dummyFile.childOfType<MvModule>()?.moduleBlock?.functionList.orEmpty()
+        val functions = dummyFile.childOfType<MvModule>()?.functionList.orEmpty()
         return functions
     }
 

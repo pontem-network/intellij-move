@@ -64,10 +64,7 @@ class MoveFile(fileViewProvider: FileViewProvider) : MoveFileBase(fileViewProvid
         return defs.mapNotNull { it.addressBlock }.toList()
     }
 
-    fun scriptBlocks(): List<MvScriptBlock> {
-        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvScript::class.java)
-        return defs.mapNotNull { it.scriptBlock }.toList()
-    }
+    fun scripts(): List<MvScript> = this.childrenOfType<MvScript>()
 
     fun modules(): Sequence<MvModule> {
         return getProjectPsiDependentCache(this) {

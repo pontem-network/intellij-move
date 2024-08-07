@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.utils.imports.ImportCandidateCollector
-import org.move.lang.core.MvPsiPatterns.path
+import org.move.lang.core.MvPsiPattern.path
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement

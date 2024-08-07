@@ -19,11 +19,7 @@ class FunctionParameterInfoHandler: AsyncParameterInfoHandlerBase<MvValueArgumen
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvValueArgumentList? {
         val element = file.findElementAt(offset) ?: return null
-//        val callExpr = element.ancestorStrict<MvCallArgumentList>() ?: return null
-//        val block = element.ancestorStrict<MvStructLitFieldsBlock>()
-//        if (block != null && callExpr.contains(block)) return null
         return element.ancestorOrSelf(stopAt = MvStructLitFieldsBlock::class.java)
-//        return callExpr
     }
 
     override fun calculateParameterInfo(element: MvValueArgumentList): Array<ParamsDescription>? =

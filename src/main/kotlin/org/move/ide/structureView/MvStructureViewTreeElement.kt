@@ -40,7 +40,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
             is MoveFile -> {
                 listOf(
                     element.modules().toList(),
-                    element.scriptBlocks().flatMap { it.functionList }
+                    element.scripts().flatMap { it.functionList }
                 ).flatten()
             }
             is MvAddressDef -> element.modules()

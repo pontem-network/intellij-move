@@ -17,10 +17,10 @@ val MvModule.mslSpecifiableItems: List<MvNameIdentifierOwner>
 
 val MvItemSpec.module: MvModule?
     get() {
-        val block = this.parent
-        return when (block) {
-            is MvModuleBlock -> block.module
-            is MvModuleSpecBlock -> block.moduleSpec.moduleItem
+        val parent = this.parent
+        return when (parent) {
+            is MvModule -> parent
+            is MvModuleSpecBlock -> parent.moduleSpec.moduleItem
             else -> error("unreachable")
         }
     }

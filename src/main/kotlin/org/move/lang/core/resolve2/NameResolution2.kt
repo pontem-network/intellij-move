@@ -136,22 +136,22 @@ fun walkUpThroughScopes(
         if (handleScope(cameFrom, scope)) return true
 
         // walk all items in original module block
-        if (scope is MvModuleBlock) {
+        if (scope is MvModule) {
             // handle spec module {}
-            if (handleModuleItemSpecsInBlock(cameFrom, scope, handleScope)) return true
+            if (handleModuleItemSpecsInItemsOwner(cameFrom, scope, handleScope)) return true
             // walk over all spec modules
-            for (moduleSpec in scope.module.allModuleSpecs()) {
+            for (moduleSpec in scope.allModuleSpecs()) {
                 val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
                 if (handleScope(cameFrom, moduleSpecBlock)) return true
-                if (handleModuleItemSpecsInBlock(cameFrom, moduleSpecBlock, handleScope)) return true
+                if (handleModuleItemSpecsInItemsOwner(cameFrom, moduleSpecBlock, handleScope)) return true
             }
         }
 
         if (scope is MvModuleSpecBlock) {
-            val moduleBlock = scope.moduleSpec.moduleItem?.moduleBlock
-            if (moduleBlock != null) {
+            val module = scope.moduleSpec.moduleItem
+            if (module != null) {
                 cameFrom = scope
-                scope = moduleBlock
+                scope = module
                 continue
             }
         }
@@ -165,14 +165,14 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun handleModuleItemSpecsInBlock(
+private fun handleModuleItemSpecsInItemsOwner(
     cameFrom: MvElement,
-    block: MvElement,
+    itemsOwner: MvItemsOwner,
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
 ): Boolean {
-    val moduleItemSpecs = when (block) {
-        is MvModuleBlock -> block.moduleItemSpecList
-        is MvModuleSpecBlock -> block.moduleItemSpecList
+    val moduleItemSpecs = when (itemsOwner) {
+        is MvModule -> itemsOwner.moduleItemSpecList
+        is MvModuleSpecBlock -> itemsOwner.moduleItemSpecList
         else -> emptyList()
     }
     for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {

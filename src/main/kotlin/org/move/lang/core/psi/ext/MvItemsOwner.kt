@@ -1,5 +1,6 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.psi.PsiComment
 import org.move.lang.core.psi.*
 import org.move.stdext.buildList
 
@@ -8,9 +9,14 @@ interface MvItemsOwner: MvElement {
 }
 
 fun MvItemsOwner.items(): Sequence<MvElement> {
-    return generateSequence(firstChild) { it.nextSibling }
+    val startChild = when (this) {
+        is MvModule -> this.lBrace
+        is MvScript -> this.lBrace
+        else -> this.firstChild
+    }
+    return generateSequence(startChild) { it.nextSibling }
         .filterIsInstance<MvElement>()
-        .filter { it !is MvAttr }
+//        .filter { it !is MvAttr }
 }
 
 val MvItemsOwner.itemElements: List<MvItemElement>
@@ -32,4 +38,5 @@ val MvModule.innerSpecItems: List<MvItemElement>
         }
     }
 
-fun MvItemsOwner.allUseItems(): List<MvNamedElement> = emptyList()
+val MvItemsOwner.firstItem: MvElement?
+    get() = items().firstOrNull { it !is MvAttr }

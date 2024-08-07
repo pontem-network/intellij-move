@@ -33,11 +33,8 @@ object StructPatCompletionProvider: MvCompletionProvider() {
         val module = bindingPat.containingModule ?: return
         val completionCtx = CompletionContext(bindingPat, bindingPat.isMsl())
 
-        val moduleBlock = module.moduleBlock
-        if (moduleBlock != null) {
-            collectCompletionVariants(result, completionCtx) {
-                processItemDeclarations(moduleBlock, setOf(Namespace.TYPE), it)
-            }
+        collectCompletionVariants(result, completionCtx) {
+            processItemDeclarations(module, setOf(Namespace.TYPE), it)
         }
     }
 }

@@ -20,26 +20,37 @@ import com.intellij.psi.tree.TokenSet.create as ts
 val ONE_LINE_ITEMS = ts(USE_STMT, CONST)
 
 val PAREN_DELIMITED_BLOCKS = ts(
-    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR, CONDITION,
+    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
+    CONDITION, MATCH_ARGUMENT,
     FUNCTION_PARAMETER_LIST, VALUE_ARGUMENT_LIST, ATTR_ITEM_LIST,
     ITEM_SPEC_FUNCTION_PARAMETER_LIST
 )
-val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST, ITEM_SPEC_TYPE_PARAMETER_LIST)
-val BRACKET_DELIMITED_BLOCKS = ts(VECTOR_LIT_ITEMS)
+val PAREN_LISTS = orSet(PAREN_DELIMITED_BLOCKS, /*ts(PAT_TUPLE_STRUCT)*/)
 
-val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
+val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST, ITEM_SPEC_TYPE_PARAMETER_LIST)
+val ANGLE_LISTS = orSet(ANGLE_DELIMITED_BLOCKS)
+
+val BRACK_DELIMITED_BLOCKS = ts(VECTOR_LIT_ITEMS)
+val BRACK_LISTS = orSet(BRACK_DELIMITED_BLOCKS, ts(INDEX_EXPR))
+
+val STRUCT_LITERAL_BLOCKS = ts(STRUCT_LIT_FIELDS_BLOCK)
+//val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
-    SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK,
+    /*SCRIPT_BLOCK, */ADDRESS_BLOCK, /*MODULE_BLOCK, */CODE_BLOCK,
     MODULE_SPEC_BLOCK, SPEC_CODE_BLOCK,
     BLOCK_FIELDS, SCHEMA_FIELDS_BLOCK
 )
+
 val BLOCK_LIKE = orSet(STRUCT_LITERAL_BLOCKS, DEF_BLOCKS)
+val BRACE_LISTS = ts(USE_GROUP)
+val BRACE_DELIMITED_BLOCKS = orSet(BLOCK_LIKE, BRACE_LISTS)
 
 val DELIMITED_BLOCKS = orSet(
-    PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BRACKET_DELIMITED_BLOCKS,
+    PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BRACK_DELIMITED_BLOCKS,
     BLOCK_LIKE,
     ts(USE_GROUP)
 )
+val FLAT_BRACE_BLOCKS = ts(SCRIPT, MODULE, STRUCT_PAT)
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
@@ -73,7 +84,7 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     val parentType = parent.elementType
     return when (elementType) {
         L_BRACE, R_BRACE -> parentType in BLOCK_LIKE || parentType == USE_GROUP
-        L_BRACK, R_BRACK -> parentType in BRACKET_DELIMITED_BLOCKS
+        L_BRACK, R_BRACK -> parentType in BRACK_DELIMITED_BLOCKS
         L_PAREN, R_PAREN -> parentType in PAREN_DELIMITED_BLOCKS
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS
         else -> false
@@ -90,17 +101,29 @@ val PsiElement.location: PsiLocation? get() {
     return PsiLocation(location.first, location.second)
 }
 
-//val ASTNode.isFlatBraceBlock: Boolean
-//    get() = elementType in FLAT_BRACE_BLOCKS
+val ASTNode.isFlatBraceBlock: Boolean
+    get() = elementType in FLAT_BRACE_BLOCKS
 
 /**
  * A flat block is a Rust PSI element which does not denote separate PSI
- * element for its _block_ part (e.g. `{...}`), for example [MOD_ITEM].
+ * element for its _block_ part (e.g. `{...}`), for example [MODULE].
  */
-//val ASTNode.isFlatBlock: Boolean
-//    get() = isFlatBraceBlock
+val ASTNode.isFlatBlock: Boolean
+    get() = isFlatBraceBlock
 //            || elementType == PAT_TUPLE_STRUCT
 
+fun ASTNode.isBlockDelim(parent: ASTNode?): Boolean {
+    if (parent == null) return false
+    val parentType = parent.elementType
+    return when (elementType) {
+        L_BRACE, R_BRACE -> parentType in BRACE_DELIMITED_BLOCKS || parent.isFlatBraceBlock
+        L_BRACK, R_BRACK -> parentType in BRACK_LISTS
+        L_PAREN, R_PAREN -> parentType in PAREN_LISTS /*|| parentType == PAT_TUPLE_STRUCT*/
+        LT, GT -> parentType in ANGLE_LISTS
+        OR -> parentType == FUNCTION_PARAMETER_LIST && parent.treeParent?.elementType == LAMBDA_EXPR
+        else -> false
+    }
+}
 
 //class CommaList(
 //    val list: IElementType,

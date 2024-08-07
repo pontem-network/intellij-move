@@ -102,10 +102,9 @@ fun processQualifiedPathResolveVariants(
     }
     if (resolvedQualifier is MvModule) {
         if (processor.process("Self", resolvedQualifier)) return true
-        val moduleBlock = resolvedQualifier.moduleBlock
-        if (moduleBlock != null) {
-            if (processItemDeclarations(moduleBlock, ns, processor)) return true
-        }
+
+        val module = resolvedQualifier
+        if (processItemDeclarations(module, ns, processor)) return true
     }
     if (resolvedQualifier is MvEnum) {
         if (processor.processAll(resolvedQualifier.variants)) return true

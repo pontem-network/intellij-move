@@ -20,9 +20,9 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
             )
         }
 
-        override fun visitStructPatField(field: MvStructPatField) {
+        override fun visitFieldPat(field: MvFieldPat) {
             val ident = field.identifier ?: return
-            val fieldBinding = field.structPatFieldBinding ?: return
+            val fieldBinding = field.fieldPatBinding ?: return
             if (ident.text == fieldBinding.pat.text.orEmpty()) {
                 holder.registerProblem(
                     field,

@@ -42,8 +42,7 @@ val MvStruct.module: MvModule
         if (moduleStub != null) {
             return moduleStub.psi
         }
-        val moduleBlock = this.parent
-        return moduleBlock.parent as MvModule
+        return this.parent as MvModule
     }
 
 val MvStruct.psiAbilities: List<MvAbility>

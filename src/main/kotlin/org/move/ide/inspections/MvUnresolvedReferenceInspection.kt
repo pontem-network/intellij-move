@@ -100,7 +100,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             }
         }
 
-        override fun visitStructPatField(patField: MvStructPatField) {
+        override fun visitFieldPat(patField: MvFieldPat) {
             if (patField.isMsl() && !isDebugModeEnabled()) {
                 return
             }

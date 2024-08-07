@@ -14,14 +14,7 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import javax.swing.Icon
 
-val MvSpecFunction.module: MvModule?
-    get() {
-//        val moduleStub = greenStub?.parentStub as? MvModuleStub
-//        if (moduleStub != null) {
-//            return moduleStub.psi
-//        }
-        return this.parent?.parent as? MvModule
-    }
+val MvSpecFunction.module: MvModule? get() = this.parent as? MvModule
 
 abstract class MvSpecFunctionMixin : MvStubbedNamedElementImpl<MvSpecFunctionStub>,
                                      MvSpecFunction {

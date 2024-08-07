@@ -74,7 +74,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (element is MvNamedFieldDecl) return MvColor.FIELD
         if (element is MvStructDotField) return MvColor.FIELD
         if (element is MvMethodCall) return MvColor.METHOD_CALL
-        if (element is MvStructPatField) return MvColor.FIELD
+        if (element is MvFieldPat) return MvColor.FIELD
         if (element is MvStructLitField) return MvColor.FIELD
         if (element is MvConst) return MvColor.CONSTANT
         if (element is MvModule) return MvColor.MODULE

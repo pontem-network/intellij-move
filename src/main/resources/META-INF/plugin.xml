@@ -352,11 +352,11 @@
       <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
       <category>Move</category>
     </intentionAction>
-    <intentionAction>
-      <language>Move</language>
-      <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
-      <category>Move</category>
-    </intentionAction>
+<!--    <intentionAction>-->
+<!--      <language>Move</language>-->
+<!--      <className>org.move.ide.intentions.InlineAddressBlockIntention</className>-->
+<!--      <category>Move</category>-->
+<!--    </intentionAction>-->
     <intentionAction>
       <language>Move</language>
       <className>org.move.ide.intentions.ChopParameterListIntention</className>
@@ -375,11 +375,6 @@
     <intentionAction>
       <language>Move</language>
       <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
-      <category>Move</category>
-    </intentionAction>
-    <intentionAction>
-      <language>Move</language>
-      <className>org.move.ide.intentions.ChopStructPatIntention</className>
       <category>Move</category>
     </intentionAction>
 

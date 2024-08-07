@@ -3,10 +3,11 @@ package org.move.ide.formatter.impl
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import org.move.ide.formatter.MoveFmtBlock
+import org.move.ide.formatter.MvFmtContext
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.MvExpr
 
-fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
+fun MoveFmtBlock.computeIndent(child: ASTNode, childCtx: MvFmtContext): Indent? {
     val parentNode = node
     val parentPsi = node.psi
     val parentType = node.elementType
@@ -23,16 +24,24 @@ fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
         // else
         //     2 + 2;
         parentType == ELSE_BLOCK
-                && childNode.elementType == INLINE_BLOCK -> Indent.getContinuationIndent()
+                && child.elementType == INLINE_BLOCK -> Indent.getContinuationIndent()
 
         // do not indent else block
-        childNode.elementType == ELSE_BLOCK -> Indent.getNoneIndent()
+        child.elementType == ELSE_BLOCK -> Indent.getNoneIndent()
 
         // indent every child of the block except for braces
         // module M {
         //    struct S {}
         // }
-        parentType in DELIMITED_BLOCKS -> getNormalIndentIfNotCurrentBlockDelimiter(childNode, parentNode)
+        parentType in DELIMITED_BLOCKS -> getIndentIfNotDelim(child, parentNode)
+
+        // Indent flat block contents, excluding closing brace
+        node.isFlatBlock ->
+            if (childCtx.metLBrace) {
+                getIndentIfNotDelim(child, node)
+            } else {
+                Indent.getNoneIndent()
+            }
 
 //        //     let a =
 //        //     92;
@@ -59,8 +68,15 @@ fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
     }
 }
 
-fun getNormalIndentIfNotCurrentBlockDelimiter(child: ASTNode, parent: ASTNode): Indent =
-    if (child.isDelimiterOfCurrentBlock(parent)) {
+//fun getNormalIndentIfNotCurrentBlockDelimiter(child: ASTNode, parent: ASTNode): Indent =
+//    if (child.isDelimiterOfCurrentBlock(parent)) {
+//        Indent.getNoneIndent()
+//    } else {
+//        Indent.getNormalIndent()
+//    }
+
+private fun getIndentIfNotDelim(child: ASTNode, parent: ASTNode): Indent =
+    if (child.isBlockDelim(parent)) {
         Indent.getNoneIndent()
     } else {
         Indent.getNormalIndent()

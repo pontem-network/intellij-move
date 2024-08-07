@@ -50,15 +50,11 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-    fun `test module in address`() = doSingleCompletion(
+    fun `test module at top level`() = doSingleCompletion(
         """
-       address 0x0 {
-           mod/*caret*/     
-       } 
+        mod/*caret*/     
     """, """
-       address 0x0 {
-           module /*caret*/     
-       } 
+        module /*caret*/     
     """
     )
 
@@ -649,5 +645,35 @@ class KeywordCompletionTest: CompletionTestCase() {
                 fun main() /*caret*/ {}
             }            
         """
+    )
+
+    fun `test enum completion`() = doSingleCompletion(
+        """
+            module 0x1::m {
+                enu/*caret*/
+            }            
+                """,
+        """
+            module 0x1::m {
+                enum /*caret*/
+            }            
+        """,
+    )
+
+    fun `test match completion`() = doSingleCompletion(
+        """
+            module 0x1::m {
+                fun main() {
+                    mat/*caret*/
+                }
+            }            
+                """,
+        """
+            module 0x1::m {
+                fun main() {
+                    match /*caret*/
+                }
+            }            
+        """,
     )
 }

@@ -135,7 +135,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
             override fun visitStructPat(o: MvStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
-                val fieldNames = o.patFields.map { it.referenceName }
+                val fieldNames = o.fieldPatList.map { it.referenceName }
                 checkMissingFields(
                     moveHolder, nameElement, fieldNames.toSet(), refStruct
                 )
@@ -183,10 +183,10 @@ class MvErrorAnnotator: MvAnnotatorBase() {
     }
 
     private fun checkConstDef(holder: MvAnnotationHolder, const: MvConst) {
-        val owner = const.parent?.parent ?: return
+        val owner = const.parent ?: return
         val allConsts = when (owner) {
-            is MvModule -> owner.consts()
-            is MvScript -> owner.consts()
+            is MvModule -> owner.constList
+            is MvScript -> owner.constList
             else -> return
         }
         checkDuplicates(holder, const, allConsts.asSequence())
@@ -372,9 +372,7 @@ private fun checkFunctionDuplicates(
 ) {
     val fnName = fn.name ?: return
     val functions =
-        fn.module?.allFunctions()
-            ?: fn.script?.allFunctions()
-            ?: emptyList()
+        fn.module?.allFunctions() ?: fn.script?.functionList ?: emptyList()
     val duplicateFunctions = getDuplicates(functions.asSequence())
 
     if (fnName !in duplicateFunctions.map { it.name }) {
