@@ -1,6 +1,7 @@
 package org.move.bytecode
 
 import com.intellij.notification.NotificationType.ERROR
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAwareAction
@@ -39,4 +40,6 @@ class DecompileAptosMvFileAction: DumbAwareAction("Decompile .mv File", null, Mo
                     && e.getData(CommonDataKeys.PROJECT)?.getAptosCli() != null)
         presentation.isEnabledAndVisible = enabled
     }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }

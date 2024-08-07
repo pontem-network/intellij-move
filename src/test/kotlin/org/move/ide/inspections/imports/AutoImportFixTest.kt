@@ -5,7 +5,7 @@ import org.move.ide.inspections.MvUnresolvedReferenceInspection
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class AutoImportFixTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
+class AutoImportFixTest: InspectionTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test method`() = checkAutoImportFixByText(
         """
 module 0x1::M {
@@ -312,7 +312,8 @@ module 0x1::Main {
     """
         )
 
-    fun `test auto import add non-test-only statement`() = checkAutoImportFixByText("""
+    fun `test auto import add non-test-only statement`() = checkAutoImportFixByText(
+        """
 module 0x1::minter {
     public fun mint() {}    
 }        
@@ -347,9 +348,11 @@ module 0x1::main {
         mint();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test auto import adds non test_only item`() = checkAutoImportFixByText("""
+    fun `test auto import adds non test_only item`() = checkAutoImportFixByText(
+        """
 module 0x1::minter {
     struct S {}
     public fun mint() {}    
@@ -386,9 +389,11 @@ module 0x1::main {
         mint();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot auto import test function from the same file`() = checkAutoImportFixIsUnavailable("""
+    fun `test cannot auto import test function from the same file`() = checkAutoImportFixIsUnavailable(
+        """
 module 0x1::m1 {
     #[test]
     public fun test_a() {}
@@ -399,7 +404,8 @@ module 0x1::m2 {
         <error descr="Unresolved function: `test_a`">/*caret*/test_a</error>();
     }
 }
-    """)
+    """
+    )
 
     fun `test add import into existing empty item group`() = checkAutoImportFixByText(
         """
@@ -463,7 +469,8 @@ module 0x1::Main {
     """
     )
 
-    fun `test add new module import into existing group with verify_only`() = checkAutoImportFixByText("""
+    fun `test add new module import into existing group with verify_only`() = checkAutoImportFixByText(
+        """
         module 0x1::a {
             struct String {}
             public fun test_call() {}
@@ -506,7 +513,34 @@ module 0x1::Main {
                 test_call();
             }
         }
-    """)
+    """
+    )
+
+    fun `test no import available if multiple references`() = checkFixIsUnavailable(
+        "Import",
+        """
+            module 0x1::m {
+                struct S {}
+            }
+            module 0x1::main {
+                use 0x1::m::S;
+                struct S {}
+                fun main(s: <error descr="Unresolved type: `S`">/*caret*/S</error>) {}
+            }
+        """
+    )
+
+    fun `test no import available if name is imported but unresolved`() = checkFixIsUnavailable(
+        "Import",
+        """
+            module 0x1::m {
+            }
+            module 0x1::main {
+                use 0x1::m::<error descr="Unresolved reference: `S`">S</error>;
+                fun main(s: <error descr="Unresolved type: `S`">/*caret*/S</error>) {}
+            }
+        """
+    )
 
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
@@ -524,7 +558,7 @@ module 0x1::Main {
     ) = doTest {
         var chooseItemWasCalled = false
 
-        withMockImportItemUi(object : ImportItemUi {
+        withMockImportItemUi(object: ImportItemUi {
             override fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit) {
                 chooseItemWasCalled = true
                 val actualItems = items.mapTo(HashSet()) { it.qualName.editorText() }

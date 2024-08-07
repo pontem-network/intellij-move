@@ -75,17 +75,22 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
         const val NAME = "Import"
 
         fun findApplicableContext(path: MvPath): Context? {
-            if (path.reference == null) return null
-            if (!path.unresolved) return null
             if (path.ancestorStrict<MvUseSpeck>() != null) return null
             if (path.qualifier != null) return null
 
-            // TODO: no auto-import if name in scope, but cannot be resolved
+            val pathReference = path.reference ?: return null
+            val resolvedVariants = pathReference.multiResolve()
+            when {
+                // resolved correctly
+                resolvedVariants.size == 1 -> return null
+                // multiple variants, cannot import
+                resolvedVariants.size > 1 -> return null
+            }
 
-            val refName = path.referenceName ?: return null
+            val referenceName = path.referenceName ?: return null
             val importContext = ImportContext.from(path)
             val candidates =
-                ImportCandidateCollector.getImportCandidates(importContext, refName)
+                ImportCandidateCollector.getImportCandidates(importContext, referenceName)
             return Context(candidates)
         }
     }

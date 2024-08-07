@@ -3,6 +3,7 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
@@ -96,6 +97,7 @@ fun processItemsFromModuleSpecs(
                     processor.processAll(
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions(),
+                        ns = FUNCTIONS
                     )
                 Namespace.SCHEMA -> processor.processAll(moduleSpec.schemas())
                 else -> false

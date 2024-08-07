@@ -3,6 +3,7 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.MODULE
@@ -36,6 +37,7 @@ fun processNestedScopesUpwards(
         scopeStart,
         stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
+        // state between shadowing processors passed through prevScope
         processWithShadowingAndUpdateScope(prevScope, ns, processor) { shadowingProcessor ->
             processItemsInScope(
                 scope, cameFrom, ns, ctx, shadowingProcessor
@@ -77,7 +79,7 @@ fun processModulePathResolveVariants(
         moduleNames.forEach { moduleName ->
             val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
             for (module in modules) {
-                if (addrProcessor.process(moduleName, module)) return true
+                if (addrProcessor.process(moduleName, MODULES, module)) return true
             }
         }
         return false
@@ -89,7 +91,7 @@ fun processModulePathResolveVariants(
             .processModulesByName(project, targetModuleName, searchScope) {
                 val module = it
                 val visFilter = module.visInfo().createFilter()
-                stop = addrProcessor.process(targetModuleName, module, setOf(MODULE), visFilter)
+                stop = addrProcessor.process(targetModuleName, module, MODULES, visFilter)
                 // true to continue processing, if .process does not find anything, it returns false
                 !stop
             }
@@ -114,15 +116,15 @@ inline fun processWithShadowingAndUpdateScope(
     }
 }
 
-inline fun processWithShadowing(
-    prevScope: Map<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-    processor: RsResolveProcessor,
-    f: (RsResolveProcessor) -> Boolean
-): Boolean {
-    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, ns)
-    return f(shadowingProcessor)
-}
+//inline fun processWithShadowing(
+//    prevScope: Map<String, Set<Namespace>>,
+//    ns: Set<Namespace>,
+//    processor: RsResolveProcessor,
+//    f: (RsResolveProcessor) -> Boolean
+//): Boolean {
+//    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, ns)
+//    return f(shadowingProcessor)
+//}
 
 
 fun walkUpThroughScopes(

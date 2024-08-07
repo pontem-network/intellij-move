@@ -33,3 +33,10 @@ enum class Namespace {
         fun none(): Set<Namespace> = setOf()
     }
 }
+
+val NONE = Namespace.none()
+val NAMES = setOf(Namespace.NAME)
+val MODULES = setOf(Namespace.MODULE)
+val FUNCTIONS = setOf(Namespace.FUNCTION)
+val SCHEMAS = setOf(Namespace.SCHEMA)
+val TYPES = setOf(Namespace.TYPE)
