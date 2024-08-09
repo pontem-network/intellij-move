@@ -42,10 +42,10 @@ abstract class TypificationTestCase : MvTestBase() {
         }
     }
 
-    protected fun testExpr(@Language("Move") code: String) {
+    protected fun testExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
         InlineFile(myFixture, code, "main.move")
         check()
-//        if (!allowErrors) checkNoInferenceErrors()
+        if (!allowErrors) checkNoInferenceErrors()
         checkAllExpressionsTypified()
     }
 
@@ -110,7 +110,8 @@ abstract class TypificationTestCase : MvTestBase() {
     }
 
     private fun checkNoInferenceErrors() {
-        val errors = myFixture.file.descendantsOfType<MvInferenceContextOwner>().asSequence()
+        val errors = myFixture.file
+            .descendantsOfType<MvInferenceContextOwner>()
             .flatMap { it.inference(false).typeErrors.asSequence() }
             .map { it.element to it.message() }
             .toList()
@@ -142,6 +143,29 @@ abstract class TypificationTestCase : MvTestBase() {
             )
         }
     }
+
+//    private fun checkNoTypeErrors() {
+//        val inferenceOwners = myFixture.file.descendantsOfType<MvInferenceContextOwner>()
+//        val fileTypeErrors = inferenceOwners
+//            .flatMap { it.inference(false).typeErrors }.toList()
+//        if (fileTypeErrors.isNotEmpty()) {
+//
+//        }
+//        val notTypifiedExprs = myFixture.file
+//            .descendantsOfType<MvExpr>().toList()
+//            .filter { expr ->
+//                expr.inference(false)?.hasExprType(expr) == false
+//            }
+//        if (notTypifiedExprs.isNotEmpty()) {
+//            error(
+//                notTypifiedExprs.joinToString(
+//                    "\n",
+//                    "Some expressions are not typified during type inference: \n",
+//                    "\nNote: All `MvExpr`s must be typified during type inference"
+//                ) { "\tAt `${it.text}` (line ${it.lineNumber})" }
+//            )
+//        }
+//    }
 
     private val PsiElement.lineNumber: Int
         get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)

@@ -167,7 +167,7 @@ class InferenceContext(
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
-//    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
+    //    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
     val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
 
@@ -210,17 +210,17 @@ class InferenceContext(
 
         fallbackUnresolvedTypeVarsIfPossible()
 
-        exprTypes.replaceAll { _, ty -> fullyResolve(ty) }
-        patTypes.replaceAll { _, ty -> fullyResolve(ty) }
+        exprTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
+        patTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
 
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
         callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
 
-        exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
-        typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
+        exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
+        typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
 //        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
-        methodOrPathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
+        methodOrPathTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         return InferenceResult(
             patTypes,
@@ -239,7 +239,8 @@ class InferenceContext(
         val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
         for (ty in allTypes) {
             ty.visitInferTys { tyInfer ->
-                val rty = shallowResolve(tyInfer)
+                val rty = resolveTyInfer(tyInfer)
+//                val rty = resolveIfTyInfer(tyInfer)
                 if (rty is TyInfer) {
                     fallbackIfPossible(rty)
                 }
@@ -308,17 +309,13 @@ class InferenceContext(
         }
     }
 
+//    fun compareTypes(ty1: Ty, ty2: Ty): RelateResult =
+//        this.freezeUnification { this.combineTypes(ty1, ty2) }
+
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
-//        try {
-        val resolvedTy1 = shallowResolve(ty1)
-        val resolvedTy2 = shallowResolve(ty2)
+        val resolvedTy1 = resolveIfTyInfer(ty1)
+        val resolvedTy2 = resolveIfTyInfer(ty2)
         return combineTypesResolved(resolvedTy1, resolvedTy2)
-//        } catch (e: UnificationError) {
-//            if (e.combine == null) {
-//                e.combine = CombiningContext(ty1, ty2)
-//            }
-//            throw e
-//        }
     }
 
     @Suppress("NAME_SHADOWING")
@@ -369,16 +366,16 @@ class InferenceContext(
         return Ok(Unit)
     }
 
-    private fun combineIntVar(ty1: TyInfer, ty2: Ty): RelateResult {
+    private fun combineIntVar(ty1: TyInfer.IntVar, ty2: Ty): RelateResult {
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
-        when (ty1) {
-            is TyInfer.IntVar -> when (ty2) {
-                is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)
-                is TyInteger, is TyUnknown -> intUnificationTable.unifyVarValue(ty1, ty2)
-                else -> return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+        when (ty2) {
+            is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)
+            is TyInteger -> intUnificationTable.unifyVarValue(ty1, ty2)
+            is TyUnknown -> {
+                // do nothing, unknown should no influence IntVar
             }
-            is TyInfer.TyVar -> error("unreachable")
+            else -> return Err(CombineTypeError.TypeMismatch(ty1, ty2))
         }
         return Ok(Unit)
     }
@@ -431,52 +428,62 @@ class InferenceContext(
         return combineTypes(inferred, expected).into()
     }
 
-    fun shallowResolve(ty: Ty): Ty {
-        if (ty !is TyInfer) return ty
+    fun resolveIfTyInfer(ty: Ty) = if (ty is TyInfer) resolveTyInfer(ty) else ty
 
-        return when (ty) {
-            is TyInfer.IntVar -> intUnificationTable.findValue(ty) ?: ty
-            is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(this::shallowResolve) ?: ty
+    fun resolveTyInfer(tyInfer: TyInfer): Ty {
+        return when (tyInfer) {
+            is TyInfer.IntVar -> intUnificationTable.findValue(tyInfer) ?: tyInfer
+            is TyInfer.TyVar -> varUnificationTable.findValue(tyInfer)?.let(this::resolveIfTyInfer) ?: tyInfer
         }
     }
 
     fun <T: TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
-        return ty.foldTyInferWith(this::shallowResolve)
+        return if (ty.hasTyInfer) ty.foldTyInferWith(this::resolveTyInfer) else ty
     }
 
-    fun <T: TypeFoldable<T>> fullyResolve(value: T): T = value.foldWith(fullTypeResolver)
+    /// every TyVar unresolved at the end of this function converted into TyUnknown
+    fun <T: TypeFoldable<T>> fullyResolveTypeVars(value: T): T = value.foldWith(fullTypeResolver)
 
     private inner class FullTypeResolver: TypeFolder() {
         override fun fold(ty: Ty): Ty {
-            if (!ty.needsInfer) return ty
-            val res = shallowResolve(ty)
-            return if (res is TyInfer) TyUnknown else res.innerFoldWith(this)
+            if (!ty.hasTyInfer) return ty
+            // try to resolve TyInfer shallow
+            val resTy = if (ty is TyInfer) resolveTyInfer(ty) else ty
+
+            // if still unresolved, return unknown type
+            if (resTy is TyInfer) return TyUnknown
+
+            return resTy.innerFoldWith(this)
         }
     }
 
     private val fullTypeResolver: FullTypeResolver = FullTypeResolver()
 
     /**
-     * Similar to [fullyResolve], but replaces unresolved [TyInfer.TyVar] to its [TyInfer.TyVar.origin]
+     * Similar to [fullyResolveTypeVars], but replaces unresolved [TyInfer.TyVar] to its [TyInfer.TyVar.origin]
      * instead of [TyUnknown]
      */
-    fun <T: TypeFoldable<T>> fullyResolveWithOrigins(value: T): T {
+    fun <T: TypeFoldable<T>> fullyResolveTypeVarsWithOrigins(value: T): T {
         return value.foldWith(fullTypeWithOriginsResolver)
     }
+
+    private val fullTypeWithOriginsResolver: FullTypeWithOriginsResolver = FullTypeWithOriginsResolver()
 
     private inner class FullTypeWithOriginsResolver: TypeFolder() {
         override fun fold(ty: Ty): Ty {
             if (!ty.hasTyInfer) return ty
-            return when (val res = shallowResolve(ty)) {
+            val resTy = if (ty is TyInfer) resolveTyInfer(ty) else ty
+            return when (resTy) {
+                // if it's TyUnknown, check whether the original ty has an origin, use that
                 is TyUnknown -> (ty as? TyInfer.TyVar)?.origin ?: TyUnknown
-                is TyInfer.TyVar -> res.origin ?: TyUnknown
-                is TyInfer -> TyUnknown
-                else -> res.innerFoldWith(this)
+                // replace TyVar with the origin TyTypeParameter
+                is TyInfer.TyVar -> resTy.origin ?: TyUnknown
+                // replace integer with TyUnknown, todo: why?
+                is TyInfer.IntVar -> TyUnknown
+                else -> resTy.innerFoldWith(this)
             }
         }
     }
-
-    private val fullTypeWithOriginsResolver: FullTypeWithOriginsResolver = FullTypeWithOriginsResolver()
 
     // Awful hack: check that inner expressions did not annotated as an error
     // to disallow annotation intersections. This should be done in a different way
