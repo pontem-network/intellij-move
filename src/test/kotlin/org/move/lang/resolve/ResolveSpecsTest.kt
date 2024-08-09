@@ -1,5 +1,7 @@
 package org.move.lang.resolve
 
+import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveSpecsTest: ResolveTestCase() {
@@ -955,4 +957,24 @@ module 0x1::main {
 
         }
     """)
+
+    fun `test resolve invariant index variable in loop condition spec`() = checkByCode(
+        """
+        module 0x1::m {
+            fun main() {
+                while ({
+                    spec {
+                        invariant forall ind in 0..10:
+                                        //X
+                            ind < 10;
+                           //^
+                    };
+                    true
+                }) {
+                    
+                }
+            }
+        }        
+    """
+    )
 }

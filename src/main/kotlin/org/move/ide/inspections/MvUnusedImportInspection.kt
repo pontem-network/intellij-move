@@ -9,7 +9,6 @@ import org.move.ide.inspections.imports.ImportAnalyzer2
 class MvUnusedImportInspection: MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer2(holder)
-//    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer(holder)
 
     @Suppress("CompanionObjectInExtension")
     companion object {

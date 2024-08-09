@@ -64,6 +64,8 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
     }
 
     private fun checkIndexExpr(holder: MvAnnotationHolder, indexExpr: MvIndexExpr) {
+        // always supported in specs
+        if (indexExpr.isMsl()) return
         if (!indexExpr.project.moveSettings.enableIndexExpr) {
             Diagnostic
                 .IndexExprIsNotSupportedInCompilerV1(indexExpr)

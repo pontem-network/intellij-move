@@ -10,9 +10,7 @@ import org.move.stdext.chain
 class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
 
     override fun visitModule(o: MvModule) = analyzeImportsOwner(o)
-//    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner(o)
     override fun visitScript(o: MvScript) = analyzeImportsOwner(o)
-//    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner(o)
     override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
 
     fun analyzeImportsOwner(importsOwner: MvItemsOwner) {
@@ -24,28 +22,36 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
         val allUseItemsHit = mutableSetOf<UseItem>()
         val rootItemOwnerWithSiblings = rootItemsOwner.itemsOwnerWithSiblings
 
-        val paths = rootItemOwnerWithSiblings
-            .flatMap { it.descendantsOfType<MvPath>() }
-            .filter { it.basePath() == it }
-            .filter { it.usageScope == itemScope }
-            .filter { !it.hasAncestor<MvUseSpeck>() }
+        val allFiles = rootItemOwnerWithSiblings.mapNotNull { it.containingMoveFile }.distinct()
+        val fileItemOwners = allFiles
+            // collect every possible MvItemOwner
+            .flatMap { it.descendantsOfType<MvItemsOwner>().flatMap { i -> i.itemsOwnerWithSiblings } }
+            .distinct()
+            .associateWith { itemOwner ->
+                itemOwner.useItems.filter { it.scope == itemScope }
+            }
 
-        for (path in paths) {
+        val reachablePaths =
+            rootItemOwnerWithSiblings
+                .flatMap { it.descendantsOfType<MvPath>() }
+                .filter { it.basePath() == it }
+                .filter { it.usageScope == itemScope }
+                .filter { !it.hasAncestor<MvUseSpeck>() }
+
+        for (path in reachablePaths) {
             val basePathType = path.basePathType()
             for (itemsOwner in path.ancestorsOfType<MvItemsOwner>()) {
-                val useItems =
-                    itemsOwner.itemsOwnerWithSiblings
-                        .flatMap { it.useItems }.filter { it.scope == itemScope }
-
+                val reachableUseItems =
+                    itemsOwner.itemsOwnerWithSiblings.flatMap { fileItemOwners[it]!! }
                 val useItemHit =
                     when (basePathType) {
                         is BasePathType.Item -> {
-                            useItems.filter { it.type == ITEM }
+                            reachableUseItems.filter { it.type == ITEM }
                                 // only hit first encountered to remove duplicates
                                 .firstOrNull { it.nameOrAlias == basePathType.itemName }
                         }
                         is BasePathType.Module -> {
-                            useItems.filter { it.type == MODULE || it.type == SELF_MODULE }
+                            reachableUseItems.filter { it.type == MODULE || it.type == SELF_MODULE }
                                 // only hit first encountered to remove duplicates
                                 .firstOrNull { it.nameOrAlias == basePathType.moduleName }
                         }
@@ -63,7 +69,7 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
         // includes self
         val reachableItemsOwners = rootItemsOwner.descendantsOfTypeOrSelf<MvItemsOwner>()
         for (itemsOwner in reachableItemsOwners) {
-            val scopeUseStmts = itemsOwner.useStmtList.filter { it.declaredItemScope == itemScope }
+            val scopeUseStmts = itemsOwner.useStmtList.filter { it.usageScope == itemScope }
             for (useStmt in scopeUseStmts) {
                 val unusedUseItems = useStmt.useItems.toSet() - allUseItemsHit
                 holder.registerStmtSpeckError2(useStmt, unusedUseItems)

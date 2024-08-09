@@ -42,7 +42,6 @@ val MvVisibilityOwner.visibility2: Visibility2
             PACKAGE -> containingMovePackage?.let { Visibility2.Restricted.Package(it) } ?: Visibility2.Public
             FRIEND -> {
                 val module = this.containingModule ?: return Visibility2.Private
-                // todo: make lazy
                 Visibility2.Restricted.Friend(lazy { module.friendModules })
             }
             SCRIPT -> Visibility2.Restricted.Script

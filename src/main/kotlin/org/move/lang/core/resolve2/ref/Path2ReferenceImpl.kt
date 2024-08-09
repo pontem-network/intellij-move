@@ -40,10 +40,13 @@ class Path2ReferenceImpl(element: MvPath):
     fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = rawCachedMultiResolve()
 
     private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
-        val rawResult = MvResolveCache.getInstance(element.project)
-            .resolveWithCaching(element, ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE, Resolver)
-        return rawResult.orEmpty()
+        return MvResolveCache
+            .getInstance(element.project)
+            .resolveWithCaching(element, cacheDependency, Resolver)
+            .orEmpty()
     }
+
+    private val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     private object Resolver: (MvElement) -> List<RsPathResolveResult<MvElement>> {
         override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {

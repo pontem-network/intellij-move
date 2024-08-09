@@ -21,17 +21,16 @@ data class UseItem(
     val scope: NamedItemScope
 )
 
-val MvItemsOwner.useItems: List<UseItem>
-    get() = this.useStmtList.flatMap { it.useItems }
+val MvItemsOwner.useItems: List<UseItem> get() = this.useStmtList.flatMap { it.useItems }
 
 val MvUseStmt.useItems: List<UseItem>
     get() {
         val items = mutableListOf<UseItem>()
-        val stmtItemScope = this.declaredItemScope
-        this.forEachLeafSpeck { path, useAlias ->
-            val useSpeck = path.parent as MvUseSpeck
-            val nameOrAlias = useAlias?.name ?: path.referenceName ?: return@forEachLeafSpeck false
-            val pathKind = path.pathKind()
+        val stmtItemScope = this.usageScope
+        this.forEachLeafSpeck { speckPath, useAlias ->
+            val useSpeck = speckPath.parent as MvUseSpeck
+            val nameOrAlias = useAlias?.name ?: speckPath.referenceName ?: return@forEachLeafSpeck false
+            val pathKind = speckPath.pathKind()
             when (pathKind) {
                 is PathKind.QualifiedPath.Module ->
                     items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
