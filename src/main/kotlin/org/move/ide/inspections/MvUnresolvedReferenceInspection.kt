@@ -13,16 +13,15 @@ import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
 
-    var ignoreWithoutQuickFix: Boolean = false
+//    var ignoreWithoutQuickFix: Boolean = false
 
     override val isSyntaxOnly get() = false
 
-    private fun ProblemsHolder.registerUnresolvedReferenceError(path: MvPath) {
+    private fun ProblemsHolder.registerError(path: MvPath, resolveVariants: List<MvNamedElement>) {
         // no errors in pragmas
         if (path.hasAncestor<MvPragmaSpecStmt>()) return
 
-        val candidates = AutoImportFix.findApplicableContext(path)?.candidates.orEmpty()
-        if (candidates.isEmpty() && ignoreWithoutQuickFix) return
+//        if (candidates.isEmpty() && ignoreWithoutQuickFix) return
 
         val referenceName = path.referenceName ?: return
         val parent = path.parent
@@ -31,15 +30,25 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             is MvCallExpr -> "Unresolved function: `$referenceName`"
             else -> "Unresolved reference: `$referenceName`"
         }
-
         val highlightedElement = path.referenceNameElement ?: path
-        val fix = if (candidates.isNotEmpty()) AutoImportFix(path) else null
-        registerProblem(
-            highlightedElement,
-            description,
-            ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
-            *listOfNotNull(fix).toTypedArray()
-        )
+
+        if (resolveVariants.isEmpty()) {
+            val candidates = AutoImportFix.findApplicableContext(path)?.candidates.orEmpty()
+            val fix = if (candidates.isNotEmpty()) AutoImportFix(path) else null
+            registerProblem(
+                highlightedElement,
+                description,
+                ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+                *listOfNotNull(fix).toTypedArray()
+            )
+        } else {
+            check(resolveVariants.size > 1)
+            registerProblem(
+                highlightedElement,
+                "$description. Multiple items are found, resolution is ambiguous",
+                ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+            )
+        }
     }
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object: MvVisitor() {
@@ -62,8 +71,9 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             when (pathKind) {
                 is NamedAddress, is ValueAddress -> return
                 is UnqualifiedPath -> {
-                    if (pathReference.resolve() == null) {
-                        holder.registerUnresolvedReferenceError(path)
+                    val resolveVariants = pathReference.multiResolve()
+                    if (resolveVariants.size != 1) {
+                        holder.registerError(path, resolveVariants)
                     }
                 }
                 is QualifiedPath -> {
@@ -72,8 +82,9 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                         // qualifier is unresolved, no need to resolve current path
                         if (qualifier.reference?.resolve() == null) return
                     }
-                    if (pathReference.resolve() == null) {
-                        holder.registerUnresolvedReferenceError(path)
+                    val resolveVariants = pathReference.multiResolve()
+                    if (resolveVariants.size != 1) {
+                        holder.registerError(path, resolveVariants)
                     }
                 }
             }

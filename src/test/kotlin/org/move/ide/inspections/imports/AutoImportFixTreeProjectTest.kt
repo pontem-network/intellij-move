@@ -143,13 +143,13 @@ class AutoImportFixTreeProjectTest : InspectionProjectTestBase(MvUnresolvedRefer
     ) = doTest { checkFixByFileTree(AutoImportFix.NAME, before, after) }
 
     private inline fun doTest(action: () -> Unit) {
-        val inspection = inspection as MvUnresolvedReferenceInspection
-        val defaultValue = inspection.ignoreWithoutQuickFix
-        try {
-            inspection.ignoreWithoutQuickFix = false
-            action()
-        } finally {
-            inspection.ignoreWithoutQuickFix = defaultValue
-        }
+//        val inspection = inspection as MvUnresolvedReferenceInspection
+//        val defaultValue = inspection.ignoreWithoutQuickFix
+        action()
+//        try {
+//            inspection.ignoreWithoutQuickFix = false
+//        } finally {
+//            inspection.ignoreWithoutQuickFix = defaultValue
+//        }
     }
 }
