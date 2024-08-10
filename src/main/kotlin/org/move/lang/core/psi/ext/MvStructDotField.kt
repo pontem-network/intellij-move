@@ -6,6 +6,7 @@ import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
+import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.wrapWithList
@@ -22,7 +23,7 @@ fun processNamedFieldVariants(
         val dotExprModule = element.namespaceModule ?: return false
         if (structItem.containingModule != dotExprModule) return false
     }
-    return processor.processAll(structItem.namedFields)
+    return processor.processAll(NONE, structItem.namedFields)
 }
 
 class MvStructDotFieldReferenceImpl(

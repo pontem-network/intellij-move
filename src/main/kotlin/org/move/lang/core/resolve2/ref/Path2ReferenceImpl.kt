@@ -111,7 +111,7 @@ fun processQualifiedPathResolveVariants(
         if (processItemDeclarations(module, ns, processor)) return true
     }
     if (resolvedQualifier is MvEnum) {
-        if (processor.processAll(resolvedQualifier.variants)) return true
+        if (processor.processAll(TYPES, resolvedQualifier.variants)) return true
     }
     return false
 }

@@ -8,7 +8,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.createFilter
 import org.move.lang.core.resolve2.ref.ResolutionContext
@@ -583,25 +582,25 @@ inline fun RsResolveProcessor.lazy(
 }
 
 fun RsResolveProcessor.process(
+    ns: Set<Namespace>,
     e: MvNamedElement,
-    ns: Set<Namespace>
 ): Boolean {
     val name = e.name ?: return false
     return process(name, ns, e)
 }
 
 fun RsResolveProcessor.processAll(
+    ns: Set<Namespace>,
     elements: List<MvNamedElement>,
-    namespaces: Set<Namespace> = Namespace.none(),
 ): Boolean {
-    return elements.any { process(it, namespaces) }
+    return elements.any { process(ns, it) }
 }
 
 fun RsResolveProcessor.processAll(
+    ns: Set<Namespace>,
     vararg collections: Iterable<MvNamedElement>,
-    ns: Set<Namespace> = NONE,
 ): Boolean {
-    return sequenceOf(*collections).flatten().any { process(it, ns) }
+    return sequenceOf(*collections).flatten().any { process(ns, it) }
 }
 
 

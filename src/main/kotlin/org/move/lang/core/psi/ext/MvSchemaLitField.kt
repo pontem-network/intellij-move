@@ -66,7 +66,7 @@ fun processSchemaLitFieldResolveVariants(
 ): Boolean {
     val schemaLit = literalField.schemaLit ?: return false
     val schema = schemaLit.path.maybeSchema ?: return false
-    return schema.fieldBindings
+    return schema.fieldsAsBindings
         .any { field ->
             processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))
         }

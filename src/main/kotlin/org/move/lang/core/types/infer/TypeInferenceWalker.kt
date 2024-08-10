@@ -39,12 +39,12 @@ class TypeInferenceWalker(
 
     fun extractParameterBindings(owner: MvInferenceContextOwner) {
         val bindings = when (owner) {
-            is MvFunctionLike -> owner.allParamsAsBindings
+            is MvFunctionLike -> owner.parametersAsBindings
             is MvItemSpec -> {
                 val item = owner.item
                 when (item) {
                     is MvFunction -> {
-                        item.allParamsAsBindings
+                        item.parametersAsBindings
                             .chain(item.specResultParameters.map { it.bindingPat })
                             .toList()
                     }

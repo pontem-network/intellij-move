@@ -6,11 +6,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
-import org.move.lang.core.resolve.ref.NAMES
-import org.move.lang.core.resolve.ref.NONE
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.NAME
-import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
 
@@ -22,6 +19,7 @@ fun processItemsInScope(
     processor: RsResolveProcessor,
 ): Boolean {
     for (namespace in ns) {
+        val elementNs = setOf(namespace)
         val stop = when (namespace) {
             NAME -> {
                 val found = when (scope) {
@@ -35,12 +33,12 @@ fun processItemsInScope(
                     }
                     is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList)
                     is MvScript -> processor.processAllItems(ns, scope.constList)
-                    is MvFunctionLike -> processor.processAll(scope.allParamsAsBindings)
-                    is MvLambdaExpr -> processor.processAll(scope.bindingPatList)
+                    is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.bindingPatList)
                     is MvForExpr -> {
-                        val iterConditionBindingPat = scope.forIterCondition?.bindingPat
-                        if (iterConditionBindingPat != null) {
-                            processor.process(iterConditionBindingPat, NAMES)
+                        val iterBinding = scope.forIterCondition?.bindingPat
+                        if (iterBinding != null) {
+                            processor.process(elementNs, iterBinding)
                         } else {
                             false
                         }
@@ -48,24 +46,25 @@ fun processItemsInScope(
                     is MvMatchArm -> {
                         if (cameFrom is MvMatchPat) continue
                         // only use those bindings for the match arm rhs
-                        processor.processAll(scope.matchPat.pat.bindings.toList())
+                        val matchBindings = scope.matchPat.pat.bindings.toList()
+                        processor.processAll(elementNs, matchBindings)
                     }
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
                             is MvFunction -> {
                                 processor.processAll(
+                                    elementNs,
                                     item.valueParamsAsBindings,
                                     item.specResultParameters.map { it.bindingPat },
-                                    ns = NAMES
                                 )
                             }
-                            is MvStruct -> processor.processAll(item.fields)
+                            is MvStruct -> processor.processAll(elementNs, item.fields)
                             else -> false
                         }
                     }
-                    is MvSchema -> processor.processAll(scope.fieldBindings)
-                    is MvQuantBindingsOwner -> processor.processAll(scope.bindings)
+                    is MvSchema -> processor.processAll(elementNs, scope.fieldsAsBindings)
+                    is MvQuantBindingsOwner -> processor.processAll(elementNs, scope.bindings)
                     is MvCodeBlock,
                     is MvSpecCodeBlock -> {
                         val visibleLetStmts = when (scope) {
@@ -118,7 +117,7 @@ fun processItemsInScope(
                             }
                             !isVisited
                         }
-                        var found = variablesProcessor.processAll(letBindings, NAMES)
+                        var found = variablesProcessor.processAll(elementNs, letBindings)
                         if (!found && scope is MvSpecCodeBlock) {
                             // if inside SpecCodeBlock, process also with builtin spec consts and global variables
                             found = variablesProcessor.processAllItems(
@@ -156,12 +155,12 @@ fun processItemsInScope(
                             specInlineFunctions
                         )
                     }
-                    is MvFunctionLike -> processor.processAll(scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.processAll(scope.bindingPatList)
+                    is MvFunctionLike -> processor.processAll(elementNs, scope.lambdaParamsAsBindings)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.bindingPatList)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
-                            is MvFunction -> processor.processAll(item.lambdaParamsAsBindings)
+                            is MvFunction -> processor.processAll(elementNs, item.lambdaParamsAsBindings)
                             else -> false
                         }
                     }
@@ -176,13 +175,13 @@ fun processItemsInScope(
 
             Namespace.TYPE -> {
                 if (scope is MvTypeParametersOwner) {
-                    if (processor.processAll(scope.typeParameters, TYPES)) return true
+                    if (processor.processAll(elementNs, scope.typeParameters)) return true
                 }
                 val found = when (scope) {
                     is MvItemSpec -> {
                         val funcItem = scope.funcItem
                         if (funcItem != null) {
-                            processor.processAll(funcItem.typeParameters, TYPES)
+                            processor.processAll(elementNs, funcItem.typeParameters)
                         } else {
                             false
                         }
@@ -198,7 +197,7 @@ fun processItemsInScope(
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                         val patternTypeParams =
                             toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
-                        processor.processAll(patternTypeParams)
+                        processor.processAll(elementNs, patternTypeParams)
                     }
 
                     else -> false

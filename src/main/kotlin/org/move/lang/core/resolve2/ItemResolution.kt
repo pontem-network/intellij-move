@@ -5,6 +5,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.SCHEMAS
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
@@ -91,15 +92,16 @@ fun processItemsFromModuleSpecs(
     processor: RsResolveProcessor,
 ): Boolean {
     for (namespace in namespaces) {
+        val thisNs = setOf(namespace)
         for (moduleSpec in module.allModuleSpecs()) {
             val matched = when (namespace) {
                 Namespace.FUNCTION ->
                     processor.processAll(
+                        thisNs,
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions(),
-                        ns = FUNCTIONS
                     )
-                Namespace.SCHEMA -> processor.processAll(moduleSpec.schemas())
+                Namespace.SCHEMA -> processor.processAll(thisNs, moduleSpec.schemas())
                 else -> false
             }
             if (matched) return true

@@ -958,16 +958,17 @@ module 0x1::main {
         }
     """)
 
-    fun `test resolve invariant index variable in loop condition spec`() = checkByCode(
+    fun `test resolve invariant index variable in loop condition spec with variable present`() = checkByCode(
         """
         module 0x1::m {
             fun main() {
+                let ind = 0;
                 while ({
                     spec {
                         invariant forall ind in 0..10:
-                                        //X
+                                       //X
                             ind < 10;
-                           //^
+                          //^
                     };
                     true
                 }) {

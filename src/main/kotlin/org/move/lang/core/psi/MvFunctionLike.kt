@@ -56,7 +56,7 @@ val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
-val MvFunctionLike.allParamsAsBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
+val MvFunctionLike.parametersAsBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
 
 val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
     get() {
