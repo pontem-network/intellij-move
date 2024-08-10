@@ -978,4 +978,60 @@ module 0x1::main {
         }        
     """
     )
+
+    // todo:
+//    fun `test result variable in let is binding`() = checkByCode("""
+//        module 0x1::m {
+//            struct Result { inner: bool }
+//
+//            public fun is_equal(result: &Result): bool {
+//                                 //X
+//                result.inner == true
+//            }
+//
+//            spec is_equal(result: &Result): bool {
+//                aborts_if false;
+//                let res = result;
+//                          //^
+//                ensures result == (res.inner == true);
+//            }
+//        }
+//    """)
+
+    // todo:
+//    fun `test result variable field for let binding`() = checkByCode("""
+//        module 0x1::m {
+//            struct Result { inner: bool }
+//                             //X
+//
+//            public fun is_equal(result: &Result): bool {
+//                result.inner == true
+//            }
+//
+//            spec is_equal(result: &Result): bool {
+//                aborts_if false;
+//                let res = result;
+//                ensures result == (res.inner == true);
+//                                       //^
+//            }
+//        }
+//    """)
+
+    // todo:
+//    fun `test result variable is special function result for spec exprs`() = checkByCode("""
+//        module 0x1::m {
+//            struct Result { inner: bool }
+//
+//            public fun is_equal(result: &Result): bool {
+//                result.inner == true
+//            }
+//
+//            spec is_equal(result: &Result): bool {
+//                aborts_if false;
+//                let res = result;
+//                ensures result == (res.inner == true);
+//                        //^ spec_builtins::result
+//            }
+//        }
+//    """)
 }

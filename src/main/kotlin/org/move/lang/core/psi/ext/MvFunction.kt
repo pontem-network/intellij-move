@@ -113,7 +113,7 @@ fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
 
-val MvFunction.specResultParameters: List<MvFunctionParameter>
+val MvFunction.specFunctionResultParameters: List<MvFunctionParameter>
     get() {
         return getProjectPsiDependentCache(this) {
             val retType = it.returnType

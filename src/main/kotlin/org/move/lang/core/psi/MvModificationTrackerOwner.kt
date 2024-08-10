@@ -7,6 +7,7 @@ package org.move.lang.core.psi
 
 import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import org.move.lang.core.psi.ext.stubParent
 import kotlin.reflect.KClass
 
@@ -17,7 +18,7 @@ class MvModificationTracker(val owner: MvModificationTrackerOwner): SimpleModifi
  * A PSI element that holds modification tracker for some reason.
  * This is mostly used to invalidate cached type inference results.
  */
-interface MvModificationTrackerOwner : MvElement {
+interface MvModificationTrackerOwner: MvElement {
     val modificationTracker: MvModificationTracker
 
     /**
@@ -34,12 +35,18 @@ interface MvModificationTrackerOwner : MvElement {
 }
 
 fun PsiElement.findModificationTrackerOwner(strict: Boolean): MvModificationTrackerOwner? {
-    val context = findContextOfType(
-        strict,
-        MvNamedElement::class,
-        MvItemSpec::class,
-    )
-    return context as? MvModificationTrackerOwner
+    var element = if (strict) this.parent else this
+    while (element != null && element !is PsiFile) {
+        if (element is MvModule) return null
+        if (element is MvModificationTrackerOwner) return element
+        element = element.parent
+    }
+    return null
+//    return findContextOfType(
+//        strict,
+//        MvFunction::class, MvItemSpec::class,
+//    )
+//    return context
 }
 
 // We have to process contexts without index access because accessing indices during PSI event processing is slow.
@@ -51,7 +58,7 @@ fun PsiElement.findModificationTrackerOwner(strict: Boolean): MvModificationTrac
 ////    }
 
 @Suppress("UNCHECKED_CAST")
-private fun <T : PsiElement> PsiElement.findContextOfType(
+private fun <T: PsiElement> PsiElement.findContextOfType(
     strict: Boolean,
     vararg classes: KClass<out T>
 ): T? {

@@ -144,8 +144,8 @@ fun <b>box3</b>&lt;T&gt;(x: T): Box3&lt;T&gt;</pre></div>
 module 0x1::m {
     fun call(): u8 {}
     spec call {
-        result;
-        //^ 
+        ensures result == 1;
+                //^ 
     }
 }        
     """, """
@@ -156,8 +156,8 @@ value parameter <b>result</b>: num
 module 0x1::m {
     fun call<T>(): &mut T {}
     spec call {
-        result;
-        //^ 
+        ensures result == 1;
+                //^ 
     }
 }        
     """, """

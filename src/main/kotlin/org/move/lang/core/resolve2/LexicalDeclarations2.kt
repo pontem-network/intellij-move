@@ -6,7 +6,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.NAME
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
@@ -50,16 +51,16 @@ fun processItemsInScope(
                         processor.processAll(elementNs, matchBindings)
                     }
                     is MvItemSpec -> {
-                        val item = scope.item
-                        when (item) {
+                        val specItem = scope.item
+                        when (specItem) {
                             is MvFunction -> {
                                 processor.processAll(
                                     elementNs,
-                                    item.valueParamsAsBindings,
-                                    item.specResultParameters.map { it.bindingPat },
+                                    specItem.valueParamsAsBindings,
+                                    specItem.specFunctionResultParameters.map { it.bindingPat },
                                 )
                             }
-                            is MvStruct -> processor.processAll(elementNs, item.fields)
+                            is MvStruct -> processor.processAll(elementNs, specItem.fields)
                             else -> false
                         }
                     }

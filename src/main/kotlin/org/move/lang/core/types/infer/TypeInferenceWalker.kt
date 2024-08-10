@@ -41,17 +41,17 @@ class TypeInferenceWalker(
         val bindings = when (owner) {
             is MvFunctionLike -> owner.parametersAsBindings
             is MvItemSpec -> {
-                val item = owner.item
-                when (item) {
+                val specItem = owner.item
+                when (specItem) {
                     is MvFunction -> {
-                        item.parametersAsBindings
-                            .chain(item.specResultParameters.map { it.bindingPat })
+                        specItem.parametersAsBindings
+                            .chain(specItem.specFunctionResultParameters.map { it.bindingPat })
                             .toList()
                     }
                     else -> emptyList()
                 }
             }
-            is MvSchema -> owner.fieldStmts.map { it.bindingPat }
+            is MvSchema -> owner.fieldsAsBindings
             else -> emptyList()
         }
         for (binding in bindings) {
@@ -298,12 +298,12 @@ class TypeInferenceWalker(
 
     private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
         // special-case `result` inside item spec
-        if (msl && refExpr.path.text == "result") {
-            val funcItem = refExpr.ancestorStrict<MvItemSpec>()?.funcItem
-            if (funcItem != null) {
-                return funcItem.rawReturnType(true)
-            }
-        }
+//        if (msl && refExpr.path.text == "result") {
+//            val funcItem = refExpr.ancestorStrict<MvItemSpec>()?.funcItem
+//            if (funcItem != null) {
+//                return funcItem.rawReturnType(true)
+//            }
+//        }
         val item = refExpr.path.reference?.resolveFollowingAliases() ?: return TyUnknown
         val ty = when (item) {
             is MvBindingPat -> ctx.getPatType(item)
