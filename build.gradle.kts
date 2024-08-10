@@ -185,7 +185,7 @@ allprojects {
     }
 
     tasks {
-        withType<KotlinCompile> {
+        compileKotlin {
             kotlinOptions {
                 jvmTarget = "17"
                 languageVersion = "1.9"
@@ -194,8 +194,12 @@ allprojects {
             }
         }
 
-        withType<Jar> {
+        jar {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+
+        testIdeUi {
+            enabled = false
         }
 
         task("downloadAptosBinaries") {
@@ -238,24 +242,18 @@ allprojects {
         generateLexer {
             sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
             targetOutputDir.set(file("src/main/gen/org/move/lang"))
-            purgeOldFiles.set(true)
+//            purgeOldFiles.set(true)
         }
         generateParser {
             sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
             targetRootOutputDir.set(file("src/main/gen"))
+            // not used if purgeOldFiles set to false
             pathToParser.set("/org/move/lang/MoveParser.java")
-            pathToPsiRoot.set("/org/move/lang/psi")
-            purgeOldFiles.set(true)
+            pathToPsiRoot.set("/org/move/lang/core/psi")
+//            purgeOldFiles.set(true)
         }
         withType<KotlinCompile> {
             dependsOn(generateLexer, generateParser)
-        }
-
-        runIde {
-            systemProperty("org.move.debug.enabled", true)
-//            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
-//            systemProperty("org.move.aptos.bundled.force.unsupported", true)
-//            systemProperty("idea.log.debug.categories", "org.move.cli")
         }
 
         prepareSandbox {
@@ -266,6 +264,19 @@ allprojects {
                 into("$pluginName/bin")
                 include("**")
             }
+        }
+    }
+
+    val runIdeWithPlugins by intellijPlatformTesting.runIde.registering {
+        plugins {
+            plugin("com.google.ide-perf:1.3.1")
+//            plugin("PsiViewer:PsiViewer 241.14494.158-EAP-SNAPSHOT")
+        }
+        task {
+            systemProperty("org.move.debug.enabled", true)
+//            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
+//            systemProperty("org.move.aptos.bundled.force.unsupported", true)
+//            systemProperty("idea.log.debug.categories", "org.move.cli")
         }
     }
 
