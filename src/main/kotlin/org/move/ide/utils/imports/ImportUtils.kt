@@ -1,5 +1,6 @@
 package org.move.ide.utils.imports
 
+import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ItemQualName
@@ -13,8 +14,8 @@ fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
     val insertionScope = context.containingModule ?: context.containingScript ?: return
     val insertTestOnly =
-        insertionScope.itemScope == NamedItemScope.MAIN
-                && context.itemScope == NamedItemScope.TEST
+        insertionScope.usageScope == NamedItemScope.MAIN
+                && context.usageScope == NamedItemScope.TEST
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 

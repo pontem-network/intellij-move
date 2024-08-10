@@ -558,10 +558,10 @@ fun RsResolveProcessor.processAllItems(
     namespaces: Set<Namespace>,
     vararg collections: Iterable<MvItemElement>,
 ): Boolean {
-    return sequenceOf(*collections).flatten().any { e ->
-        val name = e.name ?: return false
-        val visibilityFilter = e.visInfo().createFilter()
-        process(ScopeEntryWithVisibility(name, e, namespaces, visibilityFilter))
+    return sequenceOf(*collections).flatten().any { itemElement ->
+        val name = itemElement.name ?: return false
+        val visibilityFilter = itemElement.visInfo().createFilter()
+        process(ScopeEntryWithVisibility(name, itemElement, namespaces, visibilityFilter))
     }
 }
 

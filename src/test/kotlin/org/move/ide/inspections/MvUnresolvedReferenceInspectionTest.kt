@@ -1,5 +1,7 @@
 package org.move.ide.inspections
 
+import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.DebugMode
 import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.annotation.InspectionTestBase
@@ -461,4 +463,15 @@ module 0x1::m {
             use std::m;
         }
     """)
+
+    fun `test no error for invariant index variable`() = checkByText(
+        """
+        module 0x1::m {
+            spec module {
+                let vec = vector[1, 2, 3];
+                invariant forall ind in 0..10: vec[ind] < 10;
+            }
+        }        
+    """
+    )
 }

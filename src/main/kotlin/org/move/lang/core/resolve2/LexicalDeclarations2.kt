@@ -227,18 +227,19 @@ fun processItemsInScope(
 private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
     var stop = false
     for (useStmt in this.useStmtList) {
-        useStmt.forEachLeafSpeck { path, alias ->
+        val stmtUsageScope = useStmt.usageScope
+        useStmt.forEachLeafSpeck { speckPath, alias ->
             val name = if (alias != null) {
                 alias.name ?: return@forEachLeafSpeck false
             } else {
-                var n = path.referenceName ?: return@forEachLeafSpeck false
+                var n = speckPath.referenceName ?: return@forEachLeafSpeck false
                 // 0x1::m::Self -> 0x1::m
                 if (n == "Self") {
-                    n = path.qualifier?.referenceName ?: return@forEachLeafSpeck false
+                    n = speckPath.qualifier?.referenceName ?: return@forEachLeafSpeck false
                 }
                 n
             }
-            val resolvedItem = path.reference?.resolve()
+            val resolvedItem = speckPath.reference?.resolve()
             if (resolvedItem == null) {
                 if (alias != null) {
                     // aliased element cannot be resolved, but alias itself is valid, resolve to it
@@ -250,9 +251,8 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
 
             val element = alias ?: resolvedItem
             val namespace = resolvedItem.namespace
-            val useSpeckUsageScope = path.usageScope
             val visibilityFilter =
-                resolvedItem.visInfo(adjustScope = useSpeckUsageScope).createFilter()
+                resolvedItem.visInfo(adjustScope = stmtUsageScope).createFilter()
 
             if (namespace in ns && processor.process(name, element, ns, visibilityFilter)) {
                 stop = true

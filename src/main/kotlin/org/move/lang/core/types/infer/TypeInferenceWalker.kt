@@ -770,6 +770,7 @@ class TypeInferenceWalker(
 
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
+//        val leftTy = leftExpr.inferType()
         if (!leftTy.supportsArithmeticOp()) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
@@ -831,14 +832,12 @@ class TypeInferenceWalker(
 
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
-//        val leftTy = inferExprTy(leftExpr)
         if (!leftTy.supportsOrdering()) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
             val rightTy = rightExpr.inferType()
-//            val rightTy = inferExprTy(rightExpr)
             if (!rightTy.supportsOrdering()) {
                 ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
@@ -884,7 +883,8 @@ class TypeInferenceWalker(
     }
 
     private fun Ty.supportsArithmeticOp(): Boolean {
-        val ty = resolveTypeVarsWithObligations(this)
+        val ty = this
+//        val ty = resolveTypeVarsWithObligations(this)
         return ty is TyInteger
                 || ty is TyNum
                 || ty is TyInfer.TyVar

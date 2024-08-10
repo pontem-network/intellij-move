@@ -1822,38 +1822,46 @@ module 0x1::main {
         }                
     """)
 
-    fun `test no unification error for vector literal in specs with unknown type`() = testExpr("""
+    fun `test unknown does not influence integer type for function for lhs`() = testExpr(
+        """
         module 0x1::option {
-            struct Option<Element> has copy, drop, store {
-                vec: vector<Element>
-            }
-            spec fun spec_some<Element>(e: Element): Option<Element> {
-                Option { vec: vector[] }
-            }
-            spec module {
-                let addr1 = unknown_variable;  // has unknown type
-                let addr2 = @0x1;
-                addr1 == spec_some(addr2);
-                addr2;
-                //^ address
+            fun some<Element>(e: Element): Element { e }
+            fun main() {
+                let unknown/*: unknown*/ = unknown_variable;
+                let a2 = 1;
+                some(a2) == unknown;
+                //^ integer
             }
         }        
     """)
 
-    fun `test no unification error for vec(e) in specs with unknown type`() = testExpr("""
+    fun `test unknown does not influence integer type for function for rhs`() = testExpr(
+        """
+        module 0x1::option {
+            fun some<Element>(e: Element): Element { e }
+            fun main() {
+                let unknown/*: unknown*/ = unknown_variable;
+                let a2 = 1;
+                unknown == some(a2);
+                           //^ integer
+            }
+        }        
+    """)
+
+    fun `test no error for eq exprs when combining unknown type items`() = testExpr(
+        allowErrors = false,
+        code = """
         module 0x1::option {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
             }
-            spec fun spec_some<Element>(e: Element): Option<Element> {
-                Option { vec: vec(e) }
-            }
-            spec module {
-                let addr1 = unknown_variable;  // has unknown type
-                let addr2 = @0x1;
-                addr1 == spec_some(addr2);
-                addr2;
-                //^ address
+            fun some<Element>(e: Element): Option<Element> { Option { vec: vector[e] } }
+            fun main() {
+                let unknown/*: unknown*/ = unknown_variable;
+                let a2 = @0x1;
+                unknown != some(a2);
+                unknown == some(a2);
+                           //^ 0x1::option::Option<address>
             }
         }        
     """)

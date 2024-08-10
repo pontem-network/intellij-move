@@ -37,4 +37,12 @@ class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
             }
         }        
     """)
+
+    fun `test no error for specs in compiler v1`() = checkWarnings("""
+        module 0x1::m {
+            spec module {
+                invariant forall ind in 0..10: vec[ind] < 10;
+            }
+        }        
+    """)
 }
