@@ -38,9 +38,9 @@ fun PsiElement.checkedResolve(offset: Int, errorMessagePrefix: String = ""): Psi
         val multiResolve = (reference as? MvPolyVariantReference)?.multiResolve().orEmpty()
         check(multiResolve.size != 1)
         if (multiResolve.isEmpty()) {
-            error("${errorMessagePrefix}Failed to resolve $text")
+            error("${errorMessagePrefix}Failed to resolve `$text`")
         } else {
-            error("${errorMessagePrefix}Failed to resolve $text, multiple variants:\n${multiResolve.joinToString()}")
+            error("${errorMessagePrefix}Failed to resolve `$text`, multiple variants:\n${multiResolve.joinToString()}")
         }
     }
 

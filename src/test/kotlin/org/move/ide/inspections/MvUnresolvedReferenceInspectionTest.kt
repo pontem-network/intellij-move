@@ -1,6 +1,7 @@
 package org.move.ide.inspections
 
 import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.DebugMode
 import org.move.utils.tests.NamedAddress
@@ -70,7 +71,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     """
     )
 
-    fun `test unresolved reference to variable in struct shorthand`() = checkByText(
+    fun `test no error for field shorthand`() = checkByText(
         """
         module 0x1::M {
             struct T {
@@ -78,7 +79,8 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             }
 
             fun main() {
-                let t = T { <error descr="Unresolved reference: `my_field`">my_field</error> };
+                let my_field = 1;
+                let t = T { my_field };
             }
         }
     """
@@ -464,14 +466,81 @@ module 0x1::m {
         }
     """)
 
+    @NamedAddress("std", "0x1")
+    fun `test no unresolved reference for named address in fq`() = checkByText("""
+        module std::mymodule {
+            public fun call() {}
+        }
+        module 0x1::main {
+            fun main() {
+                std::mymodule::call();
+            }
+        }         
+    """)
+
     fun `test no error for invariant index variable`() = checkByText(
         """
         module 0x1::m {
             spec module {
                 let vec = vector[1, 2, 3];
+                let ind = 1;
                 invariant forall ind in 0..10: vec[ind] < 10;
             }
         }        
     """
     )
+
+    @CompilerV2Features()
+    fun `test no unresolved method in compiler v1`() = checkByText("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun main(s: S) {
+                s.receiver();                
+            }
+        }        
+    """)
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    fun `test unresolved method`() = checkByText("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun main(s: S) {
+                s.<error descr="Unresolved reference: `receiver`">receiver</error>();                
+            }
+        }        
+    """)
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    fun `test no unresolved method error`() = checkByText("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun receiver(self: S): u8 { self.field }
+            fun main(s: S) {
+                s.receiver();
+            }
+        }        
+    """)
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    fun `test unresolved method error if receiver is unresolved`() = checkByText("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun receiver(self: S): u8 { self.field }
+            fun main() {
+                (&<error descr="Unresolved reference: `t`">t</error>).<error descr="Unresolved reference: `receiver`">receiver</error>();
+            }
+        }        
+    """)
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    fun `test unresolved method error if receiver is type unknown`() = checkByText("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun receiver(self: S): u8 { self.field }
+            fun main() {
+                let t = &(1 + false);
+                t.<error descr="Unresolved reference: `receiver`">receiver</error>();
+            }
+        }        
+    """)
 }

@@ -446,4 +446,32 @@ module 0x1::string_tests {
                //^ unresolved
         }        
     """)
+
+    @NamedAddress("std", "0x1")
+    fun `test resolve fq module with named address`() = checkByCode("""
+        module std::mymodule {
+                   //X
+            public fun call() {}
+        }
+        module 0x1::main {
+            fun main() {
+                std::mymodule::call();
+                     //^
+            }
+        }         
+    """)
+
+    @NamedAddress("std", "0x1")
+    fun `test resolve fq item with named address`() = checkByCode("""
+        module std::mymodule {
+            public fun call() {}
+                      //X
+        }
+        module 0x1::main {
+            fun main() {
+                std::mymodule::call();
+                               //^
+            }
+        }         
+    """)
 }

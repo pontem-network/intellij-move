@@ -20,18 +20,31 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
             )
         }
 
-        override fun visitFieldPat(field: MvFieldPat) {
-            val ident = field.identifier ?: return
-            val fieldBinding = field.fieldPatBinding ?: return
-            if (ident.text == fieldBinding.pat.text.orEmpty()) {
+        override fun visitFieldPatFull(fieldPatFull: MvFieldPatFull) {
+            val fieldName = fieldPatFull.referenceName
+            val binding = fieldPatFull.pat as? MvBindingPat ?: return
+            if (fieldName == binding.text) {
                 holder.registerProblem(
-                    field,
+                    fieldPatFull,
                     "Expression can be simplified",
                     ProblemHighlightType.WEAK_WARNING,
-                    FieldShorthandFix.StructPat(field)
+                    FieldShorthandFix.StructPat(fieldPatFull)
                 )
             }
         }
+
+//        override fun visitFieldPat(field: MvFieldPat) {
+//            val ident = field.identifier ?: return
+//            val fieldBinding = field.fieldPatBinding ?: return
+//            if (ident.text == fieldBinding.pat.text.orEmpty()) {
+//                holder.registerProblem(
+//                    field,
+//                    "Expression can be simplified",
+//                    ProblemHighlightType.WEAK_WARNING,
+//                    FieldShorthandFix.StructPat(field)
+//                )
+//            }
+//        }
 
         override fun visitSchemaLitField(schemaField: MvSchemaLitField) {
             val initExpr = schemaField.expr ?: return

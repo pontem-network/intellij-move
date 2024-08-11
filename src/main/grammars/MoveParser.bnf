@@ -207,7 +207,7 @@ private ScriptItem_with_recover ::= !('}' | <<eof>>) ScriptItem
     recoverWhile = ScriptItem_recover
 }
 // top-level recovery
-private ScriptItem_recover ::= !('}' | ScriptItem_first)
+private ScriptItem_recover ::= !('}' | ScriptItem_first | TopLevel_first)
 private ScriptItem_first ::= use | CONST_KW | fun
 
 private ScriptItem ::= UseStmt | Const | FunctionInner
@@ -261,10 +261,11 @@ private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
     pin = 1
     recoverWhile = ModuleItem_recover
 }
-private ModuleItem_recover ::= !('}' | ModuleItem_first)
+private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
 // top-level recovery
 private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
                             | Attr_first | "friend"  | "entry" | "inline" | "enum"
+private TopLevel_first ::= MODULE_KW | SCRIPT_KW
 
 private ModuleItem ::= UseStmt
                         | FriendDecl
@@ -676,16 +677,30 @@ Pat ::= TuplePat
         | WildPat
         | BindingPat
 
-MatchPat ::= Pat | EnumVariantPat
-EnumVariantPat ::= PathImpl !('{')
+MatchPat ::= Pat | PathPat
+PathPat ::= PathImpl
 
 WildPat ::= '_'
+EnumVariantPat ::= PathImpl
 
-BindingPat ::= IDENTIFIER !'::' {
+
+// XXX(matklad): it is impossible to distinguish between nullary enum variants
+// and identifiers during parsing.
+//
+//   match x {
+//       None => { } // match enum variant
+//       Name => { } // bind Name to x
+//   }
+BindingPat ::= IDENTIFIER !ForbiddenBindingPatLast {
     implements = [
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
+        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvBindingPatMixin"
+}
+//private ForbiddenBindingPatLast ::= '...' | '::' | '..=' | '..' | '<' | '(' | '{' | '!' {
+private ForbiddenBindingPatLast ::= '::' | '<' | '(' | '{' | '!' {
+  consumeTokenMethod = "consumeTokenFast"
 }
 
 TuplePat ::= '(' ParenListElemPat_with_recover* ')'
@@ -706,14 +721,24 @@ private FieldPat_with_recover ::= !'}' FieldPat (',' | &'}')
 }
 private FieldPat_recover ::= !('}' | IDENTIFIER)
 
-FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
+FieldPatFull ::= IDENTIFIER ':' Pat
 {
     implements = [
-        "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
-        "org.move.lang.core.psi.ext.MvFieldRef"
+//        "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
+        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvFieldPatMixin"
+    mixin = "org.move.lang.core.psi.ext.MvFieldPatFullMixin"
 }
+FieldPat ::= FieldPatFull | BindingPat
+
+//FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
+//{
+//    implements = [
+////        "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
+//        "org.move.lang.core.psi.ext.MvFieldReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvFieldPatMixin"
+//}
 FieldPatBinding ::= ':' Pat
 
 private Pat_first ::= '_' | '(' | Path_first | AnyLitToken_first
@@ -959,8 +984,8 @@ private StructLitField_recover ::= !('}' | IDENTIFIER)
 StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
     implements = [
-        "org.move.lang.core.resolve.ref.MvStructFieldLitReferenceElement"
-        "org.move.lang.core.psi.ext.MvFieldRef"
+        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
+//        "org.move.lang.core.psi.ext.MvFieldReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }
@@ -1028,17 +1053,16 @@ MatchExpr ::= Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody
 {
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
-// argument is fake, provided just to satisfy usage checker
-//private MatchExprImpl ::= <<remapMatchOnRollback (match '(' Expr ')' MatchBody)>>
-//private MatchExprImplInner ::= match '(' Expr ')' MatchBody
 MatchArgument ::= '(' Expr ')'
 
 MatchBody ::= '{' MatchArm_with_recover* '}' { pin = 1 }
-MatchArm ::= Attr* MatchPat '=>' Expr ','?
+MatchArm ::= Attr* (Pat | EnumVariantPat) MatchArmGuard? '=>' Expr ','?
 {
     pin = 2
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
+MatchArmGuard ::= if Expr
+
 private MatchArm_with_recover ::= !'}' MatchArm
 {
     pin = 1

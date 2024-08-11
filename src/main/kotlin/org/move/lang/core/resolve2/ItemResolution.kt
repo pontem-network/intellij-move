@@ -3,26 +3,13 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.SCHEMAS
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
 import java.util.*
-
-val MvNamedElement.namespaces: Set<Namespace>
-    get() = when (this) {
-        is MvFunction -> EnumSet.of(Namespace.FUNCTION)
-        is MvStruct -> EnumSet.of(Namespace.TYPE)
-        is MvConst -> EnumSet.of(Namespace.NAME)
-//        is MvConst -> EnumSet.of(Namespace.CONST)
-        is MvSchema -> EnumSet.of(Namespace.SCHEMA)
-        is MvModule -> EnumSet.of(Namespace.MODULE)
-        else -> EnumSet.of(Namespace.NAME)
-    }
 
 val MvNamedElement.namespace
     get() = when (this) {

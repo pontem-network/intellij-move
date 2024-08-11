@@ -18,7 +18,6 @@ import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariants
@@ -43,35 +42,38 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         val pathElement = maybePath as? MvPath ?: maybePath.parent as MvPath
         if (parameters.position !== pathElement.referenceNameElement) return
 
-        val parentElement = pathElement.rootPath().parent
+//        val parentElement = pathElement.rootPath().parent
         val resolutionCtx = ResolutionContext(pathElement, isCompletion = true)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
 
         val useGroup = resolutionCtx.useSpeck?.parent as? MvUseGroup
         val existingNames = useGroup?.names.orEmpty().toSet()
-        val ns = buildSet {
-            val pathKind = pathElement.pathKind()
-            if (resolutionCtx.isUseSpeck) {
-                when (pathKind) {
-                    is PathKind.QualifiedPath.Module -> add(MODULE)
-                    is PathKind.QualifiedPath -> addAll(Namespace.items())
-                    else -> {}
-                }
-            } else {
-                if (pathKind is PathKind.UnqualifiedPath) {
-                    add(MODULE)
-                }
-                when (parentElement) {
-                    is MvPathType -> add(TYPE)
-                    is MvSchemaLit -> add(SCHEMA)
-                    else -> {
-                        add(NAME)
-                        add(FUNCTION)
-                    }
-                }
-            }
-        }
+
+        val pathKind = pathElement.pathKind(true)
+        val ns = pathKind.ns
+//        val ns = buildSet {
+//            val pathKind = pathElement.pathKind(true)
+//            if (resolutionCtx.isUseSpeck) {
+//                when (pathKind) {
+//                    is PathKind.QualifiedPath.Module -> add(MODULE)
+//                    is PathKind.QualifiedPath -> addAll(MODULE_ITEMS)
+//                    else -> {}
+//                }
+//            } else {
+//                if (pathKind is PathKind.UnqualifiedPath) {
+//                    add(MODULE)
+//                }
+//                when (parentElement) {
+//                    is MvPathType -> add(TYPE)
+//                    is MvSchemaLit -> add(SCHEMA)
+//                    else -> {
+//                        add(NAME)
+//                        add(FUNCTION)
+//                    }
+//                }
+//            }
+//        }
         val structAsType = TYPE in ns
 
         val completionContext = CompletionContext(
@@ -81,7 +83,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             resolutionCtx = resolutionCtx,
             structAsType,
         )
-        addVariants(
+        addPathVariants(
             pathElement, parameters, completionContext, ns, result,
             CompletionFilter { e, ctx ->
                 // skip existing items, only non-empty for use groups
@@ -103,7 +105,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         )
     }
 
-    fun addVariants(
+    fun addPathVariants(
         pathElement: MvPath,
         parameters: CompletionParameters,
         completionContext: CompletionContext,
@@ -130,7 +132,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
                     true
                 }
-            val pathKind = pathElement.pathKind(overwriteNs = ns)
+            val pathKind = pathElement.pathKind(true)
             processPathResolveVariants(resolutionCtx, pathKind, processor)
         }
 

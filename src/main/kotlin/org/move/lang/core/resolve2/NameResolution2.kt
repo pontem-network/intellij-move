@@ -3,15 +3,71 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.MODULES
-import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Namespace.MODULE
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleIndex
+
+
+fun processStructLitFieldResolveVariants(
+    litField: MvStructLitField,
+    isCompletion: Boolean,
+    processor: RsResolveProcessor,
+): Boolean {
+    val fieldsOwner = litField.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+    if (fieldsOwner != null && processFieldDeclarations(fieldsOwner, processor)) return true
+    // if it's a shorthand, try to resolve to the underlying binding pat
+    if (!isCompletion && litField.expr == null) {
+        val ctx = ResolutionContext(litField, false)
+        // return is ignored as struct lit field cannot be marked as resolved through binding pat
+        processNestedScopesUpwards(litField, NAMES, ctx, processor)
+    }
+    return false
+}
+
+fun processStructPatFieldResolveVariants(
+    field: MvFieldPatFull,
+    processor: RsResolveProcessor
+): Boolean {
+    val resolved = field.parentStructPat.path.reference?.resolveFollowingAliases()
+    val resolvedStruct = resolved as? MvFieldsOwner ?: return false
+    return processFieldDeclarations(resolvedStruct, processor)
+}
+
+fun processBindingPatResolveVariants(
+    binding: MvBindingPat,
+    isCompletion: Boolean,
+    originalProcessor: RsResolveProcessor
+): Boolean {
+    // field pattern shorthand
+    if (binding.parent is MvFieldPat) {
+        val parentPat = binding.parent.parent as MvStructPat
+        val structItem = parentPat.path.reference?.resolveFollowingAliases()
+        // can be null if unresolved
+        if (structItem is MvFieldsOwner) {
+            if (processFieldDeclarations(structItem, originalProcessor)) return true
+            if (isCompletion) return false
+        }
+    }
+    // copied as is from the intellij-rust, handles all items that can be matched in match arms
+    val processor = originalProcessor.wrapWithFilter { entry ->
+        if (originalProcessor.acceptsName(entry.name)) {
+            val element = entry.element
+            val isFieldless = element.isFieldlessFieldsOwner
+            val isPathOrDestructable = when (element) {
+                is MvEnum, is MvEnumVariant, is MvStruct -> true
+                else -> false
+            }
+            isFieldless || (isCompletion && isPathOrDestructable)
+        } else {
+            false
+        }
+    }
+    val ctx = ResolutionContext(binding, isCompletion)
+    return processNestedScopesUpwards(binding, if (isCompletion) TYPES_N_NAMES else NAMES, ctx, processor)
+}
 
 fun resolveBindingForFieldShorthand(
     element: MvMandatoryReferenceElement,
@@ -166,6 +222,12 @@ fun walkUpThroughScopes(
 
     return false
 }
+
+private fun processFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    struct.fields.any { field ->
+        val name = field.name
+        processor.process(name, NAMES, field)
+    }
 
 private fun handleModuleItemSpecsInItemsOwner(
     cameFrom: MvElement,

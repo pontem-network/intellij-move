@@ -144,33 +144,29 @@ FILE
               MvBindingPatImpl(BINDING_PAT)
                 PsiElement(IDENTIFIER)('a')
             PsiWhiteSpace(' ')
-            PsiErrorElement:',' or '}' expected, got '='
+            PsiErrorElement:',', ':' or '}' expected, got '='
               PsiElement(=)('=')
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
             PsiWhiteSpace('\n        ')
             PsiElement(let)('let')
             PsiWhiteSpace(' ')
-            MvFieldPatImpl(FIELD_PAT)
-              MvBindingPatImpl(BINDING_PAT)
-                PsiElement(IDENTIFIER)('R')
+            PsiElement(IDENTIFIER)('R')
             PsiWhiteSpace(' ')
-            PsiErrorElement:',' or '}' expected, got '{'
+            PsiErrorElement:':' expected, got '{'
               PsiElement({)('{')
             PsiWhiteSpace(' ')
             MvFieldPatImpl(FIELD_PAT)
               MvBindingPatImpl(BINDING_PAT)
                 PsiElement(IDENTIFIER)('a')
-            PsiErrorElement:',' or '}' expected, got ';'
+            PsiErrorElement:',', ':' or '}' expected, got ';'
               PsiElement(;)(';')
             PsiWhiteSpace('\n        ')
             PsiElement(let)('let')
             PsiWhiteSpace(' ')
-            MvFieldPatImpl(FIELD_PAT)
-              MvBindingPatImpl(BINDING_PAT)
-                PsiElement(IDENTIFIER)('R')
+            PsiElement(IDENTIFIER)('R')
             PsiWhiteSpace(' ')
-            PsiErrorElement:',' or '}' expected, got '{'
+            PsiErrorElement:':' expected, got '{'
               PsiElement({)('{')
             PsiWhiteSpace(' ')
             MvFieldPatImpl(FIELD_PAT)

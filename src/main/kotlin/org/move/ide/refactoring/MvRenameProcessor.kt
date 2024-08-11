@@ -7,10 +7,7 @@ import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.descendantOfTypeStrict
-import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.ext.isShorthand
-import org.move.lang.core.psi.ext.owner
+import org.move.lang.core.psi.ext.*
 
 
 class MvRenameProcessor : RenamePsiElementProcessor() {
@@ -45,11 +42,16 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                             val newLitField = psiFactory.structLitField(newName, usage.referenceName)
                             usage.replace(newLitField)
                         }
-                        usage is MvFieldPat && usage.isShorthand -> {
-                            // NEW_PAT_FIELD_NAME: OLD_VARIABLE_NAME
-                            val newPatField = psiFactory.fieldPat(newName, usage.referenceName)
-                            usage.replace(newPatField)
+                        usage is MvFieldPat -> {
+                            val fieldKind = usage.kind
+                            if (fieldKind is PatFieldKind.Shorthand) {
+                                // NEW_PAT_FIELD_NAME: OLD_VARIABLE_NAME
+                                val newPatField = psiFactory.fieldPat(newName, fieldKind.binding.referenceName)
+                                usage.replace(newPatField)
+                            }
                         }
+//                        usage is MvFieldPat && usage.isShorthand -> {
+//                        }
                     }
                 }
             }

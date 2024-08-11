@@ -39,13 +39,12 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         if (element is MvBindingPat) element = element.parent as MvElement
 
         val completionCtx = CompletionContext(element, element.isMsl())
-//        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         when (element) {
             is MvFieldPat -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
-                    structPat.patFieldNames,
+                    structPat.providedFieldNames,
                     result,
                     completionCtx
                 )
@@ -54,7 +53,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 val structLit = element.structLitExpr
                 addFieldsToCompletion(
                     structLit.path.maybeStruct ?: return,
-                    structLit.fieldNames,
+                    structLit.providedFieldNames,
                     result,
                     completionCtx
                 )
@@ -65,7 +64,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
 
     private fun addFieldsToCompletion(
         referredStruct: MvStruct,
-        providedFieldNames: List<String>,
+        providedFieldNames: Set<String>,
         result: CompletionResultSet,
         completionContext: CompletionContext,
     ) {

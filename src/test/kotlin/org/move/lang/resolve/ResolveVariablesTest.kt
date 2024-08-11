@@ -648,4 +648,26 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test unknown struct literal variable is resolvable with shorthand`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let myfield = 1;
+                     //X
+                Unknown { myfield };
+                           //^
+            }
+        }        
+    """)
+
+    fun `test unknown struct literal variable is resolvable with full field`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let myfield = 1;
+                     //X
+                Unknown { field: myfield };
+                                //^
+            }
+        }        
+    """)
 }

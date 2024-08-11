@@ -496,4 +496,44 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test match on unqualified enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                    //X
+            fun main(s: S): bool {
+                match (s) {
+                    One -> true
+                   //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test match on unqualified enum variant with fields`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                    //X
+            fun main(s: S): bool {
+                match (s) {
+                    One { field } -> true
+                   //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test match with guard`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun consume() {}
+               //X
+            fun main(s: S): bool {
+                match (s) {
+                    S::One if consume() -> true
+                              //^
+                }
+            }
+        }        
+    """)
 }

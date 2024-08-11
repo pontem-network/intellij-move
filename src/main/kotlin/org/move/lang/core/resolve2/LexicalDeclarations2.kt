@@ -6,6 +6,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
+import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.NAME
@@ -25,15 +26,16 @@ fun processItemsInScope(
             NAME -> {
                 val found = when (scope) {
                     is MvModule -> {
-//                        val module = scope.parent as MvModule
-                        processor.processAllItems(
-                            ns,
+                        // try enum variants first
+                        val found = processor.processAll(elementNs, scope.enumVariants())
+                        found || processor.processAllItems(
+                            elementNs,
                             scope.structs(),
                             scope.consts(),
                         )
                     }
-                    is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList)
-                    is MvScript -> processor.processAllItems(ns, scope.constList)
+                    is MvModuleSpecBlock -> processor.processAllItems(elementNs, scope.schemaList)
+                    is MvScript -> processor.processAllItems(elementNs, scope.constList)
                     is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
                     is MvLambdaExpr -> processor.processAll(elementNs, scope.bindingPatList)
                     is MvForExpr -> {
@@ -45,9 +47,10 @@ fun processItemsInScope(
                         }
                     }
                     is MvMatchArm -> {
-                        if (cameFrom is MvMatchPat) continue
+                        if (cameFrom is MvPat) continue
                         // only use those bindings for the match arm rhs
-                        val matchBindings = scope.matchPat.pat.bindings.toList()
+                        val matchBindings = scope.pat.bindings.toList()
+//                        val matchBindings = scope.matchPat.pat.bindings.toList()
                         processor.processAll(elementNs, matchBindings)
                     }
                     is MvItemSpec -> {
@@ -188,7 +191,8 @@ fun processItemsInScope(
                         }
                     }
                     is MvModule -> {
-                        processor.processAllItems(
+                        val f = processor.processAll(elementNs, scope.enumVariants())
+                        f || processor.processAllItems(
                             ns,
                             scope.structs(),
                             scope.enumList
