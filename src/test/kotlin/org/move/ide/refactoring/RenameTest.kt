@@ -172,18 +172,18 @@ class RenameTest : MvTestBase() {
         "myval", """
         module 0x1::M {
             struct MyStruct { /*caret*/val: u8 }
-            fun get_s(): MyStruct { MyStruct { val: 1 } }
             fun main() {
-                let MyStruct { val } = get_s();
+                let val = 1;
+                let MyStruct { val } = 1;
                 val;
             }
         }
     """, """
         module 0x1::M {
             struct MyStruct { myval: u8 }
-            fun get_s(): MyStruct { MyStruct { myval: 1 } }
             fun main() {
-                let MyStruct { myval: val } = get_s();
+                let val = 1;
+                let MyStruct { myval: val } = 1;
                 val;
             }
         }
