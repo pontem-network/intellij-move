@@ -38,12 +38,13 @@ val MvVisibilityOwner.visibility2: Visibility2
     get() {
         val kind = this.visibilityModifier?.stubVisKind ?: return Visibility2.Private
         return when (kind) {
-            PACKAGE -> Visibility2.Restricted.Package(lazy { containingMovePackage })
+            PACKAGE -> Visibility2.Restricted.Package(lazy { this.containingMovePackage })
             FRIEND -> {
                 val module = this.containingModule ?: return Visibility2.Private
                 Visibility2.Restricted.Friend(lazy { module.friendModules })
             }
-            SCRIPT -> Visibility2.Restricted.Script
+            // public(script) == public entry
+            SCRIPT -> Visibility2.Public
             PUBLIC -> Visibility2.Public
         }
     }

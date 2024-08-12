@@ -298,22 +298,19 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
-    fun `test script function is unresolved in friend modules`() = checkByCode(
+    fun `test entry function is unresolved in friend modules`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
+        module 0x1::Original {
             friend 0x1::M;
-            public(script) fun call() {}
+            entry fun call() {}
         }
-        
-        module M {
+        module 0x1::M {
             use 0x1::Original;
             fun main() {
                 Original::call();
                         //^ unresolved
             }
         }    
-        }
     """
     )
 
@@ -332,6 +329,94 @@ class ResolveFunctionTest: ResolveTestCase() {
                 Original::call();
                         //^
             }
+        }    
+    """
+    )
+
+    fun `test resolve public entry function`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public entry fun call() {}
+                             //X
+        }
+        }
+        
+        script {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }    
+    """
+    )
+
+    fun `test cannot resolve private entry function from script`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            entry fun call() {}
+        }
+        }
+        
+        script {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^ unresolved
+            }
+        }    
+    """
+    )
+
+    fun `test private entry function is not available from another module`() = checkByCode(
+        """
+        module 0x1::m {
+            entry fun call() {}
+                      //X
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                m::call();
+                   //^ unresolved
+            }
+        }
+    """
+    )
+
+    fun `test private entry function is not available from another module entry function`() = checkByCode(
+        """
+        module 0x1::m {
+            entry fun call() {}
+                      //X
+        }
+        module 0x1::main {
+            use 0x1::m;
+            entry fun main() {
+                m::call();
+                   //^ unresolved
+            }
+        }
+    """
+    )
+
+    fun `test public script is the same as public entry`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public(script) fun call() {}
+                             //X
+        }
+        
+        module M {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }
         }    
     """
     )
