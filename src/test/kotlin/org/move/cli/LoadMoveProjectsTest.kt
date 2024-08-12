@@ -25,7 +25,7 @@ version = "0.1.0"
             """
             )
         }
-        check(moveProject.currentPackage.moveToml.packageName == "move_toml")
+        check(moveProject.currentPackage.packageName == "move_toml")
         check(moveProject.currentPackage.aptosConfigYaml == null)
     }
 

@@ -1,5 +1,7 @@
 package org.move.cli
 
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.Service.Level.PROJECT
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -177,7 +179,7 @@ data class MoveProject(
     }
 
     companion object {
-        fun forTests(project: Project): MoveProject {
+        fun packageForTests(project: Project): MovePackage {
             checkUnitTestMode()
             val contentRoot = project.contentRoots.first()
             val tomlFile =
@@ -186,17 +188,45 @@ data class MoveProject(
                         TomlLanguage,
                         """
                      [package]
-                     name = "MyPackage"
+                     name = "DummyPackage"
                 """
                     ) as TomlFile
 
             val moveToml = MoveToml(project, tomlFile)
-            val movePackage = MovePackage(project, contentRoot, moveToml)
+            val movePackage = MovePackage(project, contentRoot,
+                                          packageName = "DummyPackage",
+                                          tomlMainAddresses = moveToml.declaredAddresses())
+            return movePackage
+        }
+
+        fun forTests(project: Project): MoveProject {
+//            checkUnitTestMode()
+//            val contentRoot = project.contentRoots.first()
+//            val tomlFile =
+//                PsiFileFactory.getInstance(project)
+//                    .createFileFromText(
+//                        TomlLanguage,
+//                        """
+//                     [package]
+//                     name = "MyPackage"
+//                """
+//                    ) as TomlFile
+//
+//            val moveToml = MoveToml(project, tomlFile)
+//            val movePackage = MovePackage(project, contentRoot, moveToml,
+//                                          declaredTomlAddresses = moveToml.declaredAddresses())
             return MoveProject(
                 project,
-                movePackage,
+                packageForTests(project),
                 dependencies = emptyList()
             )
         }
     }
 }
+
+@Service(PROJECT)
+class MoveProjectTestService(val project: Project) {
+    val testMoveProject: Lazy<MoveProject> get() = lazy { MoveProject.forTests(project) }
+}
+
+val Project.testMoveProject get() = this.service<MoveProjectTestService>().testMoveProject.value

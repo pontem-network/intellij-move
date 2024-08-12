@@ -2,6 +2,7 @@ package org.move.cli.manifest
 
 import com.intellij.openapi.project.Project
 import org.move.cli.*
+import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.move.stdext.chain
 import org.toml.lang.psi.TomlFile
@@ -45,7 +46,7 @@ class MoveToml(
     )
 
     companion object {
-        fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
+        fun fromTomlFile(tomlFile: TomlFile): MoveToml {
             // needs read access for Toml
             checkReadAccessAllowed()
 
@@ -65,8 +66,10 @@ class MoveToml(
             val addresses = parseAddresses("addresses", tomlFile)
             val devAddresses = parseAddresses("dev-addresses", tomlFile)
 
-            val deps = parseDependencies("dependencies", tomlFile, projectRoot)
-            val dev_deps = parseDependencies("dev-dependencies", tomlFile, projectRoot)
+            val contentRoot = tomlFile.parent?.virtualFile?.toNioPathOrNull()
+            val deps = contentRoot?.let { parseDependencies("dependencies", tomlFile, it) }.orEmpty()
+            val devDeps = contentRoot?.let { parseDependencies("dev-dependencies", tomlFile, it) }.orEmpty()
+
             return MoveToml(
                 tomlFile.project,
                 tomlFile,
@@ -74,7 +77,7 @@ class MoveToml(
                 addresses,
                 devAddresses,
                 deps,
-                dev_deps
+                devDeps
             )
         }
 

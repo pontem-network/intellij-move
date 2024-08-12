@@ -20,7 +20,6 @@ import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.ex.temp.TempFileSystemMarker
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -36,6 +35,7 @@ import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
+import org.move.openapiext.common.isLightTestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.debugInProduction
 import org.move.openapiext.toVirtualFile
@@ -166,7 +166,7 @@ class MoveProjectsService(val project: Project): Disposable {
         val cached = this.fileToMoveProjectCache.get(file)
         if (cached is CacheEntry.Present) return cached.value
 
-        if (isUnitTestMode && file.fileSystem is TempFileSystemMarker) return MoveProject.forTests(project)
+        if (isUnitTestMode && file.isLightTestFile) return project.testMoveProject
 
         val filePath = file.toNioPathOrNull() ?: return null
 

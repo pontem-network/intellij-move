@@ -135,12 +135,14 @@ class MoveProjectsSyncTask(
         context: SyncContext
     ) {
         val projectRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
-        var moveProject =
+        var (moveProject, rootMoveToml) =
             runReadAction {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
-                val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
-                val rootPackage = MovePackage.fromMoveToml(moveToml)
-                MoveProject(project, rootPackage, emptyList())
+                val rootMoveToml = MoveToml.fromTomlFile(tomlFile)
+//                val rootMoveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
+                val rootPackage = MovePackage.fromMoveToml(rootMoveToml)
+                val rootProject = MoveProject(project, rootPackage, emptyList())
+                rootProject to rootMoveToml
             }
 
         val result = fetchDependencyPackages(context, projectRoot)
@@ -158,7 +160,7 @@ class MoveProjectsSyncTask(
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     loadDependencies(
                         project,
-                        rootPackage.moveToml,
+                        rootMoveToml,
                         deps,
                         visitedDepIds,
                         true,
@@ -302,7 +304,8 @@ class MoveProjectsSyncTask(
                     .resolveExisting(Consts.MANIFEST_FILE)
                     ?.toVirtualFile()
                     ?.toTomlFile(project) ?: continue
-                val depMoveToml = MoveToml.fromTomlFile(depTomlFile, depRoot)
+                val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
+//                val depMoveToml = MoveToml.fromTomlFile(depTomlFile, depRoot)
 
                 // first try to parse MovePackage from dependency, no need for nested if parent is invalid
                 val depPackage = MovePackage.fromMoveToml(depMoveToml)
