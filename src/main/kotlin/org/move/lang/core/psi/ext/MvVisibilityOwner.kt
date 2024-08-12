@@ -2,6 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.containingMovePackage
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
 import org.move.lang.core.psi.containingModule
@@ -17,29 +18,27 @@ interface MvVisibilityOwner: MvElement {
 }
 
 // todo: add VisibilityModifier to stubs, rename this one to VisStubKind
-enum class VisKind {
-    //    PRIVATE,
-    PUBLIC,
-    FRIEND,
-    PACKAGE,
-    SCRIPT;
+enum class VisKind(val keyword: String) {
+    PUBLIC("public"),
+    FRIEND("public(friend)"),
+    PACKAGE("public(package)"),
+    SCRIPT("public(script)");
 }
 
-val MvVisibilityModifier.stubKind: VisKind
+val MvVisibilityModifier.stubVisKind: VisKind
     get() = when {
-        this.isPublicFriend -> FRIEND
-        this.isPublicPackage -> PACKAGE
-        this.isPublicScript -> SCRIPT
-        this.isPublic -> PUBLIC
-        else -> error("unreachable")
+        isPublicPackage -> PACKAGE
+        isPublicFriend -> FRIEND
+        isPublicScript -> SCRIPT
+        isPublic -> PUBLIC
+        else -> error("exhaustive")
     }
 
 val MvVisibilityOwner.visibility2: Visibility2
     get() {
-        val kind = this.visibilityModifier?.stubKind ?: return Visibility2.Private
-
+        val kind = this.visibilityModifier?.stubVisKind ?: return Visibility2.Private
         return when (kind) {
-            PACKAGE -> containingMovePackage?.let { Visibility2.Restricted.Package(it) } ?: Visibility2.Public
+            PACKAGE -> Visibility2.Restricted.Package(lazy { containingMovePackage })
             FRIEND -> {
                 val module = this.containingModule ?: return Visibility2.Private
                 Visibility2.Restricted.Friend(lazy { module.friendModules })

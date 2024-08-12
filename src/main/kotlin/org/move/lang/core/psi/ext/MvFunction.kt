@@ -19,39 +19,13 @@ import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
-enum class FunctionVisibility {
-    PRIVATE,
-    PUBLIC,
-    PUBLIC_FRIEND,
-    PUBLIC_PACKAGE,
-    PUBLIC_SCRIPT;
-}
-
-val MvFunction.visibility: FunctionVisibility
-    get() {
-        val stub = greenStub
-        return stub?.visibility ?: visibilityFromPsi()
-    }
-
-fun MvFunction.visibilityFromPsi(): FunctionVisibility {
-    val visibility = this.visibilityModifier ?: return FunctionVisibility.PRIVATE
-    return when {
-        visibility.isPublicFriend -> FunctionVisibility.PUBLIC_FRIEND
-        visibility.isPublicPackage -> FunctionVisibility.PUBLIC_PACKAGE
-        visibility.isPublicScript -> FunctionVisibility.PUBLIC_SCRIPT
-        visibility.isPublic -> FunctionVisibility.PUBLIC
-        else -> FunctionVisibility.PRIVATE
-    }
-}
-
 val MvFunction.isEntry: Boolean
     get() {
         val stub = greenStub
         return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
     }
 
-val MvFunction.isPublicScript: Boolean
-    get() = this.visibilityModifier?.isPublicScript ?: false
+val MvFunction.isPublicScript: Boolean get() = this.visibilityModifier?.isPublicScript ?: false
 
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 

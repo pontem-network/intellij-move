@@ -103,7 +103,8 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
                             return@VisibilityFilter Invisible
                         }
                         val pathPackage = methodOrPath.containingMovePackage ?: return@VisibilityFilter Invisible
-                        if (visibility.originPackage == pathPackage) Visible else Invisible
+                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
+                        if (pathPackage == originPackage) Visible else Invisible
                     }
                 }
             }

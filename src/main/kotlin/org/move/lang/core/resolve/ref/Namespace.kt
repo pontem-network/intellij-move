@@ -9,7 +9,7 @@ sealed class Visibility2 {
     data object Private: Visibility2()
     sealed class Restricted: Visibility2() {
         class Friend(val friendModules: Lazy<Set<MvModule>>): Restricted()
-        class Package(val originPackage: MovePackage): Restricted()
+        class Package(val originPackage: Lazy<MovePackage?>): Restricted()
         data object Script: Restricted()
     }
 
