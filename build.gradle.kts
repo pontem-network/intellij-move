@@ -72,7 +72,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.9.25"
-    id("org.jetbrains.intellij.platform") version "2.0.0"
+    id("org.jetbrains.intellij.platform") version "2.0.1"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
@@ -198,10 +198,6 @@ allprojects {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
 
-        testIdeUi {
-            enabled = false
-        }
-
         task("downloadAptosBinaries") {
             val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
             doLast {
@@ -257,13 +253,8 @@ allprojects {
         }
 
         prepareSandbox {
-//            enabled = true
             dependsOn("downloadAptosBinaries")
-            // copy bin/ directory inside the plugin zip file
-            from("$rootDir/bin") {
-                into("$pluginName/bin")
-                include("**")
-            }
+            copyDownloadedAptosBinaries(this)
         }
     }
 
@@ -277,6 +268,11 @@ allprojects {
 //            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
 //            systemProperty("org.move.aptos.bundled.force.unsupported", true)
 //            systemProperty("idea.log.debug.categories", "org.move.cli")
+        }
+
+        prepareSandboxTask {
+            dependsOn("downloadAptosBinaries")
+            copyDownloadedAptosBinaries(this)
         }
     }
 
@@ -338,6 +334,13 @@ allprojects {
 //        }
 
 //}
+
+fun copyDownloadedAptosBinaries(copyTask: AbstractCopyTask) {
+    copyTask.from("$rootDir/bin") {
+        into("$pluginName/bin")
+        include("**")
+    }
+}
 
 val Project.dependencyCachePath
     get(): String {
