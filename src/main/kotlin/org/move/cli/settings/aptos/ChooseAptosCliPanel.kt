@@ -8,6 +8,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory.ActionSelectionAid.SPEEDSEARCH
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.ui.components.DropDownLink
@@ -44,7 +45,7 @@ enum class AptosExecType {
                 if (Registry.`is`("org.move.aptos.bundled.force.unsupported", false)) {
                     return false
                 }
-                return BundledAptosManager.getCurrentOS() in SUPPORTED_PLATFORMS
+                return !SystemInfo.isMac
             }
 
         val bundledAptosCLIPath: Path? get() = BundledAptosManager.getBundledAptosPath()

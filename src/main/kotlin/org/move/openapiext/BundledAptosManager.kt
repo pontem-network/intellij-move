@@ -6,13 +6,16 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.util.SystemInfo
 import org.move.ide.notifications.logOrShowBalloon
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.EnumSet
+import java.util.*
+import java.util.concurrent.Callable
+import kotlin.LazyThreadSafetyMode.SYNCHRONIZED
 
 const val PLUGIN_ID: String = "org.move.lang"
 
@@ -20,28 +23,23 @@ fun plugin(): IdeaPluginDescriptor = PluginManagerCore.getPlugin(PluginId.getId(
 
 @Service(Service.Level.APP)
 class OpenSSLInfoService {
-    var openssl3: Boolean = true
-
-    init {
-        if (!SystemInfo.isWindows && !SystemInfo.isMac) {
-            val fut = ApplicationManager.getApplication().executeOnPooledThread {
-                val openSSLVersion = determineOpenSSLVersion()
-                when {
-                    openSSLVersion.startsWith("OpenSSL 1") -> openssl3 = false
-                    else -> openssl3 = true
-                }
+    val isOpenSSL3: Lazy<Boolean> = lazy(SYNCHRONIZED) {
+        if (SystemInfo.isWindows || SystemInfo.isMac) return@lazy false
+        ApplicationManager.getApplication().executeOnPooledThread(Callable {
+            val openSSLVersion = determineOpenSSLVersion()
+            when {
+                openSSLVersion.startsWith("OpenSSL 1") -> false
+                else -> true
             }
-            // blocks
-            fut.get()
-        }
+        }).get()
     }
 
     private fun determineOpenSSLVersion(): String {
 //        if (!isUnitTestMode) {
 //            checkIsBackgroundThread()
 //        }
-        return GeneralCommandLine("openssl", "version").execute()?.stdoutLines?.firstOrNull()
-            ?: "OpenSSL 3.0.2"
+        val commandLine = GeneralCommandLine("openssl", "version")
+        return commandLine.execute()?.stdoutLines?.firstOrNull() ?: "OpenSSL 3.0.2"
     }
 }
 
@@ -56,6 +54,10 @@ val SUPPORTED_PLATFORMS: Set<PlatformOS> =
     EnumSet.of(PlatformOS.Windows, PlatformOS.Ubuntu, PlatformOS.Ubuntu22)
 
 object BundledAptosManager {
+    private fun pluginDir(): Path = plugin().pluginPath
+
+    private val isOpenSSL3: Boolean get() = service<OpenSSLInfoService>().isOpenSSL3.value
+
     fun getCurrentOS(): PlatformOS {
         return when {
             SystemInfo.isMac -> PlatformOS.MacOS
@@ -94,8 +96,6 @@ object BundledAptosManager {
         }
         return bundledPath
     }
-    private fun pluginDir(): Path = plugin().pluginPath
 
-    private val isOpenSSL3 get() = service<OpenSSLInfoService>().openssl3
-    private val log = logger<BundledAptosManager>()
+    private val log: Logger = logger<BundledAptosManager>()
 }
