@@ -11,8 +11,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u16", "u32", "u64", "u128", "u256")
 val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
@@ -96,7 +96,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             return MvColor.SELF_PARAMETER
         }
         val msl = bindingPat.isMslOnlyItem
-        val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
+        val itemTy = bindingPat.inference(msl)?.getBindingType(bindingPat)
         return if (itemTy != null) {
             highlightVariableByType(itemTy)
         } else {
@@ -176,19 +176,19 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             itemTy is TyReference -> {
                 val referenced = itemTy.referenced
                 when {
-                    referenced is TyStruct && referenced.item.hasKey ->
+                    referenced is TyAdt && referenced.item.hasKey ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_KEY_OBJECT else MvColor.REF_TO_KEY_OBJECT
-                    referenced is TyStruct && referenced.item.hasStore && !referenced.item.hasDrop ->
+                    referenced is TyAdt && referenced.item.hasStore && !referenced.item.hasDrop ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_NO_DROP_OBJECT else MvColor.REF_TO_STORE_NO_DROP_OBJECT
-                    referenced is TyStruct && referenced.item.hasStore && referenced.item.hasDrop ->
+                    referenced is TyAdt && referenced.item.hasStore && referenced.item.hasDrop ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_OBJECT else MvColor.REF_TO_STORE_OBJECT
                     else ->
                         if (itemTy.isMut) MvColor.MUT_REF else MvColor.REF
                 }
             }
-            itemTy is TyStruct && itemTy.item.hasStore && !itemTy.item.hasDrop -> MvColor.STORE_NO_DROP_OBJECT
-            itemTy is TyStruct && itemTy.item.hasStore -> MvColor.STORE_OBJECT
-            itemTy is TyStruct && itemTy.item.hasKey -> MvColor.KEY_OBJECT
+            itemTy is TyAdt && itemTy.item.hasStore && !itemTy.item.hasDrop -> MvColor.STORE_NO_DROP_OBJECT
+            itemTy is TyAdt && itemTy.item.hasStore -> MvColor.STORE_OBJECT
+            itemTy is TyAdt && itemTy.item.hasKey -> MvColor.KEY_OBJECT
             else -> MvColor.VARIABLE
         }
 

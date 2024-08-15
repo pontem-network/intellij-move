@@ -8,22 +8,45 @@ import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyAdt
 import org.move.stdext.wrapWithList
 
 fun processNamedFieldVariants(
     element: MvMethodOrField,
-    receiverTy: TyStruct,
+    receiverTy: TyAdt,
     msl: Boolean,
     processor: RsResolveProcessor
 ): Boolean {
-    val structItem = receiverTy.item
+    val receiverItem = receiverTy.item
+    if (!isFieldsAccessible(element, receiverItem, msl)) return false
+
+    return when (receiverItem) {
+        is MvStruct -> processor.processAll(NONE, receiverItem.namedFields)
+        is MvEnum -> {
+            var found = false
+            for (variant in receiverItem.variants) {
+                if (!found) {
+                    found = processor.processAll(NONE, variant.namedFields)
+                }
+            }
+            found
+        }
+        else -> error("unreachable")
+    }
+}
+
+// todo: change into VisibilityFilter
+private fun isFieldsAccessible(
+    element: MvElement,
+    item: MvStructOrEnumItemElement,
+    msl: Boolean
+): Boolean {
     if (!msl) {
         // cannot resolve field if not in the same module as struct definition
         val dotExprModule = element.namespaceModule ?: return false
-        if (structItem.containingModule != dotExprModule) return false
+        if (item.containingModule != dotExprModule) return false
     }
-    return processor.processAll(NONE, structItem.namedFields)
+    return true
 }
 
 class MvStructDotFieldReferenceImpl(

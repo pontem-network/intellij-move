@@ -6,7 +6,7 @@ typealias TypeFlags = Int
 
 const val HAS_TY_INFER_MASK: TypeFlags = 1
 const val HAS_TY_TYPE_PARAMETER_MASK: TypeFlags = 2
-const val HAS_TY_STRUCT_MASK: TypeFlags = 4
+const val HAS_TY_ADT_MASK: TypeFlags = 4
 const val HAS_TY_UNKNOWN_MASK: TypeFlags = 8
 
 fun mergeFlags(tys: Collection<Ty>): TypeFlags =
@@ -19,7 +19,7 @@ data class HasTypeFlagVisitor(val mask: TypeFlags) : TypeVisitor {
     companion object {
         val HAS_TY_INFER_VISITOR = HasTypeFlagVisitor(HAS_TY_INFER_MASK)
         val HAS_TY_TYPE_PARAMETER_VISITOR = HasTypeFlagVisitor(HAS_TY_TYPE_PARAMETER_MASK)
-        val HAS_TY_STRUCT_VISITOR = HasTypeFlagVisitor(HAS_TY_STRUCT_MASK)
+        val HAS_TY_ADT_VISITOR = HasTypeFlagVisitor(HAS_TY_ADT_MASK)
         val HAS_TY_UNKNOWN_VISITOR = HasTypeFlagVisitor(HAS_TY_UNKNOWN_MASK)
 
         val NEEDS_INFER = HasTypeFlagVisitor(HAS_TY_INFER_MASK)

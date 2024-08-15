@@ -9,7 +9,7 @@ import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyVector
 import org.move.stdext.wrapWithList
 
@@ -29,7 +29,7 @@ fun Ty.itemModule(moveProject: MoveProject): MvModule? {
                 .getModulesFromIndex("vector")
                 .firstOrNull { it.is0x1Address(moveProject) }
         }
-        is TyStruct -> norefTy.item.module
+        is TyAdt -> norefTy.item.module
         else -> null
     }
 }

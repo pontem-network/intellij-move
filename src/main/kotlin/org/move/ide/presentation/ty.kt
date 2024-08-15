@@ -8,16 +8,15 @@ import org.move.lang.core.types.ty.*
 fun Ty.itemDeclaredInModule(mod: MvModule): Boolean {
     if (this is TyUnknown) return true
     // no declaring module means builtin
-    val declaringMod = this.declaringModule ?: return false
+    val declaringMod = this.getDeclaringModule() ?: return false
     return declaringMod == mod
 }
 
-private val Ty.declaringModule: MvModule?
-    get() = when (this) {
-        is TyReference -> this.referenced.declaringModule
-        is TyStruct -> this.item.containingModule
-        else -> null
-    }
+private fun Ty.getDeclaringModule(): MvModule? = when (this) {
+    is TyReference -> this.referenced.getDeclaringModule()
+    is TyAdt -> this.item.containingModule
+    else -> null
+}
 
 fun Ty.nameNoArgs(): String {
     return this.name().replace(Regex("<.*>"), "")
@@ -36,7 +35,7 @@ fun Ty.fullname(): String {
 }
 
 fun Ty.typeLabel(relativeTo: MvElement): String {
-    val typeModule = this.declaringModule
+    val typeModule = this.getDeclaringModule()
     if (typeModule != null && typeModule != relativeTo.containingModule) {
         return this.fullname()
     } else {
@@ -142,7 +141,14 @@ private fun render(
             "$prefix${r(ty.referenced)}"
         }
         is TyTypeParameter -> typeParam(ty)
-        is TyStruct -> {
+//        is TyStruct -> {
+//            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+//            val args =
+//                if (ty.typeArguments.isEmpty()) ""
+//                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
+//            name + args
+//        }
+        is TyAdt -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
                 if (ty.typeArguments.isEmpty()) ""

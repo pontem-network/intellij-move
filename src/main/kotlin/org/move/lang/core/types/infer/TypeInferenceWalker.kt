@@ -280,6 +280,9 @@ class TypeInferenceWalker(
                 expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
                 TyUnit
             }
+
+            is MvMatchExpr -> inferMatchExprTy(expr)
+
             else -> inferenceErrorOrTyUnknown(expr)
         }
 
@@ -306,7 +309,7 @@ class TypeInferenceWalker(
 //        }
         val item = refExpr.path.reference?.resolveFollowingAliases() ?: return TyUnknown
         val ty = when (item) {
-            is MvBindingPat -> ctx.getPatType(item)
+            is MvBindingPat -> ctx.getBindingType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
@@ -375,7 +378,7 @@ class TypeInferenceWalker(
                     itemTy
                 }
                 is MvBindingPat -> {
-                    ctx.getPatType(item) as? TyLambda
+                    ctx.getBindingType(item) as? TyLambda
                         ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
                 }
                 else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
@@ -415,15 +418,16 @@ class TypeInferenceWalker(
     }
 
     fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField): Ty {
-        val structTy =
-            receiverTy.derefIfNeeded() as? TyStruct ?: return TyUnknown
+        val tyAdt =
+            receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
 
-        val field = resolveSingleResolveVariant(dotField.referenceName) {
-            processNamedFieldVariants(dotField, structTy, msl, it)
-        } as? MvNamedFieldDecl
+        val field =
+            resolveSingleResolveVariant(dotField.referenceName) {
+                processNamedFieldVariants(dotField, tyAdt, msl, it)
+            } as? MvNamedFieldDecl
         ctx.resolvedFields[dotField] = field
 
-        val fieldTy = field?.type?.loweredType(msl)?.substitute(structTy.typeParameterValues)
+        val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)
         return fieldTy ?: TyUnknown
     }
 
@@ -607,7 +611,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (structTy, typeParameters) = ctx.instantiateMethodOrPath<TyStruct>(path, structItem)
+        val (structTy, typeParameters) = ctx.instantiateMethodOrPath<TyAdt>(path, structItem)
             ?: return TyUnknown
         expected.onlyHasTy(ctx)?.let { expectedTy ->
             ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
@@ -620,7 +624,7 @@ class TypeInferenceWalker(
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
+                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }
@@ -649,7 +653,7 @@ class TypeInferenceWalker(
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
+                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }
@@ -705,7 +709,7 @@ class TypeInferenceWalker(
                     }
                 }
             }
-            receiverTy is TyStruct -> {
+            receiverTy is TyAdt -> {
                 coerce(indexExpr.argExpr, argTy, TyAddress)
                 receiverTy
             }
@@ -1040,6 +1044,17 @@ class TypeInferenceWalker(
         return TyNever
     }
 
+    private fun inferMatchExprTy(matchExpr: MvMatchExpr): Ty {
+        val matchingTy = ctx.resolveTypeVarsIfPossible(matchExpr.matchArgument.expr.inferType())
+        val arms = matchExpr.arms
+        for (arm in arms) {
+            arm.pat.collectBindings(matchingTy)
+            arm.expr?.inferType()
+            arm.matchArmGuard?.expr?.inferType(TyBool)
+        }
+        return intersectTypes(arms.mapNotNull { it.expr?.let(ctx::getExprType) })
+    }
+
     private fun inferIncludeStmt(includeStmt: MvIncludeStmt) {
         val includeItem = includeStmt.includeItem ?: return
         when (includeItem) {
@@ -1061,6 +1076,10 @@ class TypeInferenceWalker(
 
     private fun inferUpdateStmt(updateStmt: MvUpdateSpecStmt) {
         updateStmt.exprList.forEach { it.inferType() }
+    }
+
+    private fun MvPat.collectBindings(ty: Ty) {
+        this.collectBindings(this@TypeInferenceWalker, ty)
     }
 
     private fun checkTypeMismatch(

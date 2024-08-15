@@ -112,7 +112,7 @@ abstract class CommandConfigurationHandler {
         for ((binding, valueWithType) in parameterBindings.zip(callArgs.args)) {
             val name = binding.name
             val value = valueWithType.split(':')[1]
-            val ty = inference.getPatType(binding)
+            val ty = inference.getBindingType(binding)
             transaction.valueParams[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
         }
 

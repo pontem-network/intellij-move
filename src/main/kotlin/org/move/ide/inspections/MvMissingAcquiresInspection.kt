@@ -10,7 +10,7 @@ import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.types.infer.acquiresContext
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.moveProject
 
@@ -50,7 +50,7 @@ class MvMissingAcquiresInspection: MvLocalInspectionTool() {
                         when (acqTy) {
                             is TyTypeParameter ->
                                 acqTy.origin.takeIf { tyOrigin -> existingTypes.all { tyOrigin != it } }
-                            is TyStruct -> {
+                            is TyAdt -> {
                                 val belongsToTheSameModule = acqTy.item.containingModule == currentModule
                                 if (
                                     belongsToTheSameModule

@@ -30,7 +30,7 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 
 fun compatAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
     if (msl) return true
-    if (expectedTy.hasTyStruct
+    if (expectedTy.hasTyAdt
         || expectedTy.hasTyInfer
         || expectedTy.hasTyTypeParameters
     ) {
@@ -65,10 +65,21 @@ interface InferenceData {
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrTyUnknown(pat)
+
+    fun getFieldPatType(fieldPat: MvFieldPat): Ty
+
+    fun getBindingType(binding: MvBindingPat): Ty =
+        when (val parent = binding.parent) {
+            is MvFieldPat -> getFieldPatType(parent)
+            else -> getPatType(binding)
+        }
 }
 
 data class InferenceResult(
     override val patTypes: Map<MvPat, Ty>,
+
+    val patFieldTypes: Map<MvFieldPat, Ty>,
+
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
@@ -96,6 +107,9 @@ data class InferenceResult(
 
     fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
+
+    override fun getFieldPatType(fieldPat: MvFieldPat): Ty =
+        patFieldTypes[fieldPat] ?: TyUnknown
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
@@ -159,6 +173,7 @@ class InferenceContext(
 ): InferenceData {
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
+    private val patFieldTypes = mutableMapOf<MvFieldPat, Ty>()
 
     private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
@@ -212,6 +227,7 @@ class InferenceContext(
 
         exprTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
         patTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
+        patFieldTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
 
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
@@ -224,6 +240,7 @@ class InferenceContext(
 
         return InferenceResult(
             patTypes,
+            patFieldTypes,
             exprTypes,
             exprExpectedTypes,
             methodOrPathTypes,
@@ -268,6 +285,10 @@ class InferenceContext(
         this.patTypes[pat] = ty
     }
 
+    fun writeFieldPatTy(psi: MvFieldPat, ty: Ty) {
+        patFieldTypes[psi] = ty
+    }
+
     fun writeExprExpectedTy(expr: MvExpr, ty: Ty) {
         this.exprExpectedTypes[expr] = ty
     }
@@ -279,6 +300,14 @@ class InferenceContext(
 //    fun writePath(path: MvPath, resolved: List<ResolvedPath>) {
 //        resolvedPaths[path] = resolved
 //    }
+
+    override fun getFieldPatType(fieldPat: MvFieldPat): Ty {
+        return patFieldTypes[fieldPat] ?: TyUnknown
+    }
+
+    fun getExprType(expr: MvExpr): Ty {
+        return exprTypes[expr] ?: TyUnknown
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <T: GenericTy> instantiateMethodOrPath(
@@ -409,7 +438,7 @@ class InferenceContext(
                     && coerceMutability(ty1, ty2) ->
                 combineTypes(ty1.referenced, ty2.referenced)
 
-            ty1 is TyStruct && ty2 is TyStruct
+            ty1 is TyAdt && ty2 is TyAdt
                     && ty1.item == ty2.item ->
                 combineTypePairs(ty1.typeArguments.zip(ty2.typeArguments))
 

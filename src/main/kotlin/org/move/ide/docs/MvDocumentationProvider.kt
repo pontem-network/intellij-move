@@ -52,7 +52,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 val msl = docElement.isMslOnlyItem
                 val inference = docElement.inference(msl) ?: return null
-                val type = inference.getPatType(docElement).renderForDocs(true)
+                val type = inference.getBindingType(docElement).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }

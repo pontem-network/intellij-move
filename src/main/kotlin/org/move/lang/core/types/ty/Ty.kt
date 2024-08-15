@@ -2,8 +2,8 @@ package org.move.lang.core.types.ty
 
 import org.move.lang.core.psi.MvTypeParametersOwner
 import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_ADT_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
-import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_STRUCT_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PARAMETER_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_UNKNOWN_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
@@ -37,7 +37,7 @@ val Ty.isCopy: Boolean get() = this.abilities().contains(COPY)
 
 val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
 val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)
-val TypeFoldable<*>.hasTyStruct get() = visitWith(HAS_TY_STRUCT_VISITOR)
+val TypeFoldable<*>.hasTyAdt get() = visitWith(HAS_TY_ADT_VISITOR)
 val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
 
 val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)

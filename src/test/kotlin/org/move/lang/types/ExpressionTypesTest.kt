@@ -1865,4 +1865,76 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test infer match expr`() = testExpr("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                     //^ 0x1::m::S 
+                    One => true,
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant lhs`() = testBinding("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                    One => {},
+                   //^ 0x1::m::S
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant rhs`() = testExpr("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                    S::One => s
+                            //^ 0x1::m::S
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two { field: u8 } }
+            fun main(s: S) {
+                match (s) {
+                    One => s.field,
+                            //^ u8
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field destructuring rhs`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two P }
+            fun main(s: S) {
+                match (s) {
+                    One { field } => field,
+                                       //^ u8
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field destructuring rhs full`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main(s: S) {
+                match (s) {
+                    One { field: myfield } => myfield,
+                                             //^ u8
+                }
+            }
+        }        
+    """)
 }

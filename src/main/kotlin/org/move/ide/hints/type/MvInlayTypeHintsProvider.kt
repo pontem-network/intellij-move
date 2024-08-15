@@ -103,7 +103,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.name.startsWith("_"))
                         continue
-                    presentTypeForBinding(binding, inference.getPatType(binding))
+                    presentTypeForBinding(binding, inference.getBindingType(binding))
                 }
             }
 

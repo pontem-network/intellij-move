@@ -1,13 +1,13 @@
 package org.move.utils.tests.resolve
 
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
+import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
 
 abstract class ResolveTestCase : MvTestBase() {
     protected fun checkByCode(
@@ -45,5 +45,36 @@ abstract class ResolveTestCase : MvTestBase() {
         check(resolved == target) {
             "$refElement `${refElement.text}` should resolve to $target (${target.text}), was $resolved (${resolved.text}) instead"
         }
+    }
+
+    protected fun checkMultiResolveByCode(@Language("Move") code: String) {
+        InlineFile(code, "main.move")
+        val element = myFixture.findElementInEditor<MvReferenceElement>()
+        val ref = element.reference ?: error("Failed to get reference for `${element.text}`")
+
+        val expectedItems = myFixture
+            .findElementsWithDataAndOffsetInEditor(MvNamedElement::class.java, "//X")
+            .map { it.first }
+
+        val resolveVariants = ref.multiResolve()
+
+        val notFoundItems = mutableListOf<MvNamedElement>()
+        for (item in expectedItems) {
+            val foundResolved = resolveVariants.find { it == item }
+            if (foundResolved == null) {
+                notFoundItems.add(item)
+            }
+        }
+
+        check(notFoundItems.isEmpty()) {
+            "Resolution error. \n" +
+                    "Expected $expectedItems, \nactual $resolveVariants. " +
+                    "\nMissing $notFoundItems"
+        }
+
+        if (resolveVariants.size > expectedItems.size) {
+            "Too many variants ${resolveVariants.size}, expected ${expectedItems.size}"
+        }
+
     }
 }

@@ -55,12 +55,12 @@ fun processBindingPatResolveVariants(
     val processor = originalProcessor.wrapWithFilter { entry ->
         if (originalProcessor.acceptsName(entry.name)) {
             val element = entry.element
-            val isFieldless = element.isFieldlessFieldsOwner
+            val isConstantLike = element.isConstantLike
             val isPathOrDestructable = when (element) {
                 is MvEnum, is MvEnumVariant, is MvStruct -> true
                 else -> false
             }
-            isFieldless || (isCompletion && isPathOrDestructable)
+            isConstantLike || (isCompletion && isPathOrDestructable)
         } else {
             false
         }

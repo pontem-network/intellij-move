@@ -68,16 +68,21 @@ fun MvPat.anonymousTyVar(): Ty {
 
 fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
     when (this) {
-        is MvBindingPat -> {
-            fctx.ctx.writePatTy(this, ty)
-        }
+        is MvBindingPat -> fctx.ctx.writePatTy(this, ty)
         is MvStructPat -> {
-            val structItem = this.structItem ?: (ty as? TyStruct)?.item ?: return
-            val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyStruct>(this.path, structItem) ?: return
-            if (!isCompatible(ty.derefIfNeeded(), patTy, fctx.msl)) {
-                fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+            fctx.ctx.writePatTy(this, ty)
+            val item = this.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+                ?: (ty as? TyAdt)?.item as? MvFieldsOwner
+                ?: return
+
+            if (item is MvTypeParametersOwner) {
+                val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
+                if (!isCompatible(ty.derefIfNeeded(), patTy, fctx.msl)) {
+                    fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+                }
             }
-            val structFields = structItem.fields.associateBy { it.name }
+
+            val structFields = item.fields.associateBy { it.name }
             for (fieldPat in this.fieldPatList) {
                 val kind = fieldPat.kind
                 val fieldType = structFields[kind.fieldName]
@@ -86,10 +91,12 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
                     ?.substituteOrUnknown(ty.typeParameterValues)
                     ?.let { if (ty is TyReference) ty.transferReference(it) else it }
                     ?: TyUnknown
+
                 when (kind) {
                     is PatFieldKind.Full -> kind.pat.collectBindings(fctx, fieldType)
                     is PatFieldKind.Shorthand -> kind.binding.collectBindings(fctx, fieldType)
                 }
+                fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
             }
         }
         is MvTuplePat -> {
@@ -113,6 +120,20 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
         }
     }
 }
+
+//private fun MvBindingPat.inferType(expected: Ty, /*defBm: RsBindingModeKind*/): Ty {
+////    val bm = run {
+////        val bm = kind
+////        if (bm is BindByValue && bm.mutability == IMMUTABLE) {
+////            defBm
+////        } else {
+////            bm
+////        }
+////    }
+////    return if (bm is BindByReference) TyReference(expected, bm.mutability) else expected
+//    return expected
+//}
+
 
 //fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null): Ty {
 //    val existingTy = parentCtx.patTypes[pat]

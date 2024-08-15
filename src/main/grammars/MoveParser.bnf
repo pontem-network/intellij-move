@@ -369,9 +369,9 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
                         (';' | BlockFields)?
 {
     implements = [
-        "org.move.lang.core.psi.MvQualNamedElement"
-        "org.move.lang.core.psi.MvTypeParametersOwner"
-        "org.move.lang.core.psi.ext.MvItemElement"
+//        "org.move.lang.core.psi.MvQualNamedElement"
+//        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.ext.MvStructOrEnumItemElement"
         "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
@@ -400,8 +400,8 @@ Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
 {
     pin = "enum"
     implements = [
-        "org.move.lang.core.psi.MvTypeParametersOwner"
-        "org.move.lang.core.psi.ext.MvItemElement"
+//        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.ext.MvStructOrEnumItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvEnumMixin"
     stubClass = "org.move.lang.core.stubs.MvEnumStub"
