@@ -185,7 +185,7 @@ class StructsCompletionTest: CompletionTestCase() {
         }        
     """)
 
-    fun `test no completion in struct pattern if fields specified`() = checkNoCompletion("""
+    fun `test no completion in struct pattern if field already specified`() = checkNoCompletion("""
         module 0x1::M {
             struct T { offered: u8, collateral: u8 }
             fun main() {

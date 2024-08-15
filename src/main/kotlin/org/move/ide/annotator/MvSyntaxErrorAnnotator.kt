@@ -6,8 +6,10 @@ import com.intellij.psi.PsiElement
 import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
+import org.move.stdext.chain
 
 /*
     Augments parser to make the error messages better.
@@ -95,17 +97,16 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
             return
         }
 
-        val allModifiers = module.allFunctions().map { it.visibilityFromPsi() }.toSet()
-        val friendAndPackageTogether =
-            FunctionVisibility.PUBLIC_PACKAGE in allModifiers
-                    && FunctionVisibility.PUBLIC_FRIEND in allModifiers
-        if (friendAndPackageTogether) {
-            for (function in module.allFunctions()) {
-                val modifier = function.visibilityModifier ?: continue
-                if (modifier.isPublicPackage || modifier.isPublicFriend) {
-                    Diagnostic.PackageAndFriendModifiersCannotBeUsedTogether(modifier)
-                        .addToHolder(holder)
-                }
+        val allFunctions = module.allFunctions()
+        val friendFunctions = allFunctions.filter { it.visibility2 is Visibility2.Restricted.Friend }
+        val packageFunctions = allFunctions.filter { it.visibility2 is Visibility2.Restricted.Package }
+
+        if (friendFunctions.isNotEmpty() && packageFunctions.isNotEmpty()) {
+            for (function in friendFunctions.chain(packageFunctions)) {
+                val visibilityModifier = function.visibilityModifier ?: continue
+                Diagnostic
+                    .PackageAndFriendModifiersCannotBeUsedTogether(visibilityModifier)
+                    .addToHolder(holder)
             }
         }
     }

@@ -647,4 +647,32 @@ module 0x1::M {
             /*caret*/};
         }         
     """)
+
+    fun `test enum body`() = doTestByText("""
+        module 0x1::m {
+            enum S {/*caret*/}
+        }        
+    """, """
+        module 0x1::m {
+            enum S {
+                /*caret*/
+            }
+        }        
+    """)
+
+    fun `test match body`() = doTestByText("""
+        module 0x1::m {
+            fun main() {
+                match (s) {/*caret*/}
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                match (s) {
+                    /*caret*/
+                }
+            }
+        }        
+    """)
 }

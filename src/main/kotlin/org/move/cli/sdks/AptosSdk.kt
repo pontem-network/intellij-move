@@ -1,7 +1,7 @@
 package org.move.cli.sdks
 
 import com.intellij.openapi.util.SystemInfo
-import org.move.openapiext.PluginPathManager
+import org.move.openapiext.BundledAptosManager
 import java.io.File
 
 data class AptosSdk(val sdksDir: String, val version: String) {
@@ -13,7 +13,7 @@ data class AptosSdk(val sdksDir: String, val version: String) {
 
     val githubArchiveFileName: String
         get() {
-            return "aptos-cli-$version-${PluginPathManager.getCurrentOS()}-x86_64.zip"
+            return "aptos-cli-$version-${BundledAptosManager.getCurrentOS().title}-x86_64.zip"
         }
 
     val targetFile: File

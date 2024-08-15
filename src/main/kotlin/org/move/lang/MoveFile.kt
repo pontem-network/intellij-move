@@ -41,13 +41,14 @@ val PsiElement.moveProject: MoveProject? get() {
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 
-fun VirtualFile.toNioPathOrNull(): Path? {
-    try {
-        return this.toNioPath()
-    } catch (e: UnsupportedOperationException) {
-        return null
-    }
-}
+fun VirtualFile.toNioPathOrNull() = fileSystem.getNioPath(this)
+//fun VirtualFile.toNioPathOrNull(): Path? {
+//    try {
+//        return this.toNioPath()
+//    } catch (e: UnsupportedOperationException) {
+//        return null
+//    }
+//}
 
 fun PsiFile.toNioPathOrNull(): Path? {
     return this.originalFile.virtualFile?.toNioPathOrNull()

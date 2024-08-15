@@ -31,7 +31,11 @@ class MvPsiFactory(val project: Project) {
         createFromText("module 0x1::_M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
 
-    fun fieldPat(fieldName: String, binding: String): MvFieldPat =
+//    fun fieldPat(fieldName: String, binding: String): MvFieldPat =
+//        createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
+//            ?: error("Failed to create MvFieldPat")
+
+    fun fieldPatFull(fieldName: String, binding: String): MvFieldPatFull =
         createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
             ?: error("Failed to create MvFieldPat")
 

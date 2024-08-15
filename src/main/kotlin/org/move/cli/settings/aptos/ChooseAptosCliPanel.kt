@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory.ActionSelectionAid.SPEEDSEARCH
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.ui.components.DropDownLink
 import com.intellij.ui.components.JBRadioButton
@@ -24,7 +25,8 @@ import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.isValidExecutable
 import org.move.ide.actions.DownloadAptosSDKAction
 import org.move.ide.notifications.logOrShowBalloon
-import org.move.openapiext.PluginPathManager
+import org.move.openapiext.BundledAptosManager
+import org.move.openapiext.SUPPORTED_PLATFORMS
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
 import org.move.stdext.toPathOrNull
@@ -46,12 +48,12 @@ enum class AptosExecType {
                 return !SystemInfo.isMac
             }
 
-        fun bundledPath(): String? = PluginPathManager.bundledAptosCli
+        val bundledAptosCLIPath: Path? get() = BundledAptosManager.getBundledAptosPath()
 
         fun aptosExecPath(execType: AptosExecType, localAptosPath: String?): Path? {
             val pathCandidate =
                 when (execType) {
-                    BUNDLED -> bundledPath()?.toPathOrNull()
+                    BUNDLED -> bundledAptosCLIPath
                     LOCAL -> localAptosPath?.blankToNull()?.toPathOrNull()
                 }
             return pathCandidate?.takeIf { it.isValidExecutable() }
@@ -68,7 +70,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
 
     var data: Data
         get() {
-            val execType = if (bundledRadioButton.isSelected) BUNDLED else LOCAL
+            val execType = if (isBundledSelected) BUNDLED else LOCAL
             val path = localPathField.text.blankToNull()
             return Data(
                 aptosExecType = execType,
@@ -102,6 +104,8 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
 
     private val bundledRadioButton = JBRadioButton("Bundled")
     private val localRadioButton = JBRadioButton("Local")
+
+    private val isBundledSelected get() = bundledRadioButton.isSelected
 
     private val downloadPrecompiledBinaryAction = DownloadAptosSDKAction().also {
         it.onFinish = { sdk ->
@@ -183,10 +187,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
 
     private fun updateVersion() {
         val aptosPath =
-            when {
-                bundledRadioButton.isSelected -> AptosExecType.bundledPath()
-                else -> localPathField.text
-            }?.toPathOrNull()
+            if (isBundledSelected) AptosExecType.bundledAptosCLIPath else localPathField.text.toNioPathOrNull()
         versionLabel.updateAndNotifyListeners(aptosPath)
     }
 

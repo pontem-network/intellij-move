@@ -525,7 +525,7 @@ module 0x1::Main {
             module 0x1::main {
                 use 0x1::m::S;
                 struct S {}
-                fun main(s: <error descr="Unresolved type: `S`">/*caret*/S</error>) {}
+                fun main(s: <error descr="Unresolved type: `S`. Multiple items are found, resolution is ambiguous">/*caret*/S</error>) {}
             }
         """
     )
@@ -573,13 +573,13 @@ module 0x1::Main {
     }
 
     private inline fun doTest(action: () -> Unit) {
-        val inspection = inspection as MvUnresolvedReferenceInspection
-        val defaultValue = inspection.ignoreWithoutQuickFix
-        try {
-            inspection.ignoreWithoutQuickFix = false
-            action()
-        } finally {
-            inspection.ignoreWithoutQuickFix = defaultValue
-        }
+//        val inspection = inspection as MvUnresolvedReferenceInspection
+        action()
+//        val defaultValue = inspection.ignoreWithoutQuickFix
+//        try {
+//            inspection.ignoreWithoutQuickFix = false
+//        } finally {
+//            inspection.ignoreWithoutQuickFix = defaultValue
+//        }
     }
 }

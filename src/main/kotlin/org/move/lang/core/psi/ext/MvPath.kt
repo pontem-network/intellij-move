@@ -8,8 +8,7 @@ import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.ide.inspections.imports.BasePathType
 import org.move.ide.inspections.imports.basePathType
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvPath2Reference
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve2.ref.Path2ReferenceImpl
 import java.util.*
@@ -68,40 +67,79 @@ val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
-fun MvPath.allowedNamespaces(): Set<Namespace> {
-    val qualifierPath = this.path
-    val parentElement = this.parent
+//fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
+////    val qualifierPath = this.path
+////    val parentElement = this.parent
+//
+////    val qualNamespaces = when {
+////        // m::S, S::One
+////        // ^     ^
+////        parentElement is MvPath && qualifierPath == null -> setOf(MODULE, TYPE)
+////        // m::S::One
+////        // ^
+////        parentElement is MvPath && parentElement.parent is MvPath -> setOf(MODULE)
+////        // m::S::One
+////        //    ^
+////        parentElement is MvPath/* && qualifierPath != null*/ -> setOf(TYPE)
+////        else -> NONE
+////    }
+////    // m::S, S::One
+////    // ^     ^
+////    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
+////
+////    // m::S::One
+////    // ^
+////    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
+////
+////    // m::S::One
+////    //    ^
+////    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
+//
+////    val rootPath = this.rootPath()
+////    return qualNamespaces + rootPathNamespaces(rootPath, isCompletion)
+//    return this.itemPathNamespaces(isCompletion)
+//}
 
-    // m::S, S::One
-    // ^     ^
-    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
-
-    // m::S::One
-    // ^
-    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
-
-    // m::S::One
-    //    ^
-    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
-
+fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
+    val qualifier = this.path
+    val parent = this.parent
     return when {
-        parentElement is MvSchemaLit || parentElement is MvSchemaRef -> EnumSet.of(SCHEMA)
-        parentElement is MvPathType -> EnumSet.of(TYPE)
-        parentElement is MvCallExpr -> EnumSet.of(FUNCTION)
-        parentElement is MvRefExpr && this.hasAncestor<MvAttrItem>() -> EnumSet.of(NAME, MODULE)
-        parentElement is MvRefExpr -> EnumSet.of(NAME)
-        parentElement is MvStructLitExpr
-                || parentElement is MvStructPat
-                || parentElement is MvEnumVariantPat -> EnumSet.of(TYPE)
-        parentElement is MvAccessSpecifier -> EnumSet.of(TYPE)
-        parentElement is MvAddressSpecifierArg -> EnumSet.of(FUNCTION)
-        parentElement is MvAddressSpecifierCallParam -> EnumSet.of(NAME)
-        parentElement is MvFriendDecl -> EnumSet.of(MODULE)
-        parentElement is MvModuleSpec -> EnumSet.of(MODULE)
-        parentElement is MvUseSpeck -> Namespace.all()
+        // mod::foo::bar
+        //      ^
+        parent is MvPath && qualifier != null -> TYPES
+        // foo::bar
+        //  ^
+        parent is MvPath -> TYPES_N_MODULES
+        // use 0x1::foo::bar; | use 0x1::foo::{bar, baz}
+        //               ^                     ^
+        parent is MvUseSpeck -> ITEM_NAMESPACES
+        // a: bar
+        //     ^
+        parent is MvPathType && qualifier == null -> if (isCompletion) TYPES_N_MODULES else TYPES
+        // a: foo::bar
+        //         ^
+        parent is MvPathType && qualifier != null -> TYPES
+        parent is MvCallExpr -> FUNCTIONS
+        parent is MvRefExpr
+                && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
+
+        // can be anything in completion
+        parent is MvRefExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
+//        }
+        parent is MvSchemaLit
+                || parent is MvSchemaRef -> SCHEMAS
+        parent is MvStructLitExpr
+                || parent is MvStructPat
+                || parent is MvEnumVariantPat -> TYPES
+        parent is MvAccessSpecifier -> TYPES
+        parent is MvAddressSpecifierArg -> FUNCTIONS
+        parent is MvAddressSpecifierCallParam -> NAMES
+        parent is MvFriendDecl -> MODULES
+        parent is MvModuleSpec -> MODULES
+
         else -> debugErrorOrFallback(
-            "Cannot build path namespaces: unhandled parent type ${parentElement.elementType}",
-            EnumSet.of(NAME)
+            "Cannot build path namespaces: unhandled parent type ${parent?.elementType}",
+            NAMES
         )
     }
 }

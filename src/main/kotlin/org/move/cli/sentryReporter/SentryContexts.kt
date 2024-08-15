@@ -21,7 +21,7 @@ data class MoveProjectContext(
 ) {
     companion object {
         fun from(moveProject: MoveProject): MoveProjectContext {
-            val tomlFile = moveProject.currentPackage.moveToml.tomlFile
+            val tomlFile = moveProject.currentPackage.manifestTomlFile
 
             val rawDeps = mutableListOf<String>()
             val depsTable = tomlFile.getTable("dependencies")

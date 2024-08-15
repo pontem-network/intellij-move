@@ -81,3 +81,21 @@ fun MvElement.deleteWithSurroundingCommaAndWhitespace() {
 
 private val PsiElement.isWhitespaceOrComment
     get(): Boolean = this is PsiWhiteSpace || this is PsiComment
+
+/**
+ * It is possible to match value with constant-like element, e.g.
+ *      ```
+ *      enum Kind { A }
+ *      use Kind::A;
+ *      match kind { A => ... } // `A` is a constant-like element, not a pat binding
+ *      ```
+ *
+ * But there is no way to distinguish a pat binding from a constant-like element on syntax level,
+ * so we resolve an item `A` first, and then use [isConstantLike] to check whether the element is constant-like or not.
+ *
+ * Constant-like element can be: real constant, static variable, and enum variant without fields.
+ */
+val MvElement.isConstantLike: Boolean
+    get() = this is MvConst || (this is MvFieldsOwner && isFieldless)
+
+val MvElement.isFieldlessFieldsOwner get() = this is MvFieldsOwner && isFieldless

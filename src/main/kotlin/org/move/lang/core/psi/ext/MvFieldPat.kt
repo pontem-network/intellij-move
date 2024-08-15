@@ -1,22 +1,31 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvPolyVariantReference
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvFieldPat
+import org.move.lang.core.psi.MvPat
+import org.move.lang.core.psi.MvStructPat
 
 
-val MvFieldPat.structPat: MvStructPat
-    get() = ancestorStrict()!!
+val MvFieldPat.structPat: MvStructPat get() = ancestorStrict()!!
 
-val MvFieldPat.pat: MvPat? get() =
-    this.bindingPat ?: this.fieldPatBinding?.pat
+val MvFieldPat.fieldReferenceName: String
+    get() = if (this.fieldPatFull != null) {
+        this.fieldPatFull!!.referenceName
+    } else {
+        this.bindingPat!!.referenceName
+    }
 
-val MvFieldPat.isShorthand: Boolean get() = this.fieldPatBinding == null
+
+//val MvFieldPat.pat: MvPat?
+//    get() =
+//        this.bindingPat ?: this.fieldPatBinding?.pat
+
+//val MvFieldPat.isShorthand: Boolean get() = kind is PatFieldKind.Shorthand
 
 val MvFieldPat.kind: PatFieldKind
     get() = bindingPat?.let { PatFieldKind.Shorthand(it) }
-        ?: PatFieldKind.Full(this.identifier!!, this.fieldPatBinding?.pat!!)
+        ?: PatFieldKind.Full(fieldPatFull!!.referenceNameElement, fieldPatFull!!.pat)
 
 // PatField ::= identifier ':' Pat | box? PatBinding
 sealed class PatFieldKind {
@@ -41,18 +50,18 @@ val PatFieldKind.fieldName: String
         is PatFieldKind.Shorthand -> binding.name
     }
 
-abstract class MvFieldPatMixin(node: ASTNode): MvElementImpl(node),
-                                               MvFieldPat {
-    override val referenceNameElement: PsiElement
-        get() {
-            val bindingPat = this.bindingPat
-            if (bindingPat != null) {
-                return bindingPat.identifier
-            } else {
-                return this.identifier
-            }
-        }
-
-    override fun getReference(): MvPolyVariantReference =
-        MvFieldReferenceImpl(this, shorthand = this.isShorthand)
-}
+//abstract class MvFieldPatMixin(node: ASTNode): MvElementImpl(node),
+//                                               MvFieldPat {
+//    override val referenceNameElement: PsiElement
+//        get() {
+//            val bindingPat = this.bindingPat
+//            if (bindingPat != null) {
+//                return bindingPat.identifier
+//            } else {
+//                return this.identifier
+//            }
+//        }
+//
+//    override fun getReference(): MvPolyVariantReference =
+//        MvFieldReferenceImpl(this, shorthand = this.isShorthand)
+//}

@@ -23,7 +23,14 @@ data class ItemVisibilityInfo(
 
 fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityInfo {
     val visibility = (this as? MvVisibilityOwner)?.visibility2 ?: Public
-    return ItemVisibilityInfo(this, itemScopeAdjustment = adjustScope, vis = visibility)
+//    var isEntry = false
+//    if (this is MvFunction) {
+//        isEntry = (this as? MvFunction)?.isEntry ?: false
+//        if (!isEntry && this.visibilityModifier?.isPublicScript == true) {
+//            isEntry = true
+//        }
+//    }
+    return ItemVisibilityInfo(this, adjustScope, visibility)
 }
 
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
@@ -79,31 +86,50 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // types visibility is ignored, their correct usage is checked in a separate inspection
         if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
 
+//        if (item is MvFunction) {
+//            // check for isEntry scoping
+//            val containingFunction = methodOrPath.containingFunction
+//            if (containingFunction != null) {
+//                if (containingFunction.visInfo().isEntry) {
+//                    return@VisibilityFilter Visible
+//                }
+//            }
+//            if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
+//            return@VisibilityFilter Invisible
+//        }
+
         when (visibility) {
             is Restricted -> {
                 when (visibility) {
                     is Restricted.Friend -> {
                         if (pathModule != null) {
                             val friendModules = visibility.friendModules.value
-                            if (friendModules.any { isModulesEqual(it, pathModule) }) return@VisibilityFilter Visible
+                            if (friendModules.any {
+                                    isModulesEqual(
+                                        it,
+                                        pathModule
+                                    )
+                                }) return@VisibilityFilter Visible
                         }
                         Invisible
                     }
-                    is Restricted.Script -> {
-                        val containingFunction = methodOrPath.containingFunction
-                        if (containingFunction != null) {
-                            if (containingFunction.isEntry || containingFunction.isPublicScript
-                            ) return@VisibilityFilter Visible
-                        }
-                        if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
-                        Invisible
-                    }
+//                    is Restricted.Script -> {
+//                        val containingFunction = methodOrPath.containingFunction
+//                        if (containingFunction != null) {
+//                            if (containingFunction.isEntry || containingFunction.isPublicScript
+//                            ) return@VisibilityFilter Visible
+//                        }
+//                        if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
+//                        Invisible
+//                    }
                     is Restricted.Package -> {
                         if (!item.project.moveSettings.enablePublicPackage) {
                             return@VisibilityFilter Invisible
                         }
-                        val pathPackage = methodOrPath.containingMovePackage ?: return@VisibilityFilter Invisible
-                        if (visibility.originPackage == pathPackage) Visible else Invisible
+                        val pathPackage =
+                            methodOrPath.containingMovePackage ?: return@VisibilityFilter Invisible
+                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
+                        if (pathPackage == originPackage) Visible else Invisible
                     }
                 }
             }

@@ -31,6 +31,7 @@ jobs:
                     gradle-version: wrapper
                     cache-read-only: false
                     arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
+                    gradle-home-cache-cleanup: true
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
@@ -41,6 +42,7 @@ jobs:
                 with:
                     gradle-version: wrapper
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
+                    gradle-home-cache-cleanup: true
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
@@ -51,6 +53,7 @@ jobs:
                 with:
                     gradle-version: wrapper
                     arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
+                    gradle-home-cache-cleanup: true
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
@@ -61,6 +64,7 @@ jobs:
                 with:
                     gradle-version: wrapper
                     arguments: ":verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
+                    gradle-home-cache-cleanup: true
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
@@ -71,6 +75,7 @@ jobs:
                 with:
                     gradle-version: wrapper
                     arguments: ":verifyPlugin -Pkotlin.incremental=false --no-daemon"
+                    gradle-home-cache-cleanup: true
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea

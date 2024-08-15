@@ -62,10 +62,8 @@ private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
             }
             .map {
                 val sourceRoots = it.layoutPaths().mapNotNull { p -> p.toVirtualFile() }.toMutableSet()
-                val tomlFile = it.moveToml.tomlFile.virtualFile
-                sourceRoots.add(tomlFile)
-//                it.moveToml.tomlFile
-//                    .virtualFile.let { f -> sourceRoots.add(f) }
+//                val tomlFile = it.manifestFile
+                sourceRoots.add(it.manifestFile)
                 MoveLangLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
             }
 

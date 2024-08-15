@@ -3,7 +3,7 @@ package org.move.cli.runConfigurations.aptos
 import com.intellij.psi.SmartPsiElementPointer
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.allParamsAsBindings
+import org.move.lang.core.psi.parametersAsBindings
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.parameters
 import org.move.lang.core.psi.typeParameters
@@ -53,7 +53,7 @@ data class FunctionCall(
                 nullTypeParams[typeParameterName] = null
             }
 
-            val parameterBindings = function.allParamsAsBindings.drop(1)
+            val parameterBindings = function.parametersAsBindings.drop(1)
             val parameterNames = parameterBindings.map { it.name }
 
             val nullParams = mutableMapOf<String, FunctionCallParam?>()

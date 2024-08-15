@@ -29,7 +29,7 @@ val MvSchema.requiredTypeParams: List<MvTypeParameter>
 
 val MvSchema.fieldStmts: List<MvSchemaFieldStmt> get() = this.specBlock?.schemaFields().orEmpty()
 
-val MvSchema.fieldBindings get() = this.fieldStmts.map { it.bindingPat }
+val MvSchema.fieldsAsBindings get() = this.fieldStmts.map { it.bindingPat }
 
 val MvIncludeStmt.expr: MvExpr? get() = this.childOfType()
 

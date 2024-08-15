@@ -1,4 +1,6 @@
+script
 module
+
 module Std::
 
 script {
@@ -24,13 +26,11 @@ script {
     fun main() {
         use 0x0::
     }
-}
 
 script {
     use 0x0::Transaction::
 
     fun main() {}
-}
 
 script {
     use 0x0::Transaction::create
@@ -51,4 +51,16 @@ script {
     fun main() {}
 }
 
-/*
+module {
+    use 0x0::Transaction::create
+    use 0x0::Transaction::modify;
+
+    fun main() {}
+}
+
+module {
+    use 0x0::Transaction::create
+    use 0x0::Transaction::modify;
+
+    fun main() {}
+}

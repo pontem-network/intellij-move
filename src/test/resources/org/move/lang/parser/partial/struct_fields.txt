@@ -142,7 +142,9 @@ FILE
             PsiWhiteSpace(' ')
             PsiElement({)('{')
             PsiWhiteSpace(' ')
-            PsiElement(IDENTIFIER)('my')
+            MvFieldPatImpl(FIELD_PAT)
+              MvBindingPatImpl(BINDING_PAT)
+                PsiElement(IDENTIFIER)('my')
             PsiElement(:)(':')
             PsiErrorElement:<pattern> expected, got '}'
               <empty list>
@@ -165,7 +167,9 @@ FILE
             PsiWhiteSpace(' ')
             PsiElement({)('{')
             PsiWhiteSpace(' ')
-            PsiElement(IDENTIFIER)('my')
+            MvFieldPatImpl(FIELD_PAT)
+              MvBindingPatImpl(BINDING_PAT)
+                PsiElement(IDENTIFIER)('my')
             PsiElement(:)(':')
             PsiWhiteSpace(' ')
             PsiErrorElement:<pattern> expected, got ','
@@ -193,21 +197,25 @@ FILE
             PsiWhiteSpace(' ')
             PsiElement({)('{')
             PsiWhiteSpace(' ')
-            PsiElement(IDENTIFIER)('my')
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            PsiErrorElement:<pattern> expected, got ','
-              PsiElement(,)(',')
-            PsiWhiteSpace(' ')
-            PsiElement(IDENTIFIER)('my_field')
+            MvFieldPatImpl(FIELD_PAT)
+              MvBindingPatImpl(BINDING_PAT)
+                PsiElement(IDENTIFIER)('my')
             PsiElement(:)(':')
             PsiWhiteSpace(' ')
             PsiErrorElement:<pattern> expected, got ','
               PsiElement(,)(',')
             PsiWhiteSpace(' ')
             MvFieldPatImpl(FIELD_PAT)
-              PsiElement(IDENTIFIER)('my_field2')
-              MvFieldPatBindingImpl(FIELD_PAT_BINDING)
+              MvBindingPatImpl(BINDING_PAT)
+                PsiElement(IDENTIFIER)('my_field')
+            PsiElement(:)(':')
+            PsiWhiteSpace(' ')
+            PsiErrorElement:<pattern> expected, got ','
+              PsiElement(,)(',')
+            PsiWhiteSpace(' ')
+            MvFieldPatImpl(FIELD_PAT)
+              MvFieldPatFullImpl(FIELD_PAT_FULL)
+                PsiElement(IDENTIFIER)('my_field2')
                 PsiElement(:)(':')
                 PsiWhiteSpace(' ')
                 MvWildPatImpl(WILD_PAT)
@@ -234,7 +242,7 @@ FILE
             MvFieldPatImpl(FIELD_PAT)
               MvBindingPatImpl(BINDING_PAT)
                 PsiElement(IDENTIFIER)('my')
-            PsiErrorElement:',' or '}' expected, got 'myfield'
+            PsiErrorElement:',', ':' or '}' expected, got 'myfield'
               <empty list>
             PsiWhiteSpace(' ')
             MvFieldPatImpl(FIELD_PAT)
@@ -262,12 +270,12 @@ FILE
             MvFieldPatImpl(FIELD_PAT)
               MvBindingPatImpl(BINDING_PAT)
                 PsiElement(IDENTIFIER)('my')
-            PsiErrorElement:',' or '}' expected, got 'myfield'
+            PsiErrorElement:',', ':' or '}' expected, got 'myfield'
               <empty list>
             PsiWhiteSpace(' ')
             MvFieldPatImpl(FIELD_PAT)
-              PsiElement(IDENTIFIER)('myfield')
-              MvFieldPatBindingImpl(FIELD_PAT_BINDING)
+              MvFieldPatFullImpl(FIELD_PAT_FULL)
+                PsiElement(IDENTIFIER)('myfield')
                 PsiElement(:)(':')
                 PsiWhiteSpace(' ')
                 MvWildPatImpl(WILD_PAT)

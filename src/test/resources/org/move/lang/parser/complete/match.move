@@ -92,6 +92,10 @@ module 0x1::match {
             RGB{red, green, blue} => red != green && green != blue,
             Red => true,
             Blue => false,
+            One{i: _} => {}
+            _ => {}
+            One{i} if consume(i) => Outer::One{i},
+            o => o
         }
     }
 

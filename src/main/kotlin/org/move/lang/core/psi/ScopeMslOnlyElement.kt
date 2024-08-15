@@ -4,3 +4,4 @@ interface MslOnlyElement: MvElement
 
 interface ScopeMslOnlyElement : MslOnlyElement
 
+interface MvSpecOnlyExpr: MslOnlyElement
