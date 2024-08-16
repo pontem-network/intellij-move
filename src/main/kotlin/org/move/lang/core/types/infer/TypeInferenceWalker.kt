@@ -351,8 +351,8 @@ class TypeInferenceWalker(
             else -> innerExprTy
         }
 
-        val permissions = RefPermissions.valueOf(borrowExpr.isMut)
-        return TyReference(innerRefTy, permissions, ctx.msl)
+        val mutability = Mutability.valueOf(borrowExpr.isMut)
+        return TyReference(innerRefTy, mutability, ctx.msl)
     }
 
     private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
@@ -990,8 +990,9 @@ class TypeInferenceWalker(
                 if (ok) {
                     when {
                         ty1 is TyReference && ty2 is TyReference -> {
-                            val combined = ty1.permissions.intersect(ty2.permissions)
-                            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
+                            val minimalMut = ty1.mutability.intersect(ty2.mutability)
+//                            val combined = ty1.permissions.intersect(ty2.permissions)
+                            TyReference(ty1.referenced, minimalMut, ty1.msl || ty2.msl)
                         }
                         else -> ty1
                     }
@@ -1093,9 +1094,7 @@ class TypeInferenceWalker(
             (expected.containsTyOfClass(IGNORED_TYS) || inferred.containsTyOfClass(IGNORED_TYS))
         ) {
             // report errors with unknown types when &mut is needed, but & is present
-            if (!(expected.permissions.contains(RefPermissions.WRITE)
-                        && !inferred.permissions.contains(RefPermissions.WRITE))
-            ) {
+            if (!(expected.mutability.isMut && !inferred.mutability.isMut)) {
                 return
             }
         }

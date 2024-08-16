@@ -137,7 +137,7 @@ private fun render(
         is TyVector -> "vector<${r(ty.item)}>"
         is TyRange -> "range<${r(ty.item)}>"
         is TyReference -> {
-            val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
+            val prefix = if (ty.mutability.isMut) "&mut " else "&"
             "$prefix${r(ty.referenced)}"
         }
         is TyTypeParameter -> typeParam(ty)

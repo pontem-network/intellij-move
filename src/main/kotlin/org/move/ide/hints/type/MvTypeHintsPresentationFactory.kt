@@ -30,7 +30,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
 
     private fun referenceTypeHint(type: TyReference, level: Int): InlayPresentation =
         listOf(
-            text("&" + if (type.permissions.contains(RefPermissions.WRITE)) "mut " else ""),
+            text("&" + if (type.mutability.isMut) "mut " else ""),
             hint(type.referenced, level) // level is not incremented intentionally
         ).join()
 
