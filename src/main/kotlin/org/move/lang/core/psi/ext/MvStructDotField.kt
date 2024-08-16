@@ -3,6 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
+import org.move.lang.core.resolve.process
 import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
@@ -23,13 +24,20 @@ fun processNamedFieldVariants(
     return when (receiverItem) {
         is MvStruct -> processor.processAll(NONE, receiverItem.namedFields)
         is MvEnum -> {
-            var found = false
+            val visitedFields = mutableSetOf<String>()
             for (variant in receiverItem.variants) {
-                if (!found) {
-                    found = processor.processAll(NONE, variant.namedFields)
+                val visitedVariantFields = mutableSetOf<String>()
+                for (namedField in variant.namedFields) {
+                    val fieldName = namedField.name
+                    if (fieldName in visitedFields) continue
+                    if (processor.process(NONE, namedField)) return true
+                    // collect all names for the variant
+                    visitedVariantFields.add(fieldName)
                 }
+                // add variant fields to the global fields list to skip them in the next variants
+                visitedFields.addAll(visitedVariantFields)
             }
-            found
+            false
         }
         else -> error("unreachable")
     }
