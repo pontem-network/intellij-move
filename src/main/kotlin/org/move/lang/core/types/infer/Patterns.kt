@@ -2,6 +2,9 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.pickFirstResolveVariant
+import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.types.ty.*
 
 //fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
@@ -71,9 +74,29 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
         is MvBindingPat -> fctx.ctx.writePatTy(this, ty)
         is MvStructPat -> {
             fctx.ctx.writePatTy(this, ty)
-            val item = this.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-                ?: (ty as? TyAdt)?.item as? MvFieldsOwner
-                ?: return
+            val path = path
+            val item = when {
+                this.parent is MvMatchArm && path.path == null -> {
+                    // if we're inside match arm and no qualifier,
+                    // StructPat can only be a enum variant, resolve through type.
+                    // Otherwise there's a resolution cycle when we call the .resolve() method
+
+                    // NOTE: I think it can be replaced moving path resolution to the inference,
+                    // like it's done in intellij-rust
+                    val referenceName = path.referenceName ?: return
+                    val enumItem = (ty as? TyAdt)?.item as? MvEnum ?: return
+                    pickFirstResolveVariant(referenceName) {
+                        it.processAll(TYPES, enumItem.variants)
+                    } as? MvFieldsOwner
+                }
+                else -> {
+                    path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+                        ?: ((ty as? TyAdt)?.item as? MvStruct)
+                }
+            } ?: return
+//            val item = path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+//                ?: ((ty as? TyAdt)?.item as? MvStruct)
+//                ?: return
 
             if (item is MvTypeParametersOwner) {
                 val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return

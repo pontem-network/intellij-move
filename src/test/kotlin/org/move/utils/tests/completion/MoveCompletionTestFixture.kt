@@ -82,6 +82,30 @@ class MvCompletionTestFixture(
                 error("Expected completions that contain $expectedLookup, but got $lookupStrings")
             }
         }
+//        if (lookups.size > expectedLookups.size) {
+//            error("Too many completions. " +
+//                          "\n   Expected $expectedLookups, " +
+//                          "\n   actual $lookupStrings")
+//        }
+    }
+
+    fun checkContainsCompletionsExact(@Language("Move") code: String, expectedLookups: List<String>) {
+        prepare(code)
+        val lookups = myFixture.completeBasic()
+        checkNotNull(lookups) {
+            "Only a single completion returned, cannot be used with this test, " +
+                    "possibly change the test to doSingleCompletion()"
+        }
+
+        val lookupStrings = lookups.map { it.lookupString }
+        check(lookupStrings.isNotEmpty()) {
+            "Expected completions that contain $expectedLookups, but no completions found"
+        }
+        for (expectedLookup in expectedLookups) {
+            if (lookupStrings.all { it != expectedLookup }) {
+                error("Expected completions that contain $expectedLookup, but got $lookupStrings")
+            }
+        }
         if (lookups.size > expectedLookups.size) {
             error("Too many completions. " +
                           "\n   Expected $expectedLookups, " +

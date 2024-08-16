@@ -503,7 +503,7 @@ module 0x1::m {
                     //X
             fun main(s: S): bool {
                 match (s) {
-                    One -> true
+                    One => true
                    //^ 
                 }
             }
@@ -516,7 +516,7 @@ module 0x1::m {
                     //X
             fun main(s: S): bool {
                 match (s) {
-                    One { field } -> true
+                    One { field } => true
                    //^ 
                 }
             }
@@ -530,8 +530,62 @@ module 0x1::m {
                //X
             fun main(s: S): bool {
                 match (s) {
-                    S::One if consume() -> true
+                    S::One if consume() => true
                               //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match expr enum variant with presence of another of the same name 1`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+                     //X
+            enum S2 { One, Two }
+            fun main(s: S1) {
+                match (s) {
+                    One => true,
+                    //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match expr enum variant with presence of another of the same name 2`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One { field: u8 }, Two }
+                     //X
+            enum S2 { One { field: u8 }, Two }
+            fun main(s: S1) {
+                match (s) {
+                    One { field } => field,
+                    //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test unresolved enum variant if argument type does not have this variant 1`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+            enum S2 {}
+            fun main(s: S2) {
+                match (s) {
+                    One => true,
+                    //^ unresolved
+                }
+            }
+        }        
+    """)
+
+    fun `test unresolved enum variant if argument type does not have this variant 2`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One { field: u8 }, Two }
+            enum S2 {}
+            fun main(s: S2) {
+                match (s) {
+                    One { field } => true,
+                    //^ unresolved
                 }
             }
         }        

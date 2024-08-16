@@ -6,12 +6,16 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
-import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.NAME
+import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.ty.TyAdt
+import org.move.lang.core.types.ty.enumItem
 
 fun processItemsInScope(
     scope: MvElement,
@@ -27,12 +31,8 @@ fun processItemsInScope(
                 val found = when (scope) {
                     is MvModule -> {
                         // try enum variants first
-                        val found = processor.processAll(elementNs, scope.enumVariants())
-                        found || processor.processAllItems(
-                            elementNs,
-                            scope.structs(),
-                            scope.consts(),
-                        )
+//                        val found = processor.processAll(elementNs, scope.enumVariants())
+                        processor.processAllItems(elementNs, scope.structs(), scope.consts())
                     }
                     is MvModuleSpecBlock -> processor.processAllItems(elementNs, scope.schemaList)
                     is MvScript -> processor.processAllItems(elementNs, scope.constList)
@@ -47,10 +47,20 @@ fun processItemsInScope(
                         }
                     }
                     is MvMatchArm -> {
+                        // check whether it's a upper level binding pat => possible enum variant
+                        if (cameFrom is MvBindingPat) {
+                            val inference = scope.matchExpr.inference(false) ?: continue
+                            val enumItem =
+                                (inference.getBindingType(cameFrom) as? TyAdt)?.item as? MvEnum ?: continue
+
+                            if (processor.processAll(elementNs, enumItem.variants)) return true
+                            continue
+                        }
+
+                        // skip ones that come from lhs of match arm
                         if (cameFrom is MvPat) continue
-                        // only use those bindings for the match arm rhs
+
                         val matchBindings = scope.pat.bindings.toList()
-//                        val matchBindings = scope.matchPat.pat.bindings.toList()
                         processor.processAll(elementNs, matchBindings)
                     }
                     is MvItemSpec -> {
@@ -191,12 +201,26 @@ fun processItemsInScope(
                         }
                     }
                     is MvModule -> {
-                        val f = processor.processAll(elementNs, scope.enumVariants())
-                        f || processor.processAllItems(
-                            ns,
-                            scope.structs(),
-                            scope.enumList
-                        )
+//                        val f = processor.processAll(elementNs, scope.enumVariants())
+                        processor.processAllItems(TYPES, scope.structs(), scope.enumList)
+                    }
+                    is MvMatchArm -> {
+                        if (cameFrom is MvStructPat) {
+                            //match (s) {
+                            //    Inner { field } =>
+                            //     ^
+                            //}
+
+                            // skip if qualifier available
+                            if (cameFrom.path.path != null) continue
+
+                            val inference = scope.matchExpr.inference(false) ?: continue
+                            val enumItem = (inference.getPatType(cameFrom) as? TyAdt)?.enumItem ?: continue
+                            if (processor.processAll(TYPES, enumItem.variants)) return true
+
+                            continue
+                        }
+                        false
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()

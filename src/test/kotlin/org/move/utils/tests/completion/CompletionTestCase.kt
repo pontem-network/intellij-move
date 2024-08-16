@@ -37,6 +37,11 @@ abstract class CompletionTestCase: MvLightTestBase() {
         @Language("Move") code: String
     ) = completionFixture.checkContainsCompletion(code, variants)
 
+    protected fun checkContainsCompletionExact(
+        variants: List<String>,
+        @Language("Move") code: String
+    ) = completionFixture.checkContainsCompletionsExact(code, variants)
+
     protected fun checkCompletion(
         lookupString: String,
         @Language("Move") before: String,

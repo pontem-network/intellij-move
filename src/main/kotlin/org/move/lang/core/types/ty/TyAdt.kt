@@ -1,6 +1,8 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
+import org.move.lang.core.psi.MvEnum
+import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.typeParameters
@@ -37,3 +39,6 @@ data class TyAdt(
             return Substitution(typeSubst)
         }
 }
+
+val TyAdt.enumItem: MvEnum? get() = this.item as? MvEnum
+val TyAdt.structItem: MvStruct? get() = this.item as? MvStruct
