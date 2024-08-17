@@ -28,22 +28,22 @@ fun processStructLitFieldResolveVariants(
 }
 
 fun processStructPatFieldResolveVariants(
-    field: MvFieldPatFull,
+    field: MvPatFieldFull,
     processor: RsResolveProcessor
 ): Boolean {
-    val resolved = field.parentStructPat.path.reference?.resolveFollowingAliases()
+    val resolved = field.parentPatStruct.path.reference?.resolveFollowingAliases()
     val resolvedStruct = resolved as? MvFieldsOwner ?: return false
     return processFieldDeclarations(resolvedStruct, processor)
 }
 
 fun processBindingPatResolveVariants(
-    binding: MvBindingPat,
+    binding: MvPatBinding,
     isCompletion: Boolean,
     originalProcessor: RsResolveProcessor
 ): Boolean {
     // field pattern shorthand
-    if (binding.parent is MvFieldPat) {
-        val parentPat = binding.parent.parent as MvStructPat
+    if (binding.parent is MvPatField) {
+        val parentPat = binding.parent.parent as MvPatStruct
         val structItem = parentPat.path.reference?.resolveFollowingAliases()
         // can be null if unresolved
         if (structItem is MvFieldsOwner) {

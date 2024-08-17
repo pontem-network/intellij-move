@@ -107,7 +107,7 @@ abstract class CommandConfigurationHandler {
             transaction.typeParams[name] = value
         }
 
-        val parameterBindings = getFunctionParameters(function).map { it.bindingPat }
+        val parameterBindings = getFunctionParameters(function).map { it.patBinding }
         val inference = function.inference(false)
         for ((binding, valueWithType) in parameterBindings.zip(callArgs.args)) {
             val name = binding.name

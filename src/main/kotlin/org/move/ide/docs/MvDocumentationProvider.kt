@@ -33,7 +33,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (
-            docElement is MvBindingPat && docElement.owner is MvConst
+            docElement is MvPatBinding && docElement.owner is MvConst
         )
             docElement = docElement.owner
 
@@ -48,7 +48,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 return "$refName = \"$address\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
-            is MvBindingPat -> {
+            is MvPatBinding -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 val msl = docElement.isMslOnlyItem
                 val inference = docElement.inference(msl) ?: return null
@@ -177,7 +177,7 @@ private fun PsiElement.generateDocumentation(
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
 
         is MvFunctionParameter -> {
-            buffer += this.bindingPat.identifier.text
+            buffer += this.patBinding.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
 

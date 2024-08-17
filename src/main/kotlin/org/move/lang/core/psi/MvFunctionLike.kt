@@ -56,24 +56,24 @@ val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
-val MvFunctionLike.parametersAsBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
+val MvFunctionLike.parametersAsBindings: List<MvPatBinding> get() = this.parameters.map { it.patBinding }
 
-val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
+val MvFunctionLike.valueParamsAsBindings: List<MvPatBinding>
     get() {
         val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) !is TyLambda }
-            .map { it.bindingPat }
+            .map { it.patBinding }
     }
 
-val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
+val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
     get() {
         val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) is TyLambda }
-            .map { it.bindingPat }
+            .map { it.patBinding }
     }
 
 val MvFunctionLike.acquiresPathTypes: List<MvPathType>

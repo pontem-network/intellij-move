@@ -48,7 +48,7 @@ class MvRenameProcessor: RenamePsiElementProcessor() {
                     }
                 }
             }
-            is MvBindingPat -> {
+            is MvPatBinding -> {
                 val owner = element.owner
                 usages.forEach {
                     when (owner) {
@@ -82,11 +82,11 @@ class MvRenameProcessor: RenamePsiElementProcessor() {
 
         val elementParent = element.parent
         val elementToRename = when {
-            element is MvBindingPat && elementParent is MvFieldPat -> {
+            element is MvPatBinding && elementParent is MvPatField -> {
                 // replace { myval } -> { myval: myval }
                 val newFieldPat = psiFactory.fieldPatFull(element.referenceName, element.referenceName)
-                val newFieldPatInTree = elementParent.bindingPat?.replace(newFieldPat) as MvFieldPatFull
-                newFieldPatInTree.pat as MvBindingPat
+                val newFieldPatInTree = elementParent.patBinding?.replace(newFieldPat) as MvPatFieldFull
+                newFieldPatInTree.pat as MvPatBinding
             }
             else -> element
         }

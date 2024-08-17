@@ -15,7 +15,7 @@ val MvNamedElement.presentationInfo: PresentationInfo?
 
         val type = when (this) {
             is MvTypeParameter -> "type parameter"
-            is MvBindingPat -> {
+            is MvPatBinding -> {
                 val owner = this.owner
                 when (owner) {
                     is MvFunctionParameter -> "value parameter"

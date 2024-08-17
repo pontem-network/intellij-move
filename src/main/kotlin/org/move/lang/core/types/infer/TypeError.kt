@@ -98,12 +98,12 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     ) : TypeError(element) {
         override fun message(): String {
             return when {
-                element is MvStructPat &&
+                element is MvPatStruct &&
                         (assignedTy !is TyAdt && assignedTy !is TyTuple) -> {
                     "Assigned expr of type '${assignedTy.text(fq = false)}' " +
                             "cannot be unpacked with struct pattern"
                 }
-                element is MvTuplePat &&
+                element is MvPatTuple &&
                         (assignedTy !is TyAdt && assignedTy !is TyTuple) -> {
                     "Assigned expr of type '${assignedTy.text(fq = false)}' " +
                             "cannot be unpacked with tuple pattern"

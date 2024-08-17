@@ -11,12 +11,12 @@ interface MvQuantExpr : MvQuantBindingsOwner {
     val quantWhere: MvQuantWhere?
 }
 
-val MvQuantBindingsOwner.bindings: List<MvBindingPat>
-    get() = quantBindings?.quantBindingList.orEmpty().mapNotNull { it.bindingPat }
+val MvQuantBindingsOwner.bindings: List<MvPatBinding>
+    get() = quantBindings?.quantBindingList.orEmpty().mapNotNull { it.binding }
 
-val MvQuantBinding.bindingPat: MvBindingPat
+val MvQuantBinding.binding: MvPatBinding
     get() = when (this) {
-        is MvTypeQuantBinding -> this.bindingPat
-        is MvRangeQuantBinding -> this.bindingPat
+        is MvTypeQuantBinding -> this.patBinding
+        is MvRangeQuantBinding -> this.patBinding
         else -> error("unreachable")
     }

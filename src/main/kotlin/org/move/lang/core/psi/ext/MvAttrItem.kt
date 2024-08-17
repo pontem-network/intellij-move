@@ -17,7 +17,7 @@ class AttrItemReferenceImpl(
 
     override fun multiResolveInner(): List<MvNamedElement> {
         return ownerFunction.parameters
-            .map { it.bindingPat }
+            .map { it.patBinding }
             .filter { it.name == element.referenceName }
     }
 }

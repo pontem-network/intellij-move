@@ -13,7 +13,7 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitLetStmt(o: MvLetStmt) {
-                val bindings = o.pat?.descendantsOfType<MvBindingPat>().orEmpty()
+                val bindings = o.pat?.descendantsOfType<MvPatBinding>().orEmpty()
                 for (binding in bindings) {
                     checkUnused(binding, "Unused variable")
                 }
@@ -23,11 +23,11 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                 val functionLike = o.containingFunctionLike ?: return
                 if (functionLike.anyBlock == null) return
 
-                val binding = o.bindingPat
+                val binding = o.patBinding
                 checkUnused(binding, "Unused function parameter")
             }
 
-            private fun checkUnused(binding: MvBindingPat, description: String) {
+            private fun checkUnused(binding: MvPatBinding, description: String) {
                 if (binding.isMsl()) return
 
                 val bindingName = binding.name

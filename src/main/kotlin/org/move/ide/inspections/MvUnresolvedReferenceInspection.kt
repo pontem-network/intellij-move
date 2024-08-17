@@ -10,7 +10,6 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve2.PathKind.*
 import org.move.lang.core.resolve2.pathKind
-import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
@@ -50,18 +49,17 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             }
         }
 
-        override fun visitFieldPat(patField: MvFieldPat) {
+        override fun visitPatField(patField: MvPatField) {
             if (patField.isMsl() && !isDebugModeEnabled()) return
 
             // checked in another method
-            if (patField.fieldPatFull != null) return
+            if (patField.patFieldFull != null) return
 
-            patField.bindingPat
+            patField.patBinding
                 ?.let { tryMultiResolveOrRegisterError(it, holder) }
         }
 
-
-        override fun visitFieldPatFull(o: MvFieldPatFull) {
+        override fun visitPatFieldFull(o: MvPatFieldFull) {
             if (o.isMsl() && !isDebugModeEnabled())
                 return
             tryMultiResolveOrRegisterError(o, holder)
@@ -72,40 +70,12 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                 return
             }
             tryMultiResolveOrRegisterError(litField, holder)
-//
-//            if (litField.isShorthand) {
-//                val resolvedItems = litField.reference.multiResolve()
-//                val resolvedStructField = resolvedItems.find { it is MvNamedFieldDecl }
-//                if (resolvedStructField == null) {
-//                    holder.registerProblem(
-//                        litField.referenceNameElement,
-//                        "Unresolved field: `${litField.referenceName}`",
-//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-//                    )
-//                }
-//                val resolvedBinding = resolvedItems.find { it is MvBindingPat }
-//                if (resolvedBinding == null) {
-//                    holder.registerProblem(
-//                        litField.referenceNameElement,
-//                        "Unresolved reference: `${litField.referenceName}`",
-//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-//                    )
-//                }
-//            } else {
-//                if (litField.reference.resolve() == null) {
-//                    holder.registerProblem(
-//                        litField.referenceNameElement,
-//                        "Unresolved field: `${litField.referenceName}`",
-//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-//                    )
-//                }
-//            }
         }
 
         override fun visitSchemaLitField(field: MvSchemaLitField) {
             if (field.isShorthand) {
                 val resolvedItems = field.reference.multiResolve()
-                val fieldBinding = resolvedItems.find { it is MvBindingPat && it.owner is MvSchemaFieldStmt }
+                val fieldBinding = resolvedItems.find { it is MvPatBinding && it.owner is MvSchemaFieldStmt }
                 if (fieldBinding == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
@@ -113,7 +83,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
                 }
-                val letBinding = resolvedItems.find { it is MvBindingPat }
+                val letBinding = resolvedItems.find { it is MvPatBinding }
                 if (letBinding == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
@@ -167,7 +137,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
         val itemType = when {
             parent is MvPathType -> "type"
             parent is MvCallExpr -> "function"
-            parent is MvFieldPat -> "field"
+            parent is MvPatField -> "field"
             referenceElement is MvStructDotField -> "field"
             referenceElement is MvStructLitField -> "field"
             else -> "reference"

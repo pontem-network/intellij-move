@@ -55,7 +55,7 @@ val MvPath.isUpdateFieldArg2: Boolean
             .ancestorStrict<MvCallExpr>()
             ?.let { if (it.path.textMatches("update_field")) it else null }
             ?.let {
-                val expr = this.ancestorStrict<MvRefExpr>() ?: return@let -1
+                val expr = this.ancestorStrict<MvPathExpr>() ?: return@let -1
                 it.argumentExprs.indexOf(expr)
             }
         return ind == 1
@@ -120,17 +120,17 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         //         ^
         parent is MvPathType && qualifier != null -> TYPES
         parent is MvCallExpr -> FUNCTIONS
-        parent is MvRefExpr
+        parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
 
         // can be anything in completion
-        parent is MvRefExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
+        parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
 //        }
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
-                || parent is MvStructPat
-                || parent is MvConstPat -> TYPES
+                || parent is MvPatStruct
+                || parent is MvPatConst -> TYPES
         parent is MvAccessSpecifier -> TYPES
         parent is MvAddressSpecifierArg -> FUNCTIONS
         parent is MvAddressSpecifierCallParam -> NAMES

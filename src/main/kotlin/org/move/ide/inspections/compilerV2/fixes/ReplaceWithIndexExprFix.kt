@@ -21,7 +21,7 @@ class ReplaceWithIndexExprFix(expr: MvExpr): DiagnosticFix<MvExpr>(expr) {
         indexExpr.argExpr.replace(argParamExpr)
 
         val receiverExpr = when (receiverParamExpr) {
-            is MvRefExpr, is MvParensExpr -> receiverParamExpr
+            is MvPathExpr, is MvParensExpr -> receiverParamExpr
             is MvBorrowExpr -> receiverParamExpr.expr ?: return
             else -> project.psiFactory.wrapWithParens(receiverParamExpr)
         }

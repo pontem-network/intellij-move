@@ -12,7 +12,6 @@ import org.move.lang.core.resolve.ref.Namespace.NAME
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
-import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.enumItem
@@ -37,9 +36,9 @@ fun processItemsInScope(
                     is MvModuleSpecBlock -> processor.processAllItems(elementNs, scope.schemaList)
                     is MvScript -> processor.processAllItems(elementNs, scope.constList)
                     is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.bindingPatList)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.patBindingList)
                     is MvForExpr -> {
-                        val iterBinding = scope.forIterCondition?.bindingPat
+                        val iterBinding = scope.forIterCondition?.patBinding
                         if (iterBinding != null) {
                             processor.process(elementNs, iterBinding)
                         } else {
@@ -48,7 +47,7 @@ fun processItemsInScope(
                     }
                     is MvMatchArm -> {
                         // check whether it's a upper level binding pat => possible enum variant
-                        if (cameFrom is MvBindingPat) {
+                        if (cameFrom is MvPatBinding) {
                             val inference = scope.matchExpr.inference(false) ?: continue
                             val enumItem =
                                 (inference.getBindingType(cameFrom) as? TyAdt)?.item as? MvEnum ?: continue
@@ -70,7 +69,7 @@ fun processItemsInScope(
                                 processor.processAll(
                                     elementNs,
                                     specItem.valueParamsAsBindings,
-                                    specItem.specFunctionResultParameters.map { it.bindingPat },
+                                    specItem.specFunctionResultParameters.map { it.patBinding },
                                 )
                             }
                             is MvStruct -> processor.processAll(elementNs, specItem.fields)
@@ -170,7 +169,7 @@ fun processItemsInScope(
                         )
                     }
                     is MvFunctionLike -> processor.processAll(elementNs, scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.bindingPatList)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.patBindingList)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
@@ -205,7 +204,7 @@ fun processItemsInScope(
                         processor.processAllItems(TYPES, scope.structs(), scope.enumList)
                     }
                     is MvMatchArm -> {
-                        if (cameFrom is MvStructPat) {
+                        if (cameFrom is MvPatStruct) {
                             //match (s) {
                             //    Inner { field } =>
                             //     ^

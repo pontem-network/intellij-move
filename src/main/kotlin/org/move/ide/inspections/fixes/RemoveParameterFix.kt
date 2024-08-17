@@ -12,14 +12,14 @@ import org.move.lang.core.psi.ext.valueArguments
  * Fix that removes a parameter and all its usages at call sites.
  */
 class RemoveParameterFix(
-    binding: MvBindingPat,
+    binding: MvPatBinding,
     private val bindingName: String
-) : DiagnosticFix<MvBindingPat>(binding) {
+) : DiagnosticFix<MvPatBinding>(binding) {
 
     override fun getText() = "Remove parameter `$bindingName`"
     override fun getFamilyName() = "Remove parameter"
 
-    override fun invoke(project: Project, file: PsiFile, element: MvBindingPat) {
+    override fun invoke(project: Project, file: PsiFile, element: MvPatBinding) {
         val parameter = element.parent as? MvFunctionParameter ?: return
         val function = parameter.parentOfType<MvFunction>() ?: return
 

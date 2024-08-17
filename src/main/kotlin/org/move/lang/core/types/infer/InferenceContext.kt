@@ -66,11 +66,11 @@ interface InferenceData {
 
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrTyUnknown(pat)
 
-    fun getFieldPatType(fieldPat: MvFieldPat): Ty
+    fun getFieldPatType(fieldPat: MvPatField): Ty
 
-    fun getBindingType(binding: MvBindingPat): Ty =
+    fun getBindingType(binding: MvPatBinding): Ty =
         when (val parent = binding.parent) {
-            is MvFieldPat -> getFieldPatType(parent)
+            is MvPatField -> getFieldPatType(parent)
             else -> getPatType(binding)
         }
 }
@@ -78,12 +78,12 @@ interface InferenceData {
 data class InferenceResult(
     override val patTypes: Map<MvPat, Ty>,
 
-    val patFieldTypes: Map<MvFieldPat, Ty>,
+    val patFieldTypes: Map<MvPatField, Ty>,
 
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
-//    private val resolvedPaths: Map<MvPath, List<ResolvedPath>>,
+    private val resolvedPaths: Map<MvPath, List<ResolvedPath>>,
     private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     val callableTypes: Map<MvCallable, Ty>,
@@ -102,13 +102,12 @@ data class InferenceResult(
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
     fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
-//    fun getResolvedPath(path: MvPath): List<ResolvedPath> =
-//        resolvedPaths[path] ?: emptyList()
+    fun getResolvedPath(path: MvPath): List<ResolvedPath> = resolvedPaths[path] ?: emptyList()
 
     fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
 
-    override fun getFieldPatType(fieldPat: MvFieldPat): Ty =
+    override fun getFieldPatType(fieldPat: MvPatField): Ty =
         patFieldTypes[fieldPat] ?: TyUnknown
 }
 
@@ -173,7 +172,7 @@ class InferenceContext(
 ): InferenceData {
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
-    private val patFieldTypes = mutableMapOf<MvFieldPat, Ty>()
+    private val patFieldTypes = mutableMapOf<MvPatField, Ty>()
 
     private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
@@ -182,7 +181,7 @@ class InferenceContext(
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
-    //    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
+    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
     val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
 
@@ -238,13 +237,16 @@ class InferenceContext(
 //        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
         methodOrPathTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
+        resolvedPaths.values.asSequence().flatten()
+            .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
+
         return InferenceResult(
             patTypes,
             patFieldTypes,
             exprTypes,
             exprExpectedTypes,
             methodOrPathTypes,
-//            resolvedPaths,
+            resolvedPaths,
             resolvedFields,
             resolvedMethodCalls,
             callableTypes,
@@ -285,7 +287,7 @@ class InferenceContext(
         this.patTypes[pat] = ty
     }
 
-    fun writeFieldPatTy(psi: MvFieldPat, ty: Ty) {
+    fun writeFieldPatTy(psi: MvPatField, ty: Ty) {
         patFieldTypes[psi] = ty
     }
 
@@ -301,7 +303,7 @@ class InferenceContext(
 //        resolvedPaths[path] = resolved
 //    }
 
-    override fun getFieldPatType(fieldPat: MvFieldPat): Ty {
+    override fun getFieldPatType(fieldPat: MvPatField): Ty {
         return patFieldTypes[fieldPat] ?: TyUnknown
     }
 
@@ -525,6 +527,12 @@ class InferenceContext(
         }
     }
 }
+
+data class ResolvedPath(
+    val element: MvNamedElement,
+    val isVisible: Boolean,
+    var subst: Substitution = emptySubstitution,
+)
 
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }

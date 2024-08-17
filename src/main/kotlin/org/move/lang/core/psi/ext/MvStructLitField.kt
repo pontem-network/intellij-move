@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.SimpleScopeEntry
@@ -20,7 +19,7 @@ inline fun <reified T: MvElement> MvStructLitField.resolveToElement(): T? =
     reference.multiResolve().filterIsInstance<T>().singleOrNull()
 
 fun MvStructLitField.resolveToDeclaration(): MvNamedFieldDecl? = resolveToElement()
-fun MvStructLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
+fun MvStructLitField.resolveToBinding(): MvPatBinding? = resolveToElement()
 
 /**
  * ```
@@ -80,8 +79,8 @@ fun processStructRefFieldResolveVariants(
 private val MvFieldReferenceElement.fieldOwner: MvFieldsOwner?
     get() {
         return when (this) {
-            is MvFieldPat -> {
-                this.structPat.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+            is MvPatField -> {
+                this.patStruct.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
             }
             is MvStructLitField -> {
                 this.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner

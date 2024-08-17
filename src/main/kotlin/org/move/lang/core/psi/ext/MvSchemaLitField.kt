@@ -19,7 +19,7 @@ inline fun <reified T: MvElement> MvSchemaLitField.resolveToElement(): T? =
     reference.multiResolve().filterIsInstance<T>().singleOrNull()
 
 fun MvSchemaLitField.resolveToDeclaration(): MvSchemaFieldStmt? = resolveToElement()
-fun MvSchemaLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
+fun MvSchemaLitField.resolveToBinding(): MvPatBinding? = resolveToElement()
 
 //class MvSchemaFieldReferenceImpl(
 //    element: MvSchemaLitField

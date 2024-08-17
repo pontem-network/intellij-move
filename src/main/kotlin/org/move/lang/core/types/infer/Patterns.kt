@@ -6,7 +6,6 @@ import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
 import org.move.lang.core.resolve.pickFirstResolveVariant
 import org.move.lang.core.resolve.processAll
-import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
@@ -67,16 +66,31 @@ import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
 fun MvPat.anonymousTyVar(): Ty {
     return when (this) {
-        is MvBindingPat -> TyInfer.TyVar()
-        is MvTuplePat -> TyTuple(this.patList.map { TyInfer.TyVar() })
+        is MvPatBinding -> TyInfer.TyVar()
+        is MvPatTuple -> TyTuple(this.patList.map { TyInfer.TyVar() })
         else -> TyUnknown
     }
 }
 
-fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
+fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
     val msl = this.isMsl()
     when (this) {
-        is MvBindingPat -> {
+        is MvPatWild -> fcx.writePatTy(this, ty)
+        is MvPatConst -> {
+            // fills resolved paths
+            fcx.inferType(pathExpr)
+//            val path = pathExpr.path
+//            val inferred = fcx.inferType(pathExpr)
+//            fcx.getResolvedPath(path).singleOrNull()?.element
+            val expected = ty.stripReferences(defBm).first
+//            val expected = when (fcx.getResolvedPath(path).singleOrNull()?.element) {
+//                is RsConstant -> ty
+//                else -> ty.stripReferences(defBm).first
+//            }
+//            fcx.coerce(pathExpr, inferred, expected)
+            fcx.writePatTy(this, expected)
+        }
+        is MvPatBinding -> {
 //            val resolved = this.reference.resolve()
 //            val bindingType = if (resolved is MvEnumVariant) {
             // it should properly check for the enum variant, but now it's just checks for the proper parent
@@ -85,14 +99,11 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMod
             } else {
                 ty.applyBm(defBm, msl)
             }
-            fctx.ctx.writePatTy(this, bindingType)
+            fcx.ctx.writePatTy(this, bindingType)
         }
-        is MvConstPat -> {
-            fctx.ctx.writePatTy(this, ty)
-        }
-        is MvStructPat -> {
+        is MvPatStruct -> {
             val (expected, patBm) = ty.stripReferences(defBm)
-            fctx.ctx.writePatTy(this, expected)
+            fcx.ctx.writePatTy(this, expected)
 
             val item = when {
                 this.parent is MvMatchArm && path.path == null -> {
@@ -117,53 +128,53 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMod
 //                ?: ((ty as? TyAdt)?.item as? MvStruct)
 //                ?: return
 
-//            if (item is MvTypeParametersOwner) {
-//                val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
-//                if (!isCompatible(expected, patTy, fctx.msl)) {
-//                    fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
-//                }
-//            }
+            if (item is MvTypeParametersOwner) {
+                val (patTy, _) = fcx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
+                if (!isCompatible(expected, patTy, fcx.msl)) {
+                    fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+                }
+            }
 
             val structFields = item.fields.associateBy { it.name }
-            for (fieldPat in this.fieldPatList) {
+            for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
                 val fieldType = structFields[kind.fieldName]
                     ?.type
-                    ?.loweredType(fctx.msl)
+                    ?.loweredType(fcx.msl)
                     ?.substituteOrUnknown(ty.typeParameterValues)
 //                    ?.let { if (ty is TyReference) ty.transferReference(it) else it }
                     ?: TyUnknown
 
                 when (kind) {
                     is PatFieldKind.Full -> {
-                        kind.pat.collectBindings(fctx, fieldType, patBm)
-                        fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
+                        kind.pat.extractBindings(fcx, fieldType, patBm)
+                        fcx.ctx.writeFieldPatTy(fieldPat, fieldType)
                     }
                     is PatFieldKind.Shorthand -> {
 //                        kind.binding.collectBindings(fctx, fieldType)
-                        fctx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm, msl))
+                        fcx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm, msl))
                     }
                 }
 //                fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
             }
         }
-        is MvTuplePat -> {
+        is MvPatTuple -> {
             if (patList.size == 1 && ty !is TyTuple) {
                 // let (a) = 1;
                 // let (a,) = 1;
-                patList.single().collectBindings(fctx, ty)
+                patList.single().extractBindings(fcx, ty)
                 return
             }
             val patTy = TyTuple.unknown(patList.size)
-            val expectedTypes = if (!isCompatible(ty, patTy, fctx.msl)) {
-                fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+            val expectedTypes = if (!isCompatible(ty, patTy, fcx.msl)) {
+                fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
                 emptyList()
             } else {
                 (ty as? TyTuple)?.types.orEmpty()
             }
             for ((idx, p) in patList.withIndex()) {
                 val patType = expectedTypes.getOrNull(idx) ?: TyUnknown
-                p.collectBindings(fctx, patType)
+                p.extractBindings(fcx, patType)
             }
         }
     }

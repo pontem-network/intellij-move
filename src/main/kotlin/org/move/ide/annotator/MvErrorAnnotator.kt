@@ -95,7 +95,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             // 1 for self
                             callTy.paramTypes.size - 1
                         }
-                        is MvAssertBangExpr -> {
+                        is MvAssertMacroExpr -> {
                             if (parentCallable.identifier.text == "assert") {
                                 2
                             } else {
@@ -132,7 +132,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 }
             }
 
-            override fun visitStructPat(o: MvStructPat) {
+            override fun visitPatStruct(o: MvPatStruct) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
                 checkMissingFields(

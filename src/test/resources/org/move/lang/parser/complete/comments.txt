@@ -81,7 +81,7 @@ FILE
         MvLetStmtImpl(LET_STMT)
           PsiElement(let)('let')
           PsiWhiteSpace(' ')
-          MvWildPatImpl(WILD_PAT)
+          MvPatWildImpl(PAT_WILD)
             PsiElement(IDENTIFIER)('_')
           PsiWhiteSpace(' ')
           MvInitializerImpl(INITIALIZER)

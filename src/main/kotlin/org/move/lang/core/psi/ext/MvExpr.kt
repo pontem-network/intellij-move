@@ -10,7 +10,7 @@ val MvExpr.isAtomExpr: Boolean get() =
             || this is MvDotExpr
             || this is MvIndexExpr
             || this is MvCallExpr
-            || this is MvRefExpr
+            || this is MvPathExpr
             || this is MvLambdaExpr
             || this is MvLitExpr
             || this is MvCodeBlockExpr
@@ -21,7 +21,7 @@ val MvIndexExpr.argExpr: MvExpr get() = exprList.drop(1).first()
 
 val MvExpr.declaration: MvElement?
     get() = when (this) {
-        is PathExpr -> path.reference?.resolve()
+        is PathElement -> path.reference?.resolve()
         is MvDotExpr -> expr.declaration
         is MvIndexExpr -> receiverExpr.declaration
         else -> null

@@ -103,7 +103,7 @@ FILE
               MvAbortsIfWithImpl(ABORTS_IF_WITH)
                 PsiElement(with_kw)('with')
                 PsiWhiteSpace(' ')
-                MvRefExprImpl(REF_EXPR)
+                MvPathExprImpl(PATH_EXPR)
                   MvPathImpl(PATH)
                     MvPathImpl(PATH)
                       PsiElement(IDENTIFIER)('error')

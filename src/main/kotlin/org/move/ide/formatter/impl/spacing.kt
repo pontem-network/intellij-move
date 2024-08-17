@@ -60,7 +60,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .parentDependentLFSpacing(1, 1, true, 0)
         .beforeInside(R_BRACE, FLAT_BRACE_BLOCKS)
         .parentDependentLFSpacing(1, 1, true, 0)
-        .withinPairInside(L_BRACE, R_BRACE, STRUCT_PAT)
+        .withinPairInside(L_BRACE, R_BRACE, PAT_STRUCT)
         .spacing(1, 1, 0, true, 0)
 
 //        .afterInside(L_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)).spaces(1)

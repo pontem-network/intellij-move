@@ -5,10 +5,10 @@ import com.intellij.psi.util.descendantsOfType
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.psi.MvRefExpr
+import org.move.lang.core.psi.MvPathExpr
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.MvInferenceContextOwner
@@ -52,7 +52,7 @@ abstract class TypificationTestCase : MvTestBase() {
 
     protected fun testRefExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
         InlineFile(myFixture, code, "main.move")
-        checkExpr<MvRefExpr>()
+        checkExpr<MvPathExpr>()
         if (!allowErrors) checkNoInferenceErrors()
         checkAllExpressionsTypified()
     }
@@ -67,7 +67,7 @@ abstract class TypificationTestCase : MvTestBase() {
 //        allowErrors: Boolean = false
     ) {
         InlineFile(myFixture, code, "main.move")
-        val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvBindingPat>()
+        val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvPatBinding>()
         val expectedType = data.trim()
 
         val msl = bindingPat.isMsl()

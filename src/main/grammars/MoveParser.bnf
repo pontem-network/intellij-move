@@ -16,8 +16,7 @@
     tokenTypeClass="org.move.lang.core.MvTokenType"
 
     extends(".*Expr")=Expr
-    extends("(Struct|Binding|Tuple|Wild|Const)Pat")=Pat
-//    extends(".*Pat")=Pat
+    extends("Pat(Struct|Binding|Tuple|Wild|Const)")=Pat
     extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
@@ -25,7 +24,7 @@
 
     name(".+BinOp")="operator"
     name(".*Expr")="expression"
-    name(".*Pat")="pattern"
+    name("Pat*")="pattern"
 
     extraRoot(".*CodeFragmentElement")=true
 
@@ -494,7 +493,7 @@ private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter 
 }
 private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-FunctionParameter ::= BindingPat TypeAnnotation {
+FunctionParameter ::= PatBinding TypeAnnotation {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
@@ -672,19 +671,27 @@ TypeArgument ::= Type
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pat ::= TuplePat
-        | StructPat
-        | WildPat
-        | BindingPat
-        | ConstPat
+//Pat ::= TuplePat
+//        | StructPat
+//        | WildPat
+//        | BindingPat
+//        | ConstPat
+
+Pat ::= PatWild
+        | PatTuple
+        | PatBinding
+        | PatStruct
+        | PatConst
 
 MatchPat ::= Pat | PathPat
 PathPat ::= PathImpl
 EnumVariantPat ::= PathImpl
 
+PatWild ::= '_'
 WildPat ::= '_'
 
 ConstPat ::= PathImpl
+PatConst ::= PathExpr
 
 
 // XXX(matklad): it is impossible to distinguish between nullary enum variants
@@ -694,45 +701,53 @@ ConstPat ::= PathImpl
 //       None => { } // match enum variant
 //       Name => { } // bind Name to x
 //   }
-BindingPat ::= IDENTIFIER !ForbiddenBindingPatLast {
+PatIdent ::= PatBinding
+PatBinding ::= IDENTIFIER !ForbiddenPatBindingLast {
     implements = [
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
         "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvBindingPatMixin"
+    mixin = "org.move.lang.core.psi.ext.MvPatBindingMixin"
 }
+BindingPat ::= IDENTIFIER !ForbiddenPatBindingLast
+
 //private ForbiddenBindingPatLast ::= '...' | '::' | '..=' | '..' | '<' | '(' | '{' | '!' {
-private ForbiddenBindingPatLast ::= '::' | '<' | '(' | '{' | '!' {
+private ForbiddenPatBindingLast ::= '::' | '<' | '(' | '{' | '!' {
   consumeTokenMethod = "consumeTokenFast"
 }
 
 TuplePat ::= '(' ParenListElemPat_with_recover* ')'
+PatTuple ::= '(' ParenListElemPat_with_recover* ')'
 private ParenListElemPat_with_recover ::= !')' Pat (',' | &')') {
   pin = 1
   recoverWhile = ParenListElemPat_recover
 }
 private ParenListElemPat_recover ::= !(')' | Pat_first)
 
-StructPat ::= PathImpl '{' FieldPat_with_recover* '}'
+StructPat ::= PathImpl '{' PatField_with_recover* '}'
+PatStruct ::= PathImpl '{' PatField_with_recover* '}'
 //StructPatFieldsBlock ::= '{' FieldPat_with_recover* '}'
 
-private FieldPat_with_recover ::= !'}' FieldPat (',' | &'}')
+private PatField_with_recover ::= !'}' PatField (',' | &'}')
 {
     pin = 1
-    recoverWhile = FieldPat_recover
+    recoverWhile = PatField_recover
 
 }
-private FieldPat_recover ::= !('}' | IDENTIFIER)
+private PatField_recover ::= !('}' | IDENTIFIER)
 
-FieldPatFull ::= IDENTIFIER ':' Pat
+PatFieldFull ::= IDENTIFIER ':' Pat
 {
     implements = [
 //        "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
         "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvFieldPatFullMixin"
+    mixin = "org.move.lang.core.psi.ext.MvPatFieldFullMixin"
 }
-FieldPat ::= FieldPatFull | BindingPat
+FieldPatFull ::= IDENTIFIER ':' Pat
+
+PatField ::= PatFieldFull | PatBinding
+FieldPat ::= PatFieldFull | PatBinding
 
 //FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
 //{
@@ -881,8 +896,11 @@ private AtomExpr ::=
                     | VectorLitExpr
                     | DotExpr
                     | IndexExpr
-                    | (CallExpr | AssertBangExpr)
-                    | RefExpr
+                    | PathExpr
+                    | CallExpr
+                    | AssertMacroExpr
+//                    | (CallExpr | AssertExpr)
+//                    | RefExpr
                     | LambdaExpr
                     | LitExpr
                     | CodeBlockExpr
@@ -965,7 +983,7 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-VectorLitExpr ::= <<VECTOR_IDENTIFIER>> ('<' TypeArgument '>')? VectorLitItems
+VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
 VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
 {
     pin = 1
@@ -973,7 +991,7 @@ VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
 
 StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
 {
-    implements = ["org.move.lang.core.psi.PathExpr"]
+    implements = ["org.move.lang.core.psi.PathElement"]
 }
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
@@ -1011,7 +1029,7 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
     elementType = TupleLitExpr
 }
 
-LambdaExpr ::= '|' <<non_empty_comma_sep_items BindingPat>> '|' Expr { pin = 1 }
+LambdaExpr ::= '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr { pin = 1 }
 
 RangeExpr ::= Expr dotdot Expr { pin = 2 }
 
@@ -1033,10 +1051,10 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= (PathImpl &'(') ValueArgumentList {
-    pin = 1
+CallExpr ::= PathImpl !'!' ValueArgumentList {
+//    pin = 2
     implements = [
-        "org.move.lang.core.psi.PathExpr"
+        "org.move.lang.core.psi.PathElement"
         "org.move.lang.core.psi.ext.MvCallable"
         "org.move.lang.core.psi.MvAcquireTypesOwner"
     ]
@@ -1093,7 +1111,7 @@ ForExpr ::= for ForIterCondition AnyBlock {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
-ForIterCondition ::= '(' BindingPat in Expr ')' {
+ForIterCondition ::= '(' PatBinding in Expr ')' {
     pin = 1
 }
 
@@ -1109,7 +1127,7 @@ private DotExpr_inner ::= '.' !('.' | VectorStart) (MethodCall | StructDotField)
     consumeTokenMethod = "consumeTokenFast"
 }
 
-private VectorStart ::= (<<VECTOR_IDENTIFIER>> ('[' | '<'))
+private VectorStart ::= (<<vectorIdent>> ('[' | '<'))
 
 StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
 {
@@ -1134,10 +1152,10 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= PathImpl !'{' {
+//RefExpr ::= PathImpl !'{' {
 //RefExpr ::= Path !'{' {
-    implements = ["org.move.lang.core.psi.PathExpr"]
-}
+//    implements = ["org.move.lang.core.psi.PathExpr"]
+//}
 
 //Path3Impl ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 //{
@@ -1147,6 +1165,12 @@ RefExpr ::= PathImpl !'{' {
 //    ]
 //    mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 //}
+
+PathExpr ::= PathImpl !('(' | '!')
+{
+    implements = [ "org.move.lang.core.psi.PathElement" ]
+}
+RefExpr ::= PathImpl
 
 fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
 {
@@ -1203,10 +1227,11 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList {
-    pin = 2
+AssertMacroExpr ::= <<assertIdent>> '!' ValueArgumentList {
+//    pin = 2
     implements = [ "org.move.lang.core.psi.ext.MvCallable" ]
 }
+AssertBangExpr ::= <<assertIdent>> '!' ValueArgumentList
 //AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
 //MacroIdent ::= IDENTIFIER '!'
 
@@ -1381,7 +1406,7 @@ private SpecStmt ::= UseStmt
                        | LetMslStmt
                        | SpecExprStmt
 
-fake SchemaFieldStmt ::= local? BindingPat TypeAnnotation ';'
+fake SchemaFieldStmt ::= local? PatBinding TypeAnnotation ';'
 {
     implements = [
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
@@ -1391,11 +1416,11 @@ fake SchemaFieldStmt ::= local? BindingPat TypeAnnotation ';'
 
 private SchemaFieldStmtImpl ::= SchemaFieldStmt_local | SchemaFieldStmt_simple
 
-SchemaFieldStmt_simple ::= BindingPat TypeAnnotation ';' {
+SchemaFieldStmt_simple ::= PatBinding TypeAnnotation ';' {
     pin = 2
     elementType = SchemaFieldStmt
 }
-SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
+SchemaFieldStmt_local ::= local PatBinding TypeAnnotation ';' {
     pin = 1
     elementType = SchemaFieldStmt
 }
@@ -1655,11 +1680,11 @@ QuantBinding ::= RangeQuantBinding | TypeQuantBinding
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
 
-RangeQuantBinding ::= BindingPat in Expr {
+RangeQuantBinding ::= PatBinding in Expr {
     pin = 2
     extends = QuantBinding
 }
-TypeQuantBinding ::= BindingPat ':' Type {
+TypeQuantBinding ::= PatBinding ':' Type {
     pin = 2
     extends = QuantBinding
 }
