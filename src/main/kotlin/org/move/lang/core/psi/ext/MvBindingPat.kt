@@ -11,6 +11,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve2.ref.MvBindingPatReferenceImpl
+import org.move.lang.core.types.ty.Mutability
+import org.move.lang.core.types.ty.Mutability.IMMUTABLE
+import org.move.lang.core.types.ty.Mutability.MUTABLE
 import javax.swing.Icon
 
 val MvBindingPat.owner: PsiElement?
@@ -19,6 +22,13 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvFunctionParameter
                 || it is MvSchemaFieldStmt
     }
+
+sealed class RsBindingModeKind {
+    data object BindByValue : RsBindingModeKind()
+    class BindByReference(val mutability: Mutability) : RsBindingModeKind()
+}
+
+val MvBindingPat.kind get() = RsBindingModeKind.BindByValue
 
 abstract class MvBindingPatMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {

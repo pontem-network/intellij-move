@@ -2,10 +2,14 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
+import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
 import org.move.lang.core.resolve.pickFirstResolveVariant
 import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
 //fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
 //    fun bind(pat: MvPat, ty: Ty) {
@@ -69,12 +73,27 @@ fun MvPat.anonymousTyVar(): Ty {
     }
 }
 
-fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
+fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
+    val msl = this.isMsl()
     when (this) {
-        is MvBindingPat -> fctx.ctx.writePatTy(this, ty)
-        is MvStructPat -> {
+        is MvBindingPat -> {
+//            val resolved = this.reference.resolve()
+//            val bindingType = if (resolved is MvEnumVariant) {
+            // it should properly check for the enum variant, but now it's just checks for the proper parent
+            val bindingType = if (this.parent is MvMatchArm) {
+                ty.stripReferences(defBm).first
+            } else {
+                ty.applyBm(defBm, msl)
+            }
+            fctx.ctx.writePatTy(this, bindingType)
+        }
+        is MvConstPat -> {
             fctx.ctx.writePatTy(this, ty)
-            val path = path
+        }
+        is MvStructPat -> {
+            val (expected, patBm) = ty.stripReferences(defBm)
+            fctx.ctx.writePatTy(this, expected)
+
             val item = when {
                 this.parent is MvMatchArm && path.path == null -> {
                     // if we're inside match arm and no qualifier,
@@ -84,26 +103,26 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
                     // NOTE: I think it can be replaced moving path resolution to the inference,
                     // like it's done in intellij-rust
                     val referenceName = path.referenceName ?: return
-                    val enumItem = (ty as? TyAdt)?.item as? MvEnum ?: return
+                    val enumItem = (expected as? TyAdt)?.item as? MvEnum ?: return
                     pickFirstResolveVariant(referenceName) {
                         it.processAll(TYPES, enumItem.variants)
                     } as? MvFieldsOwner
                 }
                 else -> {
                     path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-                        ?: ((ty as? TyAdt)?.item as? MvStruct)
+                        ?: ((expected as? TyAdt)?.item as? MvStruct)
                 }
             } ?: return
 //            val item = path.reference?.resolveFollowingAliases() as? MvFieldsOwner
 //                ?: ((ty as? TyAdt)?.item as? MvStruct)
 //                ?: return
 
-            if (item is MvTypeParametersOwner) {
-                val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
-                if (!isCompatible(ty.derefIfNeeded(), patTy, fctx.msl)) {
-                    fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
-                }
-            }
+//            if (item is MvTypeParametersOwner) {
+//                val (patTy, _) = fctx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
+//                if (!isCompatible(expected, patTy, fctx.msl)) {
+//                    fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+//                }
+//            }
 
             val structFields = item.fields.associateBy { it.name }
             for (fieldPat in this.fieldPatList) {
@@ -112,14 +131,20 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
                     ?.type
                     ?.loweredType(fctx.msl)
                     ?.substituteOrUnknown(ty.typeParameterValues)
-                    ?.let { if (ty is TyReference) ty.transferReference(it) else it }
+//                    ?.let { if (ty is TyReference) ty.transferReference(it) else it }
                     ?: TyUnknown
 
                 when (kind) {
-                    is PatFieldKind.Full -> kind.pat.collectBindings(fctx, fieldType)
-                    is PatFieldKind.Shorthand -> kind.binding.collectBindings(fctx, fieldType)
+                    is PatFieldKind.Full -> {
+                        kind.pat.collectBindings(fctx, fieldType, patBm)
+                        fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
+                    }
+                    is PatFieldKind.Shorthand -> {
+//                        kind.binding.collectBindings(fctx, fieldType)
+                        fctx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm, msl))
+                    }
                 }
-                fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
+//                fctx.ctx.writeFieldPatTy(fieldPat, fieldType)
             }
         }
         is MvTuplePat -> {
@@ -144,125 +169,24 @@ fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
     }
 }
 
-//private fun MvBindingPat.inferType(expected: Ty, /*defBm: RsBindingModeKind*/): Ty {
-////    val bm = run {
-////        val bm = kind
-////        if (bm is BindByValue && bm.mutability == IMMUTABLE) {
-////            defBm
-////        } else {
-////            bm
-////        }
-////    }
-////    return if (bm is BindByReference) TyReference(expected, bm.mutability) else expected
-//    return expected
+private fun Ty.applyBm(defBm: RsBindingModeKind, msl: Boolean): Ty =
+    if (defBm is BindByReference) TyReference(this, defBm.mutability, msl) else this
+
+//private fun MvBindingPat.inferType(expected: Ty, defBm: RsBindingModeKind, msl: Boolean): Ty {
+//    return if (defBm is BindByReference) TyReference(expected, defBm.mutability, msl) else expected
 //}
 
-
-//fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null): Ty {
-//    val existingTy = parentCtx.patTypes[pat]
-//    if (existingTy != null) {
-//        return existingTy
-//    }
-//    val patTy = when (pat) {
-//        is MvStructPat -> inferStructPatTy(pat, parentCtx, expectedTy)
-//        is MvTuplePat -> {
-//            val tupleTy = TyTuple(pat.patList.map { TyUnknown })
-//            if (expectedTy != null) {
-//                if (isCompatible(expectedTy, tupleTy)) {
-//                    if (expectedTy is TyTuple) {
-//                        val itemTys = pat.patList.mapIndexed { i, itemPat ->
-//                            inferPatTy(
-//                                itemPat,
-//                                parentCtx,
-//                                expectedTy.types[i]
-//                            )
-//                        }
-//                        return TyTuple(itemTys)
-//                    }
-//                } else {
-//                    parentCtx.typeErrors.add(TypeError.InvalidUnpacking(pat, expectedTy))
-//                }
-//            }
-//            TyUnknown
-//        }
-//        is MvBindingPat -> {
-//            val ty = expectedTy ?: TyUnknown
-////            parentCtx.bindingTypes[pat] = ty
-//            parentCtx.patTypes[pat] = ty
-//            ty
-//        }
-//        else -> TyUnknown
-//    }
-//    parentCtx.writePatTy(pat, patTy)
-//    return patTy
-//}
-
-//fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expectedTy: Ty?): Ty {
-//    val path = structPat.path
-//    val structItem = structPat.structItem ?: return TyUnknown
-//
-//    val structTy = structItem.outerItemContext(parentCtx.msl).getStructItemTy(structItem)
-//        ?: return TyUnknown
-//
-//    val inferenceCtx = InferenceContext(parentCtx.msl, parentCtx.itemContext)
-//    // find all types passed as explicit type parameters, create constraints with those
-//    if (path.typeArguments.isNotEmpty()) {
-//        if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
-//        for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
-//            val typeArgTy = parentCtx.getTypeTy(typeArg.type)
-//
-//            // check compat for abilities
-//            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMslLegacy())
-//            val isCompat = when (compat) {
-//                is Compat.AbilitiesMismatch -> {
-//                    parentCtx.typeErrors.add(
-//                        TypeError.AbilitiesMismatch(
-//                            typeArg,
-//                            typeArgTy,
-//                            compat.abilities
-//                        )
-//                    )
-//                    false
-//                }
-//
-//                else -> true
-//            }
-//            inferenceCtx.registerEquateObligation(typeVar, if (isCompat) typeArgTy else TyUnknown)
-//        }
-//    }
-//    if (expectedTy != null) {
-//        if (isCompatible(expectedTy, structTy)) {
-//            inferenceCtx.registerEquateObligation(structTy, expectedTy)
-//        } else {
-//            parentCtx.typeErrors.add(TypeError.InvalidUnpacking(structPat, expectedTy))
-//        }
-//    }
-//    inferenceCtx.processConstraints()
-//    parentCtx.resolveTyVarsFromContext(inferenceCtx)
-//    return inferenceCtx.resolveTy(structTy)
-//}
-
-//fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext): Ty {
-//    val owner = bindingPat.owner
-//    return when (owner) {
-//        is MvFunctionParameter -> {
-//            owner.type
-//                ?.let { parentCtx.getTypeTy(it) }
-//                ?: TyUnknown
-//        }
-//        is MvLetStmt -> {
-//            val pat = owner.pat ?: return TyUnknown
-//            val explicitType = owner.typeAnnotation?.type
-//            if (explicitType != null) {
-//                val explicitTy = parentCtx.getTypeTy(explicitType)
-//                collectBindings(pat, explicitTy, parentCtx)
-//                return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
-//            }
-//            val inferredTy = owner.initializer?.expr?.let { inferExprTyOld(it, parentCtx) } ?: TyUnknown
-//            collectBindings(pat, inferredTy, parentCtx)
-//            return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
-//        }
-//        is MvSchemaFieldStmt -> owner.annotationTy(parentCtx)
-//        else -> TyUnknown
-//    }
-//}
+private fun Ty.stripReferences(defBm: RsBindingModeKind): Pair<Ty, RsBindingModeKind> {
+    var bm = defBm
+    var ty = this
+    while (ty is TyReference) {
+        bm = when (bm) {
+            is BindByValue -> BindByReference(ty.mutability)
+            is BindByReference -> BindByReference(
+                if (bm.mutability == IMMUTABLE) IMMUTABLE else ty.mutability
+            )
+        }
+        ty = ty.referenced
+    }
+    return ty to bm
+}

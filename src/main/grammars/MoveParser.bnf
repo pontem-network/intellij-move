@@ -16,7 +16,7 @@
     tokenTypeClass="org.move.lang.core.MvTokenType"
 
     extends(".*Expr")=Expr
-    extends("(Struct|Binding|Tuple|Wild|EnumVariant)Pat")=Pat
+    extends("(Struct|Binding|Tuple|Wild|Const)Pat")=Pat
 //    extends(".*Pat")=Pat
     extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
@@ -676,12 +676,15 @@ Pat ::= TuplePat
         | StructPat
         | WildPat
         | BindingPat
+        | ConstPat
 
 MatchPat ::= Pat | PathPat
 PathPat ::= PathImpl
+EnumVariantPat ::= PathImpl
 
 WildPat ::= '_'
-EnumVariantPat ::= PathImpl
+
+ConstPat ::= PathImpl
 
 
 // XXX(matklad): it is impossible to distinguish between nullary enum variants
@@ -1056,7 +1059,7 @@ MatchExpr ::= Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody
 MatchArgument ::= '(' Expr ')'
 
 MatchBody ::= '{' MatchArm_with_recover* '}' { pin = 1 }
-MatchArm ::= Attr* (Pat | EnumVariantPat) MatchArmGuard? '=>' Expr ','?
+MatchArm ::= Attr* Pat MatchArmGuard? '=>' Expr ','?
 {
     pin = 2
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]

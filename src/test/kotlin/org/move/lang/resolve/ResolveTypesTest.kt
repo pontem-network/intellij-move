@@ -590,4 +590,107 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test resolve match variant with reference`() = checkByCode("""
+        module 0x1::m {
+            enum Outer { None }
+                        //X
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None => {}
+                    //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference struct pat`() = checkByCode("""
+        module 0x1::m {
+            enum Outer { None { i: u8 } }
+                        //X
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None { _ } => {}
+                    //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested struct pat field`() = checkByCode("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+                             //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner { field } } => field
+                                                     //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested struct pat struct`() = checkByCode("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+                  //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner { field } } => field
+                                 //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested enum`() = checkByCode("""
+        module 0x1::m {
+            enum Inner { Inner1, Inner2 }
+                  //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner::Inner1 } => field
+                                 //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum Inner { Inner1, Inner2 }
+                        //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner::Inner1 } => field
+                                        //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested enum variant no qualifier`() = checkByCode("""
+        module 0x1::m {
+            enum Inner { Inner1, Inner2 }
+                        //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner1 } => field
+                                 //^
+                }
+            }
+        }        
+    """)
 }

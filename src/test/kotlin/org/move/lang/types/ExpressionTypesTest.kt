@@ -1937,4 +1937,54 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test infer match variant field with reference`() = testExpr("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+            enum Outer { None { inner: Inner } }
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None { inner: myinner } => myinner
+                                                //^ &0x1::m::Inner
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match variant field with reference shorthand`() = testExpr("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+            enum Outer { None { inner: Inner } }
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None { inner } => inner
+                                      //^ &0x1::m::Inner
+                }
+            }
+        }        
+    """)
+
+    fun `test enum variant as value`() = testExpr("""
+        module 0x1::m {
+            enum Option { None }
+            fun main() {
+                let a = Option::None;
+                a;
+              //^ 0x1::m::Option  
+            }
+        }        
+    """)
+
+    fun `test enum variant struct as value with generics` () = testExpr("""
+        module 0x1::m {
+            enum Option<T> { Some { element: T } }
+            fun main() {
+                let a = Option::Some { element: 1u8 };
+                a;
+              //^ 0x1::m::Option<u8>  
+            }
+        }        
+    """)
 }

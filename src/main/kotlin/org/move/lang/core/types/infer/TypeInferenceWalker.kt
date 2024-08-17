@@ -321,6 +321,7 @@ class TypeInferenceWalker(
                     TyUnknown
                 }
             }
+            is MvEnumVariant -> item.enumItem.declaredType(ctx.msl)
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
