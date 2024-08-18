@@ -71,31 +71,21 @@ class Path2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(el
     }
 }
 
-fun processPathResolveVariantsWithType(
+fun processPathResolveVariantsWithExpectedType(
     ctx: ResolutionContext,
     pathKind: PathKind,
     expectedType: Ty?,
     processor: RsResolveProcessor
 ): Boolean {
-//    val allowedVariants = ((expectedType as? TyAdt)?.item as? MvEnum)?.variants.orEmpty()
-//    val filteringProcessor =
-//        if (allowedVariants.isNotEmpty()) {
-//            processor.wrapWithFilter {
-//                val element = it.element
-//                element !is MvEnumVariant || element in allowedVariants
-//            }
-//        } else {
-//            processor
-//        }
-    val filteringProcessor = wrapWithFilterEnumVariantsByType(expectedType, processor)
+    val expectedTypeFilterer = filterEnumVariantsByExpectedType(expectedType, processor)
     return processPathResolveVariants(
         ctx,
         pathKind,
-        processor = filteringProcessor
+        processor = resolveAliases(expectedTypeFilterer)
     )
 }
 
-fun wrapWithFilterEnumVariantsByType(expectedType: Ty?, processor: RsResolveProcessor): RsResolveProcessor {
+fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: RsResolveProcessor): RsResolveProcessor {
     if (expectedType == null) return processor
 
     val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
@@ -107,6 +97,20 @@ fun wrapWithFilterEnumVariantsByType(expectedType: Ty?, processor: RsResolveProc
         element !is MvEnumVariant || element in allowedVariants
     }
 }
+
+fun resolveAliases(processor: RsResolveProcessor): RsResolveProcessor =
+    processor.wrapWithMapper { e: ScopeEntry ->
+        val visEntry = e as? ScopeEntryWithVisibility ?: return@wrapWithMapper e
+        val element = visEntry.element
+        if (element is MvUseAlias) {
+            val aliasedPath = element.parentUseSpeck.path
+            val resolvedItem = aliasedPath.reference?.resolve()
+            if (resolvedItem != null) {
+                return@wrapWithMapper visEntry.copy(element = resolvedItem)
+            }
+        }
+        e
+    }
 
 fun processPathResolveVariants(
     ctx: ResolutionContext,
@@ -192,15 +196,7 @@ fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
     val kind = path.pathKind()
     val resolveVariants =
         collectResolveVariantsAsScopeEntries(path.referenceName) {
-            processPathResolveVariantsWithType(ctx, kind, expectedType, it)
-//            if (processPathResolveVariants(ctx, kind, it)) return@collectResolveVariantsAsScopeEntries
-//            if (expectedType != null) {
-//                // expected type is available, can be used to resolve into enum variants
-//                val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
-//                if (enumItem != null) {
-//                    if (it.processAll(kind.ns, enumItem.variants)) return@collectResolveVariantsAsScopeEntries
-//                }
-//            }
+            processPathResolveVariantsWithExpectedType(ctx, kind, expectedType, it)
         }
     return resolveVariants
 }
@@ -214,7 +210,7 @@ private fun resolvePath(
         // matches resolve variants against referenceName from path
         collectMethodOrPathResolveVariants(path, ctx) {
             // actually emits resolve variants
-            processPathResolveVariantsWithType(ctx, pathKind, expectedType = null, it)
+            processPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null, it)
 //            processPathResolveVariants(ctx, pathKind, it)
         }
     return result

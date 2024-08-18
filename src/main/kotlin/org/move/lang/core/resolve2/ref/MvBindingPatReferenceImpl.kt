@@ -3,15 +3,12 @@ package org.move.lang.core.resolve2.ref
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.variants
 import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve.collectResolveVariantsAsScopeEntries
-import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyAdt
 import org.move.stdext.wrapWithList
 
 class MvBindingPatReferenceImpl(
@@ -56,7 +53,7 @@ class MvBindingPatReferenceImpl(
 fun resolvePatBindingRaw(binding: MvPatBinding, expectedType: Ty? = null): List<ScopeEntry> {
     val resolveVariants =
         collectResolveVariantsAsScopeEntries(binding.referenceName) {
-            val filteringProcessor = wrapWithFilterEnumVariantsByType(expectedType, it)
+            val filteringProcessor = filterEnumVariantsByExpectedType(expectedType, it)
             processPatBindingResolveVariants(
                 binding,
                 false,

@@ -68,11 +68,13 @@ interface InferenceData {
 
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrFallback(pat, TyUnknown)
 
-    fun getFieldPatType(fieldPat: MvPatField): Ty
+    fun getPatFieldType(patField: MvPatField): Ty
+
+    fun getResolvedLitField(litField: MvStructLitField): List<MvNamedElement>
 
     fun getBindingType(binding: MvPatBinding): Ty =
         when (val parent = binding.parent) {
-            is MvPatField -> getFieldPatType(parent)
+            is MvPatField -> getPatFieldType(parent)
             else -> getPatType(binding)
         }
 }
@@ -85,10 +87,12 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
+
     private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
     private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
+    private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
 
     val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
@@ -114,8 +118,11 @@ data class InferenceResult(
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
     fun getResolvedPatBinding(binding: MvPatBinding): MvNamedElement? = resolvedBindings[binding]
 
-    override fun getFieldPatType(fieldPat: MvPatField): Ty =
-        patFieldTypes[fieldPat] ?: TyUnknown
+    override fun getResolvedLitField(litField: MvStructLitField): List<MvNamedElement> =
+        resolvedLitFields[litField].orEmpty()
+
+    override fun getPatFieldType(patField: MvPatField): Ty =
+        patFieldTypes[patField] ?: TyUnknown
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
@@ -193,6 +200,8 @@ class InferenceContext(
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
     val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
 
+    val resolvedLitFields: MutableMap<MvStructLitField, List<MvNamedElement>> = hashMapOf()
+
     private val typeErrors = mutableListOf<TypeError>()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
@@ -266,6 +275,7 @@ class InferenceContext(
             resolvedFields,
             resolvedMethodCalls,
             resolvedBindings,
+            resolvedLitFields,
             callableTypes,
             typeErrors
         )
@@ -328,9 +338,12 @@ class InferenceContext(
 //        resolvedPaths[path] = resolved
 //    }
 
-    override fun getFieldPatType(fieldPat: MvPatField): Ty {
-        return patFieldTypes[fieldPat] ?: TyUnknown
+    override fun getPatFieldType(patField: MvPatField): Ty {
+        return patFieldTypes[patField] ?: TyUnknown
     }
+
+    override fun getResolvedLitField(litField: MvStructLitField): List<MvNamedElement> =
+        resolvedLitFields[litField].orEmpty()
 
     fun getExprType(expr: MvExpr): Ty {
         return exprTypes[expr] ?: TyUnknown

@@ -10,6 +10,7 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
+import org.move.lang.core.resolve.collectResolveVariants
 import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.resolveSingleResolveVariant
@@ -17,6 +18,7 @@ import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.resolvePathRaw
+import org.move.lang.core.resolve2.resolveBindingForFieldShorthand
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
@@ -397,7 +399,8 @@ class TypeInferenceWalker(
         val baseTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, namedItem) ?: return TyUnknown
+                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, namedItem)
+                        ?: return TyUnknown
                     itemTy
                 }
                 is MvPatBinding -> {
@@ -663,19 +666,21 @@ class TypeInferenceWalker(
         }
 
         litExpr.fields.forEach { field ->
-            // todo: can be cached, change reference impl
+            // todo: can be cached, change field reference impl
             val namedField =
                 resolveSingleResolveVariant(field.referenceName) { it.processAll(NONE, item.namedFields) }
-                    as? MvNamedFieldDecl
+                        as? MvNamedFieldDecl
             val rawFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
 //            val fieldTy = field.type(msl)?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
-
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
+                val bindingTy = (resolveBindingForFieldShorthand(field).singleOrNull() as? MvPatBinding)
+                    ?.let { ctx.getBindingType(it) }
+                    ?: TyUnknown
+//                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }

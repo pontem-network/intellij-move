@@ -596,6 +596,8 @@ fun RsResolveProcessor.processAll(
     return elements.any { process(ns, it) }
 }
 
+fun RsResolveProcessor.processAll(elements: List<ScopeEntry>): Boolean = elements.any { process(it) }
+
 fun RsResolveProcessor.processAll(
     ns: Set<Namespace>,
     vararg collections: Iterable<MvNamedElement>,
