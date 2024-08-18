@@ -4,9 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
-import org.move.lang.core.resolve.pickFirstResolveVariant
-import org.move.lang.core.resolve.processAll
-import org.move.lang.core.resolve.ref.TYPES
+import org.move.lang.core.resolve2.ref.resolvePatBindingRaw
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
@@ -78,11 +76,18 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
         is MvPatWild -> fcx.writePatTy(this, ty)
         is MvPatConst -> {
             // fills resolved paths
-            fcx.inferType(pathExpr)
+            val inferred = fcx.inferType(pathExpr)
+            val expected = when (fcx.getResolvedPath(pathExpr.path).singleOrNull()?.element) {
+                // copied from intellij-rust, don't know what it's about
+                is MvConst -> ty
+                else -> ty.stripReferences(defBm).first
+            }
+            fcx.coerce(pathExpr, inferred, expected)
+
 //            val path = pathExpr.path
 //            val inferred = fcx.inferType(pathExpr)
 //            fcx.getResolvedPath(path).singleOrNull()?.element
-            val expected = ty.stripReferences(defBm).first
+//            val expected = ty.stripReferences(defBm).first
 //            val expected = when (fcx.getResolvedPath(path).singleOrNull()?.element) {
 //                is RsConstant -> ty
 //                else -> ty.stripReferences(defBm).first
@@ -91,39 +96,107 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             fcx.writePatTy(this, expected)
         }
         is MvPatBinding -> {
-//            val resolved = this.reference.resolve()
-//            val bindingType = if (resolved is MvEnumVariant) {
-            // it should properly check for the enum variant, but now it's just checks for the proper parent
-            val bindingType = if (this.parent is MvMatchArm) {
-                ty.stripReferences(defBm).first
-            } else {
-                ty.applyBm(defBm, msl)
-            }
-            fcx.ctx.writePatTy(this, bindingType)
+            val resolveVariants = resolvePatBindingRaw(this, expectedType = ty)
+            val item = resolveVariants.singleOrNull()?.element
+            fcx.ctx.resolvedBindings[this] = item
+
+            val bindingType =
+                if (item is MvEnumVariant) {
+                    ty.stripReferences(defBm).first
+                } else {
+                    ty.applyBm(defBm, msl)
+                }
+            fcx.writePatTy(this, bindingType)
         }
+//        is MvPatBinding -> {
+//            val item = resolvePatBindingRaw(this, expectedType = ty)
+////            val bindingType =
+////                if (item is MvEnumVariant) {
+////                    ty.stripReferences(defBm).first
+////                } else {
+////                    ty.applyBm(defBm, msl)
+////                }
+//            fcx.ctx.writePatTy(this, ty)
+//        }
         is MvPatStruct -> {
             val (expected, patBm) = ty.stripReferences(defBm)
             fcx.ctx.writePatTy(this, expected)
 
-            val item = when {
-                this.parent is MvMatchArm && path.path == null -> {
-                    // if we're inside match arm and no qualifier,
-                    // StructPat can only be a enum variant, resolve through type.
-                    // Otherwise there's a resolution cycle when we call the .resolve() method
+//            when {
+//                // 1-element path and inside match expr pattern matching
+//                this.hasAncestor<MvMatchArm>() && path.path == null -> {
+//                    // if it's a enum, return it as type
+////                    (expected as? TyAdt)?.item as? MvEnum
+////                        ?: path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+////                        ?: ((expected as? TyAdt)?.item as? MvStruct)
+////                    if ((expected as? TyAdt)?.item is MvEnum) {
+////                        expected
+////                    } else {
+////                        // not enum, resolve as usual
+////                        path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+////                            ?: ((expected as? TyAdt)?.item as? MvStruct)
+////                    }
+////                    if (expected is TyAdt)
+//                }
+//            }
+//            if (this.hasAncestor<MvMatchArm>() && path.path == null) {
+//                // could be a enum, check for the enum as an expected type
+//                if (expected is TyAdt && expected.item is MvEnum) {
+//
+//                }
+//            }
 
-                    // NOTE: I think it can be replaced moving path resolution to the inference,
-                    // like it's done in intellij-rust
-                    val referenceName = path.referenceName ?: return
-                    val enumItem = (expected as? TyAdt)?.item as? MvEnum ?: return
-                    pickFirstResolveVariant(referenceName) {
-                        it.processAll(TYPES, enumItem.variants)
-                    } as? MvFieldsOwner
-                }
-                else -> {
-                    path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-                        ?: ((expected as? TyAdt)?.item as? MvStruct)
-                }
-            } ?: return
+            val item =
+                fcx.resolvePathElement(this, expected) as? MvFieldsOwner
+                    ?: (expected as? TyAdt)?.item as? MvStruct
+                    ?: return
+//            val resolveVariants = resolvePathRaw(path, expectedType = expected)
+//            fcx.ctx.writePath(path, resolveVariants.map { ResolvedPath.from(it, path) })
+//
+//            val item = resolveVariants.singleOrNull() as? MvFieldsOwner
+//                ?: (expected as? TyAdt)?.item as? MvStruct
+//                ?: return
+
+//            var item = path.reference?.resolve() as? MvFieldsOwner
+//            fcx.ctx.writePath(path, resolveVariants.map { ResolvedPath.from(it, path) })
+
+//            var item = resolveVariants.singleOrNull() as? MvFieldsOwner
+//            var item: MvFieldsOwner? = path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+//            if (item == null) {
+//                // no-enum name resolution did not work, try enum variants
+//                val enum = (expected as? TyAdt)?.item as? MvEnum ?: return
+//                val refName = path.referenceName ?: return
+//                val resolvedEnumVariant =
+//                    pickFirstResolveVariant(refName) { it.processAll(NAMES, enum.variants) } as? MvFieldsOwner
+//                item =
+//                    resolvedEnumVariant
+//                        ?: ((expected as? TyAdt)?.item as? MvStruct)
+//                                ?: return
+//            }
+
+//            val item = path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+//                ?: ((expected as? TyAdt)?.item as? MvStruct)
+//                ?: return
+
+//            val item = when {
+//                this.parent is MvMatchArm && path.path == null -> {
+//                    // if we're inside match arm and no qualifier,
+//                    // StructPat can only be a enum variant, resolve through type.
+//                    // Otherwise there's a resolution cycle when we call the .resolve() method
+//
+//                    // NOTE: I think it can be replaced moving path resolution to the inference,
+//                    // like it's done in intellij-rust
+//                    val referenceName = path.referenceName ?: return
+//                    val enumItem = (expected as? TyAdt)?.item as? MvEnum ?: return
+//                    pickFirstResolveVariant(referenceName) {
+//                        it.processAll(TYPES, enumItem.variants)
+//                    } as? MvFieldsOwner
+//                }
+//                else -> {
+//                    path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+//                        ?: ((expected as? TyAdt)?.item as? MvStruct)
+//                }
+//            } ?: return
 //            val item = path.reference?.resolveFollowingAliases() as? MvFieldsOwner
 //                ?: ((ty as? TyAdt)?.item as? MvStruct)
 //                ?: return

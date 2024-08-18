@@ -171,6 +171,7 @@ AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvReferenceElement"
+//        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
 }
@@ -693,6 +694,8 @@ WildPat ::= '_'
 ConstPat ::= PathImpl
 PatConst ::= PathExpr
 
+PatIdent ::= PatBinding
+
 
 // XXX(matklad): it is impossible to distinguish between nullary enum variants
 // and identifiers during parsing.
@@ -701,7 +704,7 @@ PatConst ::= PathExpr
 //       None => { } // match enum variant
 //       Name => { } // bind Name to x
 //   }
-PatIdent ::= PatBinding
+//PatIdent ::= PatBinding
 PatBinding ::= IDENTIFIER !ForbiddenPatBindingLast {
     implements = [
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
@@ -726,6 +729,9 @@ private ParenListElemPat_recover ::= !(')' | Pat_first)
 
 StructPat ::= PathImpl '{' PatField_with_recover* '}'
 PatStruct ::= PathImpl '{' PatField_with_recover* '}'
+{
+    implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+}
 //StructPatFieldsBlock ::= '{' FieldPat_with_recover* '}'
 
 private PatField_with_recover ::= !'}' PatField (',' | &'}')
@@ -991,7 +997,7 @@ VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
 
 StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
 {
-    implements = ["org.move.lang.core.psi.PathElement"]
+    implements = ["org.move.lang.core.resolve2.ref.InferenceCachedPathElement"]
 }
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
@@ -1054,9 +1060,9 @@ AddressLit ::= '@' AddressRef { pin = 1 }
 CallExpr ::= PathImpl !'!' ValueArgumentList {
 //    pin = 2
     implements = [
-        "org.move.lang.core.psi.PathElement"
         "org.move.lang.core.psi.ext.MvCallable"
         "org.move.lang.core.psi.MvAcquireTypesOwner"
+        "org.move.lang.core.resolve2.ref.InferenceCachedPathElement"
     ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
@@ -1168,7 +1174,7 @@ private IndexArg ::= '[' Expr ']'
 
 PathExpr ::= PathImpl !('(' | '!')
 {
-    implements = [ "org.move.lang.core.psi.PathElement" ]
+    implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
 }
 RefExpr ::= PathImpl
 

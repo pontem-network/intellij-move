@@ -10,11 +10,18 @@ import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve2.*
 import org.move.lang.core.resolve2.PathKind.NamedAddress
 import org.move.lang.core.resolve2.PathKind.ValueAddress
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.moveProject
 import kotlin.LazyThreadSafetyMode.NONE
 
-class Path2ReferenceImpl(element: MvPath):
-    MvPolyVariantReferenceBase<MvPath>(element), MvPath2Reference {
+interface InferenceCachedPathElement: MvElement {
+    val path: MvPath
+}
+
+class Path2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(element),
+                                           MvPath2Reference {
 
     override fun resolve(): MvNamedElement? =
         rawMultiResolveIfVisible().singleOrNull()?.element as? MvNamedElement
@@ -34,17 +41,25 @@ class Path2ReferenceImpl(element: MvPath):
     fun rawMultiResolveIfVisible(): List<RsPathResolveResult<MvElement>> =
         rawMultiResolve().filter { it.isVisible }
 
-    //    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = Resolver.invoke(this.element)
-    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = rawCachedMultiResolve()
+    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
+//        rawCachedMultiResolve()
+        rawMultiResolveUsingInferenceCache() ?: rawCachedMultiResolve()
+
+    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult<MvElement>>? {
+        val pathElement = element.parent as? InferenceCachedPathElement ?: return null
+        val msl = pathElement.isMsl()
+        return pathElement.inference(msl)?.getResolvedPath(pathElement.path)
+            ?.map {
+                RsPathResolveResult(it.element, it.isVisible)
+            }
+    }
 
     private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
         return MvResolveCache
             .getInstance(element.project)
-            .resolveWithCaching(element, cacheDependency, Resolver)
+            .resolveWithCaching(element, ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE, Resolver)
             .orEmpty()
     }
-
-    private val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     private object Resolver: (MvElement) -> List<RsPathResolveResult<MvElement>> {
         override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
@@ -53,6 +68,43 @@ class Path2ReferenceImpl(element: MvPath):
             val resolutionCtx = ResolutionContext(path, isCompletion = false)
             return resolvePath(resolutionCtx, path)
         }
+    }
+}
+
+fun processPathResolveVariantsWithType(
+    ctx: ResolutionContext,
+    pathKind: PathKind,
+    expectedType: Ty?,
+    processor: RsResolveProcessor
+): Boolean {
+//    val allowedVariants = ((expectedType as? TyAdt)?.item as? MvEnum)?.variants.orEmpty()
+//    val filteringProcessor =
+//        if (allowedVariants.isNotEmpty()) {
+//            processor.wrapWithFilter {
+//                val element = it.element
+//                element !is MvEnumVariant || element in allowedVariants
+//            }
+//        } else {
+//            processor
+//        }
+    val filteringProcessor = wrapWithFilterEnumVariantsByType(expectedType, processor)
+    return processPathResolveVariants(
+        ctx,
+        pathKind,
+        processor = filteringProcessor
+    )
+}
+
+fun wrapWithFilterEnumVariantsByType(expectedType: Ty?, processor: RsResolveProcessor): RsResolveProcessor {
+    if (expectedType == null) return processor
+
+    val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
+    if (enumItem == null) return processor
+
+    val allowedVariants = enumItem.variants
+    return processor.wrapWithFilter {
+        val element = it.element
+        element !is MvEnumVariant || element in allowedVariants
     }
 }
 
@@ -135,24 +187,35 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
     val isSpecOnlyExpr: Boolean get() = element.hasAncestor<MvSpecOnlyExpr>()
 }
 
-//// todo: use in inference later
-//fun resolvePathRaw(path: MvPath): List<ScopeEntry> {
-//    return collectResolveVariantsAsScopeEntries(path.referenceName) {
-//        processPathResolveVariants(path, it)
-//    }
-//}
+fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
+    val ctx = ResolutionContext(path, false)
+    val kind = path.pathKind()
+    val resolveVariants =
+        collectResolveVariantsAsScopeEntries(path.referenceName) {
+            processPathResolveVariantsWithType(ctx, kind, expectedType, it)
+//            if (processPathResolveVariants(ctx, kind, it)) return@collectResolveVariantsAsScopeEntries
+//            if (expectedType != null) {
+//                // expected type is available, can be used to resolve into enum variants
+//                val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
+//                if (enumItem != null) {
+//                    if (it.processAll(kind.ns, enumItem.variants)) return@collectResolveVariantsAsScopeEntries
+//                }
+//            }
+        }
+    return resolveVariants
+}
 
 private fun resolvePath(
     ctx: ResolutionContext,
     path: MvPath,
-//    kind: RsPathResolveKind
 ): List<RsPathResolveResult<MvElement>> {
     val pathKind = path.pathKind()
     val result =
         // matches resolve variants against referenceName from path
         collectMethodOrPathResolveVariants(path, ctx) {
             // actually emits resolve variants
-            processPathResolveVariants(ctx, pathKind, it)
+            processPathResolveVariantsWithType(ctx, pathKind, expectedType = null, it)
+//            processPathResolveVariants(ctx, pathKind, it)
         }
     return result
 //    return when (result.size) {

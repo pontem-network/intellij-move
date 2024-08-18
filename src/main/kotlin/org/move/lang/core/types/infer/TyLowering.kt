@@ -60,6 +60,7 @@ class TyLowering {
 //                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
                 baseTy.substitute(explicitSubst)
             }
+            is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
             else -> debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",
                 TyUnknown

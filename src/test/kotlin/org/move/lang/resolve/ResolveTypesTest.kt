@@ -510,13 +510,52 @@ module 0x1::m {
         }        
     """)
 
+    fun `test match on unqualified enum variant ref`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                    //X
+            fun main(s: &S): bool {
+                match (s) {
+                    One => true
+                   //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test match on unqualified enum variant mut ref`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                    //X
+            fun main(s: &mut S): bool {
+                match (s) {
+                    One => true
+                   //^ 
+                }
+            }
+        }        
+    """)
+
+    fun `test match on qualified enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                    //X
+            fun main(s: S): bool {
+                match (s) {
+                    S::One => true
+                      //^ 
+                }
+            }
+        }        
+    """)
+
     fun `test match on unqualified enum variant with fields`() = checkByCode("""
         module 0x1::m {
             enum S { One { field: u8 }, Two }
                     //X
             fun main(s: S): bool {
                 match (s) {
-                    One { field } => true
+                    One { field: _ } => true
                    //^ 
                 }
             }
@@ -619,7 +658,7 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve match variant with reference and nested struct pat field`() = checkByCode("""
+    fun `test resolve match variant with reference and nested struct pat field decl`() = checkByCode("""
         module 0x1::m {
             struct Inner { field: u8 }
                              //X
@@ -627,8 +666,24 @@ module 0x1::m {
             
             public fun non_exhaustive(o: &Outer) {
                 match (o) {
-                    One { inner: Inner { field } } => field
-                                                     //^
+                    One { inner: Inner { field: myfield } } => myfield
+                                        //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve match variant with reference and nested struct pat field variable`() = checkByCode("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner { field: myfield } }
+                                               //X
+                        => myfield
+                            //^
                 }
             }
         }        
@@ -690,6 +745,85 @@ module 0x1::m {
                     One { inner: Inner1 } => field
                                  //^
                 }
+            }
+        }        
+    """)
+
+    fun `test resolve expr with enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                   //X
+            fun main() {
+                let a: S = One;
+                          //^
+            }
+        }        
+    """)
+
+    fun `test resolve expr with enum variant no expected type`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                   //X
+            fun main() {
+                let a = One;
+                       //^
+            }
+        }        
+    """)
+
+    fun `test resolve expr with enum variant fq`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                   //X
+            fun main() {
+                let a: S = S::One;
+                             //^
+            }
+        }        
+    """)
+
+    fun `test resolve expr with enum variant ambiguous`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+                   //X
+            enum T { One, Two }
+            fun main() {
+                let a: S = One;
+                          //^
+            }
+        }        
+    """)
+
+    fun `test resolve struct lit with enum variant`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                   //X
+            fun main() {
+                let a: S = One { field: 1 };
+                         //^
+            }
+        }        
+    """)
+
+    fun `test resolve struct lit with enum variant fq`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                   //X
+            fun main() {
+                let a: S = S::One { field: 1 };
+                             //^
+            }
+        }        
+    """)
+
+    fun `test resolve struct lit with enum variant ambiguous`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                   //X
+            enum T { One { field: u8 }, Two }
+            fun main() {
+                let a: S = One { field: 1 };
+                          //^
             }
         }        
     """)

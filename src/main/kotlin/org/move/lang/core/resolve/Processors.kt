@@ -528,7 +528,7 @@ fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): Visibility
     }
 
 
-fun ScopeEntry.isVisibleFrom(context: MvPath): Boolean = getVisibilityStatusFrom(context) == Visible
+fun ScopeEntry.isVisibleFrom(context: MvMethodOrPath): Boolean = getVisibilityStatusFrom(context) == Visible
 
 enum class VisibilityStatus {
     Visible,

@@ -17,10 +17,10 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve.ref.Namespace.TYPE
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.ResolutionContext
-import org.move.lang.core.resolve2.ref.processPathResolveVariants
+import org.move.lang.core.resolve2.ref.processPathResolveVariantsWithType
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -133,7 +133,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                     true
                 }
             val pathKind = pathElement.pathKind(true)
-            processPathResolveVariants(resolutionCtx, pathKind, processor)
+            processPathResolveVariantsWithType(resolutionCtx, pathKind, expectedType = null, processor)
+//            processPathResolveVariants(resolutionCtx, pathKind, processor)
         }
 
         // disable auto-import in module specs for now

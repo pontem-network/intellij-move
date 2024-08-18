@@ -9,6 +9,8 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.isVisibleFrom
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
@@ -64,7 +66,7 @@ interface InferenceData {
 
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
-    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrTyUnknown(pat)
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrFallback(pat, TyUnknown)
 
     fun getFieldPatType(fieldPat: MvPatField): Ty
 
@@ -83,13 +85,15 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
-    private val resolvedPaths: Map<MvPath, List<ResolvedPath>>,
+    private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
     private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
+    private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
+
     val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
 ): InferenceData {
-    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: inferenceErrorOrTyUnknown(expr)
+    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: inferenceErrorOrFallback(expr, TyUnknown)
 
     @TestOnly
     fun hasExprType(expr: MvExpr): Boolean = expr in exprTypes
@@ -102,10 +106,13 @@ data class InferenceResult(
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
     fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
-    fun getResolvedPath(path: MvPath): List<ResolvedPath> = resolvedPaths[path] ?: emptyList()
+//    fun getResolvedPath(path: MvPath): List<ResolvedPath>? = resolvedPaths[path]
+    fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
+        resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
     fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
+    fun getResolvedPatBinding(binding: MvPatBinding): MvNamedElement? = resolvedBindings[binding]
 
     override fun getFieldPatType(fieldPat: MvPatField): Ty =
         patFieldTypes[fieldPat] ?: TyUnknown
@@ -181,9 +188,10 @@ class InferenceContext(
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
-    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
+    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
     val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
+    val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
 
     private val typeErrors = mutableListOf<TypeError>()
 
@@ -212,6 +220,14 @@ class InferenceContext(
         val inference = TypeInferenceWalker(this, owner.project, returnTy)
 
         inference.extractParameterBindings(owner)
+
+        if (owner is MvDocAndAttributeOwner) {
+            for (attr in owner.attrList) {
+                for (attrItem in attr.attrItemList) {
+                    inference.inferAttrItem(attrItem)
+                }
+            }
+        }
 
         when (owner) {
             is MvFunctionLike -> owner.anyBlock?.let { inference.inferFnBody(it) }
@@ -249,6 +265,7 @@ class InferenceContext(
             resolvedPaths,
             resolvedFields,
             resolvedMethodCalls,
+            resolvedBindings,
             callableTypes,
             typeErrors
         )
@@ -285,6 +302,14 @@ class InferenceContext(
 
     fun writePatTy(pat: MvPat, ty: Ty) {
         this.patTypes[pat] = ty
+    }
+
+    fun writePath(path: MvPath, resolved: List<ResolvedItem>) {
+        resolvedPaths[path] = resolved
+    }
+
+    fun writePathSubst(path: MvPath, subst: Substitution) {
+        resolvedPaths[path]?.singleOrNull()?.subst = subst
     }
 
     fun writeFieldPatTy(psi: MvPatField, ty: Ty) {
@@ -528,23 +553,29 @@ class InferenceContext(
     }
 }
 
-data class ResolvedPath(
+data class ResolvedItem(
     val element: MvNamedElement,
     val isVisible: Boolean,
     var subst: Substitution = emptySubstitution,
-)
+) {
+    companion object {
+        fun from(entry: ScopeEntry, context: MvMethodOrPath): ResolvedItem {
+            return ResolvedItem(entry.element, entry.isVisibleFrom(context))
+        }
+    }
+}
 
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }
 
-fun inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
+fun <T> inferenceErrorOrFallback(inferredElement: MvElement, fallback: T): T =
     when {
         // pragma statements are not supported for now
 //        inferredElement.hasAncestorOrSelf<MvPragmaSpecStmt>() -> TyUnknown
         // error out if debug mode is enabled
         isDebugModeEnabled() -> throw InferenceError(inferredElement.inferenceErrorMessage)
-        else -> TyUnknown
+        else -> fallback
     }
 
 class InferenceError(message: String, var context: PsiErrorContext? = null): IllegalStateException(message) {

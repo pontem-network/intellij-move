@@ -18,7 +18,7 @@ val MvStructLitField.structLitExpr: MvStructLitExpr
 inline fun <reified T: MvElement> MvStructLitField.resolveToElement(): T? =
     reference.multiResolve().filterIsInstance<T>().singleOrNull()
 
-fun MvStructLitField.resolveToDeclaration(): MvNamedFieldDecl? = resolveToElement()
+//fun MvStructLitField.resolveToDeclaration(): MvNamedFieldDecl? = resolveToElement()
 fun MvStructLitField.resolveToBinding(): MvPatBinding? = resolveToElement()
 
 /**

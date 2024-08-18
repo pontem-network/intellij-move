@@ -36,7 +36,7 @@ fun processStructPatFieldResolveVariants(
     return processFieldDeclarations(resolvedStruct, processor)
 }
 
-fun processBindingPatResolveVariants(
+fun processPatBindingResolveVariants(
     binding: MvPatBinding,
     isCompletion: Boolean,
     originalProcessor: RsResolveProcessor
