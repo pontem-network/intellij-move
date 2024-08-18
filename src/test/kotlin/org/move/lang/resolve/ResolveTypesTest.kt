@@ -831,10 +831,10 @@ module 0x1::m {
     fun `test resolve type of field with alias`() = checkByCode("""
         module 0x1::m {
             struct S { field: u8 }
-                 //X
         }
         module 0x1::main {
             use 0x1::m::S as MyS;
+                            //X
             struct R { field: MyS }
                              //^
         }        

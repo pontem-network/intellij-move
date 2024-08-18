@@ -81,7 +81,8 @@ fun processPathResolveVariantsWithExpectedType(
     return processPathResolveVariants(
         ctx,
         pathKind,
-        processor = resolveAliases(expectedTypeFilterer)
+        processor = expectedTypeFilterer
+//        processor = resolveAliases(expectedTypeFilterer)
     )
 }
 
@@ -102,15 +103,28 @@ fun resolveAliases(processor: RsResolveProcessor): RsResolveProcessor =
     processor.wrapWithMapper { e: ScopeEntry ->
         val visEntry = e as? ScopeEntryWithVisibility ?: return@wrapWithMapper e
         val element = visEntry.element
-        if (element is MvUseAlias) {
-            val aliasedPath = element.parentUseSpeck.path
-            val resolvedItem = aliasedPath.reference?.resolve()
-            if (resolvedItem != null) {
-                return@wrapWithMapper visEntry.copy(element = resolvedItem)
-            }
-        }
-        e
+        val unaliased = resolveAliases(element)
+        visEntry.copy(element = unaliased)
+//        if (element is MvUseAlias) {
+//            val aliasedPath = element.parentUseSpeck.path
+//            val resolvedItem = aliasedPath.reference?.resolve()
+//            if (resolvedItem != null) {
+//                return@wrapWithMapper visEntry.copy(element = resolvedItem)
+//            }
+//        }
+//        e
     }
+
+fun resolveAliases(element: MvNamedElement): MvNamedElement {
+    if (element is MvUseAlias) {
+        val aliasedPath = element.parentUseSpeck.path
+        val resolvedItem = aliasedPath.reference?.resolve()
+        if (resolvedItem != null) {
+            return resolvedItem
+        }
+    }
+    return element
+}
 
 fun processPathResolveVariants(
     ctx: ResolutionContext,

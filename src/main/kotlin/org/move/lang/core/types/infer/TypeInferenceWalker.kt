@@ -17,6 +17,7 @@ import org.move.lang.core.resolve.resolveSingleResolveVariant
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.resolve2.ref.resolveAliases
 import org.move.lang.core.resolve2.ref.resolvePathRaw
 import org.move.lang.core.resolve2.resolveBindingForFieldShorthand
 import org.move.lang.core.types.ty.*
@@ -349,9 +350,11 @@ class TypeInferenceWalker(
         expectedType: Ty?
     ): MvNamedElement? {
         val path = pathElement.path
+
         val resolveVariants = resolvePathRaw(path, expectedType)
         ctx.writePath(path, resolveVariants.map { ResolvedItem.from(it, path) })
-        return resolveVariants.singleOrNull()?.element
+        // resolve aliases
+        return resolveVariants.singleOrNull()?.element?.let { resolveAliases(it) }
     }
 
     private fun inferAssignmentExprTy(assignExpr: MvAssignmentExpr): Ty {
