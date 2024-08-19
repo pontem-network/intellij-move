@@ -1,5 +1,7 @@
 package org.move.lang.core.resolve2
 
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
@@ -12,6 +14,9 @@ import org.move.lang.core.resolve.ref.Namespace.NAME
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
+import org.move.utils.cache
+import org.move.utils.cacheManager
+import org.move.utils.psiCacheResult
 
 fun processItemsInScope(
     scope: MvElement,
@@ -51,22 +56,9 @@ fun processItemsInScope(
                             // coming from rhs, use pat bindings from lhs
                             if (processor.processAll(elementNs, scope.pat.bindings)) return true
                             continue
-//                            val inference = scope.matchExpr.inference(false) ?: continue
-//                            val enumItem =
-//                                (inference.getBindingType(cameFrom) as? TyAdt)?.item as? MvEnum ?: continue
-//
-//                            if (processor.processAll(elementNs, enumItem.variants)) return true
-//                            continue
                         }
 
                         false
-                        // it's a pat, then it came from a lhs => possible enum variant
-
-                        // skip ones that come from lhs of match arm
-//                        if (cameFrom is MvPat) continue
-
-//                        val matchBindings = scope.pat.bindings.toList()
-//                        processor.processAll(elementNs, matchBindings)
                     }
                     is MvItemSpec -> {
                         val specItem = scope.item
@@ -213,28 +205,13 @@ fun processItemsInScope(
                             scope.enumList
                         )
                     }
-                    is MvMatchArm -> {
-                        if (cameFrom !is MvPat) {
-                            // came from rhs
-                            continue
-                        }
-//                        if (cameFrom is MvPatStruct) {
-//                            //match (s) {
-//                            //    Inner { field } =>
-//                            //     ^
-//                            //}
-//
-//                            // skip if qualifier available
-//                            if (cameFrom.path.path != null) continue
-//
-//                            val inference = scope.matchExpr.inference(false) ?: continue
-//                            val enumItem = (inference.getPatType(cameFrom) as? TyAdt)?.enumItem ?: continue
-//                            if (processor.processAll(TYPES, enumItem.variants)) return true
-//
+//                    is MvMatchArm -> {
+//                        if (cameFrom !is MvPat) {
+//                            // came from rhs
 //                            continue
 //                        }
-                        false
-                    }
+//                        false
+//                    }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                         val patternTypeParams =
@@ -266,42 +243,152 @@ fun processItemsInScope(
 }
 
 private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
-    var stop = false
-    for (useStmt in this.useStmtList) {
-        val stmtUsageScope = useStmt.usageScope
-        useStmt.forEachLeafSpeck { speckPath, alias ->
-            val name = if (alias != null) {
-                alias.name ?: return@forEachLeafSpeck false
-            } else {
-                var n = speckPath.referenceName ?: return@forEachLeafSpeck false
-                // 0x1::m::Self -> 0x1::m
-                if (n == "Self") {
-                    n = speckPath.qualifier?.referenceName ?: return@forEachLeafSpeck false
-                }
-                n
-            }
-            val resolvedItem = speckPath.reference?.resolve()
-            if (resolvedItem == null) {
-                if (alias != null) {
-                    // aliased element cannot be resolved, but alias itself is valid, resolve to it
-                    if (processor.process(name, NONE, alias)) return@forEachLeafSpeck true
-                }
-                // todo: should it be resolved to import anyway?
-                return@forEachLeafSpeck false
-            }
+    val useSpeckItems = getUseSpeckItems()
+    for (useSpeckItem in useSpeckItems) {
+        val speckPath = useSpeckItem.speckPath
+        val alias = useSpeckItem.alias
 
-            val element = alias ?: resolvedItem
-            val namespace = resolvedItem.namespace
-            val visibilityFilter =
-                resolvedItem.visInfo(adjustScope = stmtUsageScope).createFilter()
-
-            if (namespace in ns && processor.process(name, element, ns, visibilityFilter)) {
-                stop = true
-                return@forEachLeafSpeck true
+        val resolvedItem = speckPath.reference?.resolve()
+        if (resolvedItem == null) {
+            if (alias != null) {
+                val referenceName = useSpeckItem.referenceName ?: continue
+                // aliased element cannot be resolved, but alias itself is valid, resolve to it
+                if (processor.process(referenceName, NONE, alias)) return true
+//                if (processor.process(referenceName, NONE, alias)) {
+////                    stop = true
+//                    return true
+//                }
             }
-            false
+            continue
         }
-        if (stop) return true
+
+        val element = alias ?: resolvedItem
+        val namespace = resolvedItem.namespace
+        if (namespace in ns) {
+            val referenceName = useSpeckItem.referenceName ?: continue
+            val visibilityFilter = resolvedItem.visInfo(adjustScope = useSpeckItem.stmtUsageScope).createFilter()
+            if (processor.process(referenceName, element, ns, visibilityFilter)) return true
+//            if (processor.process(referenceName, element, ns, visibilityFilter)) {
+//                stop = true
+//                return@forEachLeafSpeck true
+//            }
+        }
     }
-    return stop
+    return false
+//    var stop = false
+//    for (useStmt in this.useStmtList) {
+//        val stmtUsageScope = useStmt.usageScope
+//        useStmt.forEachLeafSpeck { speckPath, alias ->
+//            val name = if (alias != null) {
+//                alias.name ?: return@forEachLeafSpeck false
+//            } else {
+//                var n = speckPath.referenceName ?: return@forEachLeafSpeck false
+//                // 0x1::m::Self -> 0x1::m
+//                if (n == "Self") {
+//                    n = speckPath.qualifier?.referenceName ?: return@forEachLeafSpeck false
+//                }
+//                n
+//            }
+//            val resolvedItem = speckPath.reference?.resolve()
+//            if (resolvedItem == null) {
+//                if (alias != null) {
+//                    // aliased element cannot be resolved, but alias itself is valid, resolve to it
+//                    if (processor.process(name, NONE, alias)) {
+//                        stop = true
+//                        return@forEachLeafSpeck true
+//                    }
+//                }
+//                return@forEachLeafSpeck false
+//            }
+//
+//            val element = alias ?: resolvedItem
+//            val namespace = resolvedItem.namespace
+//            if (namespace in ns) {
+//                val visibilityFilter =
+//                    resolvedItem.visInfo(adjustScope = stmtUsageScope).createFilter()
+//                if (processor.process(name, element, ns, visibilityFilter)) {
+//                    stop = true
+//                    return@forEachLeafSpeck true
+//                }
+//            }
+//            false
+//        }
+//        if (stop) return true
+//    }
+//    return stop
 }
+
+private val USE_SPECK_ITEMS_KEY: Key<CachedValue<List<UseSpeckItem>>> = Key.create("USE_SPECK_ITEMS_KEY")
+
+private fun MvItemsOwner.getUseSpeckItems(): List<UseSpeckItem> =
+    project.cacheManager.cache(this, USE_SPECK_ITEMS_KEY) {
+        val items = buildList {
+            for (useStmt in useStmtList) {
+                val usageScope = useStmt.usageScope
+                useStmt.forEachLeafSpeck { speckPath, alias ->
+                    add(UseSpeckItem(speckPath, alias, usageScope))
+                }
+            }
+        }
+        this.psiCacheResult(items)
+    }
+
+private data class UseSpeckItem(val speckPath: MvPath, val alias: MvUseAlias?, val stmtUsageScope: NamedItemScope) {
+    val referenceName: String? get() {
+        if (alias != null) {
+            return alias.name
+//            alias.name ?: return null
+        } else {
+            var n = speckPath.referenceName ?: return null
+            // 0x1::m::Self -> 0x1::m
+            if (n == "Self") {
+                n = speckPath.qualifier?.referenceName ?: return null
+            }
+            return n
+        }
+    }
+}
+
+//private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
+//    var stop = false
+//    for (useStmt in this.useStmtList) {
+//        val stmtUsageScope = useStmt.usageScope
+//        useStmt.forEachLeafSpeck { speckPath, alias ->
+//            val name = if (alias != null) {
+//                alias.name ?: return@forEachLeafSpeck false
+//            } else {
+//                var n = speckPath.referenceName ?: return@forEachLeafSpeck false
+//                // 0x1::m::Self -> 0x1::m
+//                if (n == "Self") {
+//                    n = speckPath.qualifier?.referenceName ?: return@forEachLeafSpeck false
+//                }
+//                n
+//            }
+//            val resolvedItem = speckPath.reference?.resolve()
+//            if (resolvedItem == null) {
+//                if (alias != null) {
+//                    // aliased element cannot be resolved, but alias itself is valid, resolve to it
+//                    if (processor.process(name, NONE, alias)) {
+//                        stop = true
+//                        return@forEachLeafSpeck true
+//                    }
+//                }
+//                return@forEachLeafSpeck false
+//            }
+//
+//            val element = alias ?: resolvedItem
+//            val namespace = resolvedItem.namespace
+//            if (namespace in ns) {
+//                val visibilityFilter =
+//                    resolvedItem.visInfo(adjustScope = stmtUsageScope).createFilter()
+//                if (processor.process(name, element, ns, visibilityFilter)) {
+//                    stop = true
+//                    return@forEachLeafSpeck true
+//                }
+//            }
+//            false
+//        }
+//        if (stop) return true
+//    }
+//    return stop
+//}

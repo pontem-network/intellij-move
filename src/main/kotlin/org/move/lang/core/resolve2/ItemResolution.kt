@@ -4,7 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
@@ -37,7 +37,7 @@ fun processMethodResolveVariants(
             val selfTy = function.selfParamTy(msl) ?: return@wrapWithFilter false
             // need to use TyVar here, loweredType() erases them
             val selfTyWithTyVars =
-                selfTy.foldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
+                selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
         }
         .processAllItems(setOf(Namespace.FUNCTION), itemModule.allNonTestFunctions())
@@ -60,8 +60,8 @@ fun processItemDeclarations(
         val namespace = item.namespace
         if (namespace !in ns) continue
 
-        val visibilityFilter = item.visInfo().createFilter()
-        if (processor.process(name, item, EnumSet.of(namespace), visibilityFilter)) return true
+//        val visibilityFilter = item.visInfo().createFilter()
+        if (processor.process(name, item, setOf(namespace), visibilityFilter = null)) return true
     }
 
     return false

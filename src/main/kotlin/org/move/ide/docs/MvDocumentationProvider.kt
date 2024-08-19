@@ -130,11 +130,11 @@ fun MvElement.signature(builder: StringBuilder) {
         }
 
         is MvNamedFieldDecl -> {
-            val module = this.structItem.module
+            val module = this.fieldOwner.itemElement.module
 //            val itemContext = this.structItem.outerItemContext(msl)
             buffer += module.qualName?.editorText() ?: "unknown"
             buffer += "::"
-            buffer += this.structItem.name ?: angleWrapped("anonymous")
+            buffer += this.fieldOwner.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
             buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(true)}"

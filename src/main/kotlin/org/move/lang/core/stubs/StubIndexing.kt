@@ -16,7 +16,7 @@ fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
     stub.unresolvedQualName?.let {
         when {
-            stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
+//            stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
             stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
             stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
         }
@@ -26,7 +26,7 @@ fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
         stub.resolvedQualName(proj)
             ?.let {
                 when {
-                    stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
+//                    stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
                     stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
                     stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
                 }

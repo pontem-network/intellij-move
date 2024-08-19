@@ -7,4 +7,4 @@ val MvPatStruct.providedFieldNames: Set<String>
     get() =
         patFieldList.map { it.fieldReferenceName }.toSet()
 
-val MvPatStruct.structItem: MvStruct? get() = this.path.reference?.resolveFollowingAliases() as? MvStruct
+//val MvPatStruct.structItem: MvStruct? get() = this.path.reference?.resolveFollowingAliases() as? MvStruct

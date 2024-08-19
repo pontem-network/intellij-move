@@ -7,6 +7,9 @@ import org.move.ide.inspections.fixes.IntegerCastFix
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvFieldsOwner
+import org.move.lang.core.psi.ext.MvItemElement
+import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.ty.*
 
@@ -130,10 +133,10 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
 
     data class CircularType(
         override val element: PsiElement,
-        val structItem: MvStruct
+        val itemElement: MvItemElement
     ) : TypeError(element) {
         override fun message(): String {
-            return "Circular reference of type '${structItem.name}'"
+            return "Circular reference of type '${itemElement.name}'"
         }
 
         override fun innerFoldWith(folder: TypeFolder): TypeError = this

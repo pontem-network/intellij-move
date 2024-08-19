@@ -39,8 +39,8 @@ object ImportCandidateCollector {
             .processElementsByName(project, targetName, searchScope) { element ->
                 val elementNs = element.namespace
                 if (elementNs !in namespaces) return@processElementsByName true
-                val visibilityFilter = element.visInfo().createFilter()
 
+                val visibilityFilter = element.visInfo().createFilter()
                 val visibilityStatus = visibilityFilter.filter(pathElement, namespaces)
                 if (visibilityStatus != Visible) return@processElementsByName true
 

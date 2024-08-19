@@ -22,6 +22,9 @@ fun <T> CachedValuesManager.cache(
     return getCachedValue(dataHolder, key, provider, false)
 }
 
+fun <T> MvElement.psiCacheResult(value: T): CachedValueProvider.Result<T> =
+    this.cacheResult(value, listOf(PsiModificationTracker.MODIFICATION_COUNT))
+
 fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValueProvider.Result<T> {
     return when {
         // The case of injected language. Injected PSI don't have its own event system, so can only

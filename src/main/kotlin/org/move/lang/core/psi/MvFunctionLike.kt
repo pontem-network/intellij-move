@@ -9,7 +9,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.foldTyInferWith
+import org.move.lang.core.types.infer.deepFoldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.Ty
@@ -141,7 +141,7 @@ fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: Co
         val inferenceCtx = InferenceContext(msl)
 
         callTy.paramTypes.forEach {
-            inferenceCtx.combineTypes(it, it.foldTyInferWith { TyUnknown })
+            inferenceCtx.combineTypes(it, it.deepFoldTyInferWith { TyUnknown })
         }
         val expectedTy = completionContext?.expectedTy
         if (expectedTy != null && expectedTy !is TyUnknown) {

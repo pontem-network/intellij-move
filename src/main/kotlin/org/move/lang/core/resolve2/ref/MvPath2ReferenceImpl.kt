@@ -20,8 +20,8 @@ interface InferenceCachedPathElement: MvElement {
     val path: MvPath
 }
 
-class Path2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(element),
-                                           MvPath2Reference {
+class MvPath2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(element),
+                                             MvPath2Reference {
 
     override fun resolve(): MvNamedElement? =
         rawMultiResolveIfVisible().singleOrNull()?.element as? MvNamedElement
@@ -99,21 +99,21 @@ fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: RsResolveProc
     }
 }
 
-fun resolveAliases(processor: RsResolveProcessor): RsResolveProcessor =
-    processor.wrapWithMapper { e: ScopeEntry ->
-        val visEntry = e as? ScopeEntryWithVisibility ?: return@wrapWithMapper e
-        val element = visEntry.element
-        val unaliased = resolveAliases(element)
-        visEntry.copy(element = unaliased)
-//        if (element is MvUseAlias) {
-//            val aliasedPath = element.parentUseSpeck.path
-//            val resolvedItem = aliasedPath.reference?.resolve()
-//            if (resolvedItem != null) {
-//                return@wrapWithMapper visEntry.copy(element = resolvedItem)
-//            }
-//        }
-//        e
-    }
+//fun resolveAliases(processor: RsResolveProcessor): RsResolveProcessor =
+//    processor.wrapWithMapper { e: ScopeEntry ->
+//        val visEntry = e as? ScopeEntryWithVisibility ?: return@wrapWithMapper e
+//        val element = visEntry.element
+//        val unaliased = resolveAliases(element)
+//        visEntry.copy(element = unaliased)
+////        if (element is MvUseAlias) {
+////            val aliasedPath = element.parentUseSpeck.path
+////            val resolvedItem = aliasedPath.reference?.resolve()
+////            if (resolvedItem != null) {
+////                return@wrapWithMapper visEntry.copy(element = resolvedItem)
+////            }
+////        }
+////        e
+//    }
 
 fun resolveAliases(element: MvNamedElement): MvNamedElement {
     if (element is MvUseAlias) {

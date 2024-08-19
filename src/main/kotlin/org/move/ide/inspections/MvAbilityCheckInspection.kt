@@ -9,7 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.structItem
+import org.move.lang.core.psi.ext.fieldOwner
 import org.move.lang.core.types.infer.inferExpectedTypeArgumentTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
@@ -78,7 +78,7 @@ class MvAbilityCheckInspection: MvLocalInspectionTool() {
                             val message =
                                 "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                                         "required by the declared ability '${ability.label()}' " +
-                                        "of the struct '${field.structItem.name}'"
+                                        "of the struct '${field.fieldOwner.name}'"
                             holder.registerProblem(field, message, ProblemHighlightType.GENERIC_ERROR)
                         }
                     }

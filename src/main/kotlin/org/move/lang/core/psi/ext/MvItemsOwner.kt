@@ -5,7 +5,7 @@ import org.move.lang.core.psi.*
 import org.move.stdext.buildList
 
 interface MvItemsOwner: MvElement {
-    val useStmtList: List<MvUseStmt> get() = emptyList()
+    val useStmtList: List<MvUseStmt>
 }
 
 fun MvItemsOwner.items(): Sequence<MvElement> {

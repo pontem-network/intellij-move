@@ -10,7 +10,7 @@ import org.move.ide.inspections.imports.basePathType
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve2.ref.Path2ReferenceImpl
+import org.move.lang.core.resolve2.ref.MvPath2ReferenceImpl
 import java.util.*
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
@@ -157,7 +157,7 @@ val MvPath.qualifier: MvPath?
 
 abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 
-    override fun getReference(): MvPath2Reference? = Path2ReferenceImpl(this)
+    override fun getReference(): MvPath2Reference? = MvPath2ReferenceImpl(this)
 }
 
 fun MvPath.importCandidateNamespaces(): Set<Namespace> {

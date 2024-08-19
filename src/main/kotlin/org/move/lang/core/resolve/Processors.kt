@@ -522,6 +522,7 @@ fun interface VisibilityFilter {
 
 fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
+        val visibilityFilter = this.visibilityFilter ?: this.element.visInfo().createFilter()
         visibilityFilter.filter(methodOrPath, this.namespaces)
     } else {
         Visible
@@ -540,7 +541,7 @@ data class ScopeEntryWithVisibility(
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
     /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
-    val visibilityFilter: VisibilityFilter,
+    val visibilityFilter: VisibilityFilter? = null,
 //    override val subst: Substitution = emptySubstitution,
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
@@ -550,7 +551,7 @@ fun RsResolveProcessor.process(
     name: String,
     e: MvNamedElement,
     ns: Set<Namespace>,
-    visibilityFilter: VisibilityFilter
+    visibilityFilter: VisibilityFilter?
 ): Boolean = process(ScopeEntryWithVisibility(name, e, ns, visibilityFilter))
 
 fun RsResolveProcessor.processAllItems(
@@ -559,15 +560,15 @@ fun RsResolveProcessor.processAllItems(
 ): Boolean {
     return sequenceOf(*collections).flatten().any { itemElement ->
         val name = itemElement.name ?: return false
-        val visibilityFilter = itemElement.visInfo().createFilter()
-        process(ScopeEntryWithVisibility(name, itemElement, namespaces, visibilityFilter))
+//        val visibilityFilter = itemElement.visInfo().createFilter()
+        process(ScopeEntryWithVisibility(name, itemElement, namespaces))
     }
 }
 
 fun RsResolveProcessor.process(
     name: String,
     namespaces: Set<Namespace>,
-    e: MvNamedElement
+    e: MvNamedElement,
 ): Boolean =
     process(SimpleScopeEntry(name, e, namespaces))
 

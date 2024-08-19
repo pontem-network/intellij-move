@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemModule
 import org.move.lang.core.psi.ext.valueArguments
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference.Companion.isCompatibleWithAutoborrow
@@ -32,7 +32,7 @@ class ReplaceWithMethodCallInspection: MvLocalInspectionTool() {
                 if (methodModule != itemModule) return
 
                 val selfTy = function.selfParamTy(msl)
-                    ?.foldTyTypeParameterWith { TyInfer.TyVar(it) } ?: return
+                    ?.deepFoldTyTypeParameterWith { TyInfer.TyVar(it) } ?: return
                 if (selfTy.hasTyUnknown) return
 
                 if (isCompatibleWithAutoborrow(firstArgExprTy, selfTy, msl)) {

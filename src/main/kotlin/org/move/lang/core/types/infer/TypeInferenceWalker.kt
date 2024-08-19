@@ -122,12 +122,7 @@ class TypeInferenceWalker(
         }
     }
 
-    fun resolveTypeVarsWithObligations(ty: Ty): Ty {
-        if (!ty.hasTyInfer) return ty
-        val tyRes = ctx.resolveTypeVarsIfPossible(ty)
-        if (!tyRes.hasTyInfer) return tyRes
-        return ctx.resolveTypeVarsIfPossible(tyRes)
-    }
+    fun resolveTypeVarsIfPossible(ty: Ty): Ty = ctx.resolveTypeVarsIfPossible(ty)
 
     private fun processStatement(stmt: MvStmt) {
         when (stmt) {
@@ -149,13 +144,13 @@ class TypeInferenceWalker(
                     }
                 pat?.extractBindings(
                     this,
-                    explicitTy ?: resolveTypeVarsWithObligations(inferredTy)
+                    explicitTy ?: resolveTypeVarsIfPossible(inferredTy)
                 )
             }
             is MvSchemaFieldStmt -> {
                 val binding = stmt.patBinding
                 val ty = stmt.type?.loweredType(msl) ?: TyUnknown
-                ctx.writePatTy(binding, resolveTypeVarsWithObligations(ty))
+                ctx.writePatTy(binding, resolveTypeVarsIfPossible(ty))
             }
             is MvIncludeStmt -> inferIncludeStmt(stmt)
             is MvUpdateSpecStmt -> inferUpdateStmt(stmt)
@@ -475,7 +470,7 @@ class TypeInferenceWalker(
                 processMethodResolveVariants(methodCall, receiverTy, msl, it)
             }
         val genericItem =
-            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.firstOrNull()
+            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.singleOrNull()
         ctx.resolvedMethodCalls[methodCall] = genericItem
 
         val baseTy =
@@ -522,7 +517,7 @@ class TypeInferenceWalker(
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
             val expectation = Expectation.maybeHasType(expectedInputTy)
             val expectedTy =
-                resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
+                resolveTypeVarsIfPossible(expectation.onlyHasTy(ctx) ?: formalInputTy)
             when (inferArg) {
                 is InferArg.ArgExpr -> {
                     val argExpr = inferArg.expr ?: continue
@@ -589,7 +584,7 @@ class TypeInferenceWalker(
         formalRet: Ty,
         formalArgs: List<Ty>,
     ): List<Ty> {
-        val resolvedFormalRet = resolveTypeVarsWithObligations(formalRet)
+        val resolvedFormalRet = resolveTypeVarsIfPossible(formalRet)
         val retTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
         // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
         // because we don't produce new type variables during unification
@@ -619,8 +614,8 @@ class TypeInferenceWalker(
     fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
         coerceResolved(
             element,
-            resolveTypeVarsWithObligations(inferred),
-            resolveTypeVarsWithObligations(expected)
+            resolveTypeVarsIfPossible(inferred),
+            resolveTypeVarsIfPossible(expected)
         )
 
     private fun coerceResolved(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
@@ -957,7 +952,7 @@ class TypeInferenceWalker(
     }
 
     private fun Ty.supportsOrdering(): Boolean {
-        val ty = resolveTypeVarsWithObligations(this)
+        val ty = resolveTypeVarsIfPossible(this)
         return ty is TyInteger
                 || ty is TyNum
                 || ty is TyInfer.IntVar
