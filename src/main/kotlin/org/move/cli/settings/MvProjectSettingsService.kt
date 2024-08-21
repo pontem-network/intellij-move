@@ -126,6 +126,7 @@ fun Path?.isValidExecutable(): Boolean {
 }
 
 fun isDebugModeEnabled(): Boolean = Registry.`is`("org.move.debug.enabled")
+fun isTypeUnknownAsError(): Boolean = Registry.`is`("org.move.types.highlight.unknown.as.error")
 
 fun debugError(message: String) {
     if (isDebugModeEnabled()) {

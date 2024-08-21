@@ -384,6 +384,10 @@
                  defaultValue="false"
                  restartRequired="false"
                  description="Enable debug mode for Move" />
+    <registryKey key="org.move.types.highlight.unknown.as.error"
+                 defaultValue="false"
+                 restartRequired="false"
+                 description="Show any TyUnknown type as error in the TypeCheckInspection" />
     <registryKey key="org.move.external.linter.max.duration"
                  defaultValue="3000"
                  restartRequired="false"
