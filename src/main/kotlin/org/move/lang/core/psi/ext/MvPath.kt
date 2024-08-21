@@ -10,7 +10,7 @@ import org.move.ide.inspections.imports.basePathType
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve2.ref.Path2ReferenceImpl
+import org.move.lang.core.resolve2.ref.MvPath2ReferenceImpl
 import java.util.*
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
@@ -55,7 +55,7 @@ val MvPath.isUpdateFieldArg2: Boolean
             .ancestorStrict<MvCallExpr>()
             ?.let { if (it.path.textMatches("update_field")) it else null }
             ?.let {
-                val expr = this.ancestorStrict<MvRefExpr>() ?: return@let -1
+                val expr = this.ancestorStrict<MvPathExpr>() ?: return@let -1
                 it.argumentExprs.indexOf(expr)
             }
         return ind == 1
@@ -120,17 +120,17 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         //         ^
         parent is MvPathType && qualifier != null -> TYPES
         parent is MvCallExpr -> FUNCTIONS
-        parent is MvRefExpr
+        parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
 
         // can be anything in completion
-        parent is MvRefExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
+        parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
 //        }
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
-                || parent is MvStructPat
-                || parent is MvEnumVariantPat -> TYPES
+                || parent is MvPatStruct
+                || parent is MvPatConst -> TYPES
         parent is MvAccessSpecifier -> TYPES
         parent is MvAddressSpecifierArg -> FUNCTIONS
         parent is MvAddressSpecifierCallParam -> NAMES
@@ -157,7 +157,7 @@ val MvPath.qualifier: MvPath?
 
 abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 
-    override fun getReference(): MvPath2Reference? = Path2ReferenceImpl(this)
+    override fun getReference(): MvPath2Reference? = MvPath2ReferenceImpl(this)
 }
 
 fun MvPath.importCandidateNamespaces(): Set<Namespace> {

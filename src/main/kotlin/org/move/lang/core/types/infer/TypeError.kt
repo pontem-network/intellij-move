@@ -7,11 +7,11 @@ import org.move.ide.inspections.fixes.IntegerCastFix
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvFieldsOwner
+import org.move.lang.core.psi.ext.MvItemElement
+import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyInteger
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyTuple
+import org.move.lang.core.types.ty.*
 
 sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String
@@ -101,13 +101,13 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     ) : TypeError(element) {
         override fun message(): String {
             return when {
-                element is MvStructPat &&
-                        (assignedTy !is TyStruct && assignedTy !is TyTuple) -> {
+                element is MvPatStruct &&
+                        (assignedTy !is TyAdt && assignedTy !is TyTuple) -> {
                     "Assigned expr of type '${assignedTy.text(fq = false)}' " +
                             "cannot be unpacked with struct pattern"
                 }
-                element is MvTuplePat &&
-                        (assignedTy !is TyStruct && assignedTy !is TyTuple) -> {
+                element is MvPatTuple &&
+                        (assignedTy !is TyAdt && assignedTy !is TyTuple) -> {
                     "Assigned expr of type '${assignedTy.text(fq = false)}' " +
                             "cannot be unpacked with tuple pattern"
                 }
@@ -125,7 +125,7 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
                     val expectedForm = this.types.joinToString(", ", "(", ")") { "_" }
                     "tuple binding of length ${this.types.size}: $expectedForm"
                 }
-                is TyStruct -> "struct binding of type ${this.text(true)}"
+                is TyAdt -> "struct binding of type ${this.text(true)}"
                 else -> "a single variable"
             }
         }
@@ -133,10 +133,10 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
 
     data class CircularType(
         override val element: PsiElement,
-        val structItem: MvStruct
+        val itemElement: MvItemElement
     ) : TypeError(element) {
         override fun message(): String {
-            return "Circular reference of type '${structItem.name}'"
+            return "Circular reference of type '${itemElement.name}'"
         }
 
         override fun innerFoldWith(folder: TypeFolder): TypeError = this

@@ -455,7 +455,7 @@ module 0x1::string_tests {
         }        
     """)
 
-    fun `test resolve item in match arm body`() = checkByCode("""
+    fun `test resolve item in match arm body 1`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
             fun main() {
@@ -463,6 +463,20 @@ module 0x1::string_tests {
                   //X
                 match (m) {
                     S::One => m
+                            //^
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve item in match arm body 2`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                   //X
+                let m = 1;
+                match (m) {
+                    S::One => s
                             //^
                 }
             }

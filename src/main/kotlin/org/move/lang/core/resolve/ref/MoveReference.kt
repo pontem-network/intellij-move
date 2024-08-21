@@ -5,6 +5,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvUseAlias
 import org.move.lang.core.psi.ext.parentUseSpeck
+import org.move.lang.core.resolve2.ref.resolveAliases
 
 interface MvPolyVariantReference : PsiPolyVariantReference {
 
@@ -13,12 +14,14 @@ interface MvPolyVariantReference : PsiPolyVariantReference {
     override fun resolve(): MvNamedElement?
 
     fun resolveFollowingAliases(): MvNamedElement? {
-        val resolved = this.resolve()
-        if (resolved is MvUseAlias) {
-            val aliasedPath = resolved.parentUseSpeck.path
-            return aliasedPath.reference?.resolve()
-        }
-        return resolved
+//        val resolved = this.resolve()
+        return this.resolve()?.let { resolveAliases(it) }
+//        resolveAliases(this.resolve())
+//        if (resolved is MvUseAlias) {
+//            val aliasedPath = resolved.parentUseSpeck.path
+//            return aliasedPath.reference?.resolve()
+//        }
+//        return resolved
     }
 
     fun multiResolve(): List<MvNamedElement>

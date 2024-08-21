@@ -23,9 +23,9 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 .withParent<MvStructLitField>(),
             PlatformPatterns
                 .psiElement()
-                .withParent<MvFieldPat>(),
+                .withParent<MvPatField>(),
             bindingPat()
-                .withSuperParent<MvFieldPat>(2),
+                .withSuperParent<MvPatField>(2),
         )
 
     override fun addCompletions(
@@ -36,15 +36,15 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         val pos = parameters.position
         var element = pos.parent as? MvElement ?: return
 
-        if (element is MvBindingPat) element = element.parent as MvElement
+        if (element is MvPatBinding) element = element.parent as MvElement
 
         val completionCtx = CompletionContext(element, element.isMsl())
         when (element) {
-            is MvFieldPat -> {
-                val structPat = element.structPat
+            is MvPatField -> {
+                val patStruct = element.patStruct
                 addFieldsToCompletion(
-                    structPat.path.maybeStruct ?: return,
-                    structPat.providedFieldNames,
+                    patStruct.path.maybeStruct ?: return,
+                    patStruct.providedFieldNames,
                     result,
                     completionCtx
                 )

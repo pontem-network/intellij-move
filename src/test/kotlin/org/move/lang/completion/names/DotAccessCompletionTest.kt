@@ -85,4 +85,19 @@ module 0x1::M {
             }
         }
     """)
+
+    fun `test no duplicate completions for enum variant fields`() = checkContainsCompletionExact(
+        listOf("field_x", "field_y", "field_z"),
+        """
+            module 0x1::m {
+                enum CommonFields {
+                    Foo{field_x: u64, field_y: u8},
+                    Bar{field_x: u64, field_z: u32}
+                }
+                fun t9_common_field(self: CommonFields): u64 {
+                    self.field/*caret*/
+                }
+            }            
+        """
+    )
 }

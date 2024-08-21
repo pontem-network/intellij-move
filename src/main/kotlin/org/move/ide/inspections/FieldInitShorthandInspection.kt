@@ -11,7 +11,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitStructLitField(field: MvStructLitField) {
             val initExpr = field.expr ?: return
-            if (!(initExpr is MvRefExpr && initExpr.text == field.identifier.text)) return
+            if (!(initExpr is MvPathExpr && initExpr.text == field.identifier.text)) return
             holder.registerProblem(
                 field,
                 "Expression can be simplified",
@@ -20,15 +20,15 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
             )
         }
 
-        override fun visitFieldPatFull(fieldPatFull: MvFieldPatFull) {
-            val fieldName = fieldPatFull.referenceName
-            val binding = fieldPatFull.pat as? MvBindingPat ?: return
+        override fun visitPatFieldFull(patFieldFull: MvPatFieldFull) {
+            val fieldName = patFieldFull.referenceName
+            val binding = patFieldFull.pat as? MvPatBinding ?: return
             if (fieldName == binding.text) {
                 holder.registerProblem(
-                    fieldPatFull,
+                    patFieldFull,
                     "Expression can be simplified",
                     ProblemHighlightType.WEAK_WARNING,
-                    FieldShorthandFix.StructPat(fieldPatFull)
+                    FieldShorthandFix.StructPat(patFieldFull)
                 )
             }
         }
@@ -48,7 +48,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
 
         override fun visitSchemaLitField(schemaField: MvSchemaLitField) {
             val initExpr = schemaField.expr ?: return
-            if (!(initExpr is MvRefExpr && initExpr.text == schemaField.identifier.text)) return
+            if (!(initExpr is MvPathExpr && initExpr.text == schemaField.identifier.text)) return
             holder.registerProblem(
                 schemaField,
                 "Expression can be simplified",

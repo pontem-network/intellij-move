@@ -6,17 +6,16 @@ import com.intellij.navigation.ItemPresentation
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvBlockFields
 import org.move.lang.core.psi.MvNamedFieldDecl
-import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import javax.swing.Icon
 
-val MvNamedFieldDecl.fieldsDefBlock: MvBlockFields?
+val MvNamedFieldDecl.blockFields: MvBlockFields?
     get() =
         parent as? MvBlockFields
 
-val MvNamedFieldDecl.structItem: MvStruct
+val MvNamedFieldDecl.fieldOwner: MvFieldsOwner
     get() =
-        fieldsDefBlock?.parent as MvStruct
+        blockFields?.parent as MvFieldsOwner
 
 abstract class MvNamedFieldDeclMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                       MvNamedFieldDecl {

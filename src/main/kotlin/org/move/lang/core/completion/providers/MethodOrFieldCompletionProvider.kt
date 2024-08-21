@@ -17,10 +17,7 @@ import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
-import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.knownOrNull
+import org.move.lang.core.types.ty.*
 import org.move.lang.core.withParent
 
 object MethodOrFieldCompletionProvider: MvCompletionProvider() {
@@ -49,10 +46,10 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
 
         val ctx = CompletionContext(element, msl, expectedTy)
 
-        val structTy = receiverTy.derefIfNeeded() as? TyStruct
-        if (structTy != null) {
-            collectCompletionVariants(result, ctx, subst = structTy.substitution) {
-                processNamedFieldVariants(element, structTy, msl, it)
+        val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
+        if (tyAdt != null) {
+            collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
+                processNamedFieldVariants(element, tyAdt, msl, it)
             }
         }
 

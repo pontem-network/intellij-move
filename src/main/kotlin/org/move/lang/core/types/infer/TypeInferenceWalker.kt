@@ -10,9 +10,15 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
+import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.resolveSingleResolveVariant
 import org.move.lang.core.resolve2.processMethodResolveVariants
+import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.resolve2.ref.resolveAliases
+import org.move.lang.core.resolve2.ref.resolvePathRaw
+import org.move.lang.core.resolve2.resolveBindingForFieldShorthand
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
@@ -45,7 +51,7 @@ class TypeInferenceWalker(
                 when (specItem) {
                     is MvFunction -> {
                         specItem.parametersAsBindings
-                            .chain(specItem.specFunctionResultParameters.map { it.bindingPat })
+                            .chain(specItem.specFunctionResultParameters.map { it.patBinding })
                             .toList()
                     }
                     else -> emptyList()
@@ -115,12 +121,7 @@ class TypeInferenceWalker(
         }
     }
 
-    fun resolveTypeVarsWithObligations(ty: Ty): Ty {
-        if (!ty.hasTyInfer) return ty
-        val tyRes = ctx.resolveTypeVarsIfPossible(ty)
-        if (!tyRes.hasTyInfer) return tyRes
-        return ctx.resolveTypeVarsIfPossible(tyRes)
-    }
+    fun resolveTypeVarsIfPossible(ty: Ty): Ty = ctx.resolveTypeVarsIfPossible(ty)
 
     private fun processStatement(stmt: MvStmt) {
         when (stmt) {
@@ -140,15 +141,15 @@ class TypeInferenceWalker(
                     } else {
                         pat?.anonymousTyVar() ?: TyUnknown
                     }
-                pat?.collectBindings(
+                pat?.extractBindings(
                     this,
-                    explicitTy ?: resolveTypeVarsWithObligations(inferredTy)
+                    explicitTy ?: resolveTypeVarsIfPossible(inferredTy)
                 )
             }
             is MvSchemaFieldStmt -> {
-                val binding = stmt.bindingPat
+                val binding = stmt.patBinding
                 val ty = stmt.type?.loweredType(msl) ?: TyUnknown
-                ctx.writePatTy(binding, resolveTypeVarsWithObligations(ty))
+                ctx.writePatTy(binding, resolveTypeVarsIfPossible(ty))
             }
             is MvIncludeStmt -> inferIncludeStmt(stmt)
             is MvUpdateSpecStmt -> inferUpdateStmt(stmt)
@@ -211,17 +212,17 @@ class TypeInferenceWalker(
         expected.tyAsNullable(this.ctx)?.let {
             when (expr) {
                 is MvStructLitExpr,
-                is MvRefExpr,
+                is MvPathExpr,
                 is MvDotExpr,
                 is MvCallExpr -> this.ctx.writeExprExpectedTy(expr, it)
             }
         }
 
         val exprTy = when (expr) {
-            is MvRefExpr -> inferRefExprTy(expr)
+            is MvPathExpr -> inferPathExprTy(expr, expected)
             is MvBorrowExpr -> inferBorrowExprTy(expr, expected)
             is MvCallExpr -> inferCallExprTy(expr, expected)
-            is MvAssertBangExpr -> inferMacroCallExprTy(expr)
+            is MvAssertMacroExpr -> inferMacroCallExprTy(expr)
             is MvStructLitExpr -> inferStructLitExprTy(expr, expected)
             is MvVectorLitExpr -> inferVectorLitExpr(expr, expected)
             is MvIndexExpr -> inferIndexExprTy(expr)
@@ -280,7 +281,10 @@ class TypeInferenceWalker(
                 expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
                 TyUnit
             }
-            else -> inferenceErrorOrTyUnknown(expr)
+
+            is MvMatchExpr -> inferMatchExprTy(expr)
+
+            else -> inferenceErrorOrFallback(expr, TyUnknown)
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
@@ -296,7 +300,7 @@ class TypeInferenceWalker(
         return TyUnit
     }
 
-    private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
+    private fun inferPathExprTy(pathExpr: MvPathExpr, expected: Expectation): Ty {
         // special-case `result` inside item spec
 //        if (msl && refExpr.path.text == "result") {
 //            val funcItem = refExpr.ancestorStrict<MvItemSpec>()?.funcItem
@@ -304,27 +308,48 @@ class TypeInferenceWalker(
 //                return funcItem.rawReturnType(true)
 //            }
 //        }
-        val item = refExpr.path.reference?.resolveFollowingAliases() ?: return TyUnknown
+//        val path = pathExpr.path
+//        val resolveVariants = resolvePathRaw(path)
+//        ctx.writePath(path, resolveVariants.map { ResolvedPath.from(it, path)})
+
+        val expectedType = expected.onlyHasTy(ctx)
+        val item = resolvePathElement(pathExpr, expectedType) ?: return TyUnknown
+
         val ty = when (item) {
-            is MvBindingPat -> ctx.getPatType(item)
+            is MvPatBinding -> ctx.getBindingType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStruct -> {
-                if (project.moveSettings.enableIndexExpr && refExpr.parent is MvIndexExpr) {
-                    TyLowering.lowerPath(refExpr.path, item, ctx.msl)
+                if (project.moveSettings.enableIndexExpr && pathExpr.parent is MvIndexExpr) {
+                    TyLowering.lowerPath(pathExpr.path, item, ctx.msl)
                 } else {
                     // invalid statements
                     TyUnknown
                 }
             }
+            is MvEnumVariant -> item.enumItem.declaredType(ctx.msl)
+            is MvModule -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
-                        "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
+                        "of ref expr `${pathExpr.text}` at ${pathExpr.location} cannot be inferred into type",
                 TyUnknown
             )
         }
         return ty
+    }
+
+    fun resolvePathElement(
+        pathElement: InferenceCachedPathElement,
+        expectedType: Ty?
+    ): MvNamedElement? {
+        val path = pathElement.path
+        val resolvedItems = resolvePathRaw(path, expectedType).map { ResolvedItem.from(it, path) }
+        ctx.writePath(path, resolvedItems)
+        // resolve aliases
+        return resolvedItems.singleOrNull { it.isVisible }
+            ?.element
+            ?.let { resolveAliases(it) }
     }
 
     private fun inferAssignmentExprTy(assignExpr: MvAssignmentExpr): Ty {
@@ -348,16 +373,16 @@ class TypeInferenceWalker(
             else -> innerExprTy
         }
 
-        val permissions = RefPermissions.valueOf(borrowExpr.isMut)
-        return TyReference(innerRefTy, permissions, ctx.msl)
+        val mutability = Mutability.valueOf(borrowExpr.isMut)
+        return TyReference(innerRefTy, mutability, ctx.msl)
     }
 
     private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
-        val bindings = lambdaExpr.bindingPatList
+        val bindings = lambdaExpr.patBindingList
         val lambdaTy =
             (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
 
-        for ((i, binding) in lambdaExpr.bindingPatList.withIndex()) {
+        for ((i, binding) in lambdaExpr.patBindingList.withIndex()) {
             val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
             ctx.writePatTy(binding, ty)
         }
@@ -367,15 +392,16 @@ class TypeInferenceWalker(
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
-        val item = path.reference?.resolveFollowingAliases()
+        val namedItem = resolvePathElement(callExpr, expectedType = null)
         val baseTy =
-            when (item) {
+            when (namedItem) {
                 is MvFunctionLike -> {
-                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, item) ?: return TyUnknown
+                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, namedItem)
+                        ?: return TyUnknown
                     itemTy
                 }
-                is MvBindingPat -> {
-                    ctx.getPatType(item) as? TyLambda
+                is MvPatBinding -> {
+                    ctx.getBindingType(namedItem) as? TyLambda
                         ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
                 }
                 else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
@@ -414,16 +440,24 @@ class TypeInferenceWalker(
         }
     }
 
-    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField): Ty {
-        val structTy =
-            receiverTy.derefIfNeeded() as? TyStruct ?: return TyUnknown
+    fun writePatTy(psi: MvPat, ty: Ty): Unit =
+        ctx.writePatTy(psi, ty)
 
-        val field = resolveSingleResolveVariant(dotField.referenceName) {
-            processNamedFieldVariants(dotField, structTy, msl, it)
-        } as? MvNamedFieldDecl
+    fun getResolvedPath(path: MvPath): List<ResolvedItem> {
+        return ctx.resolvedPaths[path] ?: emptyList()
+    }
+
+    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField): Ty {
+        val tyAdt =
+            receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
+
+        val field =
+            resolveSingleResolveVariant(dotField.referenceName) {
+                processNamedFieldVariants(dotField, tyAdt, msl, it)
+            } as? MvNamedFieldDecl
         ctx.resolvedFields[dotField] = field
 
-        val fieldTy = field?.type?.loweredType(msl)?.substitute(structTy.typeParameterValues)
+        val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)
         return fieldTy ?: TyUnknown
     }
 
@@ -435,7 +469,7 @@ class TypeInferenceWalker(
                 processMethodResolveVariants(methodCall, receiverTy, msl, it)
             }
         val genericItem =
-            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.firstOrNull()
+            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.singleOrNull()
         ctx.resolvedMethodCalls[methodCall] = genericItem
 
         val baseTy =
@@ -482,7 +516,7 @@ class TypeInferenceWalker(
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
             val expectation = Expectation.maybeHasType(expectedInputTy)
             val expectedTy =
-                resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
+                resolveTypeVarsIfPossible(expectation.onlyHasTy(ctx) ?: formalInputTy)
             when (inferArg) {
                 is InferArg.ArgExpr -> {
                     val argExpr = inferArg.expr ?: continue
@@ -527,7 +561,7 @@ class TypeInferenceWalker(
         }
     }
 
-    fun inferMacroCallExprTy(macroExpr: MvAssertBangExpr): Ty {
+    fun inferMacroCallExprTy(macroExpr: MvAssertMacroExpr): Ty {
         val ident = macroExpr.identifier
         if (ident.text == "assert") {
             val formalInputTys = listOf(TyBool, TyInteger.default())
@@ -549,7 +583,7 @@ class TypeInferenceWalker(
         formalRet: Ty,
         formalArgs: List<Ty>,
     ): List<Ty> {
-        val resolvedFormalRet = resolveTypeVarsWithObligations(formalRet)
+        val resolvedFormalRet = resolveTypeVarsIfPossible(formalRet)
         val retTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
         // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
         // because we don't produce new type variables during unification
@@ -563,12 +597,24 @@ class TypeInferenceWalker(
         }
     }
 
+    fun inferAttrItem(attrItem: MvAttrItem) {
+        val initializer = attrItem.attrItemInitializer
+        if (initializer != null) initializer.expr?.let { inferExprTy(it) }
+        for (innerAttrItem in attrItem.innerAttrItems) {
+            inferAttrItem(innerAttrItem)
+        }
+    }
+
+    @JvmName("inferType_")
+    fun inferType(expr: MvExpr): Ty =
+        expr.inferType()
+
     // combineTypes with errors
     fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
         coerceResolved(
             element,
-            resolveTypeVarsWithObligations(inferred),
-            resolveTypeVarsWithObligations(expected)
+            resolveTypeVarsIfPossible(inferred),
+            resolveTypeVarsIfPossible(expected)
         )
 
     private fun coerceResolved(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
@@ -599,32 +645,43 @@ class TypeInferenceWalker(
 
     fun inferStructLitExprTy(litExpr: MvStructLitExpr, expected: Expectation): Ty {
         val path = litExpr.path
-        val structItem = path.maybeStruct
-        if (structItem == null) {
+        val expectedType = expected.onlyHasTy(ctx)
+
+        val item = resolvePathElement(litExpr, expectedType) as? MvFieldsOwner
+        if (item == null) {
             for (field in litExpr.fields) {
                 field.expr?.inferType()
             }
             return TyUnknown
         }
 
-        val (structTy, typeParameters) = ctx.instantiateMethodOrPath<TyStruct>(path, structItem)
+        val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
+        val (tyAdt, typeParameters) = ctx.instantiateMethodOrPath<TyAdt>(path, genericItem)
             ?: return TyUnknown
-        expected.onlyHasTy(ctx)?.let { expectedTy ->
+        expectedType?.let { expectedTy ->
             ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
         }
 
         litExpr.fields.forEach { field ->
-            val fieldTy = field.type(msl)?.substitute(structTy.substitution) ?: TyUnknown
+            // todo: can be cached, change field reference impl
+            val namedField =
+                resolveSingleResolveVariant(field.referenceName) { it.processAll(NONE, item.namedFields) }
+                        as? MvNamedFieldDecl
+            val rawFieldTy = namedField?.type?.loweredType(msl)
+            val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
+//            val fieldTy = field.type(msl)?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
-
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
+                val bindingTy = (resolveBindingForFieldShorthand(field).singleOrNull() as? MvPatBinding)
+                    ?.let { ctx.getBindingType(it) }
+                    ?: TyUnknown
+//                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }
-        return structTy
+        return tyAdt
     }
 
     private fun inferSchemaLitTy(schemaLit: MvSchemaLit): Ty {
@@ -649,7 +706,7 @@ class TypeInferenceWalker(
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
+                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }
@@ -659,8 +716,8 @@ class TypeInferenceWalker(
     private fun MvSchemaLitField.type(msl: Boolean) =
         this.resolveToDeclaration()?.type?.loweredType(msl)
 
-    private fun MvStructLitField.type(msl: Boolean) =
-        this.resolveToDeclaration()?.type?.loweredType(msl)
+//    private fun MvStructLitField.type(msl: Boolean) =
+//        this.resolveToDeclaration()?.type?.loweredType(msl)
 
     fun inferVectorLitExpr(litExpr: MvVectorLitExpr, expected: Expectation): Ty {
         val tyVar = TyInfer.TyVar()
@@ -705,7 +762,7 @@ class TypeInferenceWalker(
                     }
                 }
             }
-            receiverTy is TyStruct -> {
+            receiverTy is TyAdt -> {
                 coerce(indexExpr.argExpr, argTy, TyAddress)
                 receiverTy
             }
@@ -727,7 +784,7 @@ class TypeInferenceWalker(
     }
 
     private fun collectQuantBinding(quantBinding: MvQuantBinding) {
-        val bindingPat = quantBinding.bindingPat
+        val bindingPat = quantBinding.binding
         val ty = when (quantBinding) {
             is MvRangeQuantBinding -> {
                 val rangeTy = quantBinding.expr?.inferType()
@@ -894,7 +951,7 @@ class TypeInferenceWalker(
     }
 
     private fun Ty.supportsOrdering(): Boolean {
-        val ty = resolveTypeVarsWithObligations(this)
+        val ty = resolveTypeVarsIfPossible(this)
         return ty is TyInteger
                 || ty is TyNum
                 || ty is TyInfer.IntVar
@@ -986,8 +1043,9 @@ class TypeInferenceWalker(
                 if (ok) {
                     when {
                         ty1 is TyReference && ty2 is TyReference -> {
-                            val combined = ty1.permissions.intersect(ty2.permissions)
-                            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
+                            val minimalMut = ty1.mutability.intersect(ty2.mutability)
+//                            val combined = ty1.permissions.intersect(ty2.permissions)
+                            TyReference(ty1.referenced, minimalMut, ty1.msl || ty2.msl)
                         }
                         else -> ty1
                     }
@@ -1021,7 +1079,7 @@ class TypeInferenceWalker(
                 } else {
                     TyUnknown
                 }
-            val bindingPat = iterCondition.bindingPat
+            val bindingPat = iterCondition.patBinding
             if (bindingPat != null) {
                 this.ctx.writePatTy(bindingPat, bindingTy)
             }
@@ -1038,6 +1096,17 @@ class TypeInferenceWalker(
             inlineBlockExpr != null -> inlineBlockExpr.inferType(expected)
         }
         return TyNever
+    }
+
+    private fun inferMatchExprTy(matchExpr: MvMatchExpr): Ty {
+        val matchingTy = ctx.resolveTypeVarsIfPossible(matchExpr.matchArgument.expr.inferType())
+        val arms = matchExpr.arms
+        for (arm in arms) {
+            arm.pat.extractBindings(matchingTy)
+            arm.expr?.inferType()
+            arm.matchArmGuard?.expr?.inferType(TyBool)
+        }
+        return intersectTypes(arms.mapNotNull { it.expr?.let(ctx::getExprType) })
     }
 
     private fun inferIncludeStmt(includeStmt: MvIncludeStmt) {
@@ -1063,6 +1132,10 @@ class TypeInferenceWalker(
         updateStmt.exprList.forEach { it.inferType() }
     }
 
+    private fun MvPat.extractBindings(ty: Ty) {
+        this.extractBindings(this@TypeInferenceWalker, ty)
+    }
+
     private fun checkTypeMismatch(
         result: CombineTypeError.TypeMismatch,
         element: PsiElement,
@@ -1074,9 +1147,7 @@ class TypeInferenceWalker(
             (expected.containsTyOfClass(IGNORED_TYS) || inferred.containsTyOfClass(IGNORED_TYS))
         ) {
             // report errors with unknown types when &mut is needed, but & is present
-            if (!(expected.permissions.contains(RefPermissions.WRITE)
-                        && !inferred.permissions.contains(RefPermissions.WRITE))
-            ) {
+            if (!(expected.mutability.isMut && !inferred.mutability.isMut)) {
                 return
             }
         }

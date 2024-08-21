@@ -1557,4 +1557,10 @@ module 0x1::pool {
             }            
         }
     """)
+
+    fun `test circular type for enum`() = checkByText("""
+        module 0x1::m {
+            enum S { One { s: <error descr="Circular reference of type 'S'">S</error> }, Two }
+        }        
+    """)
 }

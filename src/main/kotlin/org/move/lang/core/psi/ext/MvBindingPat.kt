@@ -2,7 +2,6 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiReference
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
@@ -11,17 +10,25 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve2.ref.MvBindingPatReferenceImpl
+import org.move.lang.core.types.ty.Mutability
 import javax.swing.Icon
 
-val MvBindingPat.owner: PsiElement?
+val MvPatBinding.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
                 || it is MvSchemaFieldStmt
     }
 
-abstract class MvBindingPatMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
-                                                  MvBindingPat {
+sealed class RsBindingModeKind {
+    data object BindByValue : RsBindingModeKind()
+    class BindByReference(val mutability: Mutability) : RsBindingModeKind()
+}
+
+//val MvPatBinding.kind get() = RsBindingModeKind.BindByValue
+
+abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
+                                                  MvPatBinding {
 
     // XXX: RsPatBinding is both a name element and a reference element:
     //

@@ -66,7 +66,7 @@ fun getLookupElementProperties(
                 is MvFunctionLike -> element.declaredType(msl).retType
                 is MvStruct -> element.declaredType(msl)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
-                is MvBindingPat -> {
+                is MvPatBinding -> {
                     val inference = element.inference(msl)
                     // sometimes type inference won't be able to catch up with the completion, and this line crashes,
                     // so changing to infallible getPatTypeOrUnknown()

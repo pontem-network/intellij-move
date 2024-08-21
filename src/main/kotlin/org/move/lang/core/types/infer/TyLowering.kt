@@ -17,11 +17,10 @@ class TyLowering {
                 lowerPath(moveType.path, genericItem, msl)
             }
             is MvRefType -> {
-                val mutabilities = RefPermissions.valueOf(moveType.mutable)
-                val refInnerType = moveType.type
-                    ?: return TyReference(TyUnknown, mutabilities, msl)
+                val mutability = Mutability.valueOf(moveType.mutable)
+                val refInnerType = moveType.type ?: return TyReference(TyUnknown, mutability, msl)
                 val innerTy = lowerTy(refInnerType, msl)
-                TyReference(innerTy, mutabilities, msl)
+                TyReference(innerTy, mutability, msl)
             }
             is MvTupleType -> {
                 val innerTypes = moveType.typeList.map { lowerTy(it, msl) }
@@ -61,6 +60,7 @@ class TyLowering {
 //                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
                 baseTy.substitute(explicitSubst)
             }
+            is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
             else -> debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",
                 TyUnknown

@@ -95,7 +95,8 @@ module 0x1::match {
             One{i: _} => {}
             _ => {}
             One{i} if consume(i) => Outer::One{i},
-            o => o
+            o => o,
+            Some{value: Option::None} => false,
         }
     }
 

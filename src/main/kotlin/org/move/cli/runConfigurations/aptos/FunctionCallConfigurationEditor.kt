@@ -196,8 +196,8 @@ class FunctionCallConfigurationEditor<T: FunctionCallConfigurationBase>(
         functionParametersPanel.updateFromFunctionCall(FunctionCall.empty())
 
         // refill completion variants
-        val completionVariants = commandHandler.getFunctionCompletionVariants(moveProject)
-        this.functionItemField.setVariants(completionVariants)
+//        val completionVariants = commandHandler.getFunctionCompletionVariants(moveProject)
+//        this.functionItemField.setVariants(completionVariants)
 
     }
 

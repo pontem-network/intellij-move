@@ -100,14 +100,14 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
                 val msl = pat.isMsl()
                 val inference = pat.inference(msl) ?: return
-                for (binding in pat.descendantsOfType<MvBindingPat>()) {
+                for (binding in pat.descendantsOfType<MvPatBinding>()) {
                     if (binding.name.startsWith("_"))
                         continue
-                    presentTypeForBinding(binding, inference.getPatType(binding))
+                    presentTypeForBinding(binding, inference.getBindingType(binding))
                 }
             }
 
-            private fun presentTypeForBinding(binding: MvBindingPat, ty: Ty) {
+            private fun presentTypeForBinding(binding: MvPatBinding, ty: Ty) {
                 if (ty is TyUnknown) return
                 val presentation = typeHintsFactory.typeHint(ty)
                 val offset = binding.endOffset
@@ -143,6 +143,6 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
  */
 private fun isObvious(pat: MvPat, declaration: MvElement?): Boolean =
     when (declaration) {
-        is MvStruct -> pat is MvBindingPat
+        is MvStruct -> pat is MvPatBinding
         else -> false
     }

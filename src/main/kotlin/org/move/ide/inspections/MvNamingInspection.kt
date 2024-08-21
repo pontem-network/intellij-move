@@ -62,9 +62,12 @@ class MvStructNamingInspection : MvNamingInspection("Struct") {
 
 class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
-        override fun visitBindingPat(o: MvBindingPat) {
+        override fun visitPatBinding(o: MvPatBinding) {
+            val parent = o.parent
             // filter out constants
-            if (o.parent is MvConst) return
+            if (parent is MvConst) return
+            // match expr
+            if (parent is MvMatchArm) return
 
             val ident = o.identifier
             val name = ident.text

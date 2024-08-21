@@ -6,13 +6,14 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvModuleStub
+import org.move.lang.core.psi.MvNamedFieldDecl
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.psiFactory
+import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.ty.Ability
-import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.withAdded
 import javax.swing.Icon
 
@@ -36,26 +37,26 @@ val MvStruct.fieldNames: List<String> get() = fields.map { it.name }
 //        return moduleFqName + name
 //    }
 
-val MvStruct.module: MvModule
-    get() {
-        val moduleStub = greenStub?.parentStub as? MvModuleStub
-        if (moduleStub != null) {
-            return moduleStub.psi
-        }
-        return this.parent as MvModule
-    }
+//val MvStruct.module: MvModule
+//    get() {
+//        val moduleStub = greenStub?.parentStub as? MvModuleStub
+//        if (moduleStub != null) {
+//            return moduleStub.psi
+//        }
+//        return this.parent as MvModule
+//    }
 
-val MvStruct.psiAbilities: List<MvAbility>
-    get() {
-        return this.abilitiesList?.abilityList ?: emptyList()
-    }
+//val MvStruct.psiAbilities: List<MvAbility>
+//    get() {
+//        return this.abilitiesList?.abilityList ?: emptyList()
+//    }
 
-val MvStruct.abilities: Set<Ability> get() = this.psiAbilities.mapNotNull { it.ability }.toSet()
+//val MvStruct.abilities: Set<Ability> get() = this.psiAbilities.mapNotNull { it.ability }.toSet()
 
-val MvStruct.hasKey: Boolean get() = Ability.KEY in abilities
-val MvStruct.hasStore: Boolean get() = Ability.STORE in abilities
-val MvStruct.hasCopy: Boolean get() = Ability.COPY in abilities
-val MvStruct.hasDrop: Boolean get() = Ability.DROP in abilities
+//val MvStruct.hasKey: Boolean get() = Ability.KEY in abilities
+//val MvStruct.hasStore: Boolean get() = Ability.STORE in abilities
+//val MvStruct.hasCopy: Boolean get() = Ability.COPY in abilities
+//val MvStruct.hasDrop: Boolean get() = Ability.DROP in abilities
 
 val MvStruct.requiredAbilitiesForTypeParam: Set<Ability>
     get() =
@@ -93,10 +94,6 @@ abstract class MvStructMixin: MvStubbedNamedElementImpl<MvStructStub>,
             val moduleFQName = this.module.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
-
-    override fun declaredType(msl: Boolean): TyStruct {
-        return TyStruct(this, this.tyTypeParams, this.generics)
-    }
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 

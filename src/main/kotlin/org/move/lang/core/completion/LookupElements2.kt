@@ -75,7 +75,7 @@ private fun MvNamedElement.getLookupElementBuilder(
                 .withTypeText(constTy.text(true))
         }
 
-        is MvBindingPat -> {
+        is MvPatBinding -> {
             val bindingInference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
             val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown

@@ -5,9 +5,10 @@ import com.intellij.psi.util.descendantsOfType
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvPathExpr
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.MvInferenceContextOwner
@@ -44,7 +45,14 @@ abstract class TypificationTestCase : MvTestBase() {
 
     protected fun testExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
         InlineFile(myFixture, code, "main.move")
-        check()
+        checkExpr<MvExpr>()
+        if (!allowErrors) checkNoInferenceErrors()
+        checkAllExpressionsTypified()
+    }
+
+    protected fun testRefExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
+        InlineFile(myFixture, code, "main.move")
+        checkExpr<MvPathExpr>()
         if (!allowErrors) checkNoInferenceErrors()
         checkAllExpressionsTypified()
     }
@@ -59,13 +67,13 @@ abstract class TypificationTestCase : MvTestBase() {
 //        allowErrors: Boolean = false
     ) {
         InlineFile(myFixture, code, "main.move")
-        val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvBindingPat>()
+        val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvPatBinding>()
         val expectedType = data.trim()
 
         val msl = bindingPat.isMsl()
         val inference = bindingPat.inference(msl) ?: error("No InferenceContextOwner at the caret")
 
-        val actualType = inference.getPatType(bindingPat).text(true)
+        val actualType = inference.getBindingType(bindingPat).text(true)
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }
@@ -96,9 +104,8 @@ abstract class TypificationTestCase : MvTestBase() {
 //        checkAllExpressionsTypified()
 //    }
 
-    private fun check() {
-        val (expr, data) = myFixture.findElementAndDataInEditor<MvExpr>()
-//        val expectedTypes = data.split("|").map(String::trim)
+    private inline fun <reified T : MvExpr> checkExpr() {
+        val (expr, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
         val msl = expr.isMsl()

@@ -10,8 +10,8 @@ import org.move.lang.core.psi.ext.VisKind.*
 import org.move.lang.core.resolve.ref.Visibility2
 
 interface MvVisibilityOwner: MvElement {
-    val visibilityModifier: MvVisibilityModifier?
-        get() = PsiTreeUtil.getStubChildOfType(this, MvVisibilityModifier::class.java)
+    val visibilityModifier: MvVisibilityModifier? get() = childOfType<MvVisibilityModifier>()
+//        get() = PsiTreeUtil.getStubChildOfType(this, MvVisibilityModifier::class.java)
 
     // restricted visibility considered as public
     val isPublic: Boolean get() = visibilityModifier != null

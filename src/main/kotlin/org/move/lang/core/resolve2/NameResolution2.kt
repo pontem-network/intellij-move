@@ -28,22 +28,22 @@ fun processStructLitFieldResolveVariants(
 }
 
 fun processStructPatFieldResolveVariants(
-    field: MvFieldPatFull,
+    field: MvPatFieldFull,
     processor: RsResolveProcessor
 ): Boolean {
-    val resolved = field.parentStructPat.path.reference?.resolveFollowingAliases()
+    val resolved = field.parentPatStruct.path.reference?.resolveFollowingAliases()
     val resolvedStruct = resolved as? MvFieldsOwner ?: return false
     return processFieldDeclarations(resolvedStruct, processor)
 }
 
-fun processBindingPatResolveVariants(
-    binding: MvBindingPat,
+fun processPatBindingResolveVariants(
+    binding: MvPatBinding,
     isCompletion: Boolean,
     originalProcessor: RsResolveProcessor
 ): Boolean {
     // field pattern shorthand
-    if (binding.parent is MvFieldPat) {
-        val parentPat = binding.parent.parent as MvStructPat
+    if (binding.parent is MvPatField) {
+        val parentPat = binding.parent.parent as MvPatStruct
         val structItem = parentPat.path.reference?.resolveFollowingAliases()
         // can be null if unresolved
         if (structItem is MvFieldsOwner) {
@@ -55,12 +55,12 @@ fun processBindingPatResolveVariants(
     val processor = originalProcessor.wrapWithFilter { entry ->
         if (originalProcessor.acceptsName(entry.name)) {
             val element = entry.element
-            val isFieldless = element.isFieldlessFieldsOwner
+            val isConstantLike = element.isConstantLike
             val isPathOrDestructable = when (element) {
                 is MvEnum, is MvEnumVariant, is MvStruct -> true
                 else -> false
             }
-            isFieldless || (isCompletion && isPathOrDestructable)
+            isConstantLike || (isCompletion && isPathOrDestructable)
         } else {
             false
         }
@@ -114,7 +114,7 @@ fun processModulePathResolveVariants(
     val project = ctx.element.project
     val searchScope = moveProject.searchScope()
 
-    val addrProcessor = processor.wrapWithFilter { e ->
+    val addressMatcher = processor.wrapWithFilter { e ->
         val candidate = e.element as? MvModule ?: return@wrapWithFilter false
         val candidateAddress = candidate.address(moveProject)
         val sameValues = Address.equals(address, candidateAddress)
@@ -128,30 +128,25 @@ fun processModulePathResolveVariants(
         sameValues
     }
 
-    val targetNames = addrProcessor.names
+    val targetNames = addressMatcher.names
+    // completion
     if (targetNames == null) {
-        // completion
         val moduleNames = MvModuleIndex.getAllModuleNames(project)
         moduleNames.forEach { moduleName ->
             val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
             for (module in modules) {
-                if (addrProcessor.process(moduleName, MODULES, module)) return true
+                if (addressMatcher.process(moduleName, MODULES, module)) return true
             }
         }
         return false
     }
 
-    var stop = false
+//    var stop = false
     for (targetModuleName in targetNames) {
-        MvModuleIndex
-            .processModulesByName(project, targetModuleName, searchScope) {
-                val module = it
-                val visFilter = module.visInfo().createFilter()
-                stop = addrProcessor.process(targetModuleName, module, MODULES, visFilter)
-                // true to continue processing, if .process does not find anything, it returns false
-                !stop
-            }
-        if (stop) return true
+        val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
+        for (module in modules) {
+            if (addressMatcher.process(targetModuleName, module, MODULES)) return true
+        }
     }
 
     return false

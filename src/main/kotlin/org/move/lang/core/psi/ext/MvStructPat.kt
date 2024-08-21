@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
+import org.move.lang.core.psi.MvPatStruct
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvStructPat
 
-val MvStructPat.providedFieldNames: Set<String>
+val MvPatStruct.providedFieldNames: Set<String>
     get() =
-        fieldPatList.map { it.fieldReferenceName }.toSet()
+        patFieldList.map { it.fieldReferenceName }.toSet()
 
-val MvStructPat.structItem: MvStruct? get() = this.path.reference?.resolveFollowingAliases() as? MvStruct
+//val MvPatStruct.structItem: MvStruct? get() = this.path.reference?.resolveFollowingAliases() as? MvStruct

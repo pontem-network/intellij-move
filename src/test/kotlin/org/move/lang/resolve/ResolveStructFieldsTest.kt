@@ -246,4 +246,33 @@ class ResolveStructFieldsTest : ResolveTestCase() {
         }        
     """
     )
+
+    fun `test resolve common field for enum type`() = checkMultiResolveByCode("""
+        module 0x1::m {
+            enum User {
+                V1 { name: vector<u8> },
+                    //X
+                V2 { name: vector<u8>, age: vector<u8> },
+                     //X
+            }
+            fun main(user: User) {
+                user.name;
+                    //^
+            }
+        }
+    """)
+
+    fun `test resolve field for a single variant`() = checkMultiResolveByCode("""
+        module 0x1::m {
+            enum User {
+                V1 { name: vector<u8> },
+                V2 { name: vector<u8>, age: vector<u8> },
+                                      //X
+            }
+            fun main(user: User) {
+                user.age;
+                    //^
+            }
+        }
+    """)
 }

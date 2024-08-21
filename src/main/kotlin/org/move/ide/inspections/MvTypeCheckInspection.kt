@@ -4,8 +4,10 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.structItem
+import org.move.lang.core.psi.ext.fieldOwner
+import org.move.lang.core.psi.ext.itemElement
 import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inference
 
@@ -61,15 +63,18 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitNamedFieldDecl(field: MvNamedFieldDecl) {
-                val structItem = field.structItem
-                for (innerType in field.type?.descendantsOfType<MvPathType>().orEmpty()) {
-                    val typeItem = innerType.path.reference?.resolve() as? MvStruct ?: continue
-                    if (typeItem == structItem) {
-                        holder.registerTypeError(TypeError.CircularType(innerType, structItem))
+                val ownerItem = field.fieldOwner.itemElement as MvItemElement
+                val fieldInnerTypes = field.type?.descendantsOfType<MvPathType>().orEmpty()
+                for (fieldInnerType in fieldInnerTypes) {
+                    val innerTypeItem =
+                        fieldInnerType.path.reference?.resolve() as? MvItemElement ?: continue
+                    if (innerTypeItem == ownerItem) {
+                        holder.registerTypeError(TypeError.CircularType(fieldInnerType, ownerItem))
                     }
                 }
             }
         }
+
 
     fun ProblemsHolder.registerTypeError(typeError: TypeError) {
         this.registerProblem(

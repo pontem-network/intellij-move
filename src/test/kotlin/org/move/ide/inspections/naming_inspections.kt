@@ -90,4 +90,16 @@ module 0x1::M {
 }        
     """
     )
+
+    fun `test no error for enum variants in match expr`() = checkByText("""
+        module 0x1::m {
+            fun t8_unqualified_variant(self: Color): bool {
+                match (self) {
+                    RGB{red, green, blue} => red != green && green != blue,
+                    Red => true,
+                    Blue => false,
+                }
+            }
+        }        
+    """)
 }

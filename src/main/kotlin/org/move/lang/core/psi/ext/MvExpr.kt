@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 
 val MvExpr.isAtomExpr: Boolean get() =
     this is MvAnnotatedExpr
@@ -10,7 +11,7 @@ val MvExpr.isAtomExpr: Boolean get() =
             || this is MvDotExpr
             || this is MvIndexExpr
             || this is MvCallExpr
-            || this is MvRefExpr
+            || this is MvPathExpr
             || this is MvLambdaExpr
             || this is MvLitExpr
             || this is MvCodeBlockExpr
@@ -21,7 +22,7 @@ val MvIndexExpr.argExpr: MvExpr get() = exprList.drop(1).first()
 
 val MvExpr.declaration: MvElement?
     get() = when (this) {
-        is PathExpr -> path.reference?.resolve()
+        is InferenceCachedPathElement -> path.reference?.resolve()
         is MvDotExpr -> expr.declaration
         is MvIndexExpr -> receiverExpr.declaration
         else -> null

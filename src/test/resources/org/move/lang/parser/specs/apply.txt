@@ -104,7 +104,7 @@ FILE
               PsiElement(IDENTIFIER)('account')
               PsiElement(:)(':')
               PsiWhiteSpace(' ')
-              MvRefExprImpl(REF_EXPR)
+              MvPathExprImpl(PATH_EXPR)
                 MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('new_account')
             PsiWhiteSpace(' ')

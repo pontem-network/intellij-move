@@ -14,8 +14,8 @@ import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.psi.ext.receiverExpr
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.moveProject
 
 val ACQUIRES_TYPE_CONTEXT: Key<CachedValue<AcquiresTypeContext>> = Key.create("ACQUIRES_TYPE_CONTEXT")
@@ -94,7 +94,7 @@ class AcquiresTypeContext {
 
     fun getIndexExprTypes(indexExpr: MvIndexExpr, inference: InferenceResult): List<Ty> {
         val receiverTy = inference.getExprType(indexExpr.receiverExpr)
-        return if (receiverTy is TyStruct) {
+        return if (receiverTy is TyAdt) {
             listOf(receiverTy)
         } else {
             emptyList()

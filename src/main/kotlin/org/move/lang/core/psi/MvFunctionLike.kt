@@ -9,7 +9,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.foldTyInferWith
+import org.move.lang.core.types.infer.deepFoldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.Ty
@@ -56,24 +56,24 @@ val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
-val MvFunctionLike.parametersAsBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
+val MvFunctionLike.parametersAsBindings: List<MvPatBinding> get() = this.parameters.map { it.patBinding }
 
-val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
+val MvFunctionLike.valueParamsAsBindings: List<MvPatBinding>
     get() {
         val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) !is TyLambda }
-            .map { it.bindingPat }
+            .map { it.patBinding }
     }
 
-val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
+val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
     get() {
         val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) is TyLambda }
-            .map { it.bindingPat }
+            .map { it.patBinding }
     }
 
 val MvFunctionLike.acquiresPathTypes: List<MvPathType>
@@ -141,7 +141,7 @@ fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: Co
         val inferenceCtx = InferenceContext(msl)
 
         callTy.paramTypes.forEach {
-            inferenceCtx.combineTypes(it, it.foldTyInferWith { TyUnknown })
+            inferenceCtx.combineTypes(it, it.deepFoldTyInferWith { TyUnknown })
         }
         val expectedTy = completionContext?.expectedTy
         if (expectedTy != null && expectedTy !is TyUnknown) {

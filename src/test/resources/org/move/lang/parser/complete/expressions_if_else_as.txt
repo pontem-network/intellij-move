@@ -97,7 +97,7 @@ FILE
             MvParensExprImpl(PARENS_EXPR)
               PsiElement(()('(')
               MvAssignmentExprImpl(ASSIGNMENT_EXPR)
-                MvRefExprImpl(REF_EXPR)
+                MvPathExprImpl(PATH_EXPR)
                   MvPathImpl(PATH)
                     PsiElement(IDENTIFIER)('a')
                 PsiWhiteSpace(' ')

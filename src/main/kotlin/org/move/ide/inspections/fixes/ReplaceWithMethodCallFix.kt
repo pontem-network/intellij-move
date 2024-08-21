@@ -29,7 +29,7 @@ class ReplaceWithMethodCallFix(callExpr: MvCallExpr): DiagnosticFix<MvCallExpr>(
         when (selfArgExpr) {
             // all AtomExpr list, same priority as MvDotExpr
             is MvVectorLitExpr, is MvStructLitExpr, is MvTupleLitExpr, is MvParensExpr, is MvAnnotatedExpr,
-            is MvDotExpr, is MvIndexExpr, is MvCallExpr, is MvAssertBangExpr, is MvRefExpr, is MvLambdaExpr,
+            is MvDotExpr, is MvIndexExpr, is MvCallExpr, is MvAssertMacroExpr, is MvPathExpr, is MvLambdaExpr,
             is MvLitExpr, is MvCodeBlockExpr -> {
                 // do nothing, those operations priorities are correct without parens
             }

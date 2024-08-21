@@ -1865,4 +1865,138 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test infer match expr`() = testExpr("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                     //^ 0x1::m::S 
+                    One => true,
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant lhs`() = testBinding("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                    One => {},
+                   //^ 0x1::m::S
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant rhs`() = testExpr("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(s: S) {
+                match (s) {
+                    S::One => s
+                            //^ 0x1::m::S
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two { field: u8 } }
+            fun main(s: S) {
+                match (s) {
+                    One => s.field,
+                            //^ u8
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field destructuring rhs`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two P }
+            fun main(s: S) {
+                match (s) {
+                    One { field } => field,
+                                       //^ u8
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match expr variant field destructuring rhs full`() = testExpr("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+            fun main(s: S) {
+                match (s) {
+                    One { field: myfield } => myfield,
+                                             //^ u8
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match variant field with reference`() = testExpr("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+            enum Outer { None { inner: Inner } }
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None { inner: myinner } => myinner
+                                                //^ &0x1::m::Inner
+                }
+            }
+        }        
+    """)
+
+    fun `test infer match variant field with reference shorthand`() = testExpr("""
+        module 0x1::m {
+            struct Inner { field: u8 }
+            enum Outer { None { inner: Inner } }
+        
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    None { inner } => inner
+                                      //^ &0x1::m::Inner
+                }
+            }
+        }        
+    """)
+
+    fun `test enum variant as value`() = testExpr("""
+        module 0x1::m {
+            enum Option { None }
+            fun main() {
+                let a = Option::None;
+                a;
+              //^ 0x1::m::Option  
+            }
+        }        
+    """)
+
+    fun `test enum variant struct as value with generics` () = testExpr("""
+        module 0x1::m {
+            enum Option<T> { Some { element: T } }
+            fun main() {
+                let a = Option::Some { element: 1u8 };
+                a;
+              //^ 0x1::m::Option<u8>  
+            }
+        }        
+    """)
+
+    fun `test index_of spec function is not resolved so integer parameter cannot be inferred`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let vect = vector[1u8];
+                let ind = 1;
+                index_of(vect, ind);
+                ind;
+                //^ integer
+            }
+        }        
+    """)
 }

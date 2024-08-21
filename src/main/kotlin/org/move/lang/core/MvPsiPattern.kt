@@ -50,7 +50,7 @@ object MvPsiPattern {
             // let S { field } = 1
             //  STRUCT_PAT[FIELD_PAT[BINDING[IDENTIFIER]]]
             //  ^ 3         ^ 2           ^ 1       ^ 0
-            .andNot(psiElement().withSuperParent(3, MvStructPat::class.java))
+            .andNot(psiElement().withSuperParent(3, MvPatStruct::class.java))
 
     fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStatementBeginning("spec"))
 
@@ -58,7 +58,7 @@ object MvPsiPattern {
 
     fun itemSpecRef(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvItemSpecRef>()
 
-    fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
+    fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvPatBinding>()
 
     fun namedAddress(): PsiElementPattern.Capture<MvNamedAddress> = psiElement<MvNamedAddress>()
 
@@ -78,7 +78,7 @@ object MvPsiPattern {
 
     fun refExpr(): PsiElementPattern.Capture<PsiElement> =
         path()
-            .withSuperParent(2, MvRefExpr::class.java)
+            .withSuperParent(2, MvPathExpr::class.java)
 
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
         path()

@@ -112,8 +112,8 @@ class FunctionParametersPanel(
         val outerPanel = this
         return panel {
             val typeParameters = function?.typeParameters.orEmpty()
-            val parameters = function
-                ?.let { commandHandler.getFunctionParameters(function).map { it.bindingPat } }
+            val parameterBindings = function
+                ?.let { commandHandler.getFunctionParameters(function).map { it.patBinding } }
                 .orEmpty()
 
             if (typeParameters.isNotEmpty()) {
@@ -141,12 +141,12 @@ class FunctionParametersPanel(
                     }
                 }
             }
-            if (parameters.isNotEmpty()) {
+            if (parameterBindings.isNotEmpty()) {
                 val msl = false
                 val inference = function!!.inference(msl)
-                for (parameter in parameters) {
-                    val paramName = parameter.name
-                    val paramTy = inference.getPatType(parameter)
+                for (parameterBinding in parameterBindings) {
+                    val paramName = parameterBinding.name
+                    val paramTy = inference.getBindingType(parameterBinding)
                     val paramTyName = FunctionCallParam.tyTypeName(paramTy)
                     row(paramName) {
                         comment(": $paramTyName")

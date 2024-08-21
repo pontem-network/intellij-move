@@ -122,9 +122,7 @@ data class MoveProject(
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
-        if (isUnitTestMode
-            && searchScope == GlobalSearchScope.EMPTY_SCOPE
-        ) {
+        if (isUnitTestMode && searchScope == GlobalSearchScope.EMPTY_SCOPE) {
             // add current file to the search scope for the tests
             val currentFile =
                 FileEditorManager.getInstance(project).selectedTextEditor?.virtualFile

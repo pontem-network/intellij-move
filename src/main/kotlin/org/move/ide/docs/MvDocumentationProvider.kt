@@ -33,7 +33,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (
-            docElement is MvBindingPat && docElement.owner is MvConst
+            docElement is MvPatBinding && docElement.owner is MvConst
         )
             docElement = docElement.owner
 
@@ -48,11 +48,11 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 return "$refName = \"$address\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
-            is MvBindingPat -> {
+            is MvPatBinding -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 val msl = docElement.isMslOnlyItem
                 val inference = docElement.inference(msl) ?: return null
-                val type = inference.getPatType(docElement).renderForDocs(true)
+                val type = inference.getBindingType(docElement).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }
@@ -130,11 +130,11 @@ fun MvElement.signature(builder: StringBuilder) {
         }
 
         is MvNamedFieldDecl -> {
-            val module = this.structItem.module
+            val module = this.fieldOwner.itemElement.module
 //            val itemContext = this.structItem.outerItemContext(msl)
             buffer += module.qualName?.editorText() ?: "unknown"
             buffer += "::"
-            buffer += this.structItem.name ?: angleWrapped("anonymous")
+            buffer += this.fieldOwner.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
             buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(true)}"
@@ -177,7 +177,7 @@ private fun PsiElement.generateDocumentation(
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
 
         is MvFunctionParameter -> {
-            buffer += this.bindingPat.identifier.text
+            buffer += this.patBinding.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
 

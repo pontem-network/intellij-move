@@ -9,27 +9,16 @@ import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.ty.RefPermissions.READ
-import org.move.lang.core.types.ty.RefPermissions.WRITE
-
-enum class RefPermissions {
-    READ,
-    WRITE;
-
-    companion object {
-        fun valueOf(mutable: Boolean): Set<RefPermissions> =
-            if (mutable) setOf(READ, WRITE) else setOf(READ)
-    }
-}
 
 data class TyReference(
     val referenced: Ty,
-    val permissions: Set<RefPermissions>,
+    val mutability: Mutability,
     val msl: Boolean
 ): Ty(referenced.flags) {
+
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
-    val isMut: Boolean get() = this.permissions.contains(WRITE)
+    val isMut: Boolean get() = this.mutability.isMut
 
     fun innerTy(): Ty {
         return if (referenced is TyReference) {
@@ -47,10 +36,10 @@ data class TyReference(
         return ty
     }
 
-    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, this.permissions, this.msl)
+    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, mutability, msl)
 
     override fun innerFoldWith(folder: TypeFolder): Ty =
-        TyReference(referenced.foldWith(folder), permissions, msl)
+        TyReference(referenced.foldWith(folder), mutability, msl)
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
         referenced.visitWith(visitor)
@@ -59,7 +48,7 @@ data class TyReference(
 
     companion object {
         fun ref(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
-            TyReference(ty, if (mut) setOf(READ, WRITE) else setOf(READ), msl)
+            TyReference(ty, Mutability.valueOf(mut), msl)
 
         fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
             return inferred.isMut || !expected.isMut
@@ -87,3 +76,19 @@ data class TyReference(
         }
     }
 }
+
+enum class Mutability {
+    MUTABLE,
+    IMMUTABLE;
+
+    val isMut: Boolean get() = this == MUTABLE
+
+    fun intersect(other: Mutability): Mutability = Companion.valueOf(this.isMut && other.isMut)
+
+    companion object {
+        fun valueOf(mutable: Boolean): Mutability = if (mutable) MUTABLE else IMMUTABLE
+
+//        val DEFAULT_MUTABILITY = MUTABLE
+    }
+}
+

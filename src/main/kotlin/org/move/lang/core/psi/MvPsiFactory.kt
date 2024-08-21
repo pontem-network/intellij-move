@@ -35,7 +35,7 @@ class MvPsiFactory(val project: Project) {
 //        createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
 //            ?: error("Failed to create MvFieldPat")
 
-    fun fieldPatFull(fieldName: String, binding: String): MvFieldPatFull =
+    fun fieldPatFull(fieldName: String, binding: String): MvPatFieldFull =
         createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
             ?: error("Failed to create MvFieldPat")
 
@@ -129,7 +129,7 @@ class MvPsiFactory(val project: Project) {
             ?: error("Failed to create a method member from text: `$text`")
     }
 
-    fun bindingPat(text: String): MvBindingPat {
+    fun bindingPat(text: String): MvPatBinding {
         return createFromText("module 0x1::_DummyModule { fun main() { let S { $text } = 1; }}")
             ?: error("Failed to create a MvBindingPat from text: `$text`")
     }

@@ -216,7 +216,7 @@ FILE
         MvLetStmtImpl(LET_STMT)
           PsiElement(let)('let')
           PsiWhiteSpace(' ')
-          MvBindingPatImpl(BINDING_PAT)
+          MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('x')
           PsiWhiteSpace(' ')
           MvInitializerImpl(INITIALIZER)
