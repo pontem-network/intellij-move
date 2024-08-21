@@ -266,12 +266,13 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
         val namespace = resolvedItem.namespace
         if (namespace in ns) {
             val referenceName = useSpeckItem.referenceName ?: continue
-            val visibilityFilter = resolvedItem.visInfo(adjustScope = useSpeckItem.stmtUsageScope).createFilter()
-            if (processor.process(referenceName, element, ns, visibilityFilter)) return true
-//            if (processor.process(referenceName, element, ns, visibilityFilter)) {
-//                stop = true
-//                return@forEachLeafSpeck true
-//            }
+            if (processor.process(
+                    referenceName,
+                    element,
+                    ns,
+                    adjustedItemScope = useSpeckItem.stmtUsageScope
+                )
+            ) return true
         }
     }
     return false
@@ -333,20 +334,25 @@ private fun MvItemsOwner.getUseSpeckItems(): List<UseSpeckItem> =
         this.psiCacheResult(items)
     }
 
-private data class UseSpeckItem(val speckPath: MvPath, val alias: MvUseAlias?, val stmtUsageScope: NamedItemScope) {
-    val referenceName: String? get() {
-        if (alias != null) {
-            return alias.name
+private data class UseSpeckItem(
+    val speckPath: MvPath,
+    val alias: MvUseAlias?,
+    val stmtUsageScope: NamedItemScope
+) {
+    val referenceName: String?
+        get() {
+            if (alias != null) {
+                return alias.name
 //            alias.name ?: return null
-        } else {
-            var n = speckPath.referenceName ?: return null
-            // 0x1::m::Self -> 0x1::m
-            if (n == "Self") {
-                n = speckPath.qualifier?.referenceName ?: return null
+            } else {
+                var n = speckPath.referenceName ?: return null
+                // 0x1::m::Self -> 0x1::m
+                if (n == "Self") {
+                    n = speckPath.qualifier?.referenceName ?: return null
+                }
+                return n
             }
-            return n
         }
-    }
 }
 
 //private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {

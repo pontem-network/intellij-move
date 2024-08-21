@@ -145,19 +145,8 @@ fun processModulePathResolveVariants(
     for (targetModuleName in targetNames) {
         val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
         for (module in modules) {
-//            val visFilter = module.visInfo().createFilter()
-            if (addressMatcher.process(targetModuleName, module, MODULES, visibilityFilter = null)) return true
-//            stop = addressMatcher.process(targetModuleName, module, MODULES, visFilter)
+            if (addressMatcher.process(targetModuleName, module, MODULES)) return true
         }
-//        MvModuleIndex
-//            .processModulesByName(project, targetModuleName, searchScope) {
-//                val module = it
-//                val visFilter = module.visInfo().createFilter()
-//                stop = addressMatcher.process(targetModuleName, module, MODULES, visFilter)
-//                // true to continue processing, if .process does not find anything, it returns false
-//                !stop
-//            }
-//        if (stop) return true
     }
 
     return false

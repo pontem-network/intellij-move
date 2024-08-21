@@ -5,6 +5,7 @@ import com.intellij.util.SmartList
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
@@ -517,13 +518,12 @@ fun interface VisibilityFilter {
     fun filter(methodOrPath: MvMethodOrPath, ns: Set<Namespace>): VisibilityStatus
 }
 
-//typealias VisibilityFilter = (MvPath, Set<Namespace>) -> VisibilityStatus
-//typealias VisibilityFilter = (MvElement, Lazy<ModInfo?>?) -> VisibilityStatus
-
 fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
-        val visibilityFilter = this.visibilityFilter ?: this.element.visInfo().createFilter()
-        visibilityFilter.filter(methodOrPath, this.namespaces)
+        val visFilter = this.element
+            .visInfo(adjustScope = this.adjustedItemScope)
+            .createFilter()
+        visFilter.filter(methodOrPath, this.namespaces)
     } else {
         Visible
     }
@@ -540,8 +540,11 @@ data class ScopeEntryWithVisibility(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
+
+    val adjustedItemScope: NamedItemScope = MAIN,
+
     /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
-    val visibilityFilter: VisibilityFilter? = null,
+//    val visibilityFilter: VisibilityFilter? = null,
 //    override val subst: Substitution = emptySubstitution,
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
@@ -551,8 +554,8 @@ fun RsResolveProcessor.process(
     name: String,
     e: MvNamedElement,
     ns: Set<Namespace>,
-    visibilityFilter: VisibilityFilter?
-): Boolean = process(ScopeEntryWithVisibility(name, e, ns, visibilityFilter))
+    adjustedItemScope: NamedItemScope = MAIN,
+): Boolean = process(ScopeEntryWithVisibility(name, e, ns, adjustedItemScope))
 
 fun RsResolveProcessor.processAllItems(
     namespaces: Set<Namespace>,
@@ -560,7 +563,6 @@ fun RsResolveProcessor.processAllItems(
 ): Boolean {
     return sequenceOf(*collections).flatten().any { itemElement ->
         val name = itemElement.name ?: return false
-//        val visibilityFilter = itemElement.visInfo().createFilter()
         process(ScopeEntryWithVisibility(name, itemElement, namespaces))
     }
 }

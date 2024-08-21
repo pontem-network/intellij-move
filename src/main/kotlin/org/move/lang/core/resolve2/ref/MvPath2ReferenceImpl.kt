@@ -82,7 +82,6 @@ fun processPathResolveVariantsWithExpectedType(
         ctx,
         pathKind,
         processor = expectedTypeFilterer
-//        processor = resolveAliases(expectedTypeFilterer)
     )
 }
 

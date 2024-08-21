@@ -393,7 +393,6 @@ class TypeInferenceWalker(
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
         val namedItem = resolvePathElement(callExpr, expectedType = null)
-//        val item = path.reference?.resolveFollowingAliases()
         val baseTy =
             when (namedItem) {
                 is MvFunctionLike -> {

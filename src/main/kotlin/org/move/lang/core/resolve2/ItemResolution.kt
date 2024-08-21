@@ -60,8 +60,7 @@ fun processItemDeclarations(
         val namespace = item.namespace
         if (namespace !in ns) continue
 
-//        val visibilityFilter = item.visInfo().createFilter()
-        if (processor.process(name, item, setOf(namespace), visibilityFilter = null)) return true
+        if (processor.process(name, item, setOf(namespace))) return true
     }
 
     return false
