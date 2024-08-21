@@ -7,6 +7,7 @@ import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.ide.inspections.imports.BasePathType
 import org.move.ide.inspections.imports.basePathType
+import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
@@ -176,6 +177,8 @@ fun MvPath.importCandidateNamespaces(): Set<Namespace> {
 }
 
 val MvPath.hasColonColon: Boolean get() = colonColon != null
+
+val MvPath.isColonColonNext: Boolean get() = nextNonWsSibling?.elementType == COLON_COLON
 
 val MvPath.useSpeck: MvUseSpeck? get() = this.rootPath().parent as? MvUseSpeck
 

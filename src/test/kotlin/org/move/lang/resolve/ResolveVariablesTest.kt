@@ -684,4 +684,16 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    @NamedAddress("std", "0x1")
+    fun `test function signer with the address name with existing named address`() = checkByCode("""
+        module 0x1::m {
+            #[test(std = @0x1)]
+            fun test_address(std: &signer) {
+                            //X
+                std;
+               //^ 
+            }
+        }        
+    """)
 }

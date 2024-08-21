@@ -2,6 +2,7 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemHighlightType.ERROR
+import com.intellij.codeInspection.ProblemHighlightType.GENERIC_ERROR
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
 import org.move.cli.settings.isDebugModeEnabled
@@ -26,7 +27,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     val inference = o.inference(msl) ?: return
                     val ty = inference.getExprType(o)
                     if (ty is TyUnknown) {
-                        holder.registerProblem(o, "Unknown type", ERROR)
+                        holder.registerProblem(o, "Unknown type", GENERIC_ERROR)
                     }
                 }
             }
@@ -96,7 +97,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
         this.registerProblem(
             typeError.element,
             typeError.message(),
-            ProblemHighlightType.GENERIC_ERROR,
+            GENERIC_ERROR,
             *(listOfNotNull(typeError.fix()).toTypedArray())
         )
     }
