@@ -10,7 +10,6 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
-import org.move.lang.core.resolve.collectResolveVariants
 import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.resolveSingleResolveVariant
@@ -345,11 +344,12 @@ class TypeInferenceWalker(
         expectedType: Ty?
     ): MvNamedElement? {
         val path = pathElement.path
-
-        val resolveVariants = resolvePathRaw(path, expectedType)
-        ctx.writePath(path, resolveVariants.map { ResolvedItem.from(it, path) })
+        val resolvedItems = resolvePathRaw(path, expectedType).map { ResolvedItem.from(it, path) }
+        ctx.writePath(path, resolvedItems)
         // resolve aliases
-        return resolveVariants.singleOrNull()?.element?.let { resolveAliases(it) }
+        return resolvedItems.singleOrNull { it.isVisible }
+            ?.element
+            ?.let { resolveAliases(it) }
     }
 
     private fun inferAssignmentExprTy(assignExpr: MvAssignmentExpr): Ty {

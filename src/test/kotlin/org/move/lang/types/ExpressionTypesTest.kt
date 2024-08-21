@@ -1987,4 +1987,16 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test index_of spec function is not resolved so integer parameter cannot be inferred`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let vect = vector[1u8];
+                let ind = 1;
+                index_of(vect, ind);
+                ind;
+                //^ integer
+            }
+        }        
+    """)
 }

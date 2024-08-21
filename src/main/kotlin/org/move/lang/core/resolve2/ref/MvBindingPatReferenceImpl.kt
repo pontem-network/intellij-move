@@ -35,13 +35,8 @@ class MvBindingPatReferenceImpl(
         }
     }
 
-    private fun rawCachedMultiResolve(): List<MvNamedElement> {
-        return resolvePatBindingRaw(element, expectedType = null).map { it.element }
-//        return MvResolveCache
-//            .getInstance(element.project)
-//            .resolveWithCaching(element, ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE, Resolver)
-//            .orEmpty()
-    }
+    private fun rawCachedMultiResolve(): List<MvNamedElement> =
+        resolvePatBindingRaw(element, expectedType = null).map { it.element }
 
     override fun handleElementRename(newName: String): PsiElement {
         if (element.parent !is MvPatField) return super.handleElementRename(newName)
@@ -59,28 +54,6 @@ fun resolvePatBindingRaw(binding: MvPatBinding, expectedType: Ty? = null): List<
                 false,
                 filteringProcessor
             )
-//            if (processPatBindingResolveVariants(binding, false, it))
-//                return@collectResolveVariantsAsScopeEntries
-//            if (expectedType != null) {
-//                // expected type is available, can be used to resolve into enum variants
-//                val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
-//                if (enumItem != null) {
-//                    if (it.processAll(TYPES, enumItem.variants)) return@collectResolveVariantsAsScopeEntries
-//                }
             }
     return resolveVariants
-//    val ctx = ResolutionContext(path, false)
-//    val kind = path.pathKind()
-//    val resolveVariants =
-//        collectResolveVariantsAsScopeEntries(path.referenceName) {
-//            if (processPathResolveVariants(ctx, kind, it)) return@collectResolveVariantsAsScopeEntries
-//            if (expectedType != null) {
-//                // expected type is available, can be used to resolve into enum variants
-//                val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
-//                if (enumItem != null) {
-//                    if (it.processAll(kind.ns, enumItem.variants)) return@collectResolveVariantsAsScopeEntries
-//                }
-//            }
-//        }
-//    return resolveVariants
 }

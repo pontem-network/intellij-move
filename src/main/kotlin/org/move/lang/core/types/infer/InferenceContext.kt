@@ -110,7 +110,6 @@ data class InferenceResult(
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
     fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
-//    fun getResolvedPath(path: MvPath): List<ResolvedPath>? = resolvedPaths[path]
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
