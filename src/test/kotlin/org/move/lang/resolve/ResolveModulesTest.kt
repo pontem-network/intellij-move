@@ -474,4 +474,13 @@ module 0x1::string_tests {
             }
         }         
     """)
+
+    fun `test resolve module to the current one with fq path`() = checkByCode("""
+        module 0x1::m {
+                  //X
+            struct Option {}
+            fun main(): 0x1::m::Option {}
+                           //^
+        }        
+    """)
 }

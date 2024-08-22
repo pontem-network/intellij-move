@@ -198,21 +198,6 @@ data class MoveProject(
         }
 
         fun forTests(project: Project): MoveProject {
-//            checkUnitTestMode()
-//            val contentRoot = project.contentRoots.first()
-//            val tomlFile =
-//                PsiFileFactory.getInstance(project)
-//                    .createFileFromText(
-//                        TomlLanguage,
-//                        """
-//                     [package]
-//                     name = "MyPackage"
-//                """
-//                    ) as TomlFile
-//
-//            val moveToml = MoveToml(project, tomlFile)
-//            val movePackage = MovePackage(project, contentRoot, moveToml,
-//                                          declaredTomlAddresses = moveToml.declaredAddresses())
             return MoveProject(
                 project,
                 packageForTests(project),

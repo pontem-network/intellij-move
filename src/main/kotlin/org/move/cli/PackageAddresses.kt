@@ -54,7 +54,7 @@ data class PackageAddresses(
         if (name in this.values) return this.values[name]
         return this.placeholders[name]
             ?.let {
-                AddressVal(Consts.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+                AddressVal(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
             }
     }
 

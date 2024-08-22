@@ -3,7 +3,7 @@ package org.move.ide.newProject
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.Consts
+import org.move.cli.MvConstants
 import org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
@@ -20,7 +20,7 @@ object ProjectInitializationSteps {
             moveTomlFile ?: run {
                 val packageRoot = project.contentRoots.firstOrNull()
                 if (packageRoot != null) {
-                    val manifest = packageRoot.findChild(Consts.MANIFEST_FILE)
+                    val manifest = packageRoot.findChild(MvConstants.MANIFEST_FILE)
                     return@run manifest
                 }
                 return@run null

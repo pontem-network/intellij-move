@@ -1,36 +1,28 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.codeInspection.ProblemHighlightType.ERROR
 import com.intellij.codeInspection.ProblemHighlightType.GENERIC_ERROR
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
-import org.move.cli.settings.isDebugModeEnabled
 import org.move.cli.settings.isTypeUnknownAsError
+import org.move.lang.MvElementTypes.LAMBDA_EXPR
+import org.move.lang.MvElementTypes.MODULE
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.MvItemElement
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.fieldOwner
-import org.move.lang.core.psi.ext.itemElement
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
-import java.rmi.registry.Registry
 
-class MvTypeCheckInspection : MvLocalInspectionTool() {
+class MvTypeCheckInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
-        object : MvVisitor() {
+        object: MvVisitor() {
             override fun visitExpr(o: MvExpr) {
                 super.visitExpr(o)
                 if (isTypeUnknownAsError()) {
-                    val msl = o.isMsl()
-                    val inference = o.inference(msl) ?: return
-                    val ty = inference.getExprType(o)
-                    if (ty is TyUnknown) {
-                        holder.registerProblem(o, "Unknown type", GENERIC_ERROR)
-                    }
+                    checkForUnknownType(o, holder)
                 }
             }
+
             override fun visitItemSpec(o: MvItemSpec) {
                 val inference = o.inference(true)
                 inference.typeErrors
@@ -100,5 +92,36 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             GENERIC_ERROR,
             *(listOfNotNull(typeError.fix()).toTypedArray())
         )
+    }
+}
+
+private val UNIMPLEMENTED_TYPES = setOf(LAMBDA_EXPR)
+
+private fun checkForUnknownType(o: MvExpr, holder: ProblemsHolder) {
+    if (o.elementType in UNIMPLEMENTED_TYPES) return
+
+    val msl = o.isMsl()
+    val inference = o.inference(msl) ?: return
+
+    // skip module references
+    if (o is InferenceCachedPathElement) {
+        val resolvedItems = inference.getResolvedPath(o.path).orEmpty()
+        val resolvedElement = resolvedItems.singleOrNull()?.element
+        if (resolvedElement?.elementType == MODULE) return
+    }
+
+    // skip pragmas
+//    if (o.hasAncestor<MvPragmaSpecStmt>()) return
+
+    // cannot type check correctly due to Intellij platform limitations
+    if (o.isMsl()) return
+//    if (o is MvPathExpr && (o.text == "result" || o.text.startsWith("result_"))) return
+
+    // skip `_`
+    if (o.text == "_") return
+
+    val ty = inference.getExprType(o)
+    if (ty is TyUnknown) {
+        holder.registerProblem(o, "Element of unknown type (${o.elementType})", GENERIC_ERROR)
     }
 }

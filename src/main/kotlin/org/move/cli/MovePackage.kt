@@ -7,8 +7,7 @@ import org.move.cli.manifest.MoveToml
 import org.move.lang.core.psi.MvElement
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.common.isLightTestFile
-import org.move.openapiext.common.isUnitTestMode
+import org.move.openapiext.common.isUnitTestFile
 import org.move.openapiext.pathAsPath
 import org.move.openapiext.resolveExisting
 import org.move.openapiext.toPsiFile
@@ -21,8 +20,8 @@ data class MovePackage(
     val contentRoot: VirtualFile,
     val packageName: String,
     val tomlMainAddresses: PackageAddresses,
-    ) {
-    val manifestFile: VirtualFile get() = contentRoot.findChild(Consts.MANIFEST_FILE)!!
+) {
+    val manifestFile: VirtualFile get() = contentRoot.findChild(MvConstants.MANIFEST_FILE)!!
 
     val manifestTomlFile: TomlFile get() = manifestFile.toPsiFile(project) as TomlFile
     val moveToml: MoveToml get() = MoveToml.fromTomlFile(this.manifestTomlFile)
@@ -87,9 +86,11 @@ data class MovePackage(
     companion object {
         fun fromMoveToml(moveToml: MoveToml): MovePackage {
             val contentRoot = moveToml.tomlFile.virtualFile.parent
-            return MovePackage(moveToml.project, contentRoot,
-                               packageName = moveToml.packageName ?: "",
-                               tomlMainAddresses = moveToml.declaredAddresses())
+            return MovePackage(
+                moveToml.project, contentRoot,
+                packageName = moveToml.packageName ?: "",
+                tomlMainAddresses = moveToml.declaredAddresses()
+            )
         }
     }
 }
@@ -97,7 +98,7 @@ data class MovePackage(
 val MvElement.containingMovePackage: MovePackage?
     get() {
         val elementFile = this.containingFile.virtualFile
-        if (isUnitTestMode && elementFile.isLightTestFile) {
+        if (elementFile.isUnitTestFile) {
             // temp file for light unit tests
             return project.testMoveProject.currentPackage
         }
