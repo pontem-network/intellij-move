@@ -91,19 +91,36 @@ sealed class Diagnostic(
         }
     }
 
-    class StorageAccessIsNotAllowed(
-        path: MvPath,
-        private val typeName: String,
-    ): Diagnostic(path) {
+    sealed class StorageAccessError(path: MvPath): Diagnostic(path) {
+        class WrongModule(
+            path: MvPath,
+            private val correctModuleName: String,
+            private val typeName: String,
+        ): StorageAccessError(path) {
 
-        override fun prepare(): PreparedAnnotation {
-            return PreparedAnnotation(
-                ERROR,
-                "The type '$typeName' was not declared in the current module. " +
-                        "Global storage access is internal to the module"
-            )
+            override fun prepare(): PreparedAnnotation {
+                return PreparedAnnotation(
+                    ERROR,
+                    "Invalid operation: storage operation on type `$typeName` can only be done " +
+                            "within the defining module `$correctModuleName`",
+                )
+            }
+        }
+
+        class WrongItem(
+            path: MvPath,
+            private val itemName: String,
+        ): StorageAccessError(path) {
+            override fun prepare(): PreparedAnnotation {
+                return PreparedAnnotation(
+                    ERROR,
+                    "Expected a struct type. Global storage operations are restricted to struct types " +
+                            "declared in the current module. Found: `$itemName`",
+                )
+            }
         }
     }
+
 
     class FunctionSignatureMismatch(itemSpec: MvItemSpec):
         Diagnostic(

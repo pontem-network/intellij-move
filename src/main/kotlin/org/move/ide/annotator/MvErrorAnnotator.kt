@@ -2,20 +2,19 @@ package org.move.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.fullname
-import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.utils.functionSignature
 import org.move.ide.utils.getSignature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
+import org.move.lang.core.types.fullname
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.TyCallable
-import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.*
 import org.move.lang.moveProject
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
@@ -45,21 +44,39 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 if (outerFunction.isInline) return
 
                 val path = callExpr.path
-                val referenceName = path.referenceName ?: return
                 val item = path.reference?.resolve() ?: return
+                if (item !is MvFunction) return
 
-                if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
-                    val explicitTypeArgs = path.typeArguments
-                    val currentModule = callExpr.containingModule ?: return
-                    for (typeArg in explicitTypeArgs) {
-                        val typeArgTy = typeArg.type.loweredType(false)
-                        if (typeArgTy !is TyUnknown && !typeArgTy.itemDeclaredInModule(currentModule)) {
-                            val typeName = typeArgTy.fullname()
-                            Diagnostic
-                                .StorageAccessIsNotAllowed(path, typeName)
-                                .addToHolder(moveHolder)
-                        }
+                val referenceName = path.referenceName ?: return
+                if (referenceName !in GLOBAL_STORAGE_ACCESS_FUNCTIONS) return
+
+                val currentModule = callExpr.containingModule ?: return
+                val typeArg = path.typeArguments.singleOrNull() ?: return
+
+                val typeArgTy = typeArg.type.loweredType(false)
+                if (typeArgTy is TyUnknown) return
+
+                when {
+                    typeArgTy is TyTypeParameter -> {
+                        val itemName = typeArgTy.origin.name ?: return
+                        Diagnostic.StorageAccessError.WrongItem(path, itemName)
+                            .addToHolder(moveHolder)
+                        return
                     }
+                    // todo: else
+                }
+
+                val itemModule = typeArgTy.declaringModule() ?: return
+                if (currentModule != itemModule) {
+                    val itemModuleName = itemModule.fullname() ?: return
+                    var moduleQualTypeName = typeArgTy.fullname()
+                    if (moduleQualTypeName.split("::").size == 3) {
+                        // fq name
+                        moduleQualTypeName =
+                            moduleQualTypeName.split("::").drop(1).joinToString("::")
+                    }
+                    Diagnostic.StorageAccessError.WrongModule(path, itemModuleName, moduleQualTypeName)
+                        .addToHolder(moveHolder)
                 }
             }
 

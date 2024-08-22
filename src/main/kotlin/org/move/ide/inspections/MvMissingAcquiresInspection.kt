@@ -47,10 +47,11 @@ class MvMissingAcquiresInspection: MvLocalInspectionTool() {
                 val currentModule = outerFunction.module ?: return
                 val missingTypes =
                     callAcquiresTypes.mapNotNull { acqTy ->
-                        when (acqTy) {
-                            is TyTypeParameter ->
+                        when {
+                            // type parameters can be arguments, but only for inline functions
+                            acqTy is TyTypeParameter && outerFunction.isInline ->
                                 acqTy.origin.takeIf { tyOrigin -> existingTypes.all { tyOrigin != it } }
-                            is TyAdt -> {
+                            acqTy is TyAdt -> {
                                 val belongsToTheSameModule = acqTy.item.containingModule == currentModule
                                 if (
                                     belongsToTheSameModule

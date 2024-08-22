@@ -10,6 +10,7 @@ import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.Address.Value
 import org.move.lang.core.types.AddressLit.Companion.normalizeValue
+import org.move.lang.moveProject
 
 const val MAX_LENGTH = 32
 
@@ -209,4 +210,10 @@ fun MvAddressRef.psiStubAddress(): StubAddress {
     }
     val addressText = this.diemAddress?.text ?: this.bech32Address?.text ?: return StubAddress.Unknown
     return StubAddress.Value(addressText)
+}
+
+fun MvModule.fullname(): String? {
+    val addressName = this.address(null)?.text() ?: return null
+    val moduleName = this.name ?: return null
+    return "$addressName::$moduleName"
 }
