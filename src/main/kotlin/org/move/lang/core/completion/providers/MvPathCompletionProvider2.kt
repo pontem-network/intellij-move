@@ -20,6 +20,7 @@ import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariantsWithExpectedType
@@ -95,8 +96,11 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         // no out-of-scope completions for use specks
         if (pathElement.isUseSpeck) return
 
+        // no import candidates for qualified paths
+        if (pathElement.pathKind(true) is PathKind.QualifiedPath) return
+
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
-        val importContext = ImportContext.from(originalPathElement, ns)
+        val importContext = ImportContext.from(originalPathElement, true, ns) ?: return
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
                 parameters,

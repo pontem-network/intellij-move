@@ -1,9 +1,14 @@
 package org.move.utils.tests.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.psi.util.elementType
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
+import org.move.lang.MvElementTypes.L_PAREN
+import org.move.lang.MvElementTypes.R_PAREN
+import org.move.lang.core.psi.ext.MvCallable
+import org.move.lang.core.psi.ext.findFirstParent
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TestProject
@@ -35,8 +40,13 @@ class CompletionTestProjectFixture(
     fun checkNoCompletion() {
         val lookups = codeInsightFixture.completeBasic()
         checkNotNull(lookups) {
-            val element = codeInsightFixture.file.findElementAt(codeInsightFixture.caretOffset - 1)
-            "Expected zero completions, but one completion was auto inserted: `${element?.text}`."
+            val caretOffset = codeInsightFixture.caretOffset
+            var elementAtOffset = codeInsightFixture.file.findElementAt(caretOffset - 1)
+            if (elementAtOffset?.elementType in setOf(L_PAREN, R_PAREN)) {
+                elementAtOffset = elementAtOffset?.findFirstParent { it is MvCallable }
+            }
+//            val element = codeInsightFixture.file.findElementAt(codeInsightFixture.caretOffset - 1)
+            "Expected zero completions, but one completion was auto inserted: `${elementAtOffset?.text}`."
         }
         check(lookups.isEmpty()) {
             "Expected zero completions, got ${lookups.map { it.lookupString }}."

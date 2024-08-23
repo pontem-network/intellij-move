@@ -5,6 +5,8 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.SearchScope
 import org.move.ide.inspections.DiagnosticFix
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
@@ -13,11 +15,9 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.hasAncestor
-import org.move.lang.core.psi.ext.importCandidateNamespaces
-import org.move.lang.core.psi.ext.qualifier
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.moveProject
 import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
@@ -40,8 +40,9 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
         if (element.hasAncestor<MvUseStmt>()) return
 
         val name = element.referenceName ?: return
+        val importContext = ImportContext.from(element, false) ?: return
         val candidates =
-            ImportCandidateCollector.getImportCandidates(ImportContext.from(element), name)
+            ImportCandidateCollector.getImportCandidates(importContext, name)
         if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
@@ -88,7 +89,7 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
             }
 
             val referenceName = path.referenceName ?: return null
-            val importContext = ImportContext.from(path)
+            val importContext = ImportContext.from(path, false) ?: return null
             val candidates =
                 ImportCandidateCollector.getImportCandidates(importContext, referenceName)
             return Context(candidates)
@@ -100,56 +101,23 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
 data class ImportContext private constructor(
     val pathElement: MvPath,
     val ns: Set<Namespace>,
-//    val visibilities: Set<Visibility>,
-//    val contextScopeInfo: ContextScopeInfo,
+    val indexSearchScope: GlobalSearchScope,
 ) {
     companion object {
         fun from(
-            pathElement: MvPath,
-            ns: Set<Namespace>,
-//            visibilities: Set<Visibility>,
-//            contextScopeInfo: ContextScopeInfo
-        ): ImportContext {
-            return ImportContext(pathElement, ns)
-//            return ImportContext(pathElement, ns, visibilities, contextScopeInfo)
+            path: MvPath,
+            isCompletion: Boolean,
+//            ns: Set<Namespace> = path.importCandidateNamespaces(),
+            ns: Set<Namespace> = path.allowedNamespaces(isCompletion),
+        ): ImportContext? {
+            val searchScope = path.moveProject?.searchScope() ?: return null
+            return ImportContext(path, ns, searchScope)
         }
 
-        fun from(path: MvPath): ImportContext {
-            val ns = path.importCandidateNamespaces()
-//            val vs =
-//                if (path.containingScript != null) {
-//                    setOf(Visibility.Public, Visibility.PublicScript)
-//                } else {
-//                    val module = path.containingModule
-//                    if (module != null) {
-//                        setOf(Visibility.Public, Visibility.PublicFriend(module.asSmartPointer()))
-//                    } else {
-//                        setOf(Visibility.Public)
-//                    }
-//                }
-//            val contextScopeInfo = ContextScopeInfo(
-//                letStmtScope = path.letStmtScope,
-//                refItemScopes = path.refItemScopes,
-//            )
-            return ImportContext(path, ns)
-//            return ImportContext(path, ns, vs, contextScopeInfo)
-        }
+//        fun from(path: MvPath): ImportContext? {
+//            val ns = path.importCandidateNamespaces()
+//            val searchScope = path.moveProject?.searchScope() ?: return null
+//            return ImportContext(path, ns, searchScope)
+//        }
     }
 }
-
-//fun MoveFile.qualifiedItems(
-//    targetName: String,
-//    namespaces: Set<Namespace>,
-//    visibilities: Set<Visibility>,
-//    itemVis: ItemVis
-//): List<MvQualNamedElement> {
-//    checkUnitTestMode()
-//    val elements = mutableListOf<MvQualNamedElement>()
-//    processFileItems(this, namespaces, visibilities, itemVis) {
-//        if (it.element is MvQualNamedElement && it.name == targetName) {
-//            elements.add(it.element)
-//        }
-//        false
-//    }
-//    return elements
-//}

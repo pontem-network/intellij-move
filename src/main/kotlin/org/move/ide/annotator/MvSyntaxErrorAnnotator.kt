@@ -89,7 +89,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         if (!module.project.moveSettings.enablePublicPackage) {
             for (function in module.allFunctions()) {
                 val modifier = function.visibilityModifier ?: continue
-                if (modifier.isPublicPackage) {
+                if (modifier.hasPackage) {
                     Diagnostic.PublicPackageIsNotSupportedInCompilerV1(modifier)
                         .addToHolder(holder)
                 }

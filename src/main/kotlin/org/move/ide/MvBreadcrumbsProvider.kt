@@ -43,7 +43,7 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
 
         override fun elementInfo(e: MvModuleSpec): String {
             return buildString {
-                append("spec")
+                append("spec:")
                 append(" ").append(e.path?.text ?: "null")
             }
         }
@@ -54,7 +54,7 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
 
         override fun elementInfo(e: MvItemSpec): String {
             return buildString {
-                append("spec")
+                append("spec:")
                 append(" ").append(e.itemSpecRef?.text ?: "null")
             }
         }

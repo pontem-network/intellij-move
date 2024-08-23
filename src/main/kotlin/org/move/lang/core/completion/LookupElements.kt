@@ -245,14 +245,12 @@ private fun MvNamedElement.getLookupElementBuilder(
                 .withTypeText(fieldTy.text(false))
         }
         is MvConst -> {
-//            val msl = this.isMslOnlyItem
             val constTy = this.type?.loweredType(msl) ?: TyUnknown
             lookupElementBuilder
                 .withTypeText(constTy.text(true))
         }
 
         is MvPatBinding -> {
-//            val msl = this.isMslOnlyItem
             val bindingInference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
             val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown
@@ -262,20 +260,6 @@ private fun MvNamedElement.getLookupElementBuilder(
 
         is MvSchema -> lookupElementBuilder
             .withTypeText(this.containingFile?.name)
-
-        // we need to do the resolve here and in the next one to get the underlying item,
-        // but it should be cached in the most cases
-//        is MvModuleUseSpeck -> {
-//            this.fqModuleRef?.reference?.resolve()
-//                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
-//                ?: lookupElementBuilder
-//        }
-
-//        is MvUseItem -> {
-//            this.reference.resolve()
-//                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
-//                ?: lookupElementBuilder
-//        }
 
         else -> lookupElementBuilder
     }
@@ -287,7 +271,6 @@ private fun MvNamedElement.getLookupElementBuilder(
 private fun InsertionContext.doNotAddOpenParenCompletionChar() {
     if (completionChar == '(') {
         setAddCompletionChar(false)
-//        Testmarks.DoNotAddOpenParenCompletionChar.hit()
     }
 }
 
