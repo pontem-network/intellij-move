@@ -179,7 +179,7 @@ class KeywordCompletionTest: CompletionTestCase() {
         module 0x1::M {
             pub/*caret*/
         }
-    """, listOf("public", "public(script)", "public(friend)", "public(package)")
+    """, listOf("public", "public(friend)", "public(package)")
     )
 
     fun `test public with other function`() = checkContainsCompletion(
@@ -434,14 +434,22 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-    fun `test native struct`() = doSingleCompletion(
+    fun `test no native struct completion as it is not supported`() = checkNoCompletion(
         """
         module 0x1::M {
             native stru/*caret*/
         }
+    """
+    )
+
+    fun `test entry after native`() = doSingleCompletion(
+        """
+        module 0x1::M {
+            native ent/*caret*/
+        }
     """, """
         module 0x1::M {
-            native struct /*caret*/
+            native entry /*caret*/
         }
     """
     )
@@ -451,7 +459,7 @@ class KeywordCompletionTest: CompletionTestCase() {
        module 0x1::M {
         pub/*caret*/ fun main() {}
        }    
-    """, listOf("public", "public(script)", "public(friend)")
+    """, listOf("public", "public(friend)")
     )
 
     @CompilerV2Features(PUBLIC_PACKAGE)
@@ -460,28 +468,8 @@ class KeywordCompletionTest: CompletionTestCase() {
        module 0x1::M {
         pub/*caret*/ fun main() {}
        }    
-    """, listOf("public", "public(script)", "public(friend)", "public(package)")
+    """, listOf("public", "public(friend)", "public(package)")
     )
-
-//    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
-//    module 0x1::M {
-//        public(scr/*caret*/
-//    }
-//    """, """
-//    module 0x1::M {
-//        public(script) fun /*caret*/
-//    }
-//    """)
-//
-//    fun `test public(script) with leading fun adds just modifier`() = doSingleCompletion("""
-//    module 0x1::M {
-//        public(scr/*caret*/ fun
-//    }
-//    """, """
-//    module 0x1::M {
-//        public(script)/*caret*/ fun
-//    }
-//    """)
 
     fun `test no expression keywords at field name position in struct literal`() = checkNoCompletion(
         """

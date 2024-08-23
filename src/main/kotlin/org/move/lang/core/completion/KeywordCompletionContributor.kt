@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.jetbrains.rd.util.remove
 import org.move.cli.settings.moveSettings
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPattern
@@ -44,7 +45,7 @@ class KeywordCompletionContributor: CompletionContributor() {
             CompletionType.BASIC,
             module().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
-                *VIS_MODIFIERS,
+                *(VIS_MODIFIERS.remove("public(script)")),
                 *FUNCTION_MODIFIERS,
                 "native",
                 "fun",
@@ -77,7 +78,7 @@ class KeywordCompletionContributor: CompletionContributor() {
         extend(
             CompletionType.BASIC,
             module().and(identifierStatementBeginningPattern("native")),
-            KeywordCompletionProvider(*VIS_MODIFIERS, "fun", "struct")
+            KeywordCompletionProvider(*VIS_MODIFIERS, "fun", "entry")
         )
         extend(
             CompletionType.BASIC,
