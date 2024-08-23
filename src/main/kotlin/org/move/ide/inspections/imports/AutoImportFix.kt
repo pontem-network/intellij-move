@@ -107,17 +107,10 @@ data class ImportContext private constructor(
         fun from(
             path: MvPath,
             isCompletion: Boolean,
-//            ns: Set<Namespace> = path.importCandidateNamespaces(),
             ns: Set<Namespace> = path.allowedNamespaces(isCompletion),
         ): ImportContext? {
             val searchScope = path.moveProject?.searchScope() ?: return null
             return ImportContext(path, ns, searchScope)
         }
-
-//        fun from(path: MvPath): ImportContext? {
-//            val ns = path.importCandidateNamespaces()
-//            val searchScope = path.moveProject?.searchScope() ?: return null
-//            return ImportContext(path, ns, searchScope)
-//        }
     }
 }

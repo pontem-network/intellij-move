@@ -10,8 +10,7 @@ import org.move.lang.core.resolve.ModInfo
 import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Invisible
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.ref.Namespace.NAME
-import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
@@ -77,19 +76,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
         // types visibility is ignored, their correct usage is checked in a separate inspection
-        if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
-
-//        if (item is MvFunction) {
-//            // check for isEntry scoping
-//            val containingFunction = methodOrPath.containingFunction
-//            if (containingFunction != null) {
-//                if (containingFunction.visInfo().isEntry) {
-//                    return@VisibilityFilter Visible
-//                }
-//            }
-//            if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
-//            return@VisibilityFilter Invisible
-//        }
+        if (namespaces.contains(TYPE) || namespaces.contains(ENUM)) return@VisibilityFilter Visible
 
         when (visibility) {
             is Restricted -> {

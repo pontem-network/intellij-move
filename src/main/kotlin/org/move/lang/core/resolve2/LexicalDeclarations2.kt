@@ -8,6 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
+import org.move.lang.core.resolve.ref.ENUMS
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.NAME
@@ -202,16 +203,8 @@ fun processItemsInScope(
                         processor.processAllItems(
                             TYPES,
                             scope.structs(),
-                            scope.enumList
                         )
                     }
-//                    is MvMatchArm -> {
-//                        if (cameFrom !is MvPat) {
-//                            // came from rhs
-//                            continue
-//                        }
-//                        false
-//                    }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                         val patternTypeParams =
@@ -222,6 +215,13 @@ fun processItemsInScope(
                     else -> false
                 }
                 found
+            }
+
+            Namespace.ENUM -> {
+                if (scope is MvModule) {
+                    if (processor.processAllItems(ENUMS, scope.enumList)) return true
+                }
+                false
             }
 
             Namespace.SCHEMA -> when (scope) {
@@ -254,10 +254,6 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
                 val referenceName = useSpeckItem.referenceName ?: continue
                 // aliased element cannot be resolved, but alias itself is valid, resolve to it
                 if (processor.process(referenceName, NONE, alias)) return true
-//                if (processor.process(referenceName, NONE, alias)) {
-////                    stop = true
-//                    return true
-//                }
             }
             continue
         }

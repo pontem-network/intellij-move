@@ -15,7 +15,7 @@ val MvNamedElement.namespace
     get() = when (this) {
         is MvFunctionLike -> Namespace.FUNCTION
         is MvStruct -> Namespace.TYPE
-        is MvEnum -> Namespace.TYPE
+        is MvEnum -> Namespace.ENUM
         is MvConst -> Namespace.NAME
         is MvSchema -> Namespace.SCHEMA
         is MvModule -> Namespace.MODULE
