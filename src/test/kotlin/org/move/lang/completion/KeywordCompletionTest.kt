@@ -612,22 +612,6 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-//    fun `test bool completion in field initializer`() = doSingleCompletion("""
-//module 0x1::main {
-//    struct Container<Type> { val: Type }
-//    fun main() {
-//        Container<bool> { val: fa/*caret*/ };
-//    }
-//}
-//    """, """
-//module 0x1::main {
-//    struct Container<Type> { val: Type }
-//    fun main() {
-//        Container<bool> { val: false/*caret*/ };
-//    }
-//}
-//    """)
-
     fun `test no completion for reads in v1`() = checkNotContainsCompletion(
         "reads",
         """
@@ -676,4 +660,42 @@ class KeywordCompletionTest: CompletionTestCase() {
             }            
         """,
     )
+
+    fun `test no boolean completion in fq path`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main() {
+                opt::fa/*caret*/
+            }
+        }        
+    """)
+
+    fun `test boolean completion in simple path`() = doSingleCompletion("""
+        module 0x1::m {
+            fun main() {
+                fa/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                false/*caret*/
+            }
+        }        
+    """)
+
+    fun `test boolean completion in field initializer`() = doSingleCompletion("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        Container<bool> { val: fa/*caret*/ };
+    }
+}
+    """, """
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        Container<bool> { val: false/*caret*/ };
+    }
+}
+    """)
 }

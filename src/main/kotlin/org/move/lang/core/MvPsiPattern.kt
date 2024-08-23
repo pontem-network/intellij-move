@@ -13,7 +13,9 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.elementType
+import org.move.lang.core.psi.ext.hasColonColon
 import org.move.lang.core.psi.ext.leftLeaves
 
 object MvPsiPattern {
@@ -123,6 +125,20 @@ object MvPsiPattern {
                 psiElement<PsiErrorElement>().withParent(psiElement<I>())
             )
         )
+
+    val simplePathPattern: PsiElementPattern.Capture<PsiElement>
+        get() {
+            val simplePath = psiElement<MvPath>()
+                .with(object : PatternCondition<MvPath>("SimplePath") {
+                    override fun accepts(path: MvPath, context: ProcessingContext?): Boolean =
+                        path.pathAddress == null &&
+                                path.path == null &&
+//                                path.typeQual == null &&
+                                !path.hasColonColon &&
+                                path.ancestorStrict<MvUseSpeck>() == null
+                })
+            return psiElement().withParent(simplePath)
+        }
 
     class AfterSibling(val sibling: IElementType, val withPossibleError: Boolean = true):
         PatternCondition<PsiElement>("afterSiblingKeywords") {
