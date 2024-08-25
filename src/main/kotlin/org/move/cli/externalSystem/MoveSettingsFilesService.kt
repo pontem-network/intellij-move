@@ -3,7 +3,7 @@ package org.move.cli.externalSystem
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.move.cli.Consts
+import org.move.cli.MvConstants
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
 
@@ -21,7 +21,7 @@ class MoveSettingsFilesService(private val project: Project) {
     private fun MoveProject.collectSettingsFiles(out: MutableSet<String>) {
         for (movePackage in this.movePackages()) {
             val root = movePackage.contentRoot.path
-            out.add("$root/${Consts.MANIFEST_FILE}")
+            out.add("$root/${MvConstants.MANIFEST_FILE}")
         }
     }
 

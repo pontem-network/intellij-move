@@ -14,8 +14,8 @@ class OnMoveTomlCreatedFileListener(
     }
 
     private fun isInterestingEvent(event: VFileEvent): Boolean {
-        return event is VFileCreateEvent && event.path.endsWith(Consts.MANIFEST_FILE)
-                || event is VFilePropertyChangeEvent && event.newPath.endsWith(Consts.MANIFEST_FILE)
+        return event is VFileCreateEvent && event.path.endsWith(MvConstants.MANIFEST_FILE)
+                || event is VFilePropertyChangeEvent && event.newPath.endsWith(MvConstants.MANIFEST_FILE)
     }
 }
 

@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
-import org.move.cli.Consts
+import org.move.cli.MvConstants
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType
@@ -132,7 +132,7 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
     private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
         val environmentMap = linkedMapOf<String, String>()
         if (project.moveSettings.addCompilerV2CLIFlags) {
-            environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
+            environmentMap[MvConstants.MOVE_COMPILER_V2_ENV] = "true"
         }
         return EnvironmentVariablesData.create(environmentMap, true)
     }

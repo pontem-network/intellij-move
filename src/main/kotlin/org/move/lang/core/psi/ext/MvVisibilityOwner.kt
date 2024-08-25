@@ -1,8 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.containingMovePackage
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
 import org.move.lang.core.psi.containingModule
@@ -27,10 +25,11 @@ enum class VisKind(val keyword: String) {
 
 val MvVisibilityModifier.stubVisKind: VisKind
     get() = when {
-        isPublicPackage -> PACKAGE
-        isPublicFriend -> FRIEND
-        isPublicScript -> SCRIPT
-        isPublic -> PUBLIC
+        hasFriend -> FRIEND
+        hasPackage -> PACKAGE
+        hasPublic -> PUBLIC
+        // deprecated, should be at the end
+        hasScript -> SCRIPT
         else -> error("exhaustive")
     }
 
@@ -38,10 +37,11 @@ val MvVisibilityOwner.visibility2: Visibility2
     get() {
         val kind = this.visibilityModifier?.stubVisKind ?: return Visibility2.Private
         return when (kind) {
-            PACKAGE -> Visibility2.Restricted.Package(lazy { this.containingMovePackage })
+            PACKAGE -> Visibility2.Restricted.Package()
+//            PACKAGE -> Visibility2.Restricted.Package(lazy { this.containingMovePackage })
             FRIEND -> {
-                val module = this.containingModule ?: return Visibility2.Private
-                Visibility2.Restricted.Friend(lazy { module.friendModules })
+//                val module = this.containingModule ?: return Visibility2.Private
+                Visibility2.Restricted.Friend(/*lazy { module.friendModules }*/)
             }
             // public(script) == public entry
             SCRIPT -> Visibility2.Public

@@ -1,5 +1,6 @@
 package org.move.lang.types
 
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypesTest : TypificationTestCase() {
@@ -413,16 +414,6 @@ class ExpressionTypesTest : TypificationTestCase() {
     }    
     """
     )
-
-//    fun `test type of result variable in fun spec is return type`() = testExpr("""
-//    module 0x1::M {
-//        fun call(): address { @0x1 }
-//        spec call {
-//            result;
-//            //^ address
-//        }
-//    }
-//    """)
 
     fun `test old function type for spec`() = testExpr(
         """
@@ -1998,5 +1989,18 @@ module 0x1::main {
                 //^ integer
             }
         }        
+    """)
+
+    fun `test tuple result type of spec function with generic`() = testExpr("""
+    module 0x1::m {
+        struct Option<Element> has copy, drop, store {
+            vec: vector<Element>
+        }
+        fun upsert(): Option<u8> { Option { vec: vector[1] } }
+        spec upsert {
+            result;
+            //^ 0x1::m::Option<num>
+        }
+    }
     """)
 }

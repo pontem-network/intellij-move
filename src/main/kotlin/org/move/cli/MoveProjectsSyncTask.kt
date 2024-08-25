@@ -107,7 +107,7 @@ class MoveProjectsSyncTask(
         val moveProjects = mutableListOf<MoveProject>()
 
         for (contentRoot in project.contentRoots) {
-            contentRoot.iterateFiles({ it.name == Consts.MANIFEST_FILE }) { moveTomlFile ->
+            contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
                 indicator.checkCanceled()
 
                 val projectDirName = moveTomlFile.parent.name
@@ -301,7 +301,7 @@ class MoveProjectsSyncTask(
                 if (depId in visitedIds) continue
 
                 val depTomlFile = depRoot
-                    .resolveExisting(Consts.MANIFEST_FILE)
+                    .resolveExisting(MvConstants.MANIFEST_FILE)
                     ?.toVirtualFile()
                     ?.toTomlFile(project) ?: continue
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)

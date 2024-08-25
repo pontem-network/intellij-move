@@ -31,15 +31,19 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 fun MvModule.addressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
-val MvModule.friendModules: Set<MvModule>
+val MvModule.friendModules: Sequence<MvModule>
     get() {
-        val friendModulePaths = this.friendDeclList.mapNotNull { it.path }
-        val friends = mutableSetOf<MvModule>()
-        for (modulePath in friendModulePaths) {
-            val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
-            friends.add(module)
-        }
-        return friends
+        return this.friendDeclList
+            .asSequence()
+            .mapNotNull { it.path?.reference?.resolveFollowingAliases() as? MvModule }
+//        return sequence {
+//        }
+//        val friends = mutableSetOf<MvModule>()
+//        for (modulePath in friendModulePaths) {
+//            val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
+//            friends.add(module)
+//        }
+//        return friends
     }
 
 fun MvModule.allFunctions(): List<MvFunction> {

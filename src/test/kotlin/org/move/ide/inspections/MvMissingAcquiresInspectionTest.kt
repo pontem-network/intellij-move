@@ -253,4 +253,13 @@ module 0x1::main {
     }    
     """
     )
+
+    fun `test no error for generic type parameter for non inline function`() = checkErrors("""
+module 0x1::m {
+    fun main<Contract: key>() {
+        let c = borrow_global<Contract>(@0x1);
+        c;
+    }
+}               
+    """)
 }

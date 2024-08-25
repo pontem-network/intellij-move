@@ -56,4 +56,33 @@ class FunctionsCompletionTreeProjectTest : CompletionProjectTestCase() {
         }
     """
     )
+
+    fun `test no candidates for non module items if module fq path`() = checkNoCompletion {
+        namedMoveToml("MyPackage")
+        sources {
+            move("option.move", """
+                module 0x1::option {
+                    struct Option<Element> has copy, drop, store {
+                       vec: vector<Element>
+                    }
+                    public fun none<Element>(): Option<Element> {
+                        Option { vec: vector[] }
+                    }
+                }
+            """)
+            move("delegation.move", """
+                module 0x1::delegation {
+                    public fun none_matched() {}
+                }                
+            """)
+            move("main.move", """
+                module 0x1::main {
+                    use 0x1::option;
+                    fun main() {
+                        option::none_ma/*caret*/
+                    }
+                }                                
+            """)
+        }
+    }
 }

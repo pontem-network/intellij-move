@@ -35,7 +35,7 @@ import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
-import org.move.openapiext.common.isLightTestFile
+import org.move.openapiext.common.isUnitTestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.debugInProduction
 import org.move.openapiext.toVirtualFile
@@ -64,7 +64,7 @@ class MoveProjectsService(val project: Project): Disposable {
 
     val hasAtLeastOneValidProject: Boolean get() = this.allProjects.isNotEmpty()
 
-    fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
+    fun scheduleProjectsRefresh(reason: String?): CompletableFuture<List<MoveProject>> {
         LOG.logOrShowBalloon("Refresh Projects ($reason)")
         return modifyProjectModel {
             doRefreshProjects(project, reason)
@@ -121,6 +121,7 @@ class MoveProjectsService(val project: Project): Disposable {
             else -> {
                 val containingFile =
                     try {
+                        // WARN: it fails with types of special psi factory generated items
                         psiElement.containingFile
                     } catch (e: PsiInvalidElementAccessException) {
                         val parentsChain =
@@ -137,6 +138,7 @@ class MoveProjectsService(val project: Project): Disposable {
                             }
                         }
                     }
+                // returns LightVirtualFile for non-physical files
                 containingFile?.originalFile?.virtualFile
             }
         } ?: return null
@@ -166,7 +168,7 @@ class MoveProjectsService(val project: Project): Disposable {
         val cached = this.fileToMoveProjectCache.get(file)
         if (cached is CacheEntry.Present) return cached.value
 
-        if (isUnitTestMode && file.isLightTestFile) return project.testMoveProject
+        if (file.isUnitTestFile) return project.testMoveProject
 
         val filePath = file.toNioPathOrNull() ?: return null
 

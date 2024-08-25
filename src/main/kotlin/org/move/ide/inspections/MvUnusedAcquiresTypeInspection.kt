@@ -5,13 +5,14 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.fullnameNoArgs
-import org.move.ide.presentation.itemDeclaredInModule
+import org.move.ide.presentation.declaringModule
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.types.infer.AcquireTypesOwnerVisitor
 import org.move.lang.core.types.infer.acquiresContext
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 
 
@@ -40,15 +41,18 @@ class MvUnusedAcquiresTypeInspection: MvLocalInspectionTool() {
 
                 val unusedTypeIndices = mutableListOf<Int>()
                 val visitedTypes = mutableSetOf<String>()
-                for ((i, pathType) in function.acquiresPathTypes.withIndex()) {
-                    val ty = pathType.loweredType(false)
-                    if (!ty.itemDeclaredInModule(currentModule)) {
+                for ((i, acqPathType) in function.acquiresPathTypes.withIndex()) {
+                    val acqItemTy = acqPathType.loweredType(false)
+                    if (acqItemTy is TyUnknown) continue
+
+                    val tyItemModule = acqItemTy.declaringModule() ?: continue
+                    if (tyItemModule != currentModule) {
                         unusedTypeIndices.add(i)
                         continue
                     }
 
                     // check for duplicates
-                    val tyFullName = ty.fullnameNoArgs()
+                    val tyFullName = acqItemTy.fullnameNoArgs()
                     if (tyFullName in visitedTypes) {
                         unusedTypeIndices.add(i)
                         continue

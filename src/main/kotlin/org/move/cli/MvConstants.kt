@@ -15,10 +15,12 @@ object MvProjectLayout {
     }
 }
 
-object Consts {
+object MvConstants {
     const val MANIFEST_FILE = "Move.toml"
     const val ADDR_PLACEHOLDER = "_"
     const val MOVE_COMPILER_V2_ENV = "MOVE_LANGUAGE_V2"
+
+    const val PSI_FACTORY_DUMMY_FILE = "DUMMY_PSI_FACTORY.move"
 
     val PROJECT_SYSTEM_ID = ProjectSystemId("Move")
 }

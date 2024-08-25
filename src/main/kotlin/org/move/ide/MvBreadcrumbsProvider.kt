@@ -15,12 +15,15 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
 
     private val handlers = listOf<MvElementHandler<*>>(
         MvModuleHandler,
+        MvModuleSpecHandler,
+        MvItemSpecHandler,
         MvFunctionHandler,
         MvIfHandler,
         MvElseHandler,
         MvWhileHandler,
         MvBlockHandler,
         MvNamedHandler,
+        MvForHandler,
     )
 
     private object MvNamedHandler : MvElementHandler<MvNamedElement> {
@@ -33,6 +36,28 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
         override fun accepts(e: PsiElement): Boolean = e is MvModule
 
         override fun elementInfo(e: MvModule): String = e.qualName?.editorText() ?: "null"
+    }
+
+    private object MvModuleSpecHandler : MvElementHandler<MvModuleSpec> {
+        override fun accepts(e: PsiElement): Boolean = e is MvModuleSpec
+
+        override fun elementInfo(e: MvModuleSpec): String {
+            return buildString {
+                append("spec:")
+                append(" ").append(e.path?.text ?: "null")
+            }
+        }
+    }
+
+    private object MvItemSpecHandler : MvElementHandler<MvItemSpec> {
+        override fun accepts(e: PsiElement): Boolean = e is MvItemSpec
+
+        override fun elementInfo(e: MvItemSpec): String {
+            return buildString {
+                append("spec:")
+                append(" ").append(e.itemSpecRef?.text ?: "null")
+            }
+        }
     }
 
     private object MvFunctionHandler : MvElementHandler<MvFunction> {
@@ -53,7 +78,6 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
         override fun elementInfo(e: MvIfExpr): String {
             return buildString {
                 append("if")
-
                 val condition = e.condition
                 if (condition != null) {
                     if (condition.expr is MvCodeBlock) {
@@ -78,7 +102,6 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
         override fun elementInfo(e: MvWhileExpr): String {
             return buildString {
                 append("while")
-
                 val condition = e.condition
                 if (condition != null) {
                     if (condition.expr is MvCodeBlock) {
@@ -86,6 +109,26 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
                     } else {
                         append(' ').append(condition.text.truncate(TextKind.INFO))
                     }
+                }
+            }
+        }
+    }
+
+    private object MvForHandler : MvElementHandler<MvForExpr> {
+        override fun accepts(e: PsiElement): Boolean = e is MvForExpr
+
+        override fun elementInfo(e: MvForExpr): String {
+            return buildString {
+                append("for")
+                val condition = e.forIterCondition
+                if (condition != null) {
+                    append('(')
+                    val binding = condition.patBinding
+                    if (binding != null) {
+                        append(binding.text)
+                    }
+                    append(" in ").append(condition.expr?.text?.truncate(TextKind.INFO))
+                    append(')')
                 }
             }
         }

@@ -92,10 +92,12 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
 
         // outside use stmt context
         if (moveProject != null) {
-            // try whether it's a named address
-            val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
-            if (namedAddress != null) {
-                return PathKind.NamedAddress(namedAddress)
+            // check whether there's a '::' after it, then try for a named address
+            if (this.isColonColonNext) {
+                val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
+                if (namedAddress != null) {
+                    return PathKind.NamedAddress(namedAddress)
+                }
             }
         }
 

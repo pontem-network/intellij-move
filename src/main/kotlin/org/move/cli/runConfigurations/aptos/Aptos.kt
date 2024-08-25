@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
-import org.move.cli.Consts
+import org.move.cli.MvConstants
 import org.move.cli.MoveProject
 import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.externalLinter.externalLinterSettings
@@ -54,7 +54,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
-            checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
+            checkNotNull(rootDirectory.findChild(MvConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
         return Ok(manifest)
     }
 
@@ -109,8 +109,8 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 args.moveProjectDirectory,
                 environmentVariables = args.envs.let {
                     val environmentMap = it.toMutableMap()
-                    if (args.addCompilerV2Flags && Consts.MOVE_COMPILER_V2_ENV !in environmentMap) {
-                        environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
+                    if (args.addCompilerV2Flags && MvConstants.MOVE_COMPILER_V2_ENV !in environmentMap) {
+                        environmentMap[MvConstants.MOVE_COMPILER_V2_ENV] = "true"
                     }
                     EnvironmentVariablesData.create(environmentMap, true)
                 }

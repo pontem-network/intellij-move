@@ -19,7 +19,8 @@ import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.MODULE
-import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
+import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.processPathResolveVariantsWithExpectedType
@@ -27,6 +28,7 @@ import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.stdext.intersects
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement> get() = path()
@@ -46,7 +48,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         val pathKind = pathElement.pathKind(true)
         val ns = pathKind.ns
-        val structAsType = TYPE in ns
+        val structAsType = TYPES_N_ENUMS.intersects(ns)
 
         val completionContext = CompletionContext(
             pathElement,
@@ -95,8 +97,11 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         // no out-of-scope completions for use specks
         if (pathElement.isUseSpeck) return
 
+        // no import candidates for qualified paths
+        if (pathElement.pathKind(true) is PathKind.QualifiedPath) return
+
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
-        val importContext = ImportContext.from(originalPathElement, ns)
+        val importContext = ImportContext.from(originalPathElement, true, ns) ?: return
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
                 parameters,

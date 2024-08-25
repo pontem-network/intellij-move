@@ -10,8 +10,7 @@ import org.move.lang.core.resolve.ModInfo
 import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Invisible
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.ref.Namespace.NAME
-import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
@@ -23,13 +22,6 @@ data class ItemVisibilityInfo(
 
 fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityInfo {
     val visibility = (this as? MvVisibilityOwner)?.visibility2 ?: Public
-//    var isEntry = false
-//    if (this is MvFunction) {
-//        isEntry = (this as? MvFunction)?.isEntry ?: false
-//        if (!isEntry && this.visibilityModifier?.isPublicScript == true) {
-//            isEntry = true
-//        }
-//    }
     return ItemVisibilityInfo(this, adjustScope, visibility)
 }
 
@@ -84,52 +76,29 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
         // types visibility is ignored, their correct usage is checked in a separate inspection
-        if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
-
-//        if (item is MvFunction) {
-//            // check for isEntry scoping
-//            val containingFunction = methodOrPath.containingFunction
-//            if (containingFunction != null) {
-//                if (containingFunction.visInfo().isEntry) {
-//                    return@VisibilityFilter Visible
-//                }
-//            }
-//            if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
-//            return@VisibilityFilter Invisible
-//        }
+        if (namespaces.contains(TYPE) || namespaces.contains(ENUM)) return@VisibilityFilter Visible
 
         when (visibility) {
             is Restricted -> {
                 when (visibility) {
                     is Restricted.Friend -> {
-                        if (pathModule != null) {
-                            val friendModules = visibility.friendModules.value
-                            if (friendModules.any {
-                                    isModulesEqual(
-                                        it,
-                                        pathModule
-                                    )
-                                }) return@VisibilityFilter Visible
+                        if (pathModule != null && itemModule != null) {
+                            val friendModules = itemModule.friendModules
+                            if (friendModules.any { isModulesEqual(it, pathModule) }) {
+                                return@VisibilityFilter Visible
+                            }
                         }
                         Invisible
                     }
-//                    is Restricted.Script -> {
-//                        val containingFunction = methodOrPath.containingFunction
-//                        if (containingFunction != null) {
-//                            if (containingFunction.isEntry || containingFunction.isPublicScript
-//                            ) return@VisibilityFilter Visible
-//                        }
-//                        if (methodOrPath.containingScript != null) return@VisibilityFilter Visible
-//                        Invisible
-//                    }
                     is Restricted.Package -> {
                         if (!item.project.moveSettings.enablePublicPackage) {
                             return@VisibilityFilter Invisible
                         }
                         val pathPackage =
                             methodOrPath.containingMovePackage ?: return@VisibilityFilter Invisible
-                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
-                        if (pathPackage == originPackage) Visible else Invisible
+                        val itemPackage = item.containingMovePackage ?: return@VisibilityFilter Invisible
+//                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
+                        if (pathPackage == itemPackage) Visible else Invisible
                     }
                 }
             }

@@ -5,15 +5,9 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.types.ty.*
 
-fun Ty.itemDeclaredInModule(mod: MvModule): Boolean {
-    if (this is TyUnknown) return true
-    // no declaring module means builtin
-    val declaringMod = this.getDeclaringModule() ?: return false
-    return declaringMod == mod
-}
-
-private fun Ty.getDeclaringModule(): MvModule? = when (this) {
-    is TyReference -> this.referenced.getDeclaringModule()
+// null -> builtin module
+fun Ty.declaringModule(): MvModule? = when (this) {
+    is TyReference -> this.referenced.declaringModule()
     is TyAdt -> this.item.containingModule
     else -> null
 }
@@ -35,7 +29,7 @@ fun Ty.fullname(): String {
 }
 
 fun Ty.typeLabel(relativeTo: MvElement): String {
-    val typeModule = this.getDeclaringModule()
+    val typeModule = this.declaringModule()
     if (typeModule != null && typeModule != relativeTo.containingModule) {
         return this.fullname()
     } else {

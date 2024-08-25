@@ -29,7 +29,7 @@ class MoveToml(
         val placeholders = placeholderMap()
         for ((addressName, addressVal) in raws.entries) {
             val (value, tomlKeyValue) = addressVal
-            if (addressVal.first == Consts.ADDR_PLACEHOLDER) {
+            if (addressVal.first == MvConstants.ADDR_PLACEHOLDER) {
                 placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
             } else {
                 values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)

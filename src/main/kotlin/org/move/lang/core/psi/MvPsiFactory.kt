@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
 import org.intellij.lang.annotations.Language
+import org.move.cli.MvConstants
 import org.move.ide.utils.FunctionSignature
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
@@ -197,7 +198,7 @@ class MvPsiFactory(val project: Project) {
     inline fun <reified T : MvElement> createFromText(@Language("Move") code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
-                "DUMMY.move",
+                MvConstants.PSI_FACTORY_DUMMY_FILE,
                 MoveFileType,
                 code
             ) as MoveFile

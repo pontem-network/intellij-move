@@ -433,7 +433,6 @@ private class CompletionVariantsCollector(
 
     override fun process(entry: ScopeEntry): Boolean {
 //        addEnumVariantsIfNeeded(entry)
-
         result.addElement(
             createLookupElement(
                 scopeEntry = entry,

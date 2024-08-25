@@ -5,6 +5,7 @@ import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
 class ImportCandidatesTest : MvProjectTestBase() {
@@ -214,9 +215,37 @@ module 0x1::main {
 //            }
 //        }
 
-    fun checkCandidates(
-        tree: FileTreeBuilder.() -> Unit
-    ) {
+    fun `test no candidates for non module items if module fq path`() = checkCandidates {
+        namedMoveToml("MyPackage")
+        sources {
+            move("option.move", """
+                module 0x1::option {
+                    struct Option<Element> has copy, drop, store {
+                       vec: vector<Element>
+                    }
+                    public fun none<Element>(): Option<Element> {
+                        Option { vec: vector[] }
+                    }
+                }
+            """)
+            move("delegation.move", """
+                module 0x1::delegation {
+                    public fun none_matched() {}
+                }                
+            """)
+            move("main.move", """
+                module 0x1::main {
+                    use 0x1::option;
+                    fun main() {
+                        option::none()
+                               //^ [0x1::option::none]
+                    }
+                }                                
+            """)
+        }
+    }
+
+    fun checkCandidates(tree: FileTreeBuilder.() -> Unit) {
         testProject(tree)
 
         val refClass = MvReferenceElement::class.java
@@ -225,16 +254,17 @@ module 0x1::main {
         val path = refElement as? MvPath ?: error("no path at caret")
         val targetName = path.referenceName ?: error("No name for reference element")
 
+        val importContext = ImportContext.from(path, true) ?: error("no import context")
         val candidates =
             ImportCandidateCollector
-                .getImportCandidates(ImportContext.Companion.from(path), targetName)
+                .getImportCandidates(importContext, targetName)
                 .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }
             return
         }
 
-        val expectedCandidates = data.split(',')
+        val expectedCandidates = data.trim('[', ']').split(',')
             .takeIf { it.isNotEmpty() } ?: error("Invalid candidate set")
         check(candidates == expectedCandidates) {
             "Expected candidates: $expectedCandidates, actual: $candidates"
