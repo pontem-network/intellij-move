@@ -447,15 +447,15 @@ class TypeInferenceWalker(
         return ctx.resolvedPaths[path] ?: emptyList()
     }
 
-    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField): Ty {
+    fun inferFieldLookupTy(receiverTy: Ty, fieldLookup: MvFieldLookup): Ty {
         val tyAdt =
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
 
         val field =
-            resolveSingleResolveVariant(dotField.referenceName) {
-                processNamedFieldVariants(dotField, tyAdt, msl, it)
+            resolveSingleResolveVariant(fieldLookup.referenceName) {
+                processNamedFieldVariants(fieldLookup, tyAdt, msl, it)
             } as? MvNamedFieldDecl
-        ctx.resolvedFields[dotField] = field
+        ctx.resolvedFields[fieldLookup] = field
 
         val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)
         return fieldTy ?: TyUnknown
@@ -634,10 +634,10 @@ class TypeInferenceWalker(
         val receiverTy = ctx.resolveTypeVarsIfPossible(dotExpr.expr.inferType())
 
         val methodCall = dotExpr.methodCall
-        val field = dotExpr.structDotField
+        val field = dotExpr.fieldLookup
         return when {
+            field != null -> inferFieldLookupTy(receiverTy, field)
             methodCall != null -> inferMethodCallTy(receiverTy, methodCall, expected)
-            field != null -> inferDotFieldTy(receiverTy, field)
             // incomplete
             else -> TyUnknown
         }

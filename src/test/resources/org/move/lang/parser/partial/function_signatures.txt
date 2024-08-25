@@ -2,7 +2,10 @@ FILE
   MvModuleImpl(MODULE)
     PsiElement(module)('module')
     PsiWhiteSpace(' ')
-    PsiElement(IDENTIFIER)('M')
+    MvAddressRefImpl(ADDRESS_REF)
+      PsiElement(DIEM_ADDRESS)('0x1')
+    PsiElement(::)('::')
+    PsiElement(IDENTIFIER)('m')
     PsiWhiteSpace(' ')
     PsiElement({)('{')
     PsiWhiteSpace('\n    ')
@@ -114,12 +117,13 @@ FILE
         PsiElement(public)('public')
       PsiWhiteSpace(' ')
       PsiElement(fun)('fun')
-      PsiErrorElement:IDENTIFIER expected, got 'native'
+      PsiErrorElement:IDENTIFIER expected, got 'fun'
         <empty list>
     PsiWhiteSpace('\n\n    ')
-    PsiElement(native)('native')
-    PsiErrorElement:struct_kw expected, got 'native'
-      <empty list>
+    MvFunctionImpl(FUNCTION)
+      PsiElement(fun)('fun')
+      PsiErrorElement:IDENTIFIER expected, got 'native'
+        <empty list>
     PsiWhiteSpace('\n    ')
     MvFunctionImpl(FUNCTION)
       PsiElement(native)('native')

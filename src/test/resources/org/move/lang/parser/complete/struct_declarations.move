@@ -12,8 +12,4 @@ module 0x1::M {
         operator_account: Option<address>,
         operator_account2: Option<&signer>,
     }
-
-    native struct NativeStruct;
-
-    native struct NativeStructParams<K, V>;
 }

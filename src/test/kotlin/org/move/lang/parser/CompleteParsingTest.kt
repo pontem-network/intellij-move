@@ -51,6 +51,7 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test public package`() = doTest()
     fun `test enums`() = doTest()
     fun `test match`() = doTest()
+    fun `test positional fields`() = doTest()
 
     // feature declaration is required here, as it's a parser-level feature
     @CompilerV2Features(RESOURCE_CONTROL)

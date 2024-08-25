@@ -9,9 +9,6 @@ module 0x1::M {
     #[test_only]
     struct SomeStruct {}
 
-    #[test_only]
-    native struct S;
-
     #[test]
     #[expected_failure]
     #[test, expected_failure = std::type_name::ENonModuleType]

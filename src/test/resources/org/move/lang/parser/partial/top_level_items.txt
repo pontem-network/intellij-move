@@ -294,7 +294,7 @@ FILE
     PsiErrorElement:<address ref> or IDENTIFIER expected, got '{'
       <empty list>
     PsiWhiteSpace(' ')
-    PsiErrorElement:'#', <address ref>, <const>, <function inner>, <native struct inner>, <schema>, <struct inner>, <use stmt>, IDENTIFIER or spec expected, got '{'
+    PsiErrorElement:'#', <address ref>, <const>, <function inner>, <schema>, <struct>, <use stmt>, IDENTIFIER or spec expected, got '{'
       PsiElement({)('{')
     PsiWhiteSpace('\n    ')
     MvUseStmtImpl(USE_STMT)
@@ -347,7 +347,7 @@ FILE
     PsiErrorElement:<address ref> or IDENTIFIER expected, got '{'
       <empty list>
     PsiWhiteSpace(' ')
-    PsiErrorElement:'#', <address ref>, <const>, <function inner>, <native struct inner>, <schema>, <struct inner>, <use stmt>, IDENTIFIER or spec expected, got '{'
+    PsiErrorElement:'#', <address ref>, <const>, <function inner>, <schema>, <struct>, <use stmt>, IDENTIFIER or spec expected, got '{'
       PsiElement({)('{')
     PsiWhiteSpace('\n    ')
     MvUseStmtImpl(USE_STMT)

@@ -102,9 +102,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             }
         }
 
-        override fun visitStructDotField(dotField: MvStructDotField) {
-            checkMethodOrField(dotField)
-        }
+        override fun visitFieldLookup(o: MvFieldLookup) = checkMethodOrField(o)
 
         override fun visitMethodCall(methodCall: MvMethodCall) {
             if (!methodCall.project.moveSettings.enableReceiverStyleFunctions) return
@@ -138,7 +136,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             parent is MvPathType -> "type"
             parent is MvCallExpr -> "function"
             parent is MvPatField -> "field"
-            referenceElement is MvStructDotField -> "field"
+            referenceElement is MvFieldLookup -> "field"
             referenceElement is MvStructLitField -> "field"
             else -> "reference"
         }

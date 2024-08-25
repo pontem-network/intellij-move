@@ -57,9 +57,9 @@ private fun isFieldsAccessible(
     return true
 }
 
-class MvStructDotFieldReferenceImpl(
-    element: MvStructDotField
-): MvPolyVariantReferenceBase<MvStructDotField>(element) {
+class MvFieldLookupReferenceImpl(
+    element: MvFieldLookup
+): MvPolyVariantReferenceBase<MvFieldLookup>(element) {
 
     override fun multiResolve(): List<MvNamedElement> {
         val msl = element.isMsl()
@@ -69,9 +69,8 @@ class MvStructDotFieldReferenceImpl(
     }
 }
 
-abstract class MvStructDotFieldMixin(node: ASTNode): MvElementImpl(node),
-                                                     MvStructDotField {
-    override fun getReference(): MvPolyVariantReference {
-        return MvStructDotFieldReferenceImpl(this)
-    }
+abstract class MvFieldLookupMixin(node: ASTNode): MvElementImpl(node),
+                                                  MvFieldLookup {
+
+    override fun getReference(): MvPolyVariantReference = MvFieldLookupReferenceImpl(this)
 }

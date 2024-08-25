@@ -89,7 +89,7 @@ data class InferenceResult(
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
 
     private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
-    private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
+    private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
     private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
@@ -113,7 +113,7 @@ data class InferenceResult(
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
-    fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
+    fun getResolvedField(field: MvFieldLookup): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
     fun getResolvedPatBinding(binding: MvPatBinding): MvNamedElement? = resolvedBindings[binding]
 
@@ -195,7 +195,7 @@ class InferenceContext(
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
     val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
-    val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
+    val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
     val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
 

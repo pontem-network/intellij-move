@@ -4,6 +4,7 @@ import org.move.lang.core.psi.*
 
 interface MvFieldsOwner: MvNameIdentifierOwner {
     val blockFields: MvBlockFields?
+    val tupleFields: MvTupleFields?
 }
 
 val MvFieldsOwner.itemElement: MvStructOrEnumItemElement

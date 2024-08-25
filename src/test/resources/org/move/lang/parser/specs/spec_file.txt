@@ -70,7 +70,7 @@ FILE
                           PsiElement(IDENTIFIER)('aptos_framework')
                 PsiElement())(')')
             PsiElement(.)('.')
-            MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+            MvFieldLookupImpl(FIELD_LOOKUP)
               PsiElement(IDENTIFIER)('microseconds')
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')

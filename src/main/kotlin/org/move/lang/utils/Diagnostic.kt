@@ -153,14 +153,14 @@ sealed class Diagnostic(
         }
     }
 
-    class NativeStructNotSupported(struct: MvStruct, errorRange: TextRange): Diagnostic(struct, errorRange) {
-        override fun prepare(): PreparedAnnotation {
-            return PreparedAnnotation(
-                ERROR,
-                "Native structs aren't supported by the Move VM anymore"
-            )
-        }
-    }
+//    class NativeStructNotSupported(struct: MvStruct, errorRange: TextRange): Diagnostic(struct, errorRange) {
+//        override fun prepare(): PreparedAnnotation {
+//            return PreparedAnnotation(
+//                ERROR,
+//                "Native structs aren't supported by the Move VM anymore"
+//            )
+//        }
+//    }
 
     class SpecFunctionRequiresReturnType(specFunction: MvSpecFunction):
         Diagnostic(
