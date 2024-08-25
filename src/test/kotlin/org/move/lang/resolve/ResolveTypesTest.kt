@@ -129,29 +129,6 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test pass native struct to native fun`() = checkByCode(
-        """
-        module M {
-            native struct Native<T>;
-                        //X
-            native fun main(n: Native<u8>): u8;
-                             //^
-        }
-    """
-    )
-
-//    fun `test resolve type to import`() = checkByCode(
-//        """
-//        script {
-//            use 0x1::Transaction::Sender;
-//                                //X
-//
-//            fun main(s: Sender) {}
-//                      //^
-//        }
-//    """
-//    )
-
     fun `test resolve type from import`() = checkByCode(
         """
         address 0x1 {

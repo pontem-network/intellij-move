@@ -9,12 +9,20 @@ module 0x1::m {
     public(script)
     public fun
 
+    native fu
+    public fu
+    entry fu
+    inline fu
+
     fun
     native fun
     native public
     native public(friend)
     native public(script)
     native public fun
+
+    native pub
+    fun main();
 
     fun main_01(a b: u8) {}
     fun main_02(, b: u8) {}

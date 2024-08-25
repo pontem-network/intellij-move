@@ -263,6 +263,9 @@ private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
 }
 private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
 // top-level recovery
+//private ModuleItem_first ::= use | <<nativeFunctionModifierSet VisibilityModifier>>
+//                            | fun | CONST_KW | STRUCT_KW | spec
+//                            | Attr_first | "friend" | "enum"
 private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
                             | Attr_first | "friend"  | "entry" | "inline" | "enum"
 private TopLevel_first ::= MODULE_KW | SCRIPT_KW
@@ -460,8 +463,8 @@ fake Function ::= Attr* native? VisibilityModifier? entry? inline?
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-private FunctionInnerNoVisFirst ::= fun
 private FunctionInnerVisFirst ::= FunctionModifierSetInner fun { pin = 1 }
+private FunctionInnerNoVisFirst ::= fun
 private FunctionInnerFirst ::= FunctionInnerVisFirst | FunctionInnerNoVisFirst
 
 FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock

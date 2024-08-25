@@ -117,7 +117,44 @@ FILE
         PsiElement(public)('public')
       PsiWhiteSpace(' ')
       PsiElement(fun)('fun')
-      PsiErrorElement:IDENTIFIER expected, got 'fun'
+      PsiErrorElement:IDENTIFIER expected, got 'native'
+        <empty list>
+    PsiWhiteSpace('\n\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(native)('native')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'public'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      MvVisibilityModifierImpl(VISIBILITY_MODIFIER)
+        PsiElement(public)('public')
+      PsiErrorElement:'(' or fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'entry'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(entry_kw)('entry')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'inline'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(inline_kw)('inline')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'fun'
         <empty list>
     PsiWhiteSpace('\n\n    ')
     MvFunctionImpl(FUNCTION)
@@ -169,8 +206,28 @@ FILE
         PsiElement(public)('public')
       PsiWhiteSpace(' ')
       PsiElement(fun)('fun')
-      PsiErrorElement:IDENTIFIER expected, got 'fun'
+      PsiErrorElement:IDENTIFIER expected, got 'native'
         <empty list>
+    PsiWhiteSpace('\n\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(native)('native')
+      PsiErrorElement:fun expected, got 'pub'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('pub')
+      PsiErrorElement:'(' or <type parameters> expected, got 'fun'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(fun)('fun')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('main')
+      MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+        PsiElement(()('(')
+        PsiElement())(')')
+      PsiErrorElement:'{' expected, got ';'
+        <empty list>
+    PsiElement(;)(';')
     PsiWhiteSpace('\n\n    ')
     MvFunctionImpl(FUNCTION)
       PsiElement(fun)('fun')
