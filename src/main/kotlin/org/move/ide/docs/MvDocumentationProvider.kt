@@ -42,9 +42,9 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 // TODO: add docs for both [addresses] and [dev-addresses]
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName
-                val named = moveProject.getNamedAddress(refName) ?: return null
+                val named = moveProject.getNamedAddressTestAware(refName) ?: return null
                 val address =
-                    named.addressLit(moveProject)?.original ?: angleWrapped("unassigned")
+                    named.addressLit()?.original ?: angleWrapped("unassigned")
                 return "$refName = \"$address\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)

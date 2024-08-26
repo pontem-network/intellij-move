@@ -1,7 +1,6 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.psi.SmartPsiElementPointer
-import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.parametersAsBindings
 import org.move.lang.core.psi.ext.*
@@ -31,7 +30,7 @@ data class FunctionCall(
     val valueParams: MutableMap<String, FunctionCallParam?>
 ) {
     fun itemName(): String? = item?.element?.qualName?.editorText()
-    fun functionId(moveProject: MoveProject): String? = item?.element?.functionId(moveProject)
+    fun functionId(): String? = item?.element?.functionId()
 
     fun parametersRequired(): Boolean {
         val fn = item?.element ?: return false

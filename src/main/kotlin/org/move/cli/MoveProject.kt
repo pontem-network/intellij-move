@@ -16,7 +16,7 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
-import org.move.cli.tests.NamedAddressService
+import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.Address
@@ -87,22 +87,19 @@ data class MoveProject(
         return map
     }
 
-    fun getNamedAddressValue(name: String): String? = addressValues()[name]?.value
-
-    fun getNamedAddress(name: String): Address.Named? {
-        val value = getNamedAddressValue(name) ?: return null
-        return Address.Named(name, value, this)
-    }
-
     fun getNamedAddressTestAware(name: String): Address.Named? {
-        val namedAddress = getNamedAddress(name)
-        if (namedAddress != null) return namedAddress
+        val declaredNamedValue = getValueOfDeclaredNamedAddress(name)
+        if (declaredNamedValue != null) {
+            return Address.Named(name, declaredNamedValue)
+        }
         if (isUnitTestMode) {
-            val namedAddressService = project.service<NamedAddressService>()
+            val namedAddressService = project.service<NamedAddressFromTestAnnotationService>()
             return namedAddressService.getNamedAddress(this, name)
         }
         return null
     }
+
+    fun getValueOfDeclaredNamedAddress(name: String): String? = addressValues()[name]?.value
 
     fun getAddressNamesForValue(addressValue: String): List<String> {
         val addressLit = AddressLit(addressValue)

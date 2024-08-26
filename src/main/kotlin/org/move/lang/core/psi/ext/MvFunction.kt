@@ -35,7 +35,7 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
-fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
+fun MvFunction.functionId(): String? = qualName?.cmdText()
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 

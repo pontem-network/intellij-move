@@ -209,7 +209,7 @@ class NamedModulePathValuesTest: MvProjectTestBase() {
         val expectedValue = data.trim()
 
         val moveProject = project.moveProjectsService.findMoveProjectForPsiElement(address)!!
-        val actualValue = moveProject.getNamedAddress(address.referenceName)!!.text()
+        val actualValue = moveProject.getNamedAddressTestAware(address.referenceName)!!.text()
 
         check(actualValue == expectedValue) {
             "Value mismatch. Expected $expectedValue, found: $actualValue"

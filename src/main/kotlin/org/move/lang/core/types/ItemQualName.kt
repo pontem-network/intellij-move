@@ -18,9 +18,9 @@ data class ItemQualName(
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
-    fun cmdText(moveProject: MoveProject): String {
+    fun cmdText(): String {
         val addressText = when (address) {
-            is Address.Named -> address.addressLit(moveProject)?.short()
+            is Address.Named -> address.addressLit()?.short()
             is Address.Value -> address.addressLit().short()
         }
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")

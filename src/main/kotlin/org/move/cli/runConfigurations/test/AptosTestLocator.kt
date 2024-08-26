@@ -29,8 +29,7 @@ object AptosTestLocator : SMTestLocator {
             val name = qualifiedName.substringAfterLast(NAME_SEPARATOR)
             for (element in MvNamedElementIndex.getElementsByName(project, name, scope)) {
                 if (element is MvFunction) {
-                    val moveProject = element.moveProject ?: continue
-                    if (element.qualName?.cmdText(moveProject) == qualifiedName) {
+                    if (element.qualName?.cmdText() == qualifiedName) {
                         add(PsiLocation.fromPsiElement(element))
                     }
                 }

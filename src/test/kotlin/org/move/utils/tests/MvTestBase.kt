@@ -13,7 +13,7 @@ import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
-import org.move.cli.tests.NamedAddressService
+import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.cli.tests.NamedAddressServiceTestImpl
 import org.move.ide.inspections.fixes.CompilerV2Feat
 import org.move.ide.inspections.fixes.CompilerV2Feat.*
@@ -63,7 +63,7 @@ fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
 
 fun UsefulTestCase.handleNamedAddressAnnotations(project: Project) {
     val namedAddresses = this.findAnnotationInstances<NamedAddress>()
-    val namedAddressService = project.service<NamedAddressService>() as NamedAddressServiceTestImpl
+    val namedAddressService = project.service<NamedAddressFromTestAnnotationService>() as NamedAddressServiceTestImpl
     for (namedAddress in namedAddresses) {
         namedAddressService.namedAddresses[namedAddress.name] = namedAddress.value
     }

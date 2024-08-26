@@ -46,7 +46,7 @@
     <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
 
     <!-- specifically to support named addresses in tests, does nothing in non-test environment -->
-    <projectService serviceInterface="org.move.cli.tests.NamedAddressService"
+    <projectService serviceInterface="org.move.cli.tests.NamedAddressFromTestAnnotationService"
                     serviceImplementation="org.move.cli.tests.NamedAddressServiceImpl"
                     testServiceImplementation="org.move.cli.tests.NamedAddressServiceTestImpl" />
 

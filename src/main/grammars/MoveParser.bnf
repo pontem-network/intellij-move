@@ -598,6 +598,7 @@ TupleFieldDecl ::= Attr* Type
     implements = [
         "org.move.lang.core.psi.ext.MvFieldDecl"
     ]
+    mixin = "org.move.lang.core.psi.ext.MvTupleFieldDeclMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 

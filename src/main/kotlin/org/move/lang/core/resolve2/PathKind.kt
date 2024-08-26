@@ -87,7 +87,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
                 return PathKind.NamedAddress(namedAddress)
             }
             // and it can be with null value if absent, still a named address
-            return PathKind.NamedAddress(Address.Named(referenceName, null, moveProject))
+            return PathKind.NamedAddress(Address.Named(referenceName, null))
         }
 
         // outside use stmt context
@@ -131,7 +131,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
                 //            ^
                 // , where std is the unknown named address
                 if (this.isUseSpeck) {
-                    val address = Address.Named(qualifierItemName, null, moveProject)
+                    val address = Address.Named(qualifierItemName, null)
                     return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
             }
