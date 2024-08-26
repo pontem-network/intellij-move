@@ -3,8 +3,8 @@ package org.move.lang.core.psi.ext
 import com.intellij.psi.StubBasedPsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.ty.Ability
-import org.move.lang.core.types.ty.TyAdt
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.*
 
 interface MvStructOrEnumItemElement: MvQualNamedElement,
                                      MvItemElement,
@@ -12,7 +12,22 @@ interface MvStructOrEnumItemElement: MvQualNamedElement,
 
     val abilitiesList: MvAbilitiesList?
 
-    override fun declaredType(msl: Boolean): TyAdt = TyAdt(this, this.tyTypeParams, this.generics)
+    override fun declaredType(msl: Boolean): Ty {
+        val typeParameters = this.tyTypeParams
+        val itemTy = TyAdt(this, typeParameters, this.generics)
+        if (this is MvFieldsOwner && this.tupleFields != null) {
+            // tuple struct or tuple enum variant
+            val paramTypes = this.positionalFields.map { it.type.loweredType(msl) }
+            return TyFunction(
+                this,
+                typeParameters,
+                paramTypes,
+                returnType = itemTy,
+                acquiresTypes = emptyList(),
+            )
+        }
+        return itemTy
+    }
 }
 
 val MvStructOrEnumItemElement.psiAbilities: List<MvAbility>

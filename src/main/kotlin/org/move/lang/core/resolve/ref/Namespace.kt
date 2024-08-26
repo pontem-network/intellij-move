@@ -23,14 +23,11 @@ enum class Namespace {
     ENUM,
     SCHEMA,
     MODULE;
-//    CONST;
 
     companion object {
         fun all(): Set<Namespace> {
             return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA, MODULE)
         }
-
-        fun moduleItems(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA)
 
         fun none(): Set<Namespace> = setOf()
     }

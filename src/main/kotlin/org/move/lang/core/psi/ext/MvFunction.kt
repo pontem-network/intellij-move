@@ -82,8 +82,8 @@ val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.par
 //    return TyFunction2(subst, paramTypes, acquiresTypes, retType)
 //}
 
-fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
-    val retType = returnType ?: return TyUnit
+fun MvFunctionLike.returnTypeTy(msl: Boolean): Ty {
+    val retType = this.returnType ?: return TyUnit
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
 

@@ -104,6 +104,9 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
 }
 
+fun MvModule.tupleStructs(): List<MvStruct> =
+    this.structs().filter { it.tupleFields != null }
+
 fun MvModule.structs(): List<MvStruct> {
     return getProjectPsiDependentCache(this) {
         val stub = it.greenStub

@@ -222,7 +222,7 @@ class InferenceContext(
 
     fun infer(owner: MvInferenceContextOwner): InferenceResult {
         val returnTy = when (owner) {
-            is MvFunctionLike -> owner.rawReturnType(msl)
+            is MvFunctionLike -> owner.returnTypeTy(msl)
             else -> TyUnknown
         }
         val inference = TypeInferenceWalker(this, owner.project, returnTy)
@@ -556,12 +556,13 @@ class InferenceContext(
     // Awful hack: check that inner expressions did not annotated as an error
     // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
-        val element = typeError.element
-        if (!element.descendantHasTypeError(this.typeErrors)
-            && typeError.element.containingFile.isPhysical
-        ) {
-            typeErrors.add(typeError)
-        }
+        typeErrors.add(typeError)
+//        val element = typeError.element
+//        if (!element.descendantHasTypeError(this.typeErrors)
+//            && typeError.element.containingFile.isPhysical
+//        ) {
+//            typeErrors.add(typeError)
+//        }
     }
 }
 

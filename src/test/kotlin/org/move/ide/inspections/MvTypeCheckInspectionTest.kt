@@ -640,13 +640,13 @@ module 0x1::M {
     """
     )
 
-    fun `test tuple unpacking no nested errors`() = checkErrors(
+    fun `test invalid tuple unpacking with nested error`() = checkErrors(
         """
     module 0x1::M {
         struct S { val: u8 }
         fun tuple(): (u8, u8, u8) { (1, 1, 1) }
         fun main() {
-            let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">(S { val }, b)</error> = tuple();
+            let (<error descr="Assigned expr of type 'u8' cannot be unpacked with struct pattern">S { val }</error>, b) = tuple();
         }
     }    
     """

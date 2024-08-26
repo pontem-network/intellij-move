@@ -3,12 +3,14 @@ package org.move.ide.inspections
 import com.intellij.codeInspection.ProblemHighlightType.GENERIC_ERROR
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
+import com.intellij.psi.util.parents
 import org.move.cli.settings.isTypeUnknownAsError
 import org.move.lang.MvElementTypes.LAMBDA_EXPR
 import org.move.lang.MvElementTypes.MODULE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
+import org.move.lang.core.types.infer.MvInferenceContextOwner
 import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
@@ -16,60 +18,12 @@ import org.move.lang.core.types.ty.TyUnknown
 class MvTypeCheckInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object: MvVisitor() {
-            override fun visitExpr(o: MvExpr) {
-                super.visitExpr(o)
-                if (isTypeUnknownAsError()) {
-                    checkForUnknownType(o, holder)
-                }
-            }
-
-            override fun visitItemSpec(o: MvItemSpec) {
-                val inference = o.inference(true)
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitModuleItemSpec(o: MvModuleItemSpec) {
-                val inference = o.inference(true)
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitFunction(o: MvFunction) {
-                val inference = o.inference(o.isMsl())
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitSpecFunction(o: MvSpecFunction) {
-                val inference = o.inference(true)
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitSpecInlineFunction(o: MvSpecInlineFunction) {
-                val inference = o.inference(true)
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitSchema(o: MvSchema) {
-                val inference = o.inference(true)
-                inference.typeErrors
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
+            override fun visitItemSpec(o: MvItemSpec) = checkInferenceOwner(o, holder)
+            override fun visitModuleItemSpec(o: MvModuleItemSpec) = checkInferenceOwner(o, holder)
+            override fun visitFunction(o: MvFunction) = checkInferenceOwner(o, holder)
+            override fun visitSpecFunction(o: MvSpecFunction) = checkInferenceOwner(o, holder)
+            override fun visitSpecInlineFunction(o: MvSpecInlineFunction) = checkInferenceOwner(o, holder)
+            override fun visitSchema(o: MvSchema) = checkInferenceOwner(o, holder)
 
             override fun visitNamedFieldDecl(field: MvNamedFieldDecl) {
                 val ownerItem = field.fieldOwner.itemElement as MvItemElement
@@ -82,10 +36,42 @@ class MvTypeCheckInspection: MvLocalInspectionTool() {
                     }
                 }
             }
+
+            // debug only
+            override fun visitExpr(o: MvExpr) {
+                super.visitExpr(o)
+                if (isTypeUnknownAsError()) {
+                    checkForUnknownType(o, holder)
+                }
+            }
         }
 
+    private fun checkInferenceOwner(inferenceOwner: MvInferenceContextOwner, holder: ProblemsHolder) {
+        val msl = inferenceOwner.isMsl()
+        val inference = inferenceOwner.inference(msl)
+        var remainingErrors = inference.typeErrors
+        inference.typeErrors
+            .forEach { currentError ->
+                val otherErrors = (remainingErrors - currentError)
+                val element = currentError.element
+                val skipError = otherErrors.any { filteredError ->
+                    // todo: change to `withSelf = false` to deal with duplicate errors
+                    val parents = filteredError.element.parents(withSelf = true)
+                    // if any of the other errors contain deeper element, drop this one
+                    // NOTE: if there's a duplicate, it remains in the tree (achieved with withSelf = false)
+                    parents.contains(element)
+                }
+                // todo: drop this to deal with duplicate errors
+                if (skipError) {
+                    remainingErrors -= currentError
+                }
+                if (!skipError) {
+                    holder.registerTypeError(currentError)
+                }
+            }
+    }
 
-    fun ProblemsHolder.registerTypeError(typeError: TypeError) {
+    private fun ProblemsHolder.registerTypeError(typeError: TypeError) {
         this.registerProblem(
             typeError.element,
             typeError.message(),

@@ -17,7 +17,7 @@ fun processStructLitFieldResolveVariants(
     processor: RsResolveProcessor,
 ): Boolean {
     val fieldsOwner = litField.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-    if (fieldsOwner != null && processFieldDeclarations(fieldsOwner, processor)) return true
+    if (fieldsOwner != null && processNamedFieldDeclarations(fieldsOwner, processor)) return true
     // if it's a shorthand, try to resolve to the underlying binding pat
     if (!isCompletion && litField.expr == null) {
         val ctx = ResolutionContext(litField, false)
@@ -33,7 +33,7 @@ fun processStructPatFieldResolveVariants(
 ): Boolean {
     val resolved = field.parentPatStruct.path.reference?.resolveFollowingAliases()
     val resolvedStruct = resolved as? MvFieldsOwner ?: return false
-    return processFieldDeclarations(resolvedStruct, processor)
+    return processNamedFieldDeclarations(resolvedStruct, processor)
 }
 
 fun processPatBindingResolveVariants(
@@ -47,7 +47,7 @@ fun processPatBindingResolveVariants(
         val structItem = parentPat.path.reference?.resolveFollowingAliases()
         // can be null if unresolved
         if (structItem is MvFieldsOwner) {
-            if (processFieldDeclarations(structItem, originalProcessor)) return true
+            if (processNamedFieldDeclarations(structItem, originalProcessor)) return true
             if (isCompletion) return false
         }
     }
@@ -218,8 +218,8 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun processFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    struct.fields.any { field ->
+private fun processNamedFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    struct.namedFields.any { field ->
         val name = field.name
         processor.process(name, NAMES, field)
     }

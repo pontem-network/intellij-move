@@ -17,9 +17,9 @@ import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
 
-interface MvFunctionLike : MvNameIdentifierOwner,
-                           MvTypeParametersOwner,
-                           MvDocAndAttributeOwner {
+interface MvFunctionLike: MvNameIdentifierOwner,
+                          MvTypeParametersOwner,
+                          MvDocAndAttributeOwner {
 
     val functionParameterList: MvFunctionParameterList?
 
@@ -29,13 +29,13 @@ interface MvFunctionLike : MvNameIdentifierOwner,
         val typeParameters = this.tyTypeParams
         val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
         val acquiredTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
-        val retType = rawReturnType(msl)
+        val retType = returnTypeTy(msl)
         return TyFunction(
             this,
             typeParameters,
             paramTypes,
+            retType,
             acquiredTypes,
-            retType
         )
     }
 }
@@ -116,10 +116,11 @@ val MvFunctionLike.signatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-val MvFunction.selfParam: MvFunctionParameter? get() {
-    if (!project.moveSettings.enableReceiverStyleFunctions) return null
-    return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
-}
+val MvFunction.selfParam: MvFunctionParameter?
+    get() {
+        if (!project.moveSettings.enableReceiverStyleFunctions) return null
+        return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
+    }
 
 fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
 
@@ -133,20 +134,19 @@ val MvFunction.selfSignatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: CompletionContext?): Boolean
-    {
-        val msl = this.isMslOnlyItem
-        val callTy = this.declaredType(msl).substitute(this.tyInfers) as TyFunction
+fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: CompletionContext?): Boolean {
+    val msl = this.isMslOnlyItem
+    val callTy = this.declaredType(msl).substitute(this.tyInfers) as TyFunction
 
-        val inferenceCtx = InferenceContext(msl)
+    val inferenceCtx = InferenceContext(msl)
 
-        callTy.paramTypes.forEach {
-            inferenceCtx.combineTypes(it, it.deepFoldTyInferWith { TyUnknown })
-        }
-        val expectedTy = completionContext?.expectedTy
-        if (expectedTy != null && expectedTy !is TyUnknown) {
-            inferenceCtx.combineTypes(callTy.retType, expectedTy)
-        }
-        val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction
-        return resolvedCallTy.needsTypeAnnotation()
+    callTy.paramTypes.forEach {
+        inferenceCtx.combineTypes(it, it.deepFoldTyInferWith { TyUnknown })
     }
+    val expectedTy = completionContext?.expectedTy
+    if (expectedTy != null && expectedTy !is TyUnknown) {
+        inferenceCtx.combineTypes(callTy.returnType, expectedTy)
+    }
+    val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction
+    return resolvedCallTy.needsTypeAnnotation()
+}

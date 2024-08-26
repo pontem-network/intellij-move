@@ -53,7 +53,7 @@ data class FuncSignature(
             val declaredType = function.declaredType(msl)
             val params = function.parameters.zip(declaredType.paramTypes)
                 .associate { (param, paramTy) -> Pair(param.name, paramTy) }
-            val retType = declaredType.retType
+            val retType = declaredType.returnType
             return FuncSignature(params, retType)
         }
     }

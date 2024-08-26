@@ -12,6 +12,12 @@ import javax.swing.Icon
 
 val MvEnum.variants: List<MvEnumVariant> get() = enumBody?.enumVariantList.orEmpty()
 
+val MvEnum.tupleVariants: List<MvEnumVariant> get() = variants.filter { it.tupleFields != null }
+val MvEnum.structVariants: List<MvEnumVariant> get() = variants.filter { it.blockFields != null }
+val MvEnum.unitVariants: List<MvEnumVariant>
+    get() =
+        variants.filter { it.tupleFields == null && it.blockFields == null }
+
 abstract class MvEnumMixin: MvStubbedNamedElementImpl<MvEnumStub>,
                             MvEnum {
     constructor(node: ASTNode): super(node)

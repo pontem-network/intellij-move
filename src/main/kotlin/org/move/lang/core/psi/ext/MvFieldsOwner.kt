@@ -28,6 +28,10 @@ val MvFieldsOwner.fields: List<MvNamedFieldDecl>
 val MvFieldsOwner.namedFields: List<MvNamedFieldDecl>
     get() = blockFields?.namedFieldDeclList.orEmpty()
 
+val MvFieldsOwner.fieldNames: List<String> get() = namedFields.map { it.name }
+
+val MvFieldsOwner.positionalFields: List<MvTupleFieldDecl>
+    get() = tupleFields?.tupleFieldDeclList.orEmpty()
 
 /**
  * True for:

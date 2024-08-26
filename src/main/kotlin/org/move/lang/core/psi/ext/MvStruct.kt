@@ -17,15 +17,15 @@ import org.move.lang.core.types.ty.Ability
 import org.move.stdext.withAdded
 import javax.swing.Icon
 
-val MvStruct.fields: List<MvNamedFieldDecl>
-    get() = blockFields?.namedFieldDeclList.orEmpty()
+//val MvStruct.fields: List<MvNamedFieldDecl>
+//    get() = blockFields?.namedFieldDeclList.orEmpty()
 
-val MvStruct.fieldsMap: Map<String, MvNamedFieldDecl>
-    get() {
-        return fields.associateBy { it.name }
-    }
+//val MvStruct.fieldsMap: Map<String, MvNamedFieldDecl>
+//    get() {
+//        return fields.associateBy { it.name }
+//    }
 
-val MvStruct.fieldNames: List<String> get() = fields.map { it.name }
+//val MvStruct.fieldNames: List<String> get() = fields.map { it.name }
 
 //fun MvStruct.getField(fieldName: String): MvStructField? =
 //    this.descendantsOfType<MvStructField>().find { it.name == fieldName }

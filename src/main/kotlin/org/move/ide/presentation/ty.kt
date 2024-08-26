@@ -121,7 +121,7 @@ private fun render(
     return when (ty) {
         is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
+            var s = if (ty.returnType is TyUnit) params else "$params -> ${r(ty.returnType)}"
             if (ty.acquiresTypes.isNotEmpty()) {
                 s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
             }
@@ -155,10 +155,10 @@ private fun render(
         }
         is TyLambda -> {
             val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
-            val retType = if (ty.retType is TyUnit)
+            val retType = if (ty.returnType is TyUnit)
                 "()"
             else
-                r(ty.retType)
+                r(ty.returnType)
             "$params -> $retType"
         }
         is TySchema -> {

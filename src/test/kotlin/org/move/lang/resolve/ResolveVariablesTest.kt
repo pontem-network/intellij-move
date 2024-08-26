@@ -696,4 +696,27 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test resolve tuple struct pattern`() = checkByCode("""
+        module 0x1::m {
+            struct S(u8, u8);
+                 //X
+            fun main(s: S) {
+                let S ( field1, field2 ) = s;
+                  //^
+            }
+        }        
+    """)
+
+    fun `test resolve variables in tuple struct pattern`() = checkByCode("""
+        module 0x1::m {
+            struct S(u8, u8);
+            fun main(s: S) {
+                let S ( field1, field2 ) = s;
+                          //X
+                field1;
+                //^
+            }
+        }        
+    """)
 }

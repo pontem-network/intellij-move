@@ -63,7 +63,7 @@ fun getLookupElementProperties(
         val msl = context.msl
         val declaredTy =
             when (element) {
-                is MvFunctionLike -> element.declaredType(msl).retType
+                is MvFunctionLike -> element.declaredType(msl).returnType
                 is MvStruct -> element.declaredType(msl)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
                 is MvPatBinding -> {

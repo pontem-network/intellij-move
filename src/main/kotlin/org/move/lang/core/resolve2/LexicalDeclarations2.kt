@@ -152,6 +152,7 @@ fun processItemsInScope(
                         val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
                         processor.processAllItems(
                             ns,
+                            scope.tupleStructs(),
                             scope.builtinFunctions(),
                             scope.allNonTestFunctions(),
                             specFunctions,
