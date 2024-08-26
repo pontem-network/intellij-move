@@ -18,7 +18,7 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                 for (structField in o.fields) {
                     val fieldUsedTypeParams = mutableSetOf<MvTypeParameter>()
 
-                    val fieldType = structField.typeAnnotation?.type ?: continue
+                    val fieldType = structField.type ?: continue
                     for (path in fieldType.descendantsOfType<MvPath>()) {
                         if (path.typeArguments.isNotEmpty()) continue
                         val typeParam = path.reference?.resolve() as? MvTypeParameter ?: continue

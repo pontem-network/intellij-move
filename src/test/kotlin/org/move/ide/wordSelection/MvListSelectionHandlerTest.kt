@@ -19,10 +19,6 @@ class MvListSelectionHandlerTest : MvSelectionHandlerTestBase() {
         }
     """, """
         module 0x1::m {
-            fun main(a<selection>: u3<caret>2</selection>, b: bool) {}
-        }
-    """, """
-        module 0x1::m {
             fun main(<selection>a: u3<caret>2</selection>, b: bool) {}
         }
     """, """

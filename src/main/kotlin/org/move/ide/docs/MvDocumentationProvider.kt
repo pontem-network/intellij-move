@@ -178,7 +178,7 @@ private fun PsiElement.generateDocumentation(
 
         is MvFunctionParameter -> {
             buffer += this.patBinding.identifier.text
-            this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
+            this.type?.generateDocumentation(buffer, ": ")
         }
 
         is MvTypeParameterList ->

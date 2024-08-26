@@ -77,7 +77,7 @@ data class FunctionSignature(
             val specParameters = paramList.itemSpecFunctionParameterList
             val signatureParams = specParameters.map { specParam ->
                 val paramName = specParam.referenceName
-                val paramType = specParam.typeAnnotation?.type?.text ?: ""
+                val paramType = specParam.type?.text ?: ""
                 Parameter(paramName, paramType)
             }
             val specTypeParameters =

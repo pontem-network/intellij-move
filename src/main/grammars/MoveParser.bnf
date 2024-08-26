@@ -281,13 +281,13 @@ private ModuleItem ::= UseStmt
                         | ModuleItemSpec
                         | ItemSpec
 
-Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
+Const ::= Attr* CONST_KW IDENTIFIER TypeAscription Initializer ';'
 {
     pin = "CONST_KW"
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.ext.MvItemElement"
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
     stubClass = "org.move.lang.core.stubs.MvConstStub"
@@ -513,11 +513,11 @@ private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter 
 }
 private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-FunctionParameter ::= PatBinding TypeAnnotation {
+FunctionParameter ::= PatBinding TypeAscription {
     pin = 1
-    implements = [
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
-    ]
+//    implements = [
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//    ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionParameterMixin"
 }
 
@@ -579,13 +579,14 @@ private TupleFieldDecl_with_recover ::= !')' TupleFieldDecl (',' | &')') {
 }
 private TupleFieldDecl_recover ::= !(')' | AttrsAndVis_first | Type_first)
 
-NamedFieldDecl ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
+NamedFieldDecl ::= Attr* IDENTIFIER TypeAscription &(',' | '}')
 {
     pin = 2
     implements = [
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+        "org.move.lang.core.psi.ext.MvFieldDecl"
     ]
     mixin = "org.move.lang.core.psi.ext.MvNamedFieldDeclMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -594,7 +595,9 @@ private NamedFieldDecl_first ::= AttrsAndVis_first | IDENTIFIER
 
 TupleFieldDecl ::= Attr* Type
 {
-
+    implements = [
+        "org.move.lang.core.psi.ext.MvFieldDecl"
+    ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -634,10 +637,10 @@ UseAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-TypeAnnotation ::= ':' Type {
-    pin = 1
-    name = "type annotation"
-}
+
+private TypeAscription ::= ':' Type { pin = 1 }
+
+TypeAnnotation ::= ':' Type { pin = 1 }
 
 Type ::= RefType
         | PathType
@@ -837,17 +840,17 @@ private SpecExprStmt_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExp
                 | EmitsSpecExpr
 
 private post ::= <<postKeyword>>
-fake LetStmt ::= let post? Pat? TypeAnnotation? Initializer? ';'?
+fake LetStmt ::= let post? Pat? TypeAscription? Initializer? ';'?
 {
-    implements = ["org.move.lang.core.psi.MvTypeAnnotationOwner"]
+//    implements = ["org.move.lang.core.psi.MvTypeAnnotationOwner"]
 }
 
-LetMoveStmt ::= let Pat TypeAnnotation? Initializer? ';'
+LetMoveStmt ::= let Pat TypeAscription? Initializer? ';'
 {
     pin = 1
     elementType = LetStmt
 }
-LetMslStmt ::= (let post?) Pat TypeAnnotation? Initializer? ';'
+LetMslStmt ::= (let post?) Pat TypeAscription? Initializer? ';'
 {
     pin = 1
     elementType = LetStmt
@@ -1406,11 +1409,11 @@ private ItemSpecFunctionParameter_with_recover ::= !(')' | '{' | ';') ItemSpecFu
 }
 private ItemSpecFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
+ItemSpecFunctionParameter ::= IDENTIFIER TypeAscription {
     pin = 1
     implements = [
         "org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
@@ -1469,31 +1472,31 @@ private SpecStmt ::= UseStmt
                        | LetMslStmt
                        | SpecExprStmt
 
-fake SchemaFieldStmt ::= local? PatBinding TypeAnnotation ';'
+fake SchemaFieldStmt ::= local? PatBinding TypeAscription ';'
 {
     implements = [
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
         "org.move.lang.core.psi.MslOnlyElement"
     ]
 }
 
 private SchemaFieldStmtImpl ::= SchemaFieldStmt_local | SchemaFieldStmt_simple
 
-SchemaFieldStmt_simple ::= PatBinding TypeAnnotation ';' {
+SchemaFieldStmt_simple ::= PatBinding TypeAscription ';' {
     pin = 2
     elementType = SchemaFieldStmt
 }
-SchemaFieldStmt_local ::= local PatBinding TypeAnnotation ';' {
+SchemaFieldStmt_local ::= local PatBinding TypeAscription ';' {
     pin = 1
     elementType = SchemaFieldStmt
 }
 
-GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAscription ('=' Expr)? ';'
 {
     pin = 2
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+//        "org.move.lang.core.psi.MvTypeAnnotationOwner"
         "org.move.lang.core.psi.MslOnlyElement"
         "org.move.lang.core.psi.ext.MvItemElement"
     ]

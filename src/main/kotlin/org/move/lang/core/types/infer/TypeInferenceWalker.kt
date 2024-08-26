@@ -460,7 +460,6 @@ class TypeInferenceWalker(
     fun inferFieldLookupTy(receiverTy: Ty, fieldLookup: MvFieldLookup): Ty {
         val tyAdt =
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
-
         val field =
             resolveSingleResolveVariant(fieldLookup.referenceName) {
                 processNamedFieldVariants(fieldLookup, tyAdt, msl, it)
