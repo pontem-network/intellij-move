@@ -2,12 +2,12 @@ package org.move.lang.core.types.ty
 
 import com.intellij.openapi.project.Project
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.psi.MvTypeParametersOwner
+import org.move.lang.core.psi.MvGenericDeclaration
 import org.move.lang.core.psi.psiFactory
 import org.move.lang.core.types.infer.*
 
 data class TyFunction(
-    override val item: MvTypeParametersOwner,
+    override val item: MvGenericDeclaration,
     override val substitution: Substitution,
     override val paramTypes: List<Ty>,
     override val returnType: Ty,

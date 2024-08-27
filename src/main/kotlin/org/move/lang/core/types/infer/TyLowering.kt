@@ -54,7 +54,7 @@ class TyLowering {
         }
         return when (namedItem) {
             is MvTypeParameter -> TyTypeParameter(namedItem)
-            is MvTypeParametersOwner -> {
+            is MvGenericDeclaration -> {
                 val baseTy = namedItem.declaredType(msl)
                 val explicitSubst = instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
 //                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
@@ -93,7 +93,7 @@ class TyLowering {
         namedItem: T,
         msl: Boolean
     ): Substitution {
-        if (namedItem !is MvTypeParametersOwner) return emptySubstitution
+        if (namedItem !is MvGenericDeclaration) return emptySubstitution
 
         val psiSubstitution = pathPsiSubst(methodOrPath, namedItem)
 

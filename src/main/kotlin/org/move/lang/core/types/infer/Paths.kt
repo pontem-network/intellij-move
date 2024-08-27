@@ -6,7 +6,7 @@ import org.move.lang.core.types.infer.RsPsiSubstitution.Value
 
 fun pathPsiSubst(
     methodOrPath: MvMethodOrPath,
-    resolved: MvTypeParametersOwner,
+    resolved: MvGenericDeclaration,
 ): RsPsiSubstitution {
     val typeParameters = resolved.typeParameters
     val parent = methodOrPath.parent

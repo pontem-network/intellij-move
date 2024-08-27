@@ -1428,7 +1428,7 @@ ItemSpecRef ::= IDENTIFIER
 Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvGenericDeclaration"
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
@@ -1657,7 +1657,7 @@ AxiomSpecExpr ::= axiom TypeParameterList? SpecPropertyList? Expr {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvBoolSpecExpr"
-        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvGenericDeclaration"
         "org.move.lang.core.psi.MslOnlyElement"
     ]
 }

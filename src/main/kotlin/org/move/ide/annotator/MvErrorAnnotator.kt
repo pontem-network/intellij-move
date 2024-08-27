@@ -310,7 +310,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
     private fun checkTypeArgumentList(
         typeArgumentList: MvTypeArgumentList,
-        item: MvTypeParametersOwner,
+        item: MvGenericDeclaration,
         holder: MvAnnotationHolder,
     ) {
         val qualName = (item as? MvQualNamedElement)?.qualName ?: return

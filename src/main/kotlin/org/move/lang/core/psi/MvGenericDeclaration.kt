@@ -7,22 +7,22 @@ import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.core.types.ty.TyUnknown
 
-interface MvTypeParametersOwner : MvElement {
+interface MvGenericDeclaration : MvElement {
     val typeParameterList: MvTypeParameterList?
     // override for generic items
     fun declaredType(msl: Boolean): Ty = TyUnknown
 }
 
-val MvTypeParametersOwner.typeParameters: List<MvTypeParameter>
+val MvGenericDeclaration.typeParameters: List<MvTypeParameter>
     get() =
         typeParameterList?.typeParameterList.orEmpty()
 
-val MvTypeParametersOwner.generics: List<TyTypeParameter>
+val MvGenericDeclaration.generics: List<TyTypeParameter>
     get() = typeParameters.map { TyTypeParameter(it) }
 
-val MvTypeParametersOwner.tyTypeParams: Substitution get() = Substitution(generics.associateWith { it })
+val MvGenericDeclaration.tyTypeParams: Substitution get() = Substitution(generics.associateWith { it })
 
-val MvTypeParametersOwner.tyInfers: Substitution
+val MvGenericDeclaration.tyInfers: Substitution
     get() {
         val typeSubst = this
             .generics
@@ -30,6 +30,6 @@ val MvTypeParametersOwner.tyInfers: Substitution
         return typeSubst.toTypeSubst()
     }
 
-val MvTypeParametersOwner.hasTypeParameters: Boolean
+val MvGenericDeclaration.hasTypeParameters: Boolean
     get() =
         typeParameters.isNotEmpty()

@@ -21,7 +21,7 @@ class TypeParameterInfoHandler :
         val parentPath = element.parent as? MvPath ?: return null
         val owner = parentPath.reference?.resolveFollowingAliases() ?: return null
         // if zero type parameters
-        if (owner !is MvTypeParametersOwner) return null
+        if (owner !is MvGenericDeclaration) return null
 
         return arrayOf(typeParamsDescription(owner.typeParameters))
     }

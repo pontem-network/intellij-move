@@ -18,7 +18,7 @@ import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
 
 interface MvFunctionLike: MvNameIdentifierOwner,
-                          MvTypeParametersOwner,
+                          MvGenericDeclaration,
                           MvDocAndAttributeOwner {
 
     val functionParameterList: MvFunctionParameterList?

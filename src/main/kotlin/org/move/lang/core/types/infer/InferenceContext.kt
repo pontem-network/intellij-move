@@ -351,7 +351,7 @@ class InferenceContext(
     @Suppress("UNCHECKED_CAST")
     fun <T: GenericTy> instantiateMethodOrPath(
         methodOrPath: MvMethodOrPath,
-        genericItem: MvTypeParametersOwner
+        genericItem: MvGenericDeclaration
     ): Pair<T, Substitution>? {
         var itemTy =
             this.methodOrPathTypes.getOrPut(methodOrPath) {

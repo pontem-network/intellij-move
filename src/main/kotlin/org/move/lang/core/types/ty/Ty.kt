@@ -1,6 +1,6 @@
 package org.move.lang.core.types.ty
 
-import org.move.lang.core.psi.MvTypeParametersOwner
+import org.move.lang.core.psi.MvGenericDeclaration
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_ADT_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
@@ -88,7 +88,7 @@ fun Ty.mslScopeRefined(msl: Boolean): Ty {
 }
 
 abstract class GenericTy(
-    open val item: MvTypeParametersOwner,
+    open val item: MvGenericDeclaration,
     open val substitution: Substitution,
     flags: TypeFlags,
 ) : Ty(mergeFlags(substitution.types) or flags)

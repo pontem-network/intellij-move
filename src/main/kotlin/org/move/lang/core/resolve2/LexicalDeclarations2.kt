@@ -187,7 +187,7 @@ fun processItemsInScope(
             }
 
             Namespace.TYPE -> {
-                if (scope is MvTypeParametersOwner) {
+                if (scope is MvGenericDeclaration) {
                     if (processor.processAll(elementNs, scope.typeParameters)) return true
                 }
                 val found = when (scope) {
