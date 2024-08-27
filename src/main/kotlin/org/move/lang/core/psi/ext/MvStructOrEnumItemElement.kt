@@ -15,17 +15,17 @@ interface MvStructOrEnumItemElement: MvQualNamedElement,
     override fun declaredType(msl: Boolean): Ty {
         val typeParameters = this.tyTypeParams
         val itemTy = TyAdt(this, typeParameters, this.generics)
-        if (this is MvFieldsOwner && this.tupleFields != null) {
-            // tuple struct or tuple enum variant
-            val paramTypes = this.positionalFields.map { it.type.loweredType(msl) }
-            return TyFunction(
-                this,
-                typeParameters,
-                paramTypes,
-                returnType = itemTy,
-                acquiresTypes = emptyList(),
-            )
-        }
+//        if (this is MvFieldsOwner && this.tupleFields != null) {
+//            // tuple struct or tuple enum variant
+//            val paramTypes = this.positionalFields.map { it.type.loweredType(msl) }
+//            return TyFunction(
+//                this,
+//                typeParameters,
+//                paramTypes,
+//                returnType = itemTy,
+//                acquiresTypes = emptyList(),
+//            )
+//        }
         return itemTy
     }
 }

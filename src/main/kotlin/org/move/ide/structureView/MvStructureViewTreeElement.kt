@@ -52,7 +52,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
                     element.specFunctions(),
                 ).flatten()
             }
-            is MvStruct -> element.fields
+            is MvStruct -> element.namedFields
             else -> emptyList()
         }
         return items.map { MvStructureViewTreeElement(it) }.toTypedArray()

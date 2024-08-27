@@ -11,8 +11,7 @@ import org.move.lang.core.psi.ext.*
 
 interface MvElement : PsiElement
 
-abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
-                                              MvElement
+abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), MvElement
 
 val MvElement.containingMoveFile: MoveFile? get() = this.containingFile as? MoveFile
 

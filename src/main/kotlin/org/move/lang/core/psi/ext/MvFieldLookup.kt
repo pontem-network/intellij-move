@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.process
@@ -44,7 +45,7 @@ fun processNamedFieldVariants(
 }
 
 // todo: change into VisibilityFilter
-private fun isFieldsAccessible(
+fun isFieldsAccessible(
     element: MvElement,
     item: MvStructOrEnumItemElement,
     msl: Boolean
@@ -71,6 +72,8 @@ class MvFieldLookupReferenceImpl(
 
 abstract class MvFieldLookupMixin(node: ASTNode): MvElementImpl(node),
                                                   MvFieldLookup {
+
+    override val referenceNameElement: PsiElement get() = (identifier ?: integerLiteral)!!
 
     override fun getReference(): MvPolyVariantReference = MvFieldLookupReferenceImpl(this)
 }

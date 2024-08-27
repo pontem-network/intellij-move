@@ -68,7 +68,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet,
         completionContext: CompletionContext,
     ) {
-        for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
+        for (field in referredStruct.namedFields.filter { it.name !in providedFieldNames }) {
             result.addElement(
                 field.createLookupElement(completionContext)
             )

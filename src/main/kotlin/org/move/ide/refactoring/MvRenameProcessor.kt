@@ -13,7 +13,8 @@ import org.move.lang.core.psi.ext.owner
 
 
 class MvRenameProcessor: RenamePsiElementProcessor() {
-    override fun canProcessElement(element: PsiElement): Boolean = element is MvNamedElement
+    override fun canProcessElement(element: PsiElement): Boolean =
+        element is MvNamedElement && element !is MvTupleFieldDecl
 
     override fun renameElement(
         element: PsiElement,

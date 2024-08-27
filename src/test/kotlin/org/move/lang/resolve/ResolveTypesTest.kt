@@ -817,7 +817,7 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve tuple struct`() = checkByCode("""
+    fun `test resolve tuple struct as a name`() = checkByCode("""
         module 0x1::m {
             struct S(u8);
                  //X

@@ -22,8 +22,11 @@ val MvFieldsOwner.itemElement: MvStructOrEnumItemElement
 //    }
 //}
 
-val MvFieldsOwner.fields: List<MvNamedFieldDecl>
-    get() = namedFields //+ positionalFields
+//val MvFieldsOwner.fields: List<MvNamedFieldDecl>
+//    get() = namedFields //+ positionalFields
+
+val MvFieldsOwner.fields: List<MvFieldDecl>
+    get() = namedFields + positionalFields
 
 val MvFieldsOwner.namedFields: List<MvNamedFieldDecl>
     get() = blockFields?.namedFieldDeclList.orEmpty()

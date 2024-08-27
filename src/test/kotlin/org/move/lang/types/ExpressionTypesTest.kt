@@ -2061,7 +2061,7 @@ module 0x1::main {
 
     fun `test positional field lookup type`() = testExpr("""
         module 0x1::m {
-            struct S(u8)
+            struct S(u8);
             fun main(s: S) {
                 s.0;
                 //^ u8

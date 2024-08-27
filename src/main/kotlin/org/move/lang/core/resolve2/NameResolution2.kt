@@ -4,12 +4,32 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.index.MvModuleIndex
 
+fun processFieldLookupResolveVariants(
+    fieldLookup: MvFieldLookup,
+    receiverTy: TyAdt,
+    msl: Boolean,
+    originalProcessor: RsResolveProcessorBase<FieldResolveVariant>,
+): Boolean {
+    val receiverItem = receiverTy.item
+    if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
+
+    val processor = originalProcessor.wrapWithMapper { it: ScopeEntry ->
+        FieldResolveVariant(it.name, it.element)
+//        FieldResolveVariant(it.name, it.element, ty, autoderef.steps(), autoderef.obligations())
+    }
+    val structItem = receiverTy.item as? MvStruct ?: return false
+
+    return processFieldDeclarations(structItem, processor)
+}
 
 fun processStructLitFieldResolveVariants(
     litField: MvStructLitField,
@@ -217,6 +237,12 @@ fun walkUpThroughScopes(
 
     return false
 }
+
+private fun processFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    struct.fields.any { field ->
+        val name = field.name ?: return@any false
+        processor.process(name, NAMES, field)
+    }
 
 private fun processNamedFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
     struct.namedFields.any { field ->

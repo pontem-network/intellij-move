@@ -13,6 +13,7 @@ import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
 import org.move.lang.core.resolve.processAll
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.resolveSingleResolveVariant
+import org.move.lang.core.resolve2.processFieldLookupResolveVariants
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
@@ -460,10 +461,12 @@ class TypeInferenceWalker(
     fun inferFieldLookupTy(receiverTy: Ty, fieldLookup: MvFieldLookup): Ty {
         val tyAdt =
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
+
         val field =
             resolveSingleResolveVariant(fieldLookup.referenceName) {
-                processNamedFieldVariants(fieldLookup, tyAdt, msl, it)
-            } as? MvNamedFieldDecl
+                processFieldLookupResolveVariants(fieldLookup, tyAdt, msl, it)
+//                processNamedFieldVariants(fieldLookup, tyAdt, msl, it)
+            } as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 
         val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)

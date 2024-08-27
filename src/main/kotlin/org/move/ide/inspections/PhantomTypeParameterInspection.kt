@@ -4,21 +4,18 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.PhantomFix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.fields
-import org.move.lang.core.psi.ext.isPhantom
-import org.move.lang.core.psi.ext.moveReference
-import org.move.lang.core.psi.ext.typeArguments
+import org.move.lang.core.psi.ext.*
 
-class PhantomTypeParameterInspection : MvLocalInspectionTool() {
+class PhantomTypeParameterInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
-        return object : MvVisitor() {
+        return object: MvVisitor() {
             override fun visitStruct(o: MvStruct) {
                 val usedTypeParams = mutableSetOf<MvTypeParameter>()
 
-                for (structField in o.fields) {
+                for (field in o.fields) {
                     val fieldUsedTypeParams = mutableSetOf<MvTypeParameter>()
 
-                    val fieldType = structField.type ?: continue
+                    val fieldType = field.type ?: continue
                     for (path in fieldType.descendantsOfType<MvPath>()) {
                         if (path.typeArguments.isNotEmpty()) continue
                         val typeParam = path.reference?.resolve() as? MvTypeParameter ?: continue

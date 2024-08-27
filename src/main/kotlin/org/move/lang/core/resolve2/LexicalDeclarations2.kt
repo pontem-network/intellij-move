@@ -62,16 +62,16 @@ fun processItemsInScope(
                         false
                     }
                     is MvItemSpec -> {
-                        val specItem = scope.item
-                        when (specItem) {
+                        val referredItem = scope.item
+                        when (referredItem) {
                             is MvFunction -> {
                                 processor.processAll(
                                     elementNs,
-                                    specItem.valueParamsAsBindings,
-                                    specItem.specFunctionResultParameters.map { it.patBinding },
+                                    referredItem.valueParamsAsBindings,
+                                    referredItem.specFunctionResultParameters.map { it.patBinding },
                                 )
                             }
-                            is MvStruct -> processor.processAll(elementNs, specItem.fields)
+                            is MvStruct -> processor.processAll(elementNs, referredItem.namedFields)
                             else -> false
                         }
                     }
