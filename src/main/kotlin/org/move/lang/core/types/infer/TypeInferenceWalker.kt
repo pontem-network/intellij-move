@@ -401,13 +401,13 @@ class TypeInferenceWalker(
         val baseTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, namedItem)
+                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
                         ?: return TyUnknown
                     itemTy
                 }
                 is MvStruct -> {
                     if (namedItem.tupleFields == null) return TyUnknown
-                    val (itemTy, _) = ctx.instantiateMethodOrPath<TyFunction>(path, namedItem)
+                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
                         ?: return TyUnknown
                     itemTy
                 }
@@ -487,8 +487,8 @@ class TypeInferenceWalker(
         val baseTy =
             when (genericItem) {
                 is MvFunction -> {
-                    val (itemTy, _) =
-                        ctx.instantiateMethodOrPath<TyFunction>(methodCall, genericItem) ?: return TyUnknown
+                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(methodCall, genericItem)
+                        ?: return TyUnknown
                     itemTy
                 }
                 else -> {
@@ -533,44 +533,69 @@ class TypeInferenceWalker(
                 is InferArg.ArgExpr -> {
                     val argExpr = inferArg.expr ?: continue
                     val argExprTy = argExpr.inferType(expected = expectation)
-//                    val argExprTy = inferExprTy(argExpr, expectation)
-//                        val coercedTy =
-//                            resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
                     coerce(argExpr, argExprTy, expectedTy)
                     // retrieve obligations
                     ctx.combineTypes(formalInputTy, expectedTy)
-//                        coercedTy
                 }
                 is InferArg.SelfType -> {
-//                        val actualSelfTy = inferArg.selfTy
-//                        val coercedTy =
-//                            resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
-//                        ctx.combineTypes(
-//                            resolveTypeVarsWithObligations(actualTy),
-//                            resolveTypeVarsWithObligations(expectedTy)
-//                        )
-
                     // method already resolved, so autoborrow() should always succeed
                     val actualSelfTy = autoborrow(inferArg.selfTy, expectedTy)
                         ?: error("unreachable, as method call cannot be resolved if autoborrow fails")
                     ctx.combineTypes(actualSelfTy, expectedTy)
-//                        coercedTy
-
                 }
             }
 
             // retrieve obligations
             ctx.combineTypes(formalInputTy, expectedTy)
-//            if (inferArg == null) continue
-
-//            val actualTy = inferExprTy(inferArg, expectation)
-//            val coercedTy =
-//                resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
-//            coerce(inferArg, actualTy, coercedTy)
-//
-//            // retrieve obligations
-//            ctx.combineTypes(formalInputTy, coercedTy)
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T: GenericTy> instantiateMethodOrPath(
+        methodOrPath: MvMethodOrPath,
+        genericItem: MvGenericDeclaration
+    ): Pair<T, Substitution>? {
+        var itemTy =
+            this.ctx.methodOrPathTypes.getOrPut(methodOrPath) {
+                // can only be method or path, both are resolved to MvNamedElement
+                val genericNamedItem = genericItem as MvNamedElement
+                TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
+                    ?: return null
+            }
+
+        val typeParameters = genericItem.tyInfers
+        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
+
+        unifySubst(typeParameters, itemTy.substitution)
+        return Pair(itemTy, typeParameters)
+    }
+
+    private fun unifySubst(subst1: Substitution, subst2: Substitution) {
+        subst1.typeSubst.forEach { (k, v1) ->
+            subst2[k]?.let { v2 ->
+                if (k != v1 && v1 !is TyTypeParameter && v1 !is TyUnknown) {
+                    ctx.combineTypes(v2, v1)
+                }
+            }
+        }
+    }
+
+    private fun callableTy(tupleFields: MvTupleFields, item: MvFieldsOwner): TyFunction {
+        val parameterTypes = tupleFields.tupleFieldDeclList.map { it.type.loweredType(msl) }
+        val returnType = when (item) {
+            is MvStruct -> item.declaredType(msl)
+            is MvEnumVariant -> item.enumItem.declaredType(msl)
+            else -> error("exhaustive")
+        }
+        val typeParams = (item as MvGenericDeclaration).tyTypeParams
+        return TyFunction(
+            item as MvGenericDeclaration,
+            typeParams,
+            paramTypes = parameterTypes,
+            returnType = returnType,
+            acquiresTypes = emptyList(),
+        )
+            .substitute(typeParams) as TyFunction
     }
 
     fun inferMacroCallExprTy(macroExpr: MvAssertMacroExpr): Ty {
@@ -668,10 +693,10 @@ class TypeInferenceWalker(
         }
 
         val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
-        val (tyAdt, typeParameters) = ctx.instantiateMethodOrPath<TyAdt>(path, genericItem)
+        val (tyAdt, typeParameters) = instantiateMethodOrPath<TyAdt>(path, genericItem)
             ?: return TyUnknown
         expectedType?.let { expectedTy ->
-            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
+            unifySubst(typeParameters, expectedTy.typeParameterValues)
         }
 
         litExpr.fields.forEach { field ->
@@ -706,7 +731,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (schemaTy, _) = ctx.instantiateMethodOrPath<TySchema>(path, schemaItem) ?: return TyUnknown
+        val (schemaTy, _) = instantiateMethodOrPath<TySchema>(path, schemaItem) ?: return TyUnknown
 //        expected.onlyHasTy(ctx)?.let { expectedTy ->
 //            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
 //        }

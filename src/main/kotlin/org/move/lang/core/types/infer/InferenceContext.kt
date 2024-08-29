@@ -86,7 +86,7 @@ data class InferenceResult(
 
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
-    private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
+    val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
 
     private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
     private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
@@ -192,7 +192,7 @@ class InferenceContext(
     private val callableTypes = mutableMapOf<MvCallable, Ty>()
 
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
-    private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
+    val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
     val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
     val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
@@ -346,35 +346,6 @@ class InferenceContext(
 
     fun getExprType(expr: MvExpr): Ty {
         return exprTypes[expr] ?: TyUnknown
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T: GenericTy> instantiateMethodOrPath(
-        methodOrPath: MvMethodOrPath,
-        genericItem: MvGenericDeclaration
-    ): Pair<T, Substitution>? {
-        var itemTy =
-            this.methodOrPathTypes.getOrPut(methodOrPath) {
-                // can only be method or path, both are resolved to MvNamedElement
-                val genericNamedItem = genericItem as MvNamedElement
-                TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T ?: return null
-            }
-
-        val typeParameters = genericItem.tyInfers
-        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
-
-        unifySubst(typeParameters, itemTy.substitution)
-        return Pair(itemTy, typeParameters)
-    }
-
-    fun unifySubst(subst1: Substitution, subst2: Substitution) {
-        subst1.typeSubst.forEach { (k, v1) ->
-            subst2[k]?.let { v2 ->
-                if (k != v1 && v1 !is TyTypeParameter && v1 !is TyUnknown) {
-                    combineTypes(v2, v1)
-                }
-            }
-        }
     }
 
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
