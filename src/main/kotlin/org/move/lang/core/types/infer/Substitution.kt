@@ -64,7 +64,7 @@ val emptySubstitution: Substitution = EmptySubstitution
 /**
  * Deeply replace any [TyTypeParameter] by [subst] mapping.
  */
-fun <T : TypeFoldable<T>> TypeFoldable<T>.substitute(subst: Substitution): T =
+fun <T : TypeFoldable<T>> T.substitute(subst: Substitution): T =
     foldWith(object : TypeFolder() {
         override fun fold(ty: Ty): Ty {
             return when {

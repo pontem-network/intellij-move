@@ -66,15 +66,13 @@ class TyLowering {
         return when (namedItem) {
             is MvTypeDeclarationElement -> {
                 val baseItemTy = namedItem.declaredType(msl)
-                val substFromExplicitTypeArguments =
-                    instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
-                baseItemTy.substitute(substFromExplicitTypeArguments)
+                val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
+                baseItemTy.substitute(explicitTypeParams)
             }
             is MvFunctionLike -> {
                 val baseTy = namedItem.functionTy(msl)
-                val explicitTypeParamsSubst =
-                    instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
-                baseTy.substitute(explicitTypeParamsSubst)
+                val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
+                baseTy.substitute(explicitTypeParams)
             }
             is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
             else -> debugErrorOrFallback(
@@ -104,7 +102,7 @@ class TyLowering {
         return ty
     }
 
-    private fun <T: MvElement> instantiateTypeParamsSubstitution(
+    private fun <T: MvElement> explicitTypeParamsSubst(
         methodOrPath: MvMethodOrPath,
         namedItem: T,
         msl: Boolean

@@ -387,17 +387,19 @@ class TypeInferenceWalker(
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
         val namedItem = resolvePathElement(callExpr, expectedType = null)
-        val baseTy =
+        val baseFuncTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
-                        ?: return TyUnknown
+                    val itemTy = instantiatePath<TyFunction>(path, namedItem) ?: return TyUnknown
+//                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
+//                        ?: return TyUnknown
                     itemTy
                 }
                 is MvStruct -> {
                     if (namedItem.tupleFields == null) return TyUnknown
-                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
-                        ?: return TyUnknown
+//                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
+//                        ?: return TyUnknown
+                    val itemTy = instantiatePath<TyFunction>(path, namedItem) ?: return TyUnknown
                     itemTy
                 }
                 is MvPatBinding -> {
@@ -406,7 +408,7 @@ class TypeInferenceWalker(
                 }
                 else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
             }
-        val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
+        val funcTy = ctx.resolveTypeVarsIfPossible(baseFuncTy) as TyCallable
 
         val expectedInputTys =
             expectedInputsForExpectedOutput(expected, funcTy.returnType, funcTy.paramTypes)
@@ -475,8 +477,10 @@ class TypeInferenceWalker(
         val baseTy =
             when (genericItem) {
                 is MvFunction -> {
-                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(methodCall, genericItem)
+                    val itemTy = instantiatePath<TyFunction>(methodCall, genericItem)
                         ?: return TyUnknown
+//                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(methodCall, genericItem)
+//                        ?: return TyUnknown
                     itemTy
                 }
                 else -> {
@@ -538,19 +542,20 @@ class TypeInferenceWalker(
         }
     }
 
-//    fun <T: GenericTy> instantiatePath(
-//        methodOrPath: MvMethodOrPath,
-//        genericItem: MvGenericDeclaration
-//    ): T? {
-//        // can only be method or path, both are resolved to MvNamedElement
-//        val genericNamedItem = genericItem as MvNamedElement
-//        // item type from explicit type parameters
-//        @Suppress("UNCHECKED_CAST")
-//        val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
-//            ?: return null
-//
-//        return explicitPathTy
-//    }
+    fun <T: GenericTy> instantiatePath(
+        methodOrPath: MvMethodOrPath,
+        genericItem: MvGenericDeclaration
+    ): T? {
+        // item type from explicit type parameters
+        @Suppress("UNCHECKED_CAST")
+        val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericItem, msl) as? T
+            ?: return null
+
+        val tyVarsSubst = genericItem.typeParamsToTyVarsSubst
+        @Suppress("UNCHECKED_CAST")
+        // TyTypeParameter -> TyVar for every TypeParameter which is not explicit set
+        return explicitPathTy.substitute(tyVarsSubst) as T
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <T: GenericTy> instantiateMethodOrPath(
@@ -626,9 +631,6 @@ class TypeInferenceWalker(
     ): List<Ty> {
         val resolvedFormalRet = resolveTypeVarsIfPossible(formalRet)
         val retTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
-        // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
-        // because we don't produce new type variables during unification
-        // https://github.com/rust-lang/rust/blob/50cf76c24bf6f266ca6d253a/compiler/rustc_infer/src/infer/fudge.rs#L98
         return ctx.freezeUnification {
             if (ctx.combineTypes(retTy, resolvedFormalRet).isOk) {
                 formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
@@ -695,12 +697,16 @@ class TypeInferenceWalker(
             }
             return TyUnknown
         }
-
         val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
-        val (tyAdt, typeParameters) = instantiateMethodOrPath<TyAdt>(path, genericItem)
-            ?: return TyUnknown
+        val (tyAdt, tyVarsSubst) =
+            instantiateMethodOrPath<TyAdt>(path, genericItem) ?: return TyUnknown
+//        val tyAdt = instantiatePath<TyAdt>(path, genericItem) ?: return TyUnknown
+//        val tyVarsSubst = genericItem.typeParamsToTyVarsSubst
+
         expectedType?.let { expectedTy ->
-            unifySubst(typeParameters, expectedTy.typeParameterValues)
+            val expectedTyTypeParams = expectedTy.typeParameterValues
+            // set TyVars from expected type substitution
+            unifySubst(tyVarsSubst, expectedTyTypeParams)
         }
 
         litExpr.fields.forEach { field ->
@@ -735,7 +741,8 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (schemaTy, _) = instantiateMethodOrPath<TySchema>(path, schemaItem) ?: return TyUnknown
+        val schemaTy = instantiatePath<TySchema>(path, schemaItem) ?: return TyUnknown
+//        val (schemaTy, _) = instantiateMethodOrPath<TySchema>(path, schemaItem) ?: return TyUnknown
 //        expected.onlyHasTy(ctx)?.let { expectedTy ->
 //            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
 //        }

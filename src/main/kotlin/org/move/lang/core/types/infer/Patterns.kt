@@ -48,8 +48,8 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                     ?: return
 
             if (item is MvGenericDeclaration) {
-//                val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
-                val (patTy, _) = fcx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
+                val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
+//                val (patTy, _) = fcx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
                 if (!isCompatible(expected, patTy, fcx.msl)) {
                     fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
                 }

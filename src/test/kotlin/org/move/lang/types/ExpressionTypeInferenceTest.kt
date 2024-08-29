@@ -335,11 +335,11 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
                 let a = 0;
                 let b: u8 = identity(a);
                 a;
-              //^ u8  
+              //^ u8
             }
         }    
         """
-    )
+    , allowErrors = false)
 
 //    fun `test struct unpacking type inference`() = testExpr("""
 //module 0x1::main {
