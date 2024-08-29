@@ -51,11 +51,12 @@ data class FuncSignature(
 
     companion object {
         fun fromFunction(function: MvFunction, msl: Boolean): FuncSignature {
-            val declaredType = function.functionTy(msl)
-            val params = function.parameters.zip(declaredType.paramTypes)
+            val functionType = function.functionTy(msl)
+            val parameters = function.parameters
+                .zip(functionType.paramTypes)
                 .associate { (param, paramTy) -> Pair(param.name, paramTy) }
-            val retType = declaredType.returnType
-            return FuncSignature(params, retType)
+            val returnType = functionType.returnType
+            return FuncSignature(parameters, returnType)
         }
     }
 }

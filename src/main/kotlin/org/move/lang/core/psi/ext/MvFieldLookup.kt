@@ -3,12 +3,11 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.process
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyAdt
 import org.move.stdext.wrapWithList

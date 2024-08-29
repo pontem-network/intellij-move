@@ -82,6 +82,21 @@ class TyLowering {
         }
     }
 
+    fun lowerCallable(
+        methodOrPath: MvMethodOrPath,
+        item: MvGenericDeclaration,
+        parameterTypes: List<Ty>,
+        returnType: Ty,
+        msl: Boolean
+    ): TyFunction {
+        val typeParamsSubst = item.typeParamsToTypeParamsSubst
+        val acqTypes = (item as? MvFunctionLike)?.acquiresPathTypes.orEmpty().map { it.loweredType(msl) }
+        val baseTy = TyFunction(item, typeParamsSubst, parameterTypes, returnType, acqTypes)
+
+        val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, item, msl)
+        return baseTy.substitute(explicitTypeParams) as TyFunction
+    }
+
     private fun lowerPrimitiveTy(path: MvPath, msl: Boolean): Ty {
         val refName = path.referenceName ?: return TyUnknown
         if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
@@ -102,14 +117,14 @@ class TyLowering {
         return ty
     }
 
-    private fun <T: MvElement> explicitTypeParamsSubst(
+    private fun explicitTypeParamsSubst(
         methodOrPath: MvMethodOrPath,
-        namedItem: T,
+        genericItem: MvElement,
         msl: Boolean
     ): Substitution {
-        if (namedItem !is MvGenericDeclaration) return emptySubstitution
+        if (genericItem !is MvGenericDeclaration) return emptySubstitution
 
-        val explicitTypeParamsSubst = pathTypeParamsSubst(methodOrPath, namedItem)
+        val explicitTypeParamsSubst = pathTypeParamsSubst(methodOrPath, genericItem)
 
         val typeSubst = hashMapOf<TyTypeParameter, Ty>()
         for ((param, value) in explicitTypeParamsSubst.typeSubst.entries) {

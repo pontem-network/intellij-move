@@ -18,7 +18,7 @@ val MvGenericDeclaration.tyTypeParams: List<TyTypeParameter>
 val MvGenericDeclaration.typeParamsToTypeParamsSubst: Substitution get() =
     Substitution(tyTypeParams.associateWith { it })
 
-val MvGenericDeclaration.typeParamsToTyVarsSubst: Substitution
+val MvGenericDeclaration.tyVarsSubst: Substitution
     get() {
         val typeSubst = this.tyTypeParams.associateWith { TyInfer.TyVar(it) }
         return Substitution(typeSubst)

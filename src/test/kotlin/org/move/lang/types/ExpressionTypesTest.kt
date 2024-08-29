@@ -2059,6 +2059,17 @@ module 0x1::main {
         }        
     """)
 
+    fun `test type for tuple struct literal with multiple type parameters and explicit type`() = testExpr("""
+        module 0x1::m {
+            struct S<T>(T, T);
+            fun main() {
+                let s = S<u8>(1, 1);
+                s; 
+              //^ 0x1::m::S<u8>   
+            }
+        }        
+    """)
+
     fun `test positional field lookup type`() = testExpr("""
         module 0x1::m {
             struct S(u8);
@@ -2076,6 +2087,28 @@ module 0x1::main {
                 let s = S(true);
                 s.0;
                 //^ bool
+            }
+        }        
+    """)
+
+    fun `test enum variant for tuple struct literal`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One(T) }
+            fun main() {
+                let s = S::One(true);
+                s; 
+              //^ 0x1::m::S<bool>   
+            }
+        }        
+    """)
+
+    fun `test enum variant for tuple struct literal field`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One(T) }
+            fun main() {
+                let s = S::One(true);
+                s.0; 
+                //^ bool   
             }
         }        
     """)
