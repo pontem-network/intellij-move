@@ -63,9 +63,6 @@ class TyLowering {
                 val explicitSubst = instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
                 baseTy.substitute(explicitSubst)
             }
-//            is MvTypeParameter -> TyTypeParameter(namedItem)
-//            is MvGenericDeclaration -> {
-//            }
             is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
             else -> debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",

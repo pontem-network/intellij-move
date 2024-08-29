@@ -86,7 +86,6 @@ data class InferenceResult(
 
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
-    val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
 
     private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
     private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
@@ -108,7 +107,6 @@ data class InferenceResult(
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
-    fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
@@ -191,9 +189,6 @@ class InferenceContext(
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val callableTypes = mutableMapOf<MvCallable, Ty>()
 
-    //    private val pathTypes = mutableMapOf<MvPath, Ty>()
-    val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
-
     val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
     val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
@@ -258,8 +253,6 @@ class InferenceContext(
 
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
         typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
-//        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
-        methodOrPathTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         resolvedPaths.values.asSequence().flatten()
             .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
@@ -269,7 +262,6 @@ class InferenceContext(
             patFieldTypes,
             exprTypes,
             exprExpectedTypes,
-            methodOrPathTypes,
             resolvedPaths,
             resolvedFields,
             resolvedMethodCalls,

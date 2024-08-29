@@ -306,16 +306,6 @@ class TypeInferenceWalker(
     }
 
     private fun inferPathExprTy(pathExpr: MvPathExpr, expected: Expectation): Ty {
-        // special-case `result` inside item spec
-//        if (msl && refExpr.path.text == "result") {
-//            val funcItem = refExpr.ancestorStrict<MvItemSpec>()?.funcItem
-//            if (funcItem != null) {
-//                return funcItem.rawReturnType(true)
-//            }
-//        }
-//        val path = pathExpr.path
-//        val resolveVariants = resolvePathRaw(path)
-//        ctx.writePath(path, resolveVariants.map { ResolvedPath.from(it, path)})
 
         val expectedType = expected.onlyHasTy(ctx)
         val item = resolvePathElement(pathExpr, expectedType) ?: return TyUnknown
@@ -369,7 +359,6 @@ class TypeInferenceWalker(
         val hint = Expectation.maybeHasType(expectedInnerTy)
 
         val innerExprTy = innerExpr.inferType(expected = hint)
-//        val innerExprTy = inferExprTy(innerExpr, hint)
         val innerRefTy = when (innerExprTy) {
             is TyReference, is TyTuple -> {
                 ctx.reportTypeError(TypeError.ExpectedNonReferenceType(innerExpr, innerExprTy))
@@ -555,13 +544,10 @@ class TypeInferenceWalker(
         methodOrPath: MvMethodOrPath,
         genericItem: MvGenericDeclaration
     ): Pair<T, Substitution>? {
-        var itemTy =
-            this.ctx.methodOrPathTypes.getOrPut(methodOrPath) {
-                // can only be method or path, both are resolved to MvNamedElement
-                val genericNamedItem = genericItem as MvNamedElement
-                TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
-                    ?: return null
-            }
+        // can only be method or path, both are resolved to MvNamedElement
+        val genericNamedItem = genericItem as MvNamedElement
+        var itemTy = TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
+            ?: return null
 
         val typeParameters = genericItem.tyInfers
         itemTy = itemTy.substitute(typeParameters) as? T ?: return null
