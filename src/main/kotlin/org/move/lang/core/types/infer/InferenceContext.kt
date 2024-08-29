@@ -357,7 +357,7 @@ class InferenceContext(
             this.methodOrPathTypes.getOrPut(methodOrPath) {
                 // can only be method or path, both are resolved to MvNamedElement
                 val genericNamedItem = genericItem as MvNamedElement
-                TyLowering.lowerPath(methodOrPath, genericNamedItem, msl) as? T ?: return null
+                TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T ?: return null
             }
 
         val typeParameters = genericItem.tyInfers
@@ -376,9 +376,6 @@ class InferenceContext(
             }
         }
     }
-
-//    fun compareTypes(ty1: Ty, ty2: Ty): RelateResult =
-//        this.freezeUnification { this.combineTypes(ty1, ty2) }
 
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
         val resolvedTy1 = resolveIfTyInfer(ty1)

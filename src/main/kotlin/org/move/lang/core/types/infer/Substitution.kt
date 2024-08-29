@@ -13,7 +13,7 @@ open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : 
         Substitution(mergeMaps(typeSubst, other.typeSubst))
 
     operator fun get(key: TyTypeParameter): Ty? = typeSubst[key]
-    operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter(psi)]
+    operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter.named(psi)]
 
 //    fun typeParameterByName(name: String): TyTypeParameter? =
 //        typeSubst.keys.find { it.toString() == name }

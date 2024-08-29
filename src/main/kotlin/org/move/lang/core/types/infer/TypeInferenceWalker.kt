@@ -327,7 +327,7 @@ class TypeInferenceWalker(
             is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStruct -> {
                 if (project.moveSettings.enableIndexExpr && pathExpr.parent is MvIndexExpr) {
-                    TyLowering.lowerPath(pathExpr.path, item, ctx.msl)
+                    TyLowering().lowerPath(pathExpr.path, item, ctx.msl)
                 } else {
                     // invalid statements
                     TyUnknown

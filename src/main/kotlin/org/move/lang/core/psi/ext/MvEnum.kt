@@ -8,6 +8,8 @@ import org.move.lang.core.psi.MvEnumVariant
 import org.move.lang.core.stubs.MvEnumStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.MvPsiTypeImplUtil
+import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
 val MvEnum.variants: List<MvEnumVariant> get() = enumBody?.enumVariantList.orEmpty()
@@ -23,6 +25,8 @@ abstract class MvEnumMixin: MvStubbedNamedElementImpl<MvEnumStub>,
     constructor(node: ASTNode): super(node)
 
     constructor(stub: MvEnumStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
+
+    override fun declaredType(msl: Boolean): Ty = MvPsiTypeImplUtil.declaredType(this)
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 

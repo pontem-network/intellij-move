@@ -7,9 +7,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.TySchema
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
 val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
@@ -33,12 +34,12 @@ val MvSchema.fieldsAsBindings get() = this.fieldStmts.map { it.patBinding }
 
 val MvIncludeStmt.expr: MvExpr? get() = this.childOfType()
 
-abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
-                               MvSchema {
+abstract class MvSchemaMixin: MvStubbedNamedElementImpl<MvSchemaStub>,
+                              MvSchema {
 
-    constructor(node: ASTNode) : super(node)
+    constructor(node: ASTNode): super(node)
 
-    constructor(stub: MvSchemaStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+    constructor(stub: MvSchemaStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
@@ -49,6 +50,5 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
-    override fun declaredType(msl: Boolean): TySchema =
-        TySchema(this, this.tyTypeParams, this.generics)
+    override fun declaredType(msl: Boolean): Ty = MvPsiTypeImplUtil.declaredType(this)
 }

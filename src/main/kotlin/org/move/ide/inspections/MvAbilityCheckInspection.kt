@@ -12,6 +12,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.GenericTy
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.functionTy
 
 class MvAbilityCheckInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
@@ -21,7 +22,7 @@ class MvAbilityCheckInspection: MvLocalInspectionTool() {
 
                 val callExpr = o.parent as? MvCallExpr ?: return
                 val funcItem = (callExpr.path.reference?.resolve() as? MvFunctionLike) ?: return
-                val funcTy = funcItem.declaredType(false)
+                val funcTy = funcItem.functionTy(false)
                 val inference = callExpr.inference(false) ?: return
 
                 for ((i, valueArgument) in o.valueArgumentList.withIndex()) {
