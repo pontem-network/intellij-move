@@ -463,7 +463,6 @@ class TypeInferenceWalker(
     }
 
     fun inferMethodCallTy(receiverTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
-
         val resolutionCtx = ResolutionContext(methodCall, isCompletion = false)
         val resolvedMethods =
             collectMethodOrPathResolveVariants(methodCall, resolutionCtx) {
@@ -539,29 +538,48 @@ class TypeInferenceWalker(
         }
     }
 
+//    fun <T: GenericTy> instantiatePath(
+//        methodOrPath: MvMethodOrPath,
+//        genericItem: MvGenericDeclaration
+//    ): T? {
+//        // can only be method or path, both are resolved to MvNamedElement
+//        val genericNamedItem = genericItem as MvNamedElement
+//        // item type from explicit type parameters
+//        @Suppress("UNCHECKED_CAST")
+//        val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
+//            ?: return null
+//
+//        return explicitPathTy
+//    }
+
     @Suppress("UNCHECKED_CAST")
     fun <T: GenericTy> instantiateMethodOrPath(
         methodOrPath: MvMethodOrPath,
         genericItem: MvGenericDeclaration
     ): Pair<T, Substitution>? {
-        // can only be method or path, both are resolved to MvNamedElement
-        val genericNamedItem = genericItem as MvNamedElement
-        var itemTy = TyLowering().lowerPath(methodOrPath, genericNamedItem, msl) as? T
+        // item type from explicit type parameters
+        val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericItem, msl) as? T
             ?: return null
+        val typeParamToVarSubst = genericItem.typeParamsToTyVarsSubst
 
-        val typeParameters = genericItem.tyInfers
-        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
+        // replace type params which weren't explicitly specified with TyVar
+        val explicitPathTyWithTyVars = explicitPathTy.substitute(typeParamToVarSubst) as? T ?: return null
 
-        unifySubst(typeParameters, itemTy.substitution)
-        return Pair(itemTy, typeParameters)
+        // adds associations of ?Element -> (type of ?Element from explicitly set types)
+        /// Option<u8>: ?Element -> u8
+        /// Option: ?Element -> ?Element
+        unifySubst(typeParamToVarSubst, explicitPathTyWithTyVars.substitution)
+
+        return Pair(explicitPathTyWithTyVars, typeParamToVarSubst)
     }
 
     private fun unifySubst(subst1: Substitution, subst2: Substitution) {
         subst1.typeSubst.forEach { (k, v1) ->
-            subst2[k]?.let { v2 ->
-                if (k != v1 && v1 !is TyTypeParameter && v1 !is TyUnknown) {
-                    ctx.combineTypes(v2, v1)
-                }
+            if (k == v1) return@forEach
+            if (v1 is TyTypeParameter || v1 is TyUnknown) return@forEach
+            subst2[k]?.let {
+                // perform unification for every value type of `subst` for the same TyTypeParameter
+                ctx.combineTypes(it, v1)
             }
         }
     }
@@ -573,7 +591,7 @@ class TypeInferenceWalker(
             is MvEnumVariant -> item.enumItem.declaredType(msl)
             else -> error("exhaustive")
         }
-        val typeParams = (item as MvGenericDeclaration).tyTypeParams
+        val typeParams = (item as MvGenericDeclaration).typeParamsToTypeParamsSubst
         return TyFunction(
             item as MvGenericDeclaration,
             typeParams,

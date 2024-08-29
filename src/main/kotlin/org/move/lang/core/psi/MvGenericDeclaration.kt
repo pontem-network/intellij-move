@@ -1,7 +1,6 @@
 package org.move.lang.core.psi
 
 import org.move.lang.core.types.infer.Substitution
-import org.move.lang.core.types.infer.toTypeSubst
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
 
@@ -13,17 +12,16 @@ val MvGenericDeclaration.typeParameters: List<MvTypeParameter>
     get() =
         typeParameterList?.typeParameterList.orEmpty()
 
-val MvGenericDeclaration.generics: List<TyTypeParameter>
+val MvGenericDeclaration.tyTypeParams: List<TyTypeParameter>
     get() = typeParameters.map { TyTypeParameter.named(it) }
 
-val MvGenericDeclaration.tyTypeParams: Substitution get() = Substitution(generics.associateWith { it })
+val MvGenericDeclaration.typeParamsToTypeParamsSubst: Substitution get() =
+    Substitution(tyTypeParams.associateWith { it })
 
-val MvGenericDeclaration.tyInfers: Substitution
+val MvGenericDeclaration.typeParamsToTyVarsSubst: Substitution
     get() {
-        val typeSubst = this
-            .generics
-            .associateWith { TyInfer.TyVar(it) }
-        return typeSubst.toTypeSubst()
+        val typeSubst = this.tyTypeParams.associateWith { TyInfer.TyVar(it) }
+        return Substitution(typeSubst)
     }
 
 val MvGenericDeclaration.hasTypeParameters: Boolean

@@ -8,7 +8,7 @@ import org.move.lang.core.psi.acquiresPathTypes
 import org.move.lang.core.psi.ext.returnTypeTy
 import org.move.lang.core.psi.parameters
 import org.move.lang.core.psi.psiFactory
-import org.move.lang.core.psi.tyTypeParams
+import org.move.lang.core.psi.typeParamsToTypeParamsSubst
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.infer.loweredType
 
@@ -63,7 +63,7 @@ data class TyFunction(
 fun MvFunctionLike.functionTy(msl: Boolean): TyFunction = callableTy(this, msl)
 
 fun callableTy(item: MvFunctionLike, msl: Boolean): TyFunction {
-    val typeParameters = item.tyTypeParams
+    val typeParameters = item.typeParamsToTypeParamsSubst
     val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
     val acquiredTypes = item.acquiresPathTypes.map { it.loweredType(msl) }
     val retType = item.returnTypeTy(msl)

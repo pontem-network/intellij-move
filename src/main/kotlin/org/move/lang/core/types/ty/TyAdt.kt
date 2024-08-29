@@ -1,6 +1,5 @@
 package org.move.lang.core.types.ty
 
-import com.intellij.codeInsight.completion.CompletionUtil
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
@@ -40,12 +39,12 @@ data class TyAdt(
 
     companion object {
         fun valueOf(struct: MvStructOrEnumItemElement): TyAdt {
-            val typeParameters = struct.tyTypeParams
+            val typeParameters = struct.typeParamsToTypeParamsSubst
             return TyAdt(
                 struct,
 //                CompletionUtil.getOriginalOrSelf(struct),
                 typeParameters,
-                struct.generics
+                struct.tyTypeParams
             )
         }
     }

@@ -119,7 +119,7 @@ val MvFunction.selfSignatureText: String
 
 fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: CompletionContext?): Boolean {
     val msl = this.isMslOnlyItem
-    val callTy = this.functionTy(msl).substitute(this.tyInfers) as TyFunction
+    val callTy = this.functionTy(msl).substitute(this.typeParamsToTyVarsSubst) as TyFunction
 
     val inferenceCtx = InferenceContext(msl)
     callTy.paramTypes.forEach {

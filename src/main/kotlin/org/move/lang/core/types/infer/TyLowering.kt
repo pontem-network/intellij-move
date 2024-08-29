@@ -9,6 +9,18 @@ import org.move.lang.core.types.ty.*
 
 fun MvType.loweredType(msl: Boolean): Ty = TyLowering().lowerType(this, msl)
 
+
+/**
+ * Returns type from the explicit instantiation of the item, like
+ * ```
+ * struct Option<Element> {}
+ * fun main() {
+ *     Option<u8>{};
+ *     //^
+ * }
+ * ```
+ * will return TyAdt(Option, Element -> u8)
+ */
 class TyLowering {
     fun lowerType(moveType: MvType, msl: Boolean): Ty {
         return when (moveType) {
@@ -45,23 +57,24 @@ class TyLowering {
         }
     }
 
-    fun lowerPath(methodOrPath: MvMethodOrPath, namedItem: MvNamedElement?, msl: Boolean): Ty {
+    fun lowerPath(methodOrPath: MvMethodOrPath, namedItem: MvElement?, msl: Boolean): Ty {
         // cannot do resolve() here due to circular caching for MethodCall, need to pass namedItem explicitly,
         // namedItem can be null if it's a primitive type
-//        val namedItem = methodOrPath.reference?.resolveWithAliases()
         if (namedItem == null) {
             return if (methodOrPath is MvPath) lowerPrimitiveTy(methodOrPath, msl) else TyUnknown
         }
         return when (namedItem) {
             is MvTypeDeclarationElement -> {
-                val baseTy = namedItem.declaredType(msl)
-                val explicitSubst = instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
-                baseTy.substitute(explicitSubst)
+                val baseItemTy = namedItem.declaredType(msl)
+                val substFromExplicitTypeArguments =
+                    instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
+                baseItemTy.substitute(substFromExplicitTypeArguments)
             }
             is MvFunctionLike -> {
                 val baseTy = namedItem.functionTy(msl)
-                val explicitSubst = instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
-                baseTy.substitute(explicitSubst)
+                val explicitTypeParamsSubst =
+                    instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
+                baseTy.substitute(explicitTypeParamsSubst)
             }
             is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
             else -> debugErrorOrFallback(
@@ -98,10 +111,10 @@ class TyLowering {
     ): Substitution {
         if (namedItem !is MvGenericDeclaration) return emptySubstitution
 
-        val psiSubstitution = pathPsiSubst(methodOrPath, namedItem)
+        val explicitTypeParamsSubst = pathTypeParamsSubst(methodOrPath, namedItem)
 
         val typeSubst = hashMapOf<TyTypeParameter, Ty>()
-        for ((param, value) in psiSubstitution.typeSubst.entries) {
+        for ((param, value) in explicitTypeParamsSubst.typeSubst.entries) {
             val paramTy = TyTypeParameter.named(param)
             val valueTy = when (value) {
                 is RsPsiSubstitution.Value.Present -> lowerType(value.value, msl)
