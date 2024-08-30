@@ -62,7 +62,7 @@ val pluginJarName = "intellij-move-$pluginVersion"
 val javaVersion = JavaVersion.VERSION_17
 //val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "3.4.1"
+val aptosVersion = "4.0.0"
 
 val remoteRobotVersion = "0.11.22"
 
