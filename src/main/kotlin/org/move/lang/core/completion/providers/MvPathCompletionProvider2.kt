@@ -9,7 +9,7 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
-import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.getOriginalOrSelf
@@ -50,7 +50,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         val ns = pathKind.ns
         val structAsType = TYPES_N_ENUMS.intersects(ns)
 
-        val completionContext = CompletionContext(
+        val completionContext = MvCompletionContext(
             pathElement,
             msl,
             expectedTy,
@@ -66,7 +66,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
     fun addPathVariants(
         pathElement: MvPath,
         parameters: CompletionParameters,
-        completionContext: CompletionContext,
+        completionContext: MvCompletionContext,
         ns: Set<Namespace>,
         result: CompletionResultSet,
     ) {
@@ -91,20 +91,38 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
         }
 
+        addCompletionsForOutOfScopeItems(
+            parameters,
+            pathElement,
+            result,
+            completionContext,
+            ns,
+            processedNames
+        )
+    }
+
+    private fun addCompletionsForOutOfScopeItems(
+        parameters: CompletionParameters,
+        path: MvPath,
+        result: CompletionResultSet,
+        completionContext: MvCompletionContext,
+        ns: Set<Namespace>,
+        processedNames: MutableSet<String>,
+    ) {
         // disable auto-import in module specs for now
-        if (pathElement.containingModuleSpec != null) return
+        if (path.containingModuleSpec != null) return
 
         // no out-of-scope completions for use specks
-        if (pathElement.isUseSpeck) return
+        if (path.isUseSpeck) return
 
         // no import candidates for qualified paths
-        if (pathElement.pathKind(true) is PathKind.QualifiedPath) return
+        if (path.pathKind(true) is PathKind.QualifiedPath) return
 
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext = ImportContext.from(originalPathElement, true, ns) ?: return
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
-                parameters,
+                path.project,
                 result.prefixMatcher,
                 processedNames,
                 importContext,
@@ -118,7 +136,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
             result.addElement(lookupElement)
         }
-        candidatesCollector = applySharedCompletionFilters(ns, resolutionCtx, candidatesCollector)
+        candidatesCollector =
+            applySharedCompletionFilters(ns, completionContext.resolutionCtx!!, candidatesCollector)
         candidatesCollector.processAll(
             candidates.map { CandidateScopeEntry(it.qualName.itemName, it.element, ns, it) }
         )
@@ -149,7 +168,7 @@ fun applySharedCompletionFilters(
 }
 
 fun filterCompletionVariantsByVisibility(
-    context: MvMethodOrPath,
+    context: MvElement,
     processor: RsResolveProcessor
 ): RsResolveProcessor {
     return processor.wrapWithFilter { e ->

@@ -153,7 +153,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
                 checkMissingFields(
-                    moveHolder, nameElement, o.providedFieldNames, refStruct
+                    moveHolder, nameElement, o.fieldNames, refStruct
                 )
             }
 

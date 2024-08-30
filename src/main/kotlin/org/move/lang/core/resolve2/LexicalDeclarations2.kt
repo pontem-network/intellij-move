@@ -185,12 +185,18 @@ fun processItemsInScope(
                 }
                 found
             }
-
             Namespace.TYPE -> {
                 if (scope is MvGenericDeclaration) {
                     if (processor.processAll(elementNs, scope.typeParameters)) return true
                 }
                 val found = when (scope) {
+                    is MvModule -> {
+                        if (processor.processAll(TYPES, scope.enumVariants())) return true
+                        processor.processAllItems(
+                            TYPES,
+                            scope.structs(),
+                        )
+                    }
                     is MvItemSpec -> {
                         val funcItem = scope.funcItem
                         if (funcItem != null) {
@@ -199,38 +205,27 @@ fun processItemsInScope(
                             false
                         }
                     }
-                    is MvModule -> {
-                        if (processor.processAll(TYPES, scope.enumVariants())) return true
-                        processor.processAllItems(
-                            TYPES,
-                            scope.structs(),
-                        )
-                    }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                         val patternTypeParams =
                             toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
                         processor.processAll(elementNs, patternTypeParams)
                     }
-
                     else -> false
                 }
                 found
             }
-
             Namespace.ENUM -> {
                 if (scope is MvModule) {
                     if (processor.processAllItems(ENUMS, scope.enumList)) return true
                 }
                 false
             }
-
             Namespace.SCHEMA -> when (scope) {
                 is MvModule -> processor.processAllItems(ns, scope.schemaList)
                 is MvModuleSpecBlock -> processor.processAllItems(ns, scope.schemaList, scope.specFunctionList)
                 else -> false
             }
-
             else -> false
         }
         if (stop) return true

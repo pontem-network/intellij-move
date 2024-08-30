@@ -17,7 +17,7 @@ import java.util.*
 
 val MvNamedElement.namespace
     get() = when (this) {
-        is MvFunctionLike -> Namespace.FUNCTION
+        is MvFunctionLike -> FUNCTION
         is MvStruct -> Namespace.TYPE
         is MvEnum -> Namespace.ENUM
         is MvConst -> Namespace.NAME
@@ -44,7 +44,7 @@ fun processMethodResolveVariants(
                 selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
         }
-        .processAllItems(setOf(Namespace.FUNCTION), itemModule.allNonTestFunctions())
+        .processAllItems(setOf(FUNCTION), itemModule.allNonTestFunctions())
 }
 
 fun processEnumVariantDeclarations(
@@ -102,7 +102,7 @@ fun processItemsFromModuleSpecs(
         val thisNs = setOf(namespace)
         for (moduleSpec in module.allModuleSpecs()) {
             val matched = when (namespace) {
-                Namespace.FUNCTION ->
+                FUNCTION ->
                     processor.processAll(
                         thisNs,
                         moduleSpec.specFunctions(),

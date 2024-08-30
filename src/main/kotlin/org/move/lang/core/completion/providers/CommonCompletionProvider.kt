@@ -6,13 +6,9 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.jetbrains.annotations.VisibleForTesting
-import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psiElement
-import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
 

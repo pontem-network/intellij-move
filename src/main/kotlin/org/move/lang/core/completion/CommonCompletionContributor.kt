@@ -9,7 +9,6 @@ import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.providers.*
 import org.move.lang.core.completion.sort.COMPLETION_WEIGHERS_GROUPED
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.nextNonWsSibling
 import org.move.lang.core.psi.ext.prevNonWsSibling
 
 class CommonCompletionContributor: CompletionContributor() {
@@ -35,7 +34,7 @@ class CommonCompletionContributor: CompletionContributor() {
         extend(CompletionType.BASIC, VectorLiteralCompletionProvider)
         extend(CompletionType.BASIC, MethodOrFieldCompletionProvider)
 
-//        extend(CompletionType.BASIC, CommonCompletionProvider)
+        extend(CompletionType.BASIC, ReferenceCompletionProvider)
     }
 
     fun extend(type: CompletionType?, provider: MvCompletionProvider) {

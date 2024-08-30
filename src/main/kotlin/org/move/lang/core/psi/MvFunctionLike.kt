@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
-import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.InferenceContext
@@ -117,7 +117,7 @@ val MvFunction.selfSignatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: CompletionContext?): Boolean {
+fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: MvCompletionContext?): Boolean {
     val msl = this.isMslOnlyItem
     val callTy = this.functionTy(msl).substitute(this.tyVarsSubst) as TyFunction
 

@@ -6,7 +6,7 @@ import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve2.ref.MvStructLitFieldReferenceImpl
 
-val MvStructLitField.structLitExpr: MvStructLitExpr
+val MvStructLitField.parentStructLitExpr: MvStructLitExpr
     get() = ancestorStrict()!!
 
 //inline fun <reified T: MvElement> MvStructLitField.resolveToElement(): T? =

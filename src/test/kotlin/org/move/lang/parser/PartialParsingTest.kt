@@ -22,4 +22,6 @@ class PartialParsingTest: MvParsingTestCase("partial") {
     fun `test expressions`() = doTest(true)
     fun `test assignments`() = doTest(true)
     fun `test dot exprs`() = doTest(true)
+
+    fun `test enum match`() = doTest(true)
 }

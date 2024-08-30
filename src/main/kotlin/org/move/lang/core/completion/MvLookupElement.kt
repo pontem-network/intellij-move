@@ -56,7 +56,7 @@ data class LookupElementProperties(
 fun getLookupElementProperties(
     element: MvNamedElement,
     subst: Substitution,
-    context: CompletionContext
+    context: MvCompletionContext
 ): LookupElementProperties {
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy

@@ -54,7 +54,7 @@ fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
-data class CompletionContext(
+data class MvCompletionContext(
     val contextElement: MvElement,
     val msl: Boolean,
     val expectedTy: Ty? = null,
@@ -63,7 +63,7 @@ data class CompletionContext(
 )
 
 fun MvNamedElement.createLookupElement(
-    completionContext: CompletionContext,
+    completionContext: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
@@ -126,7 +126,7 @@ class AngleBracketsInsertHandler: InsertHandler<LookupElement> {
     }
 }
 
-open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): InsertHandler<LookupElement> {
+open class DefaultInsertHandler(val completionCtx: MvCompletionContext? = null): InsertHandler<LookupElement> {
 
     final override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val element = item.psiElement as? MvElement ?: return
@@ -205,7 +205,7 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): I
 }
 
 private fun MvNamedElement.getLookupElementBuilder(
-    completionCtx: CompletionContext,
+    completionCtx: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     structAsType: Boolean = false
 ): LookupElementBuilder {

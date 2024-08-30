@@ -9,7 +9,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
 import org.move.lang.core.psi.MvElement
@@ -197,7 +197,7 @@ class LookupElementTest: MvTestBase() {
         val element = myFixture.findElementInEditor<T>() as? MvNamedElement
             ?: error("Marker `^` should point to the MvNamedElement")
 
-        val completionCtx = CompletionContext(element, false)
+        val completionCtx = MvCompletionContext(element, false)
 //        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         val lookup = element.createLookupElement(completionCtx)
         checkLookupPresentation(

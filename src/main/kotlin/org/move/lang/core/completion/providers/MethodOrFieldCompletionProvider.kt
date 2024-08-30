@@ -7,7 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.VisibleForTesting
-import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.*
@@ -44,7 +44,7 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
-        val ctx = CompletionContext(element, msl, expectedTy)
+        val ctx = MvCompletionContext(element, msl, expectedTy)
 
         val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
         if (tyAdt != null) {

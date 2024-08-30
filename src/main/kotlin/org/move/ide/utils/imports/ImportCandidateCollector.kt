@@ -3,6 +3,8 @@ package org.move.ide.utils.imports
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.VisibilityStatus.Visible
@@ -41,13 +43,12 @@ object ImportCandidateCollector {
     }
 
     fun getCompletionCandidates(
-        parameters: CompletionParameters,
+        project: Project,
         prefixMatcher: PrefixMatcher,
         processedPathNames: Set<String>,
         importContext: ImportContext,
 //        itemFilter: (PsiElement) -> Boolean = { true }
     ): List<ImportCandidate> {
-        val project = parameters.position.project
         val keys = hashSetOf<String>().apply {
             val names = MvNamedElementIndex.getAllKeys(project)
             addAll(names)
