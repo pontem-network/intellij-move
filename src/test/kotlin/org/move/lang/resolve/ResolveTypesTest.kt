@@ -41,9 +41,9 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve struct as struct literal`() = checkByCode(
+    fun `test resolve struct for struct literal`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct {}
                  //X
             
@@ -51,6 +51,34 @@ class ResolveTypesTest : ResolveTestCase() {
                 let a = MyStruct {};
                       //^
             }
+        }
+    """
+    )
+
+    fun `test cannot resolve struct for struct literal from another module`() = checkByCode(
+        """
+        module 0x1::s {
+            struct MyStruct {}
+        }
+        module 0x1::m {
+            use 0x1::s::MyStruct;
+            fun call() {
+                let a = MyStruct {};
+                      //^ unresolved
+            }
+        }
+    """
+    )
+
+    fun `test resolve struct from another module for import`() = checkByCode(
+        """
+        module 0x1::s {
+            struct MyStruct {}
+                    //X
+        }
+        module 0x1::m {
+            use 0x1::s::MyStruct;
+                        //^
         }
     """
     )

@@ -47,6 +47,7 @@ val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
 val TYPES_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME)
 val ENUMS_N_MODULES = setOf(Namespace.ENUM, Namespace.MODULE)
 val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MODULE)
+//val TYPES_N_ENUMS_N_MODULES_N_NAMES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MODULE, Namespace.NAME)
 
 val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =

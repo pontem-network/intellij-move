@@ -198,6 +198,19 @@ class StructsCompletionTest: CompletionTestCase() {
         }        
     """)
 
+    fun `test no completion in struct lit if field already specified`() = checkNoCompletion("""
+        module 0x1::M {
+            struct T { offered: u8, collateral: u8 }
+            fun main() {
+                T { 
+                    off/*caret*/ 
+                    offered: _, 
+                    collateral
+                };
+            }
+        }        
+    """)
+
     fun `test module struct completion in type position`() = doSingleCompletion("""
         module 0x1::Transaction {
             struct Type {
@@ -281,5 +294,45 @@ class StructsCompletionTest: CompletionTestCase() {
             let UserInfo { name/*caret*/ }
         }
     }    
+    """)
+
+    fun `test match expr enum variant completion`() = doSingleCompletion("""
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main(s: Color) {
+                match (s) {
+                    Re/*caret*/
+                }
+            }
+        }        
+    """, """
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main(s: Color) {
+                match (s) {
+                    Red/*caret*/
+                }
+            }
+        }        
+    """)
+
+    fun `test match expr enum item completion`() = doSingleCompletion("""
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main(s: Color) {
+                match (s) {
+                    Col/*caret*/
+                }
+            }
+        }        
+    """, """
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main(s: Color) {
+                match (s) {
+                    Color/*caret*/
+                }
+            }
+        }        
     """)
 }

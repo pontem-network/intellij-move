@@ -53,7 +53,7 @@ fun processStructLitFieldResolveVariants(
     isCompletion: Boolean,
     processor: RsResolveProcessor,
 ): Boolean {
-    val fieldsOwner = litField.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
+    val fieldsOwner = litField.parentStructLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
     if (fieldsOwner != null && processNamedFieldDeclarations(fieldsOwner, processor)) return true
     // if it's a shorthand, try to resolve to the underlying binding pat
     if (!isCompletion && litField.expr == null) {
@@ -94,7 +94,7 @@ fun processPatBindingResolveVariants(
             val element = entry.element
             val isConstantLike = element.isConstantLike
             val isPathOrDestructable = when (element) {
-                is MvEnum, is MvEnumVariant, is MvStruct -> true
+                /*is MvModule, */is MvEnum, is MvEnumVariant, is MvStruct -> true
                 else -> false
             }
             isConstantLike || (isCompletion && isPathOrDestructable)
@@ -102,8 +102,9 @@ fun processPatBindingResolveVariants(
             false
         }
     }
+    val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
     val ctx = ResolutionContext(binding, isCompletion)
-    return processNestedScopesUpwards(binding, if (isCompletion) TYPES_N_NAMES else NAMES, ctx, processor)
+    return processNestedScopesUpwards(binding, ns, ctx, processor)
 }
 
 fun resolveBindingForFieldShorthand(

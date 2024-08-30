@@ -2,7 +2,7 @@ package org.move.lang.core.resolve
 
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.SmartList
-import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
@@ -416,7 +416,7 @@ private class ResolveSingleScopeEntryCollector(
 
 fun collectCompletionVariants(
     result: CompletionResultSet,
-    context: CompletionContext,
+    context: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     f: (RsResolveProcessor) -> Unit
 ) {
@@ -427,7 +427,7 @@ fun collectCompletionVariants(
 private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
     private val subst: Substitution,
-    private val context: CompletionContext,
+    private val context: MvCompletionContext,
 ): RsResolveProcessorBase<ScopeEntry> {
     override val names: Set<String>? get() = null
 
@@ -514,21 +514,21 @@ fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
 }
 
 fun interface VisibilityFilter {
-    fun filter(methodOrPath: MvMethodOrPath, ns: Set<Namespace>): VisibilityStatus
+    fun filter(context: MvElement, ns: Set<Namespace>): VisibilityStatus
 }
 
-fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): VisibilityStatus =
+fun ScopeEntry.getVisibilityStatusFrom(contextElement: MvElement): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
         val visFilter = this.element
             .visInfo(adjustScope = this.adjustedItemScope)
             .createFilter()
-        visFilter.filter(methodOrPath, this.namespaces)
+        visFilter.filter(contextElement, this.namespaces)
     } else {
         Visible
     }
 
 
-fun ScopeEntry.isVisibleFrom(context: MvMethodOrPath): Boolean = getVisibilityStatusFrom(context) == Visible
+fun ScopeEntry.isVisibleFrom(context: MvElement): Boolean = getVisibilityStatusFrom(context) == Visible
 
 enum class VisibilityStatus {
     Visible,

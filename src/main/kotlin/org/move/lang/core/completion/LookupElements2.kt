@@ -15,7 +15,7 @@ import org.move.lang.core.types.ty.TyUnknown
 
 fun createLookupElement(
     scopeEntry: ScopeEntry,
-    completionContext: CompletionContext,
+    completionContext: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext)
@@ -29,7 +29,7 @@ fun createLookupElement(
 }
 
 private fun MvNamedElement.getLookupElementBuilder(
-    context: CompletionContext,
+    context: MvCompletionContext,
     scopeName: String,
     subst: Substitution = emptySubstitution,
 ): LookupElementBuilder {

@@ -13,6 +13,7 @@ import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
+import org.move.stdext.containsAny
 
 data class ItemVisibilityInfo(
     val item: MvNamedElement,
@@ -28,29 +29,31 @@ fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityIn
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
 fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
     val (item, itemScopeAdjustment, visibility) = this
-    return VisibilityFilter { methodOrPath, namespaces ->
+    return VisibilityFilter { context, itemNs ->
 
         // inside msl everything is visible
-        if (methodOrPath.isMsl()) return@VisibilityFilter Visible
+        if (context.isMsl()) return@VisibilityFilter Visible
 
         // if inside MvAttrItem like abort_code=
-        val attrItem = methodOrPath.ancestorStrict<MvAttrItem>()
+        val attrItem = context.ancestorStrict<MvAttrItem>()
         if (attrItem != null) return@VisibilityFilter Visible
 
-        val pathUsageScope = methodOrPath.usageScope
+        val pathUsageScope = context.usageScope
 
-        val path = methodOrPath as? MvPath
+        val path = context as? MvPath
         if (path != null) {
             val useSpeck = path.useSpeck
             if (useSpeck != null) {
-                // inside import, all visibilities except for private work
-                if (visibility !is Private) return@VisibilityFilter Visible
+                // for use specks, items needs to be public to be visible, no other rules apply
+                if (item is MvItemElement && item.isPublic) return@VisibilityFilter Visible
+
+                // if item does not support visibility, then it is always private
 
                 // msl-only items are available from imports
                 if (item.isMslOnlyItem) return@VisibilityFilter Visible
 
                 // consts are importable in tests
-                if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible
+                if (pathUsageScope.isTest && itemNs.contains(NAME)) return@VisibilityFilter Visible
             }
         }
 
@@ -71,12 +74,18 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
         // we're in non-msl scope at this point, msl only items aren't available
         if (item is MslOnlyElement) return@VisibilityFilter Invisible
 
-        val pathModule = methodOrPath.containingModule
+        val pathModule = context.containingModule
         // local methods, Self::method - everything is visible
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
-        // types visibility is ignored, their correct usage is checked in a separate inspection
-        if (namespaces.contains(TYPE) || namespaces.contains(ENUM)) return@VisibilityFilter Visible
+        // item is type, check whether it's allowed in the context
+        if (itemNs.containsAny(TYPE, ENUM)) {
+            val rootPath = path?.rootPath()
+            when (rootPath?.parent) {
+                // todo: when structs and enums can be public, conditions for struct lit/pat should be added here
+                is MvPathType -> return@VisibilityFilter Visible
+            }
+        }
 
         when (visibility) {
             is Restricted -> {
@@ -95,7 +104,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
                             return@VisibilityFilter Invisible
                         }
                         val pathPackage =
-                            methodOrPath.containingMovePackage ?: return@VisibilityFilter Invisible
+                            context.containingMovePackage ?: return@VisibilityFilter Invisible
                         val itemPackage = item.containingMovePackage ?: return@VisibilityFilter Invisible
 //                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
                         if (pathPackage == itemPackage) Visible else Invisible
