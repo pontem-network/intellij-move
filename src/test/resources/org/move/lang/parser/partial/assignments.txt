@@ -33,10 +33,9 @@ FILE
           PsiWhiteSpace(' ')
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiErrorElement:<type> expected, got '='
-              <empty list>
+          PsiElement(:)(':')
+          PsiErrorElement:<type> expected, got '='
+            <empty list>
           PsiWhiteSpace(' ')
           MvInitializerImpl(INITIALIZER)
             PsiElement(=)('=')
@@ -50,12 +49,11 @@ FILE
           PsiWhiteSpace(' ')
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
           PsiErrorElement:'::', ';', <type arguments> or '=' expected, got '1'
             <empty list>
         PsiWhiteSpace(' ')
@@ -194,7 +192,7 @@ FILE
                 MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('record')
               PsiElement(.)('.')
-              MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+              MvFieldLookupImpl(FIELD_LOOKUP)
                 PsiElement(IDENTIFIER)('val')
             PsiWhiteSpace(' ')
             MvInitializerImpl(INITIALIZER)
@@ -213,7 +211,7 @@ FILE
                   MvPathImpl(PATH)
                     PsiElement(IDENTIFIER)('record')
                 PsiElement(.)('.')
-                MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+                MvFieldLookupImpl(FIELD_LOOKUP)
                   PsiElement(IDENTIFIER)('val')
               PsiWhiteSpace(' ')
               MvInitializerImpl(INITIALIZER)

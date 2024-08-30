@@ -3,7 +3,11 @@ package org.move.lang.core.resolve2
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.FUNCTIONS
+import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
@@ -41,6 +45,23 @@ fun processMethodResolveVariants(
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
         }
         .processAllItems(setOf(Namespace.FUNCTION), itemModule.allNonTestFunctions())
+}
+
+fun processEnumVariantDeclarations(
+    enum: MvEnum,
+    ns: Set<Namespace>,
+    processor: RsResolveProcessor
+): Boolean {
+    for (namespace in ns) {
+        val stop = when (namespace) {
+            NAME -> processor.processAll(NAMES, enum.variants)
+            TYPE -> processor.processAll(TYPES, enum.variants)
+            FUNCTION -> processor.processAll(FUNCTIONS, enum.tupleVariants)
+            else -> continue
+        }
+        if (stop) return true
+    }
+    return false
 }
 
 fun processItemDeclarations(

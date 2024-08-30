@@ -129,29 +129,6 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test pass native struct to native fun`() = checkByCode(
-        """
-        module M {
-            native struct Native<T>;
-                        //X
-            native fun main(n: Native<u8>): u8;
-                             //^
-        }
-    """
-    )
-
-//    fun `test resolve type to import`() = checkByCode(
-//        """
-//        script {
-//            use 0x1::Transaction::Sender;
-//                                //X
-//
-//            fun main(s: Sender) {}
-//                      //^
-//        }
-//    """
-//    )
-
     fun `test resolve type from import`() = checkByCode(
         """
         address 0x1 {
@@ -837,6 +814,38 @@ module 0x1::m {
                             //X
             struct R { field: MyS }
                              //^
+        }        
+    """)
+
+    fun `test resolve tuple struct as a name`() = checkByCode("""
+        module 0x1::m {
+            struct S(u8);
+                 //X
+            fun main() {
+                S(1);
+              //^  
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant tuple struct`() = checkByCode("""
+        module 0x1::m {
+            enum S { One(u8), Two }
+                    //X
+            fun main() {
+                S::One(1);
+                  //^  
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum variant non tuple struct in call position`() = checkByCode("""
+        module 0x1::m {
+            enum S { One(u8), Two }
+            fun main() {
+                S::Two(1);
+                  //^ unresolved 
+            }
         }        
     """)
 }

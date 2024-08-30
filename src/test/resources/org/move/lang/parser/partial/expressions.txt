@@ -21,7 +21,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got ';'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got ';'
               <empty list>
           PsiElement(;)(';')
         PsiWhiteSpace('\n        ')

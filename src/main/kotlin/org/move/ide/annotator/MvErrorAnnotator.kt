@@ -179,14 +179,14 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
     private fun checkModuleDef(moveHolder: MvAnnotationHolder, mod: MvModule) {
         val modName = mod.name ?: return
-        val moveProj = mod.moveProject ?: return
-        val addressIdent = mod.address(moveProj) ?: return
+        val moveProject = mod.moveProject ?: return
+        val addressIdent = mod.address(moveProject) ?: return
         val modIdent = Pair(addressIdent.text(), modName)
         val file = mod.containingMoveFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }
-                .groupBy { Pair(it.address(moveProj)?.text(), it.name) }
+                .groupBy { Pair(it.address(moveProject)?.text(), it.name) }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()
@@ -310,7 +310,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
     private fun checkTypeArgumentList(
         typeArgumentList: MvTypeArgumentList,
-        item: MvTypeParametersOwner,
+        item: MvGenericDeclaration,
         holder: MvAnnotationHolder,
     ) {
         val qualName = (item as? MvQualNamedElement)?.qualName ?: return

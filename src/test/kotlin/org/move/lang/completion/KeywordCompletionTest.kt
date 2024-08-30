@@ -221,13 +221,16 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-    fun `test native fun to public`() = checkContainsCompletion(
-        "public", """
+    fun `test native fun to public`() = doSingleCompletion(
+        """
         module 0x1::M {
             native pub/*caret*/ fun main();
         }
-    """
-    )
+    """, """
+        module 0x1::M {
+            native public/*caret*/ fun main();
+        }
+    """)
 
     fun `test public fun`() = doSingleCompletion(
         """
@@ -453,6 +456,13 @@ class KeywordCompletionTest: CompletionTestCase() {
         }
     """
     )
+
+    fun `test no native completion after native`() = checkNoCompletion(
+        """
+        module 0x1::M {
+            native nat/*caret*/
+        }
+    """)
 
     fun `test visibility modifiers compiler v1`() = completionFixture.checkContainsCompletion(
         """

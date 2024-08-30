@@ -6,10 +6,10 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
-import com.jetbrains.rd.util.remove
 import org.move.cli.settings.moveSettings
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MvPsiPattern
+import org.move.lang.core.*
+import org.move.lang.core.MvPsiPattern.afterAnySibling
 import org.move.lang.core.MvPsiPattern.anySpecStart
 import org.move.lang.core.MvPsiPattern.codeStatementPattern
 import org.move.lang.core.MvPsiPattern.function
@@ -17,11 +17,10 @@ import org.move.lang.core.MvPsiPattern.identifierStatementBeginningPattern
 import org.move.lang.core.MvPsiPattern.itemSpecStmt
 import org.move.lang.core.MvPsiPattern.module
 import org.move.lang.core.MvPsiPattern.moduleSpecBlock
-import org.move.lang.core.MvPsiPattern.onStatementBeginning
 import org.move.lang.core.MvPsiPattern.script
 import org.move.lang.core.MvPsiPattern.toplevel
 import org.move.lang.core.MvPsiPattern.typeParameter
-import org.move.lang.core.TYPES
+import org.move.lang.core.completion.providers.FunctionModifierCompletionProvider
 import org.move.lang.core.completion.providers.KeywordCompletionProvider
 
 class KeywordCompletionContributor: CompletionContributor() {
@@ -45,8 +44,8 @@ class KeywordCompletionContributor: CompletionContributor() {
             CompletionType.BASIC,
             module().and(identifierStatementBeginningPattern()),
             KeywordCompletionProvider(
-                *(VIS_MODIFIERS.remove("public(script)")),
-                *FUNCTION_MODIFIERS,
+                *VISIBILITY_MODIFIERS,
+                *CONTEXT_FUNCTION_MODIFIERS,
                 "native",
                 "fun",
                 "struct",
@@ -67,19 +66,24 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPattern.AfterSibling(VISIBILITY_MODIFIER)),
-            KeywordCompletionProvider("fun", *FUNCTION_MODIFIERS)
+            function().with(afterAnySibling(FUNCTION_MODIFIERS)),
+            FunctionModifierCompletionProvider()
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPattern.AfterSibling(NATIVE)),
+            function().with(afterAnySibling(FUNCTION_MODIFIERS)),
             KeywordCompletionProvider("fun")
         )
-        extend(
-            CompletionType.BASIC,
-            module().and(identifierStatementBeginningPattern("native")),
-            KeywordCompletionProvider(*VIS_MODIFIERS, "fun", "entry")
-        )
+//        extend(
+//            CompletionType.BASIC,
+//            function().with(MvPsiPattern.AfterSibling(NATIVE)),
+//            FunctionModifierCompletionProvider()
+//        )
+//        extend(
+//            CompletionType.BASIC,
+//            module().and(identifierStatementBeginningPattern("native")),
+//            KeywordCompletionProvider(*VISIBILITY_MODIFIERS, "fun", "entry")
+//        )
         extend(
             CompletionType.BASIC,
             codeStatementPattern().and(identifierStatementBeginningPattern()),
@@ -153,12 +157,12 @@ class KeywordCompletionContributor: CompletionContributor() {
     }
 }
 
-private val VIS_MODIFIERS = arrayOf(
+private val VISIBILITY_MODIFIERS = arrayOf(
     "public",
-    "public(script)",
+//    "public(script)",
     "public(friend)",
     "public(package)"
 )
 
-private val FUNCTION_MODIFIERS = arrayOf("entry", "inline")
+private val CONTEXT_FUNCTION_MODIFIERS = arrayOf("entry", "inline")
 

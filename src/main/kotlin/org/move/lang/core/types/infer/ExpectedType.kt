@@ -27,10 +27,10 @@ fun inferExpectedTypeArgumentTy(typeArgument: MvTypeArgument): Ty? {
             if (paramIndex == -1) return null
 
             val path = typeArgumentList.parent as MvPath
-            val genericItem = path.reference?.resolveFollowingAliases() as? MvTypeParametersOwner ?: return null
+            val genericItem = path.reference?.resolveFollowingAliases() as? MvGenericDeclaration ?: return null
             genericItem.typeParameters
                 .getOrNull(paramIndex)
-                ?.let { TyInfer.TyVar(TyTypeParameter(it)) }
+                ?.let { TyInfer.TyVar(TyTypeParameter.named(it)) }
         }
         else -> error("invalid MvTypeArgument parent ${parent.elementType}")
     }

@@ -28,5 +28,15 @@ module 0x1::M {
     native fun native_m();
 
     /// docs
-    native struct NatS;
+    struct S1 {}
+    /// docs
+    struct S2(u8);
+
+    /// docs
+    enum S {
+        /// docs
+        One,
+        /// docs
+        Two
+    }
 }

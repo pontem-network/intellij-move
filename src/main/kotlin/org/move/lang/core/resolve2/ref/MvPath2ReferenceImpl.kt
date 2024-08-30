@@ -6,7 +6,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve.ref.Namespace.MODULE
+import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve2.*
 import org.move.lang.core.resolve2.PathKind.NamedAddress
 import org.move.lang.core.resolve2.PathKind.ValueAddress
@@ -178,7 +178,7 @@ fun processQualifiedPathResolveVariants(
         if (processItemDeclarations(module, ns, processor)) return true
     }
     if (resolvedQualifier is MvEnum) {
-        if (processor.processAll(TYPES, resolvedQualifier.variants)) return true
+        if (processEnumVariantDeclarations(resolvedQualifier, ns, processor)) return true
     }
     return false
 }

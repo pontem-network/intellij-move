@@ -11,7 +11,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.tyInfers
+import org.move.lang.core.psi.tyVarsSubst
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve2.processMethodResolveVariants
@@ -55,8 +55,8 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
 
         processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->
             val function = e.element as? MvFunction ?: return@createProcessor
-            val subst = function.tyInfers
-            val declaredFuncTy = function.declaredType(msl).substitute(subst) as TyFunction
+            val subst = function.tyVarsSubst
+            val declaredFuncTy = function.functionTy(msl).substitute(subst) as TyFunction
             val declaredSelfTy = declaredFuncTy.paramTypes.first()
             val autoborrowedReceiverTy =
                 TyReference.autoborrow(receiverTy, declaredSelfTy)

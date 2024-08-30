@@ -20,7 +20,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         val visitor = object: MvVisitor() {
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
             override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
-            override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
+//            override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
             override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
@@ -75,12 +75,12 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         }
     }
 
-    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
-        val native = struct.native ?: return
-        val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
-        Diagnostic.NativeStructNotSupported(struct, errorRange)
-            .addToHolder(holder)
-    }
+//    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
+//        val native = struct.native ?: return
+//        val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
+//        Diagnostic.NativeStructNotSupported(struct, errorRange)
+//            .addToHolder(holder)
+//    }
 
     private fun checkVisibilityModifiers(
         holder: MvAnnotationHolder,

@@ -26,7 +26,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'assert'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'assert'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -52,7 +52,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'S'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'S'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -95,7 +95,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+            MvFieldLookupImpl(FIELD_LOOKUP)
               PsiElement(IDENTIFIER)('field')
           PsiErrorElement:';' expected, got 'bin'
             <empty list>
@@ -106,7 +106,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+            MvFieldLookupImpl(FIELD_LOOKUP)
               PsiElement(IDENTIFIER)('field')
           PsiErrorElement:';' expected, got 'bin'
             <empty list>
@@ -117,7 +117,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'aptos_token'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'aptos_token'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -138,7 +138,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'b"'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'b"'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -153,7 +153,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'x"'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'x"'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -168,7 +168,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:IDENTIFIER expected, got 'return'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'return'
               <empty list>
         PsiWhiteSpace(' ')
         MvReturnExprImpl(RETURN_EXPR)
@@ -195,7 +195,7 @@ FILE
                   MvPathImpl(PATH)
                     PsiElement(IDENTIFIER)('bin')
                 PsiElement(.)('.')
-                MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+                MvFieldLookupImpl(FIELD_LOOKUP)
                   PsiElement(IDENTIFIER)('no_type_args_without_colon_colon')
               MvBinaryOpImpl(BINARY_OP)
                 PsiElement(<)('<')

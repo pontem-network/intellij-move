@@ -1,13 +1,13 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.process
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyAdt
 import org.move.stdext.wrapWithList
@@ -44,7 +44,7 @@ fun processNamedFieldVariants(
 }
 
 // todo: change into VisibilityFilter
-private fun isFieldsAccessible(
+fun isFieldsAccessible(
     element: MvElement,
     item: MvStructOrEnumItemElement,
     msl: Boolean
@@ -57,9 +57,9 @@ private fun isFieldsAccessible(
     return true
 }
 
-class MvStructDotFieldReferenceImpl(
-    element: MvStructDotField
-): MvPolyVariantReferenceBase<MvStructDotField>(element) {
+class MvFieldLookupReferenceImpl(
+    element: MvFieldLookup
+): MvPolyVariantReferenceBase<MvFieldLookup>(element) {
 
     override fun multiResolve(): List<MvNamedElement> {
         val msl = element.isMsl()
@@ -69,9 +69,10 @@ class MvStructDotFieldReferenceImpl(
     }
 }
 
-abstract class MvStructDotFieldMixin(node: ASTNode): MvElementImpl(node),
-                                                     MvStructDotField {
-    override fun getReference(): MvPolyVariantReference {
-        return MvStructDotFieldReferenceImpl(this)
-    }
+abstract class MvFieldLookupMixin(node: ASTNode): MvElementImpl(node),
+                                                  MvFieldLookup {
+
+    override val referenceNameElement: PsiElement get() = (identifier ?: integerLiteral)!!
+
+    override fun getReference(): MvPolyVariantReference = MvFieldLookupReferenceImpl(this)
 }

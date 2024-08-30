@@ -35,7 +35,7 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
-fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
+fun MvFunction.functionId(): String? = qualName?.cmdText()
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
@@ -74,16 +74,8 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
 
 val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
 
-//fun MvFunctionLike.declaredType(msl: Boolean): TyFunction2 {
-//    val subst = typeParameters ?: this.instantiateTypeParameters()
-//    val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-//    val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
-//    val retType = rawReturnType(msl)
-//    return TyFunction2(subst, paramTypes, acquiresTypes, retType)
-//}
-
-fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
-    val retType = returnType ?: return TyUnit
+fun MvFunctionLike.returnTypeTy(msl: Boolean): Ty {
+    val retType = this.returnType ?: return TyUnit
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
 
@@ -128,14 +120,6 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
             val moduleFQName = this.module?.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
-
-//    override fun declaredType(msl: Boolean): TyFunction2 {
-//        val subst = this.instantiateTypeParameters()
-//        val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-//        val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
-//        val retType = rawReturnType(msl)
-//        return TyFunction2(subst, paramTypes, acquiresTypes, retType)
-//    }
 
     override val modificationTracker = MvModificationTracker(this)
 

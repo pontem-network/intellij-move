@@ -99,13 +99,52 @@ class ExpectedTypeTest : TypificationTestCase() {
 //    """
 //    )
 
-    fun `test let statement struct pattern field explicit type`() = testExpectedTyExpr(
+    fun `test let statement struct lit field explicit type`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         struct S<Type> { val: Type }
         fun main() {
             let val: S<u8> = S { val: my_ref };
                                       //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test function returning generic struct`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun return_s<Type>(t: Type): S<Type> { S { val: t }}
+        fun main() {
+            let val: S<u8> = return_s(my_ref);
+                                      //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test let statement struct pattern field explicit incompatible type`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun main() {
+            let val: S<u8> = S<u32> { val: my_ref };
+                                           //^ u32
+        }
+    }    
+    """
+    )
+
+    fun `test let statement struct pattern field explicit type nested inference`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct Option<Type> { item: Type }
+        struct S<Type> { opt: Option<Type>, val: Type }
+        fun main() {
+            let a = 1u8;
+            S { opt: Option { item: a }, val: my_ref };
+                                              //^ u8
         }
     }    
     """

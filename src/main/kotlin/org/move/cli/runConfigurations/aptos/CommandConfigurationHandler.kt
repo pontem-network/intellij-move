@@ -28,7 +28,7 @@ abstract class CommandConfigurationHandler {
                 ?: return null
         val moveProject = function.moveProject ?: return null
 
-        val functionId = function.functionId(moveProject) ?: return null
+        val functionId = function.functionId() ?: return null
         val profileName = moveProject.profiles.firstOrNull()
         val workingDirectory = moveProject.contentRootPath
 
@@ -55,11 +55,10 @@ abstract class CommandConfigurationHandler {
     abstract fun getFunctionParameters(function: MvFunction): List<MvFunctionParameter>
 
     fun generateCommand(
-        moveProject: MoveProject,
         functionCall: FunctionCall,
         signerAccount: String?,
     ): RsResult<String, String> {
-        val functionId = functionCall.functionId(moveProject) ?: return RsResult.Err("FunctionId is null")
+        val functionId = functionCall.functionId() ?: return RsResult.Err("FunctionId is null")
 
         val typeParams = functionCall.typeParams
             .mapNotNull { it.value }.flatMap { listOf("--type-args", it) }

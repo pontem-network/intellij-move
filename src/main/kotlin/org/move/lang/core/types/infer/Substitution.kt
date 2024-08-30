@@ -13,7 +13,9 @@ open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : 
         Substitution(mergeMaps(typeSubst, other.typeSubst))
 
     operator fun get(key: TyTypeParameter): Ty? = typeSubst[key]
-    operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter(psi)]
+
+    fun getPsi(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter.named(psi)]
+//    operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter.named(psi)]
 
 //    fun typeParameterByName(name: String): TyTypeParameter? =
 //        typeSubst.keys.find { it.toString() == name }
@@ -59,12 +61,10 @@ private object EmptySubstitution : Substitution()
 
 val emptySubstitution: Substitution = EmptySubstitution
 
-fun Map<TyTypeParameter, Ty>.toTypeSubst(): Substitution = Substitution(typeSubst = this)
-
 /**
  * Deeply replace any [TyTypeParameter] by [subst] mapping.
  */
-fun <T : TypeFoldable<T>> TypeFoldable<T>.substitute(subst: Substitution): T =
+fun <T : TypeFoldable<T>> T.substitute(subst: Substitution): T =
     foldWith(object : TypeFolder() {
         override fun fold(ty: Ty): Ty {
             return when {

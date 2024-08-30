@@ -99,11 +99,10 @@ class FieldsDescription(val fields: Array<String>) {
             val structPath = block.litExpr.path
             val struct = structPath.maybeStruct ?: return null
             val msl = structPath.isMslScope
-//            val itemContext = struct.outerItemContext(msl)
             val fieldParams =
-                struct.fieldsMap.entries.map { (name, field) ->
+                struct.namedFields.map { field ->
+                    val name = field.name
                     val type = field.type?.loweredType(msl) ?: TyUnknown
-//                    val type = itemContext.getStructFieldItemTy(field).fullname()
                     "$name: $type"
                 }.toTypedArray()
             return FieldsDescription(fieldParams)

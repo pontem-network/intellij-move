@@ -4,12 +4,49 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.index.MvModuleIndex
 
+fun processFieldLookupResolveVariants(
+    fieldLookup: MvFieldLookup,
+    receiverTy: TyAdt,
+    msl: Boolean,
+    originalProcessor: RsResolveProcessorBase<FieldResolveVariant>
+): Boolean {
+    val receiverItem = receiverTy.item
+    if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
+
+    val processor = originalProcessor.wrapWithMapper { it: ScopeEntry ->
+        FieldResolveVariant(it.name, it.element)
+    }
+
+    return when (receiverItem) {
+        is MvStruct -> processFieldDeclarations(receiverItem, processor)
+//        is MvStruct -> processor.processAll(NONE, receiverItem.fields)
+        is MvEnum -> {
+            val visitedFields = mutableSetOf<String>()
+            for (variant in receiverItem.variants) {
+                val visitedVariantFields = mutableSetOf<String>()
+                for (field in variant.fields) {
+                    val fieldName = field.name ?: continue
+                    if (fieldName in visitedFields) continue
+                    if (processor.process(NONE, field)) return true
+                    // collect all names for the variant
+                    visitedVariantFields.add(fieldName)
+                }
+                // add variant fields to the global fields list to skip them in the next variants
+                visitedFields.addAll(visitedVariantFields)
+            }
+            false
+        }
+        else -> error("unreachable")
+    }
+}
 
 fun processStructLitFieldResolveVariants(
     litField: MvStructLitField,
@@ -17,7 +54,7 @@ fun processStructLitFieldResolveVariants(
     processor: RsResolveProcessor,
 ): Boolean {
     val fieldsOwner = litField.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-    if (fieldsOwner != null && processFieldDeclarations(fieldsOwner, processor)) return true
+    if (fieldsOwner != null && processNamedFieldDeclarations(fieldsOwner, processor)) return true
     // if it's a shorthand, try to resolve to the underlying binding pat
     if (!isCompletion && litField.expr == null) {
         val ctx = ResolutionContext(litField, false)
@@ -33,7 +70,7 @@ fun processStructPatFieldResolveVariants(
 ): Boolean {
     val resolved = field.parentPatStruct.path.reference?.resolveFollowingAliases()
     val resolvedStruct = resolved as? MvFieldsOwner ?: return false
-    return processFieldDeclarations(resolvedStruct, processor)
+    return processNamedFieldDeclarations(resolvedStruct, processor)
 }
 
 fun processPatBindingResolveVariants(
@@ -47,7 +84,7 @@ fun processPatBindingResolveVariants(
         val structItem = parentPat.path.reference?.resolveFollowingAliases()
         // can be null if unresolved
         if (structItem is MvFieldsOwner) {
-            if (processFieldDeclarations(structItem, originalProcessor)) return true
+            if (processNamedFieldDeclarations(structItem, originalProcessor)) return true
             if (isCompletion) return false
         }
     }
@@ -218,8 +255,14 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun processFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    struct.fields.any { field ->
+private fun processFieldDeclarations(item: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    item.fields.any { field ->
+        val name = field.name ?: return@any false
+        processor.process(name, NAMES, field)
+    }
+
+private fun processNamedFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    struct.namedFields.any { field ->
         val name = field.name
         processor.process(name, NAMES, field)
     }

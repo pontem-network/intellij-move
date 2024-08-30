@@ -1,11 +1,9 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.psi.MvEnum
-import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.abilities
-import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.*
 
 data class TyAdt(
@@ -34,10 +32,22 @@ data class TyAdt(
     override val typeParameterValues: Substitution
         get() {
             val typeSubst = item.typeParameters.withIndex().associate { (i, param) ->
-                TyTypeParameter(param) to typeArguments.getOrElse(i) { TyUnknown }
+                TyTypeParameter.named(param) to typeArguments.getOrElse(i) { TyUnknown }
             }
             return Substitution(typeSubst)
         }
+
+    companion object {
+        fun valueOf(struct: MvStructOrEnumItemElement): TyAdt {
+            val typeParameters = struct.typeParamsToTypeParamsSubst
+            return TyAdt(
+                struct,
+//                CompletionUtil.getOriginalOrSelf(struct),
+                typeParameters,
+                struct.tyTypeParams
+            )
+        }
+    }
 }
 
 val TyAdt.enumItem: MvEnum? get() = this.item as? MvEnum

@@ -8,13 +8,13 @@ import org.move.lang.core.types.infer.mergeFlags
 // TODO: inherit from GenericTy ?
 interface TyCallable {
     val paramTypes: List<Ty>
-    val retType: Ty
+    val returnType: Ty
 }
 
 data class TyLambda(
     override val paramTypes: List<Ty>,
-    override val retType: Ty
-) : Ty(mergeFlags(paramTypes) or retType.flags), TyCallable {
+    override val returnType: Ty
+) : Ty(mergeFlags(paramTypes) or returnType.flags), TyCallable {
 
     override fun abilities(): Set<Ability> = emptySet()
 
@@ -23,12 +23,12 @@ data class TyLambda(
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyLambda(
             paramTypes.map { it.foldWith(folder) },
-            retType.foldWith(folder),
+            returnType.foldWith(folder),
         )
     }
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
-        paramTypes.any { it.visitWith(visitor) } || retType.visitWith(visitor)
+        paramTypes.any { it.visitWith(visitor) } || returnType.visitWith(visitor)
 
     companion object {
         fun unknown(numParams: Int): TyLambda {

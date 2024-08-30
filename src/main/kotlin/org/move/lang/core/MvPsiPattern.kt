@@ -158,6 +158,9 @@ object MvPsiPattern {
         }
     }
 
+    fun afterAnySibling(siblings: TokenSet, withPossibleError: Boolean = true) =
+        AfterAnySibling(siblings, withPossibleError)
+
     class AfterAnySibling(val siblings: TokenSet, val withPossibleError: Boolean = true):
         PatternCondition<PsiElement>("afterSiblingKeywords") {
         override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {

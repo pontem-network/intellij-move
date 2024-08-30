@@ -85,7 +85,7 @@ FILE
                   MvPathImpl(PATH)
                     PsiElement(IDENTIFIER)('a')
                 PsiElement(.)('.')
-                MvStructDotFieldImpl(STRUCT_DOT_FIELD)
+                MvFieldLookupImpl(FIELD_LOOKUP)
                   PsiElement(IDENTIFIER)('b')
             PsiWhiteSpace(' ')
             MvInitializerImpl(INITIALIZER)

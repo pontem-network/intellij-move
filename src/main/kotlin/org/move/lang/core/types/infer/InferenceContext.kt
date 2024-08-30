@@ -86,10 +86,9 @@ data class InferenceResult(
 
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
-    private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
 
     private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
-    private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
+    private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
     private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
@@ -108,12 +107,11 @@ data class InferenceResult(
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
-    fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
-    fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
+    fun getResolvedField(field: MvFieldLookup): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
     fun getResolvedPatBinding(binding: MvPatBinding): MvNamedElement? = resolvedBindings[binding]
 
@@ -191,11 +189,8 @@ class InferenceContext(
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val callableTypes = mutableMapOf<MvCallable, Ty>()
 
-    //    private val pathTypes = mutableMapOf<MvPath, Ty>()
-    private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
-
     val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
-    val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
+    val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
     val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
 
@@ -222,7 +217,7 @@ class InferenceContext(
 
     fun infer(owner: MvInferenceContextOwner): InferenceResult {
         val returnTy = when (owner) {
-            is MvFunctionLike -> owner.rawReturnType(msl)
+            is MvFunctionLike -> owner.returnTypeTy(msl)
             else -> TyUnknown
         }
         val inference = TypeInferenceWalker(this, owner.project, returnTy)
@@ -258,8 +253,6 @@ class InferenceContext(
 
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
         typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
-//        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
-        methodOrPathTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         resolvedPaths.values.asSequence().flatten()
             .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
@@ -269,7 +262,6 @@ class InferenceContext(
             patFieldTypes,
             exprTypes,
             exprExpectedTypes,
-            methodOrPathTypes,
             resolvedPaths,
             resolvedFields,
             resolvedMethodCalls,
@@ -347,38 +339,6 @@ class InferenceContext(
     fun getExprType(expr: MvExpr): Ty {
         return exprTypes[expr] ?: TyUnknown
     }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T: GenericTy> instantiateMethodOrPath(
-        methodOrPath: MvMethodOrPath,
-        genericItem: MvTypeParametersOwner
-    ): Pair<T, Substitution>? {
-        var itemTy =
-            this.methodOrPathTypes.getOrPut(methodOrPath) {
-                // can only be method or path, both are resolved to MvNamedElement
-                val genericNamedItem = genericItem as MvNamedElement
-                TyLowering.lowerPath(methodOrPath, genericNamedItem, msl) as? T ?: return null
-            }
-
-        val typeParameters = genericItem.tyInfers
-        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
-
-        unifySubst(typeParameters, itemTy.substitution)
-        return Pair(itemTy, typeParameters)
-    }
-
-    fun unifySubst(subst1: Substitution, subst2: Substitution) {
-        subst1.typeSubst.forEach { (k, v1) ->
-            subst2[k]?.let { v2 ->
-                if (k != v1 && v1 !is TyTypeParameter && v1 !is TyUnknown) {
-                    combineTypes(v2, v1)
-                }
-            }
-        }
-    }
-
-//    fun compareTypes(ty1: Ty, ty2: Ty): RelateResult =
-//        this.freezeUnification { this.combineTypes(ty1, ty2) }
 
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
         val resolvedTy1 = resolveIfTyInfer(ty1)
@@ -556,12 +516,13 @@ class InferenceContext(
     // Awful hack: check that inner expressions did not annotated as an error
     // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
-        val element = typeError.element
-        if (!element.descendantHasTypeError(this.typeErrors)
-            && typeError.element.containingFile.isPhysical
-        ) {
-            typeErrors.add(typeError)
-        }
+        typeErrors.add(typeError)
+//        val element = typeError.element
+//        if (!element.descendantHasTypeError(this.typeErrors)
+//            && typeError.element.containingFile.isPhysical
+//        ) {
+//            typeErrors.add(typeError)
+//        }
     }
 }
 

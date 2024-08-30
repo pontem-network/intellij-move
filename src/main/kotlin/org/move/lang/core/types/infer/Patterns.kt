@@ -47,14 +47,14 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                     ?: (expected as? TyAdt)?.item as? MvStruct
                     ?: return
 
-            if (item is MvTypeParametersOwner) {
-                val (patTy, _) = fcx.ctx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
+            if (item is MvGenericDeclaration) {
+                val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
+//                val (patTy, _) = fcx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
                 if (!isCompatible(expected, patTy, fcx.msl)) {
                     fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
                 }
             }
-
-            val structFields = item.fields.associateBy { it.name }
+            val structFields = item.namedFields.associateBy { it.name }
             for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
                 val fieldType = structFields[kind.fieldName]
@@ -74,6 +74,24 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 }
             }
         }
+        is MvPatTupleStruct -> {
+            val (expected, patBm) = ty.stripReferences(defBm)
+            fcx.ctx.writePatTy(this, expected)
+            val item =
+                fcx.resolvePathElement(this, expected) as? MvFieldsOwner
+                    ?: (expected as? TyAdt)?.item as? MvStruct
+                    ?: return
+            val tupleFields = item.positionalFields
+            inferTupleFieldsTypes(fcx, patList, patBm) { indx ->
+                tupleFields
+                    .getOrNull(indx)
+                    ?.type
+                    ?.loweredType(fcx.msl)
+                    ?.substituteOrUnknown(ty.typeParameterValues)
+                    ?: TyUnknown
+
+            }
+        }
         is MvPatTuple -> {
             if (patList.size == 1 && ty !is TyTuple) {
                 // let (a) = 1;
@@ -81,18 +99,49 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 patList.single().extractBindings(fcx, ty)
                 return
             }
-            val patTy = TyTuple.unknown(patList.size)
-            val expectedTypes = if (!isCompatible(ty, patTy, fcx.msl)) {
+
+            // try for invalid unpacking
+            if (!isCompatible(ty, TyTuple.unknown(patList.size), fcx.msl)) {
                 fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
-                emptyList()
-            } else {
-                (ty as? TyTuple)?.types.orEmpty()
             }
-            for ((idx, p) in patList.withIndex()) {
-                val patType = expectedTypes.getOrNull(idx) ?: TyUnknown
-                p.extractBindings(fcx, patType)
-            }
+
+            val types = (ty as? TyTuple)?.types.orEmpty()
+            inferTupleFieldsTypes(fcx, patList, BindByValue) { types.getOrElse(it) { TyUnknown } }
         }
+    }
+}
+
+private fun inferTupleFieldsTypes(
+    fcx: TypeInferenceWalker,
+    patList: List<MvPat>,
+    bm: RsBindingModeKind,
+//    tupleSize: Int,
+    type: (Int) -> Ty,
+) {
+
+    // In correct code, tuple or tuple struct patterns contain only one `..` pattern.
+    // But it's pretty simple to support type inference for cases with multiple `..` patterns like `let (x, .., y, .., z) = tuple`
+    // just ignoring all binding between first and last `..` patterns
+//    val firstPatRestIndex = Int.MAX_VALUE
+//    val lastPatRestIndex = -1
+//    for ((index, pat) in patList.withIndex()) {
+//        if (pat.isRest) {
+//            firstPatRestIndex = minOf(firstPatRestIndex, index)
+//            lastPatRestIndex = maxOf(lastPatRestIndex, index)
+//        }
+//    }
+//    for ((idx, p) in patList.withIndex()) {
+//        val fieldType = when {
+//            idx < firstPatRestIndex -> type(idx)
+//            idx > lastPatRestIndex -> type(tupleSize - (patList.size - idx))
+//            else -> TyUnknown
+//        }
+//        p.extractBindings(fcx, fieldType, bm)
+//    }
+
+    for ((indx, p) in patList.withIndex()) {
+        val fieldType = type(indx)
+        p.extractBindings(fcx, fieldType, bm)
     }
 }
 

@@ -11,13 +11,6 @@ FILE
     PsiWhiteSpace('\n    ')
     MvStructImpl(STRUCT)
       PsiElement(struct_kw)('struct')
-      PsiErrorElement:IDENTIFIER expected, got 'native'
-        <empty list>
-    PsiWhiteSpace('\n    ')
-    MvStructImpl(STRUCT)
-      PsiElement(native)('native')
-      PsiWhiteSpace(' ')
-      PsiElement(struct_kw)('struct')
       PsiErrorElement:IDENTIFIER expected, got 'struct'
         <empty list>
     PsiWhiteSpace('\n    ')
@@ -25,7 +18,7 @@ FILE
       PsiElement(struct_kw)('struct')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('S')
-      PsiErrorElement:<type parameters> or '{' expected, got 'struct'
+      PsiErrorElement:'(', <type parameters> or '{' expected, got 'struct'
         <empty list>
     PsiWhiteSpace('\n    ')
     MvStructImpl(STRUCT)
@@ -38,13 +31,40 @@ FILE
         PsiElement(})('}')
     PsiWhiteSpace('\n    ')
     MvStructImpl(STRUCT)
-      PsiElement(native)('native')
-      PsiWhiteSpace(' ')
       PsiElement(struct_kw)('struct')
-      PsiWhiteSpace(' ')
-      PsiElement(IDENTIFIER)('S1')
-      PsiErrorElement:';' or <type parameters> expected, got 'struct'
+      PsiErrorElement:IDENTIFIER expected, got '('
         <empty list>
+      PsiWhiteSpace(' ')
+      MvTupleFieldsImpl(TUPLE_FIELDS)
+        PsiElement(()('(')
+        PsiElement())(')')
+      PsiErrorElement:';' expected, got 'struct'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiErrorElement:IDENTIFIER expected, got '('
+        <empty list>
+      PsiWhiteSpace(' ')
+      MvTupleFieldsImpl(TUPLE_FIELDS)
+        PsiElement(()('(')
+        MvTupleFieldDeclImpl(TUPLE_FIELD_DECL)
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
+        PsiElement())(')')
+      PsiErrorElement:';' expected, got 'struct'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvStructImpl(STRUCT)
+      PsiElement(struct_kw)('struct')
+      PsiErrorElement:IDENTIFIER expected, got '('
+        <empty list>
+      PsiWhiteSpace(' ')
+      MvTupleFieldsImpl(TUPLE_FIELDS)
+        PsiElement(()('(')
+        PsiElement())(')')
+      PsiElement(;)(';')
     PsiWhiteSpace('\n    ')
     MvStructImpl(STRUCT)
       PsiElement(struct_kw)('struct')

@@ -1,4 +1,4 @@
-module M {
+module 0x1::m {
     fun main(a,) {}
     fun main(a: u8, b) {}
     fun main(a: u8, b:) {}
@@ -9,12 +9,20 @@ module M {
     public(script)
     public fun
 
-    native
+    native fu
+    public fu
+    entry fu
+    inline fu
+
+    fun
     native fun
     native public
     native public(friend)
     native public(script)
     native public fun
+
+    native pub
+    fun main();
 
     fun main_01(a b: u8) {}
     fun main_02(, b: u8) {}

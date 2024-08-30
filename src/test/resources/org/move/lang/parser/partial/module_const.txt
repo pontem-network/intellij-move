@@ -10,28 +10,26 @@ FILE
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('MY_CONST')
-      PsiErrorElement:<type annotation> expected, got 'const'
+      PsiErrorElement:':' expected, got 'const'
         <empty list>
     PsiWhiteSpace('\n\n    ')
     MvConstImpl(CONST)
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('MY_CONST')
-      MvTypeAnnotationImpl(TYPE_ANNOTATION)
-        PsiElement(:)(':')
-        PsiErrorElement:<type> expected, got 'const'
-          <empty list>
+      PsiElement(:)(':')
+      PsiErrorElement:<type> expected, got 'const'
+        <empty list>
     PsiWhiteSpace('\n\n    ')
     MvConstImpl(CONST)
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('MY_CONST')
-      MvTypeAnnotationImpl(TYPE_ANNOTATION)
-        PsiElement(:)(':')
-        PsiWhiteSpace(' ')
-        MvPathTypeImpl(PATH_TYPE)
-          MvPathImpl(PATH)
-            PsiElement(IDENTIFIER)('u8')
+      PsiElement(:)(':')
+      PsiWhiteSpace(' ')
+      MvPathTypeImpl(PATH_TYPE)
+        MvPathImpl(PATH)
+          PsiElement(IDENTIFIER)('u8')
       PsiErrorElement:'::', <type arguments> or '=' expected, got 'const'
         <empty list>
     PsiWhiteSpace('\n\n    ')
@@ -39,12 +37,11 @@ FILE
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('MY_CONST')
-      MvTypeAnnotationImpl(TYPE_ANNOTATION)
-        PsiElement(:)(':')
-        PsiWhiteSpace(' ')
-        MvPathTypeImpl(PATH_TYPE)
-          MvPathImpl(PATH)
-            PsiElement(IDENTIFIER)('u8')
+      PsiElement(:)(':')
+      PsiWhiteSpace(' ')
+      MvPathTypeImpl(PATH_TYPE)
+        MvPathImpl(PATH)
+          PsiElement(IDENTIFIER)('u8')
       PsiWhiteSpace(' ')
       MvInitializerImpl(INITIALIZER)
         PsiElement(=)('=')
@@ -55,12 +52,11 @@ FILE
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('MY_CONST')
-      MvTypeAnnotationImpl(TYPE_ANNOTATION)
-        PsiElement(:)(':')
-        PsiWhiteSpace(' ')
-        MvPathTypeImpl(PATH_TYPE)
-          MvPathImpl(PATH)
-            PsiElement(IDENTIFIER)('u8')
+      PsiElement(:)(':')
+      PsiWhiteSpace(' ')
+      MvPathTypeImpl(PATH_TYPE)
+        MvPathImpl(PATH)
+          PsiElement(IDENTIFIER)('u8')
       PsiWhiteSpace(' ')
       MvInitializerImpl(INITIALIZER)
         PsiElement(=)('=')
@@ -74,7 +70,7 @@ FILE
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('CONST_NO_TYPE')
-      PsiErrorElement:<type annotation> expected, got '='
+      PsiErrorElement:':' expected, got '='
         <empty list>
       PsiWhiteSpace(' ')
       MvInitializerImpl(INITIALIZER)
@@ -88,10 +84,9 @@ FILE
       PsiElement(const_kw)('const')
       PsiWhiteSpace(' ')
       PsiElement(IDENTIFIER)('CONST_NO_TYPE_WITH_COMMA')
-      MvTypeAnnotationImpl(TYPE_ANNOTATION)
-        PsiElement(:)(':')
-        PsiErrorElement:<type> expected, got '='
-          <empty list>
+      PsiElement(:)(':')
+      PsiErrorElement:<type> expected, got '='
+        <empty list>
       PsiWhiteSpace(' ')
       MvInitializerImpl(INITIALIZER)
         PsiElement(=)('=')

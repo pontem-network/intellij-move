@@ -2003,4 +2003,113 @@ module 0x1::main {
         }
     }
     """)
+
+    fun `test types for fields in tuple struct pattern`() = testExpr("""
+        module 0x1::m {
+            struct S(u8, u8);
+            fun main(s: S) {
+                let S ( field1, field2 ) = s;
+                field1;
+                //^ u8
+            }
+        }        
+    """)
+
+    fun `test field type for tuple struct pattern if more than number of fields but field is there`() = testExpr("""
+        module 0x1::m {
+            struct S(u8);
+            fun main(s: S) {
+                let S ( field1, field2 ) = s;
+                field1;
+                //^ u8
+            }
+        }        
+    """)
+
+    fun `test unknown type for tuple struct pattern if more than number of fields`() = testExpr("""
+        module 0x1::m {
+            struct S(u8);
+            fun main(s: S) {
+                let S ( field1, field2 ) = s;
+                field2;
+                //^ <unknown>
+            }
+        }        
+    """)
+
+    fun `test type for tuple struct literal`() = testExpr("""
+        module 0x1::m {
+            struct S<T>(T);
+            fun main() {
+                let s = S(true);
+                s; 
+              //^ 0x1::m::S<bool>   
+            }
+        }        
+    """)
+
+    fun `test type for tuple struct literal with multiple type parameters`() = testExpr("""
+        module 0x1::m {
+            struct S<T, U>(T, U);
+            fun main() {
+                let s = S(true, 1u8);
+                s; 
+              //^ 0x1::m::S<bool, u8>   
+            }
+        }        
+    """)
+
+    fun `test type for tuple struct literal with multiple type parameters and explicit type`() = testExpr("""
+        module 0x1::m {
+            struct S<T>(T, T);
+            fun main() {
+                let s = S<u8>(1, 1);
+                s; 
+              //^ 0x1::m::S<u8>   
+            }
+        }        
+    """)
+
+    fun `test positional field lookup type`() = testExpr("""
+        module 0x1::m {
+            struct S(u8);
+            fun main(s: S) {
+                s.0;
+                //^ u8
+            }
+        }        
+    """)
+
+    fun `test positional field lookup generic type`() = testExpr("""
+        module 0x1::m {
+            struct S<T>(T)
+            fun main() {
+                let s = S(true);
+                s.0;
+                //^ bool
+            }
+        }        
+    """)
+
+    fun `test enum variant for tuple struct literal`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One(T) }
+            fun main() {
+                let s = S::One(true);
+                s; 
+              //^ 0x1::m::S<bool>   
+            }
+        }        
+    """)
+
+    fun `test enum variant for tuple struct literal field`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One(T) }
+            fun main() {
+                let s = S::One(true);
+                s.0; 
+                //^ bool   
+            }
+        }        
+    """)
 }

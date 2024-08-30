@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.functionTy
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
     MvLookupElement(this, properties)
@@ -63,7 +64,7 @@ fun getLookupElementProperties(
         val msl = context.msl
         val declaredTy =
             when (element) {
-                is MvFunctionLike -> element.declaredType(msl).retType
+                is MvFunctionLike -> element.functionTy(msl).returnType
                 is MvStruct -> element.declaredType(msl)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
                 is MvPatBinding -> {

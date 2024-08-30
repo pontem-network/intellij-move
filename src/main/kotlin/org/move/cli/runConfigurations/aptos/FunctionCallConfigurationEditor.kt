@@ -84,7 +84,7 @@ class FunctionCallConfigurationEditor<T: FunctionCallConfigurationBase>(
 
 //                editor.functionCall = functionCall
                 editor.rawCommandField.text =
-                    commandHandler.generateCommand(mp, functionCall, accountTextField.text).unwrapOrNull() ?: ""
+                    commandHandler.generateCommand(functionCall, accountTextField.text).unwrapOrNull() ?: ""
             }
         })
 

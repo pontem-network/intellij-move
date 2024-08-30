@@ -62,16 +62,16 @@ fun processItemsInScope(
                         false
                     }
                     is MvItemSpec -> {
-                        val specItem = scope.item
-                        when (specItem) {
+                        val referredItem = scope.item
+                        when (referredItem) {
                             is MvFunction -> {
                                 processor.processAll(
                                     elementNs,
-                                    specItem.valueParamsAsBindings,
-                                    specItem.specFunctionResultParameters.map { it.patBinding },
+                                    referredItem.valueParamsAsBindings,
+                                    referredItem.specFunctionResultParameters.map { it.patBinding },
                                 )
                             }
-                            is MvStruct -> processor.processAll(elementNs, specItem.fields)
+                            is MvStruct -> processor.processAll(elementNs, referredItem.namedFields)
                             else -> false
                         }
                     }
@@ -152,6 +152,7 @@ fun processItemsInScope(
                         val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
                         processor.processAllItems(
                             ns,
+                            scope.tupleStructs(),
                             scope.builtinFunctions(),
                             scope.allNonTestFunctions(),
                             specFunctions,
@@ -186,7 +187,7 @@ fun processItemsInScope(
             }
 
             Namespace.TYPE -> {
-                if (scope is MvTypeParametersOwner) {
+                if (scope is MvGenericDeclaration) {
                     if (processor.processAll(elementNs, scope.typeParameters)) return true
                 }
                 val found = when (scope) {

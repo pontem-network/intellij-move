@@ -292,22 +292,6 @@ class RenameTest : MvTestBase() {
     """
     )
 
-    fun `test native struct`() = doTest(
-        "RenamedNative", """
-        module M {
-            native struct /*caret*/Native<T>;
-            
-            native fun main(n: Native<u8>): u8;
-        }
-    """, """
-        module M {
-            native struct RenamedNative<T>;
-            
-            native fun main(n: RenamedNative<u8>): u8;
-        }
-    """
-    )
-
     fun `test import alias`() = doTest(
         "RenamedStruct", """
         address 0x1 {

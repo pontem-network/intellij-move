@@ -8,8 +8,8 @@ class RsPsiSubstitution(
     val typeSubst: Map<MvTypeParameter, Value<MvType>> = emptyMap(),
 ) {
     sealed class Value<out P> {
-        object RequiredAbsent : Value<Nothing>()
-        object OptionalAbsent : Value<Nothing>()
+        data object RequiredAbsent : Value<Nothing>()
+        data object OptionalAbsent : Value<Nothing>()
         class Present<P>(val value: P) : Value<P>()
     }
 }

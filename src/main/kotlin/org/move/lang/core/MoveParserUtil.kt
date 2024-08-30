@@ -268,9 +268,8 @@ object MoveParserUtil: GeneratedParserUtilBase() {
                 b.tokenType == NATIVE -> {
                     if (FunModifier.NATIVE !in modifiersLeft) return isParsed()
                     modifiersLeft.remove(FunModifier.NATIVE)
-                    // native alone only should give true for next token fun
-                    parsed = parsed || (b.lookAhead(1) == FUN)
                     nativeEncountered = true
+                    parsed = true
                     b.advanceLexer()
                 }
                 entryKeyword(b, level) -> {

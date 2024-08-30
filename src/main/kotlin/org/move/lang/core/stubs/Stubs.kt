@@ -141,7 +141,7 @@ class MvFunctionStub(
     fun resolvedQualName(moveProject: MoveProject): String? {
         val addressText = when (address) {
             is StubAddress.Value -> address.value
-            is StubAddress.Named -> moveProject.getNamedAddressValue(address.name) ?: return null
+            is StubAddress.Named -> moveProject.getValueOfDeclaredNamedAddress(address.name) ?: return null
             else -> return null
         }
         val moduleName = this.moduleName ?: return null

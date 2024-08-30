@@ -2,7 +2,10 @@ FILE
   MvModuleImpl(MODULE)
     PsiElement(module)('module')
     PsiWhiteSpace(' ')
-    PsiElement(IDENTIFIER)('M')
+    MvAddressRefImpl(ADDRESS_REF)
+      PsiElement(DIEM_ADDRESS)('0x1')
+    PsiElement(::)('::')
+    PsiElement(IDENTIFIER)('m')
     PsiWhiteSpace(' ')
     PsiElement({)('{')
     PsiWhiteSpace('\n    ')
@@ -15,7 +18,7 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          PsiErrorElement:<type annotation> expected, got ','
+          PsiErrorElement:':' expected, got ','
             <empty list>
         PsiElement(,)(',')
         PsiElement())(')')
@@ -33,18 +36,17 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
         PsiElement(,)(',')
         PsiWhiteSpace(' ')
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('b')
-          PsiErrorElement:<type annotation> expected, got ')'
+          PsiErrorElement:':' expected, got ')'
             <empty list>
         PsiElement())(')')
       PsiWhiteSpace(' ')
@@ -61,21 +63,19 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
         PsiElement(,)(',')
         PsiWhiteSpace(' ')
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('b')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiErrorElement:<type> expected, got ')'
-              <empty list>
+          PsiElement(:)(':')
+          PsiErrorElement:<type> expected, got ')'
+            <empty list>
         PsiElement())(')')
       PsiWhiteSpace(' ')
       MvCodeBlockImpl(CODE_BLOCK)
@@ -117,9 +117,47 @@ FILE
       PsiErrorElement:IDENTIFIER expected, got 'native'
         <empty list>
     PsiWhiteSpace('\n\n    ')
-    PsiElement(native)('native')
-    PsiErrorElement:struct_kw expected, got 'native'
-      <empty list>
+    MvFunctionImpl(FUNCTION)
+      PsiElement(native)('native')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'public'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      MvVisibilityModifierImpl(VISIBILITY_MODIFIER)
+        PsiElement(public)('public')
+      PsiErrorElement:'(' or fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'entry'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(entry_kw)('entry')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'inline'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(inline_kw)('inline')
+      PsiErrorElement:fun expected, got 'fu'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('fu')
+      PsiErrorElement:'(' or <type parameters> expected, got 'fun'
+        <empty list>
+    PsiWhiteSpace('\n\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(fun)('fun')
+      PsiErrorElement:IDENTIFIER expected, got 'native'
+        <empty list>
     PsiWhiteSpace('\n    ')
     MvFunctionImpl(FUNCTION)
       PsiElement(native)('native')
@@ -165,8 +203,28 @@ FILE
         PsiElement(public)('public')
       PsiWhiteSpace(' ')
       PsiElement(fun)('fun')
-      PsiErrorElement:IDENTIFIER expected, got 'fun'
+      PsiErrorElement:IDENTIFIER expected, got 'native'
         <empty list>
+    PsiWhiteSpace('\n\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(native)('native')
+      PsiErrorElement:fun expected, got 'pub'
+        <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('pub')
+      PsiErrorElement:'(' or <type parameters> expected, got 'fun'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionImpl(FUNCTION)
+      PsiElement(fun)('fun')
+      PsiWhiteSpace(' ')
+      PsiElement(IDENTIFIER)('main')
+      MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+        PsiElement(()('(')
+        PsiElement())(')')
+      PsiErrorElement:'{' expected, got ';'
+        <empty list>
+    PsiElement(;)(';')
     PsiWhiteSpace('\n\n    ')
     MvFunctionImpl(FUNCTION)
       PsiElement(fun)('fun')
@@ -177,18 +235,17 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          PsiErrorElement:<type annotation> expected, got 'b'
+          PsiErrorElement:':' expected, got 'b'
             <empty list>
         PsiWhiteSpace(' ')
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('b')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
         PsiElement())(')')
       PsiWhiteSpace(' ')
       MvCodeBlockImpl(CODE_BLOCK)
@@ -208,12 +265,11 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('b')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
         PsiElement())(')')
       PsiWhiteSpace(' ')
       MvCodeBlockImpl(CODE_BLOCK)
@@ -229,25 +285,23 @@ FILE
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('a')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvRefTypeImpl(REF_TYPE)
-              MvRefTypeStartImpl(REF_TYPE_START)
-                PsiElement(&)('&')
-              PsiErrorElement:<type> or mut expected, got ','
-                <empty list>
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvRefTypeImpl(REF_TYPE)
+            MvRefTypeStartImpl(REF_TYPE_START)
+              PsiElement(&)('&')
+            PsiErrorElement:<type> or mut expected, got ','
+              <empty list>
         PsiElement(,)(',')
         PsiWhiteSpace(' ')
         MvFunctionParameterImpl(FUNCTION_PARAMETER)
           MvPatBindingImpl(PAT_BINDING)
             PsiElement(IDENTIFIER)('b')
-          MvTypeAnnotationImpl(TYPE_ANNOTATION)
-            PsiElement(:)(':')
-            PsiWhiteSpace(' ')
-            MvPathTypeImpl(PATH_TYPE)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('u8')
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MvPathTypeImpl(PATH_TYPE)
+            MvPathImpl(PATH)
+              PsiElement(IDENTIFIER)('u8')
         PsiElement())(')')
       PsiWhiteSpace(' ')
       MvCodeBlockImpl(CODE_BLOCK)
