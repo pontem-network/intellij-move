@@ -1,6 +1,10 @@
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -186,11 +190,11 @@ allprojects {
 
     tasks {
         compileKotlin {
-            kotlinOptions {
-                jvmTarget = "17"
-                languageVersion = "1.9"
-                apiVersion = "1.9"
-                freeCompilerArgs = listOf("-Xjvm-default=all")
+            compilerOptions {
+                jvmTarget.set(JVM_17)
+                languageVersion.set(KOTLIN_2_0)
+                apiVersion.set(KOTLIN_1_9)
+                freeCompilerArgs.add("-Xjvm-default=all")
             }
         }
 
