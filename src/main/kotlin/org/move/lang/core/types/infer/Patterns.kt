@@ -43,7 +43,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             fcx.ctx.writePatTy(this, expected)
 
             val item =
-                fcx.resolvePathElement(this, expected) as? MvFieldsOwner
+                fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
                     ?: return
 
@@ -78,7 +78,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             val (expected, patBm) = ty.stripReferences(defBm)
             fcx.ctx.writePatTy(this, expected)
             val item =
-                fcx.resolvePathElement(this, expected) as? MvFieldsOwner
+                fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
                     ?: return
             val tupleFields = item.positionalFields

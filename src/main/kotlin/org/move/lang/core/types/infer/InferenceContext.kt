@@ -108,6 +108,7 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
 
+    fun hasResolvedPath(path: MvPath): Boolean = path in resolvedPaths
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 

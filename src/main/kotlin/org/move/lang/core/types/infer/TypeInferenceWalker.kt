@@ -15,7 +15,6 @@ import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.resolveSingleResolveVariant
 import org.move.lang.core.resolve2.processFieldLookupResolveVariants
 import org.move.lang.core.resolve2.processMethodResolveVariants
-import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.ref.resolveAliases
 import org.move.lang.core.resolve2.ref.resolvePathRaw
@@ -251,6 +250,7 @@ class TypeInferenceWalker(
                 }
                 ty
             }
+            is MvIsExpr -> inferIsExprTy(expr)
             is MvParensExpr -> expr.expr?.inferType(expected) ?: TyUnknown
             is MvUnitExpr -> TyUnit
 
@@ -309,7 +309,7 @@ class TypeInferenceWalker(
     private fun inferPathExprTy(pathExpr: MvPathExpr, expected: Expectation): Ty {
 
         val expectedType = expected.onlyHasTy(ctx)
-        val item = resolvePathElement(pathExpr, expectedType) ?: return TyUnknown
+        val item = resolvePathCached(pathExpr.path, expectedType) ?: return TyUnknown
 
         val ty = when (item) {
             is MvPatBinding -> ctx.getBindingType(item)
@@ -335,11 +335,10 @@ class TypeInferenceWalker(
         return ty
     }
 
-    fun resolvePathElement(
-        pathElement: InferenceCachedPathElement,
+    fun resolvePathCached(
+        path: MvPath,
         expectedType: Ty?
     ): MvNamedElement? {
-        val path = pathElement.path
         val resolvedItems = resolvePathRaw(path, expectedType).map { ResolvedItem.from(it, path) }
         ctx.writePath(path, resolvedItems)
         // resolve aliases
@@ -352,6 +351,14 @@ class TypeInferenceWalker(
         val lhsTy = assignExpr.expr.inferType()
         assignExpr.initializer.expr?.inferTypeCoercableTo(lhsTy)
         return TyUnit
+    }
+
+    private fun inferIsExprTy(isExpr: MvIsExpr): Ty {
+        val itemTy = isExpr.expr.inferType()
+        for (pathType in isExpr.typeList.filterIsInstance<MvPathType>()) {
+            resolvePathCached(pathType.path, itemTy)
+        }
+        return TyBool
     }
 
     private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, expected: Expectation): Ty {
@@ -387,7 +394,7 @@ class TypeInferenceWalker(
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
-        val namedItem = resolvePathElement(callExpr, expectedType = null)
+        val namedItem = resolvePathCached(path, expectedType = null)
         val baseFuncTy =
             when (namedItem) {
                 is MvFunctionLike -> {
@@ -703,7 +710,7 @@ class TypeInferenceWalker(
         val path = litExpr.path
         val expectedType = expected.onlyHasTy(ctx)
 
-        val item = resolvePathElement(litExpr, expectedType) as? MvFieldsOwner
+        val item = resolvePathCached(path, expectedType) as? MvFieldsOwner
         if (item == null) {
             for (field in litExpr.fields) {
                 field.expr?.inferType()

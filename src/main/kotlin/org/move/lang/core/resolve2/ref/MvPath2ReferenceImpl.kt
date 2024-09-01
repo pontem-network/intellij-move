@@ -42,13 +42,29 @@ class MvPath2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(
         rawMultiResolve().filter { it.isVisible }
 
     fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
-//        rawCachedMultiResolve()
         rawMultiResolveUsingInferenceCache() ?: rawCachedMultiResolve()
 
     private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult<MvElement>>? {
-        val pathElement = element.parent as? InferenceCachedPathElement ?: return null
+        val pathElement = element.parent
         val msl = pathElement.isMsl()
-        return pathElement.inference(msl)?.getResolvedPath(pathElement.path)
+
+        // try resolving MvPathType inside MvIsExpr
+        if (pathElement is MvPathType) {
+            if (pathElement.parent is MvIsExpr) {
+                // special case for MvPathType, specifically for is expr
+                return getResolvedPathFromInference(element, msl)
+            }
+            // other path type cases are not cached in the inference
+            return null
+        }
+        if (pathElement is InferenceCachedPathElement) {
+            return getResolvedPathFromInference(pathElement.path, msl)
+        }
+        return null
+    }
+
+    private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult<MvElement>>? {
+        return path.inference(msl)?.getResolvedPath(path)
             ?.map {
                 RsPathResolveResult(it.element, it.isVisible)
             }

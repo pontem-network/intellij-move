@@ -875,4 +875,62 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test resolve enum variant in is expr`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+                     //X  
+            enum S2 { One, Two }
+            fun main(s: S1) {
+                if (s is One) true;
+                        //^
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant in is expr with or`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+                          //X  
+            enum S2 { One, Two }
+            fun main(s: S1) {
+                s is One | Two;
+                          //^
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum variant in is expr for different enum type`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+            enum S2 {  }
+            fun main(s: S2) {
+                s is One;
+                    //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant in let expr`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+                     //X  
+            enum S2 { One, Two }
+            fun main(_: S1) {
+                let s: S1 = One;
+                           //^
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum variant in let expr for different enum type`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+            enum S2 { }
+            fun main(_: S1) {
+                let s: S2 = One;
+                           //^ unresolved
+            }
+        }        
+    """)
 }
