@@ -267,7 +267,7 @@ private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
 //                            | fun | CONST_KW | STRUCT_KW | spec
 //                            | Attr_first | "friend" | "enum"
 private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
-                            | Attr_first | "friend"  | "entry" | "inline" | "enum"
+                            | Attr_first | "friend" | "package" | "entry" | "inline" | "enum"
 private TopLevel_first ::= MODULE_KW | SCRIPT_KW
 
 private ModuleItem ::= UseStmt
@@ -502,7 +502,9 @@ private AttrsAndVis_first ::= '#'
 private FunctionModifierSetInner ::= <<functionModifierSet VisibilityModifier>>
 private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet VisibilityModifier>>
 
-VisibilityModifier ::= public ('(' (SCRIPT_KW | package | friend) ')')?
+VisibilityModifier ::= (public ('(' (SCRIPT_KW | package | friend) ')')?)
+                        | package
+                        | friend
 
 FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }
 private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')
@@ -601,9 +603,9 @@ TupleFieldDecl ::= Attr* Type
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-FriendDecl ::= Attr* friend PathImpl ';'
+FriendDecl ::= Attr* (friend !fun) PathImpl ';'
 {
-    pin = "friend"
+//    pin = 2
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
 

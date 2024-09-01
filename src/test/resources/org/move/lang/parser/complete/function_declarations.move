@@ -13,6 +13,8 @@ module M {
     public(friend) fun fn(): u8 {}
     public(friend) entry fun fn(): u8 {}
 
+    friend fun fn2() {}
+
     fun fn_with_returned_tuple(): (u8, u8) {}
 
     fun fn_with_type_params<T: store, U: store + drop>(): T {}
