@@ -35,49 +35,13 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                     }
                         .align(AlignX.RIGHT)
                 }
-                group("Compiler V2") {
-                    row {
-                        checkBox("Set Compiler V2 flags for CLI")
-                            .comment(
-                                "Adds `--compiler-version v2 --language-version 2.0` " +
-                                        "to all generated Aptos CLI commands"
-                            )
-                            .bindSelected(state::addCompilerV2CLIFlags)
-                    }
-                    group("Language features") {
-                        row {
-                            checkBox("Receiver-Style functions")
-                                .comment(
-                                    "Allows calling functions with special " +
-                                            "first <b><code>self</code></b> parameter as a methods through dot expression."
-                                )
-                                .bindSelected(state::enableReceiverStyleFunctions)
-                        }
-                        row {
-                            checkBox("Resource-Access control")
-                                .comment(
-                                    "Allows specifying resource access attributes " +
-                                            "(<code>reads, writes, pure</code> for functions). " +
-                                            "Requires re-parsing of all Move files in the project, can be slow."
-                                )
-                                .bindSelected(state::enableResourceAccessControl)
-                        }
-                        row {
-                            checkBox("Index notation")
-                                .comment(
-                                    "Allows resource (<code>R[@0x1]</code>) and vector (<code>v[0]</code>) index operators."
-                                )
-                                .bindSelected(state::enableIndexExpr)
-                        }
-                        row {
-                            checkBox("public(package) visibility modifier")
-                                .comment(
-                                    "Allows <code>public(package)</code> visibility modifier " +
-                                            "to specify functions accessible to any module of the same package."
-                                )
-                                .bindSelected(state::enablePublicPackage)
-                        }
-                    }
+                row {
+                    checkBox("Enable Move V2")
+                        .comment(
+                            "Enables Move 2 language features, " +
+                                    "adds `--move-2 flag` to all generated Aptos CLI commands"
+                        )
+                        .bindSelected(state::enableMove2)
                 }
                 group("Command Line Options") {
                     row {
@@ -128,11 +92,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                     it.disableTelemetry = state.disableTelemetry
                     it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                     it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
-                    it.enableReceiverStyleFunctions = state.enableReceiverStyleFunctions
-                    it.enableResourceAccessControl = state.enableResourceAccessControl
-                    it.enableIndexExpr = state.enableIndexExpr
-                    it.enablePublicPackage = state.enablePublicPackage
-                    it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
+                    it.enableMove2 = state.enableMove2
                     it.fetchAptosDeps = state.fetchAptosDeps
                 }
             }
@@ -151,9 +111,4 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
             }
         }
     }
-
-//    override fun disposeUIResources() {
-//        super.disposeUIResources()
-//        Disposer.dispose(chooseAptosCliPanel)
-//    }
 }

@@ -1,10 +1,9 @@
 package org.move.lang.types.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.types.TypificationTestCase
 
-@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+@MoveV2()
 class ReceiverStyleFunctionsTest: TypificationTestCase() {
     fun `test infer receiver style function type generic self`() = testExpr("""
         module 0x1::main {

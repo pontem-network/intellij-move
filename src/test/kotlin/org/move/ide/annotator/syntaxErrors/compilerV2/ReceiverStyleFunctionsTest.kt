@@ -1,12 +1,11 @@
 package org.move.ide.annotator.syntaxErrors.compilerV2
 
 import org.move.ide.annotator.MvSyntaxErrorAnnotator
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class ReceiverStyleFunctionsTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test cannot use receiver style functions in compiler v1`() = checkWarnings("""
         module 0x1::m {
             struct S { field: u8 }
@@ -17,7 +16,7 @@ class ReceiverStyleFunctionsTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::clas
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test receiver style functions in compiler v2`() = checkWarnings("""
         module 0x1::m {
             struct S { field: u8 }

@@ -1,11 +1,9 @@
 package org.move.lang.resolve.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.resolve.ResolveTestCase
 
-@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+@MoveV2()
 class ReceiverStyleFunctionTest: ResolveTestCase() {
 
     fun `test resolve receiver function`() = checkByCode("""
@@ -207,7 +205,7 @@ class ReceiverStyleFunctionTest: ResolveTestCase() {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS, PUBLIC_PACKAGE)
+    @MoveV2()
     fun `test public package method`() = checkByCode("""
         module 0x1::m {
             struct S { x: u64 }

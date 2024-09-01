@@ -345,7 +345,7 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
         }
         project.moveSettings.modifyTemporary(this.testRootDisposable) {
             it.skipFetchLatestGitDeps = false
-            it.addCompilerV2CLIFlags = true
+            it.enableMove2 = true
         }
         checkOnElement<MvFunction>()
     }

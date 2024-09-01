@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NonNls
 import org.move.cli.settings.MvProjectSettingsService
 import org.move.lang.MoveParserDefinition
 import org.move.utils.tests.base.TestCase
-import org.move.utils.tests.handleCompilerV2Annotations
+import org.move.utils.tests.handleMoveV2Annotation
 
 
 abstract class MvParsingTestCase(@NonNls dataPath: String): ParsingTestCase(
@@ -19,7 +19,7 @@ abstract class MvParsingTestCase(@NonNls dataPath: String): ParsingTestCase(
 
         project.registerService(MvProjectSettingsService::class.java)
 
-        this.handleCompilerV2Annotations(project)
+        this.handleMoveV2Annotation(project)
     }
 
     override fun getTestDataPath(): String = "src/test/resources"

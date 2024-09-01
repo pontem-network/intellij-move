@@ -128,14 +128,7 @@ class KeywordCompletionContributor: CompletionContributor() {
                 psiElement()
                     .with(MvPsiPattern.AfterAnySibling(TYPES))
             ),
-            KeywordCompletionProvider {
-                buildList {
-                    add("acquires")
-                    if (it.moveSettings.enableResourceAccessControl) {
-                        addAll(listOf("reads", "writes", "pure"))
-                    }
-                }
-            }
+            KeywordCompletionProvider("acquires")
         )
         extend(
             CompletionType.BASIC,

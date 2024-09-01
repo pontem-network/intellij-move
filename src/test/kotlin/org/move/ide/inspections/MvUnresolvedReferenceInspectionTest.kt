@@ -1,8 +1,6 @@
 package org.move.ide.inspections
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.DebugMode
 import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.annotation.InspectionTestBase
@@ -490,7 +488,7 @@ module 0x1::m {
     """
     )
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test no unresolved method in compiler v1`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }
@@ -500,7 +498,7 @@ module 0x1::m {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test unresolved method`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }
@@ -510,7 +508,7 @@ module 0x1::m {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test no unresolved method error`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }
@@ -521,7 +519,7 @@ module 0x1::m {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test unresolved method error if receiver is unresolved`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }
@@ -532,7 +530,7 @@ module 0x1::m {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test unresolved method error if receiver is type unknown`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }

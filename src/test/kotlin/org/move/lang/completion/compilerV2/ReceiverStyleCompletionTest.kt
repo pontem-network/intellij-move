@@ -1,12 +1,11 @@
 package org.move.lang.completion.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.completion.CompletionTestCase
 
-@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+@MoveV2()
 class ReceiverStyleCompletionTest: CompletionTestCase() {
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test no function completion if compiler v1`() = checkNoCompletion("""
         module 0x1::main {
             struct S { field: u8 }

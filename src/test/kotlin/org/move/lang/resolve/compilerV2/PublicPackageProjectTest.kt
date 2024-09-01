@@ -1,12 +1,11 @@
 package org.move.lang.resolve.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-@CompilerV2Features(PUBLIC_PACKAGE)
+@MoveV2()
 class PublicPackageProjectTest: ResolveProjectTestCase() {
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test package function is not available from another module in compiler v1`() =
         checkByFileTree {
             namedMoveToml("MyPackage")
@@ -32,7 +31,7 @@ class PublicPackageProjectTest: ResolveProjectTestCase() {
             }
         }
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test package function is not available from another module in compiler v1 for module import`() =
         checkByFileTree {
             namedMoveToml("MyPackage")

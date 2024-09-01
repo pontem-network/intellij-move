@@ -13,8 +13,7 @@ import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.annotator.fixes.WrapWithParensExprFix
 import org.move.ide.annotator.pluralise
-import org.move.ide.inspections.fixes.CompilerV2Feat.*
-import org.move.ide.inspections.fixes.EnableCompilerV2FeatureFix
+import org.move.ide.inspections.fixes.EnableMoveV2Fix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.itemSpecBlock
@@ -196,7 +195,7 @@ sealed class Diagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "Index operator is not supported in Aptos Move V1 outside specs",
-                fixes = listOf(EnableCompilerV2FeatureFix(element, INDEXING))
+                fixes = listOf(EnableMoveV2Fix(element))
             )
         }
     }
@@ -207,7 +206,7 @@ sealed class Diagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "public(package) is not supported in Aptos Move V1",
-                fixes = listOf(EnableCompilerV2FeatureFix(element, PUBLIC_PACKAGE))
+                fixes = listOf(EnableMoveV2Fix(element))
             )
         }
     }
@@ -218,7 +217,7 @@ sealed class Diagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "receiver-style functions are not supported in Aptos Move V1",
-                fixes = listOf(EnableCompilerV2FeatureFix(element, RECEIVER_STYLE_FUNCTIONS))
+                fixes = listOf(EnableMoveV2Fix(element))
             )
         }
     }
