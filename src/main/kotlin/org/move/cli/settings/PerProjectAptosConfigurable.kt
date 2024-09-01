@@ -35,7 +35,6 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                     }
                         .align(AlignX.RIGHT)
                 }
-                separator()
                 row {
                     checkBox("Enable Move V2")
                         .comment(
