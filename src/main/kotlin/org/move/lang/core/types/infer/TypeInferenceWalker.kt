@@ -252,6 +252,7 @@ class TypeInferenceWalker(
                 ty
             }
             is MvParensExpr -> expr.expr?.inferType(expected) ?: TyUnknown
+            is MvUnitExpr -> TyUnit
 
             is MvBinaryExpr -> inferBinaryExprTy(expr)
             is MvBangExpr -> {

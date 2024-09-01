@@ -204,11 +204,8 @@ FILE
                   PsiElement(IDENTIFIER)('u8')
             MvBinaryOpImpl(BINARY_OP)
               PsiElement(>)('>')
-            MvParensExprImpl(PARENS_EXPR)
-              PsiElement(()('(')
-              PsiErrorElement:<expression> expected, got ')'
-                <empty list>
-              PsiElement())(')')
+            PsiErrorElement:<expression> expected, got ';'
+              <empty list>
           PsiElement(;)(';')
         PsiWhiteSpace('\n    ')
         PsiElement(})('}')

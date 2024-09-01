@@ -16,6 +16,6 @@ module 0x1::dot_exprs {
     }
 
     fun receiver() {
-        bin.no_type_args_without_colon_colon<u8>();
+        bin.no_type_args_without_colon_colon<u8>;
     }
 }

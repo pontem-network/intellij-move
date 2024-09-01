@@ -287,8 +287,23 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
         }
         return isParsed()
-
     }
+
+//    @JvmStatic
+//    fun parseCastOrIsExpr(
+//        b: PsiBuilder,
+//        level: Int,
+//        exprParser: Parser,
+//        allowColon: Boolean
+//    ): Boolean {
+//        if (!recursion_guard_(b, level, "parseCastOrIsExpr")) return false
+//        var result = false
+//
+//        val isExpr = exprParser.parse(b, level + 1);
+//        if (isExpr) {
+//
+//        }
+//    }
 
     @JvmStatic
     fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
@@ -336,6 +351,9 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
     @JvmStatic
     fun hasKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "has", HAS)
+
+    @JvmStatic
+    fun isKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "is", IS)
 
     @JvmStatic
     fun entryKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "entry", ENTRY)

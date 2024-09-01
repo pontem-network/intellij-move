@@ -100,6 +100,7 @@
 
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
+        IS     = 'is_kw'
         ENTRY     = 'entry_kw'
         INLINE     = 'inline_kw'
         FRIEND     = 'friend_kw'
@@ -214,6 +215,7 @@ private ScriptItem ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
+private is ::= <<hasKeyword>>
 private entry ::= <<entryKeyword>>
 private inline ::= <<inlineKeyword>>
 private schema ::= <<schemaKeyword>>
@@ -909,7 +911,7 @@ private CodeBlock_items_recover ::= !('}' | <<eof>>)
 Expr ::= AssignmentExpr
         | RangeExpr
         | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
-        | CastExpr
+        | CastLikeExpr_items
         | ImplyBinExpr_items
         | OrBinExpr
         | AndBinExpr
@@ -944,7 +946,9 @@ fake BinaryOp ::= '<==>' | '==>' | '='
 
 private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
-private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
+private LogicalEqExpr_items ::=
+        EqualsBinExpr | NotEqualsBinExpr
+        | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
 private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
@@ -966,7 +970,10 @@ private AtomExpr ::=
                     | CodeBlockExpr
 
 
+private CastLikeExpr_items ::= CastExpr | UnitExpr | IsExpr
 CastExpr ::= Expr as Type
+IsExpr ::= Expr is Type ('|' Type)*
+UnitExpr ::= '(' ')'
 
 private AnnotatedExpPrefix ::= '(' Expr ':'
 AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
@@ -988,6 +995,9 @@ LessBinExpr ::= Expr (!(ltlt | lt_eqeq_gt) LessBinOp) Expr
 GreaterBinExpr ::= Expr (!gtgt GreaterBinOp) Expr
 LessEqualsBinExpr ::= Expr LessEqualsBinOp Expr
 GreaterEqualsBinExpr ::= Expr GreaterEqualsBinOp Expr
+
+//IsBinOp ::= is
+//IsBinExpr ::= Expr IsBinOp Type ('|' Type)*
 
 LessBinOp ::= '<'
 GreaterBinOp ::= '>'
