@@ -2,8 +2,7 @@ package org.move.ide.annotator.errors
 
 import org.move.ide.annotator.MvErrorAnnotator
 import org.move.ide.inspections.MvTypeCheckInspection
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.WithEnabledInspections
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
@@ -130,7 +129,7 @@ class NeedsTypeAnnotationTest: AnnotatorTestCase(MvErrorAnnotator::class) {
         }        
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test method type arguments uninferrable`() = checkErrors("""
         module 0x1::main {
             struct S { field: u8 }

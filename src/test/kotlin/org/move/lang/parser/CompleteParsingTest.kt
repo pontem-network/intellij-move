@@ -1,7 +1,7 @@
 package org.move.lang.parser
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
+import org.move.utils.tests.ResourceAccessControl
 import org.move.utils.tests.parser.MvParsingTestCase
 
 class CompleteParsingTest: MvParsingTestCase("complete") {
@@ -54,7 +54,7 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test positional fields`() = doTest()
 
     // feature declaration is required here, as it's a parser-level feature
-    @CompilerV2Features(RESOURCE_CONTROL)
+    @ResourceAccessControl()
     fun `test access control`() = doTest()
 
     fun doTest() {

@@ -1,8 +1,7 @@
 package org.move.ide.hints
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.lang.core.psi.MvValueArgumentList
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class ParameterInfoHandlerTest
@@ -155,7 +154,7 @@ class ParameterInfoHandlerTest
     """, "val1: u8, val2: u8, val3: u8", 2
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test receiver style fun`() = checkByText(
         """
         module 0x1::m {

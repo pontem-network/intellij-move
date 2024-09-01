@@ -5,6 +5,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,11 +37,13 @@ class MvProjectSettingsService(
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
-    val enableReceiverStyleFunctions: Boolean get() = state.enableReceiverStyleFunctions
-    val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
-    val enableIndexExpr: Boolean get() = state.enableIndexExpr
-    val enablePublicPackage: Boolean get() = state.enablePublicPackage
-    val addCompilerV2CLIFlags: Boolean get() = state.addCompilerV2CLIFlags
+    val enableMove2: Boolean get() = state.enableMove2
+
+    val enableReceiverStyleFunctions: Boolean get() = enableMove2
+    val enableIndexExpr: Boolean get() = enableMove2
+    val enablePublicPackage: Boolean get() = enableMove2
+
+    val enableResourceAccessControl: Boolean get() = AdvancedSettings.getBoolean(RESOURCE_CONTROL_V2_SETTING_KEY)
 
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
@@ -49,18 +52,6 @@ class MvProjectSettingsService(
 
         @AffectsMoveProjectsMetadata
         var localAptosPath: String? by string()
-
-        @AffectsHighlighting
-        var enableReceiverStyleFunctions: Boolean by property(false)
-
-        @AffectsParseTree
-        var enableResourceAccessControl: Boolean by property(false)
-
-        @AffectsHighlighting
-        var enableIndexExpr: Boolean by property(false)
-
-        @AffectsHighlighting
-        var enablePublicPackage: Boolean by property(false)
 
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)
@@ -71,7 +62,8 @@ class MvProjectSettingsService(
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
 
-        var addCompilerV2CLIFlags: Boolean by property(false)
+        @AffectsHighlighting
+        var enableMove2: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
             val state = MoveProjectSettings()
@@ -94,6 +86,8 @@ class MvProjectSettingsService(
         private val defaultAptosExecType
             get() =
                 if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL
+
+        const val RESOURCE_CONTROL_V2_SETTING_KEY: String = "org.move.aptos.compilerV2.enable.resource.control"
     }
 }
 

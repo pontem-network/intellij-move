@@ -1,10 +1,9 @@
 package org.move.lang.resolve
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.resolve.ResolveTestCase
 
-@CompilerV2Features(RESOURCE_CONTROL)
+@MoveV2()
 class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
     fun `test resolve type for reads`() = checkByCode(
         """

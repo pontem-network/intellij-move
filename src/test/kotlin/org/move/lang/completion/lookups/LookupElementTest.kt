@@ -8,7 +8,6 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
@@ -16,7 +15,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
@@ -97,7 +96,7 @@ class LookupElementTest: MvTestBase() {
     """, typeText = "u8"
     )
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test self method without receiver style enabled`() = checkNamedItem(
         """
         module 0x1::main {
@@ -112,7 +111,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(self: S<T>): T", typeText = "main.move"
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test generic method`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {
@@ -127,7 +126,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(self)", typeText = "u8"
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test generic method ref`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {
@@ -142,7 +141,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(&self)", typeText = "u8"
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test generic method ref mut`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {

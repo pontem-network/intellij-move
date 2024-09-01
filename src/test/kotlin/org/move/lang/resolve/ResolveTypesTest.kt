@@ -1,7 +1,6 @@
 package org.move.lang.resolve
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveTypesTest : ResolveTestCase() {
@@ -345,7 +344,7 @@ module 0x1::m {
 }        
     """)
 
-    @CompilerV2Features(INDEXING)
+    @MoveV2()
     fun `test resource index expr`() = checkByCode("""
         module 0x1::m {
             struct S has key {}

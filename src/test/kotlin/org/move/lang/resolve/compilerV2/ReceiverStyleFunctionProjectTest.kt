@@ -1,10 +1,9 @@
 package org.move.lang.resolve.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+@MoveV2()
 class ReceiverStyleFunctionProjectTest: ResolveProjectTestCase() {
 
     fun `test resolve vector method if stdlib vector module present`() = checkByFileTree {

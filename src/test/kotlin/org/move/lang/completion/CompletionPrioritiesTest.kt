@@ -1,9 +1,8 @@
 package org.move.lang.completion
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.completion.CompletionTestCase
 
 class CompletionPrioritiesTest : CompletionTestCase() {
@@ -141,7 +140,7 @@ module 0x1::Main {
         """
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test method return type`() = checkCompletionsOrder(
         listOf("get_member2", "get_member1"),
         """
@@ -156,7 +155,7 @@ module 0x1::Main {
         """
     )
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test method return type with ref`() = checkCompletionsOrder(
         listOf("borrow", "borrow_with_default", "borrow_buckets"),
         """

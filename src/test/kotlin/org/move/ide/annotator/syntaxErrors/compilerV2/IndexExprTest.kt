@@ -1,12 +1,11 @@
 package org.move.ide.annotator.syntaxErrors.compilerV2
 
 import org.move.ide.annotator.MvSyntaxErrorAnnotator
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test vector index expr in not allowed in main code with compiler v1`() = checkWarnings("""
         module 0x1::m {
             fun main() {
@@ -16,7 +15,7 @@ class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         }        
     """)
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test resource index expr in not allowed in main code with compiler v1`() = checkWarnings("""
         module 0x1::m {
             fun main() {
@@ -26,7 +25,7 @@ class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         }        
     """)
 
-    @CompilerV2Features(INDEXING)
+    @MoveV2()
     fun `test no error with index expr in compiler v2`() = checkWarnings("""
         module 0x1::m {
             struct S has key { field: u8 }

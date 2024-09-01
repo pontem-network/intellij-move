@@ -94,26 +94,14 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                     if ("--skip-fetch-latest-git-deps" !in extraArguments) {
                         add("--skip-fetch-latest-git-deps")
                     }
-                    if (args.addCompilerV2Flags) {
-                        if ("--compiler-version" !in extraArguments) {
-                            add("--compiler-version")
-                            add("v2")
-                        }
-                        if ("--language-version" !in extraArguments) {
-                            add("--language-version")
-                            add("2.0")
+                    if (args.enableMove2) {
+                        if ("--move-2" !in extraArguments) {
+                            add("--move-2")
                         }
                     }
                     addAll(ParametersListUtil.parse(args.extraArguments))
                 },
                 args.moveProjectDirectory,
-                environmentVariables = args.envs.let {
-                    val environmentMap = it.toMutableMap()
-                    if (args.addCompilerV2Flags && MvConstants.MOVE_COMPILER_V2_ENV !in environmentMap) {
-                        environmentMap[MvConstants.MOVE_COMPILER_V2_ENV] = "true"
-                    }
-                    EnvironmentVariablesData.create(environmentMap, true)
-                }
             )
         return executeCommandLine(commandLine).ignoreExitCode()
     }
@@ -215,7 +203,7 @@ data class AptosCompileArgs(
     val moveProjectDirectory: Path,
     val extraArguments: String,
     val envs: Map<String, String>,
-    val addCompilerV2Flags: Boolean,
+    val enableMove2: Boolean,
     val skipLatestGitDeps: Boolean,
 ) {
     companion object {
@@ -232,7 +220,7 @@ data class AptosCompileArgs(
                 workingDirectory,
                 additionalArguments,
                 enviroment,
-                addCompilerV2Flags = moveSettings.addCompilerV2CLIFlags,
+                enableMove2 = moveSettings.enableMove2,
                 skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
             )
         }

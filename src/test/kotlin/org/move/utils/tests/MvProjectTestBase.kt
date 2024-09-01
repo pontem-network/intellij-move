@@ -34,7 +34,7 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
-        this.handleCompilerV2Annotations(project)
+        this.handleMoveV2Annotation(project)
     }
 
 //    override fun tearDown() {

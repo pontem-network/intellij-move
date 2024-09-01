@@ -130,11 +130,11 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
     }
 
     private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
-        val environmentMap = linkedMapOf<String, String>()
-        if (project.moveSettings.addCompilerV2CLIFlags) {
-            environmentMap[MvConstants.MOVE_COMPILER_V2_ENV] = "true"
-        }
-        return EnvironmentVariablesData.create(environmentMap, true)
+//        val environmentMap = linkedMapOf<String, String>()
+//        if (project.moveSettings.enableMove2) {
+//            environmentMap[MvConstants.MOVE_COMPILER_V2_ENV] = "true"
+//        }
+        return EnvironmentVariablesData.create(mapOf(), true)
     }
 
     private fun cliFlagsFromProjectSettings(project: Project): List<String> =
@@ -145,9 +145,8 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
             if (project.moveSettings.dumpStateOnTestFailure) {
                 add("--dump")
             }
-            if (project.moveSettings.addCompilerV2CLIFlags) {
-                addAll(arrayOf("--compiler-version", "v2"))
-                addAll(arrayOf("--language-version", "2.0"))
+            if (project.moveSettings.enableMove2) {
+                add("--move-2")
             }
         }
 }

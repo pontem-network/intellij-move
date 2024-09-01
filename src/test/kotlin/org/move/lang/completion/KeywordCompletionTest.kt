@@ -1,8 +1,7 @@
 package org.move.lang.completion
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
-import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
+import org.move.utils.tests.ResourceAccessControl
 import org.move.utils.tests.completion.CompletionTestCase
 
 class KeywordCompletionTest: CompletionTestCase() {
@@ -173,7 +172,7 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-    @CompilerV2Features(PUBLIC_PACKAGE)
+    @MoveV2()
     fun `test public`() = completionFixture.checkContainsCompletion(
         """
         module 0x1::M {
@@ -472,7 +471,7 @@ class KeywordCompletionTest: CompletionTestCase() {
     """, listOf("public", "public(friend)")
     )
 
-    @CompilerV2Features(PUBLIC_PACKAGE)
+    @MoveV2()
     fun `test visibility modifiers with public package`() = completionFixture.checkContainsCompletion(
         """
        module 0x1::M {
@@ -619,7 +618,7 @@ class KeywordCompletionTest: CompletionTestCase() {
         """
     )
 
-    @CompilerV2Features(RESOURCE_CONTROL)
+    @ResourceAccessControl()
     fun `test completion for resource access modifiers`() = checkContainsCompletion(
         listOf("reads", "writes", "pure", "acquires"),
         """

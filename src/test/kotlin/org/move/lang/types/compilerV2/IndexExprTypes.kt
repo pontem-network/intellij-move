@@ -1,12 +1,11 @@
 package org.move.lang.types.compilerV2
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.types.TypificationTestCase
 
-@CompilerV2Features(INDEXING)
+@MoveV2()
 class IndexExprTypes: TypificationTestCase() {
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test unknown without enabled feature`() = testExpr(
         """
         module 0x1::m {
@@ -19,7 +18,7 @@ class IndexExprTypes: TypificationTestCase() {
     """
     )
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test spec index expr`() = testExpr(
         """
         module 0x1::m {
@@ -378,7 +377,7 @@ class IndexExprTypes: TypificationTestCase() {
         }        
     """)
 
-    @CompilerV2Features()
+    @MoveV2(enabled = false)
     fun `test index expr with reference in specs without compiler v2`() = testExpr("""
         module 0x1::m {
             struct S { field: u8 }

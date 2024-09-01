@@ -9,7 +9,7 @@ abstract class MvLightTestBase: BasePlatformTestCase() {
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
-        this.handleCompilerV2Annotations(project)
+        this.handleMoveV2Annotation(project)
         this.handleNamedAddressAnnotations(project)
     }
 }

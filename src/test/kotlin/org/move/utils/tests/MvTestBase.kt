@@ -7,16 +7,16 @@ package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.openapi.components.service
+import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.MvProjectSettingsService.Companion.RESOURCE_CONTROL_V2_SETTING_KEY
 import org.move.cli.settings.moveSettings
 import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.cli.tests.NamedAddressServiceTestImpl
-import org.move.ide.inspections.fixes.CompilerV2Feat
-import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
@@ -37,27 +37,33 @@ annotation class WithEnabledInspections(vararg val inspections: KClass<out Inspe
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class CompilerV2Features(vararg val features: CompilerV2Feat)
+annotation class MoveV2(val enabled: Boolean = true)
+
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ResourceAccessControl(val enabled: Boolean = true)
 
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class NamedAddress(val name: String, val value: String)
 
-fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
-    val enabledCompilerV2 = this.findAnnotationInstance<CompilerV2Features>()
-    if (enabledCompilerV2 != null) {
+fun UsefulTestCase.handleMoveV2Annotation(project: Project) {
+    val enableMoveV2 = this.findAnnotationInstance<MoveV2>()?.enabled
+    if (enableMoveV2 != null) {
         // triggers projects refresh
         project.moveSettings.modifyTemporary(this.testRootDisposable) {
-            for (feature in enabledCompilerV2.features) {
-                when (feature) {
-                    RESOURCE_CONTROL -> it.enableResourceAccessControl = true
-                    RECEIVER_STYLE_FUNCTIONS -> it.enableReceiverStyleFunctions = true
-                    INDEXING -> it.enableIndexExpr = true
-                    PUBLIC_PACKAGE -> it.enablePublicPackage = true
-                }
-            }
+            it.enableMove2 = enableMoveV2
         }
+    }
+}
+
+fun UsefulTestCase.handleResourceAccessControl(project: Project) {
+    val enableAccessControl = this.findAnnotationInstance<ResourceAccessControl>()?.enabled
+    if (enableAccessControl != null) {
+        // triggers projects refresh
+        AdvancedSettings.setBoolean(RESOURCE_CONTROL_V2_SETTING_KEY, enableAccessControl)
     }
 }
 
@@ -79,20 +85,6 @@ abstract class MvTestBase: MvLightTestBase(),
         super.setUp()
 
         setupInspections()
-
-//        val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
-//        setRegistryKey("org.move.debug.enabled", isDebugMode)
-//
-//        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
-//        project.moveSettings.modifyTemporary(testRootDisposable) {
-//            it.isCompilerV2 = isCompilerV2
-//        }
-//
-//        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
-//        // triggers projects refresh
-//        project.moveSettings.modify {
-//            it.blockchain = blockchain
-//        }
     }
 
     private fun setupInspections() {

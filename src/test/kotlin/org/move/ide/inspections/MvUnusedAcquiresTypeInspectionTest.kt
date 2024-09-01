@@ -1,8 +1,6 @@
 package org.move.ide.inspections
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
-import org.move.utils.tests.CompilerV2Features
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvUnusedAcquiresTypeInspectionTest: InspectionTestBase(MvUnusedAcquiresTypeInspection::class) {
@@ -26,7 +24,7 @@ class MvUnusedAcquiresTypeInspectionTest: InspectionTestBase(MvUnusedAcquiresTyp
         }
     """)
 
-    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
+    @MoveV2()
     fun `test no error if acquires type with receiver style`() = checkWarnings(
         """
         module 0x1::M {
@@ -165,7 +163,7 @@ module 0x1::main {
     """
     )
 
-    @CompilerV2Features(INDEXING)
+    @MoveV2()
     fun `test no unused acquires with index expr`() = checkWarnings(
         """
 module 0x1::main {
@@ -179,7 +177,7 @@ module 0x1::main {
     """
     )
 
-    @CompilerV2Features(INDEXING)
+    @MoveV2()
     fun `test no unused acquires with index expr inside inline function`() = checkWarnings(
         """
 module 0x1::main {
@@ -214,7 +212,7 @@ module 0x1::main {
     """
     )
 
-    @CompilerV2Features(INDEXING)
+    @MoveV2()
     fun `test no unused acquires for deep borrow global dot with index expr`() = checkWarnings(
         """
 module 0x1::main {
