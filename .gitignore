@@ -8,3 +8,4 @@ src/main/gen/
 deps/
 bin/
 .intellijPlatform
+.kotlin

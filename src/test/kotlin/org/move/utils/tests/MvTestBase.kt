@@ -7,13 +7,11 @@ package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.openapi.components.service
-import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
-import org.move.cli.settings.MvProjectSettingsService.Companion.RESOURCE_CONTROL_V2_SETTING_KEY
 import org.move.cli.settings.moveSettings
 import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.cli.tests.NamedAddressServiceTestImpl
@@ -42,11 +40,6 @@ annotation class MoveV2(val enabled: Boolean = true)
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ResourceAccessControl(val enabled: Boolean = true)
-
-@Inherited
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
 annotation class NamedAddress(val name: String, val value: String)
 
 fun UsefulTestCase.handleMoveV2Annotation(project: Project) {
@@ -59,17 +52,10 @@ fun UsefulTestCase.handleMoveV2Annotation(project: Project) {
     }
 }
 
-fun UsefulTestCase.handleResourceAccessControl(project: Project) {
-    val enableAccessControl = this.findAnnotationInstance<ResourceAccessControl>()?.enabled
-    if (enableAccessControl != null) {
-        // triggers projects refresh
-        AdvancedSettings.setBoolean(RESOURCE_CONTROL_V2_SETTING_KEY, enableAccessControl)
-    }
-}
-
 fun UsefulTestCase.handleNamedAddressAnnotations(project: Project) {
     val namedAddresses = this.findAnnotationInstances<NamedAddress>()
-    val namedAddressService = project.service<NamedAddressFromTestAnnotationService>() as NamedAddressServiceTestImpl
+    val namedAddressService =
+        project.service<NamedAddressFromTestAnnotationService>() as NamedAddressServiceTestImpl
     for (namedAddress in namedAddresses) {
         namedAddressService.namedAddresses[namedAddress.name] = namedAddress.value
     }

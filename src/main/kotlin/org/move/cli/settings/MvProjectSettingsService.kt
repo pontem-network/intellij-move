@@ -43,8 +43,6 @@ class MvProjectSettingsService(
     val enableIndexExpr: Boolean get() = enableMove2
     val enablePublicPackage: Boolean get() = enableMove2
 
-    val enableResourceAccessControl: Boolean get() = AdvancedSettings.getBoolean(RESOURCE_CONTROL_V2_SETTING_KEY)
-
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
@@ -86,8 +84,6 @@ class MvProjectSettingsService(
         private val defaultAptosExecType
             get() =
                 if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL
-
-        const val RESOURCE_CONTROL_V2_SETTING_KEY: String = "org.move.aptos.compilerV2.enable.resource.control"
     }
 }
 

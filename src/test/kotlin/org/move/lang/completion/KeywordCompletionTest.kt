@@ -1,7 +1,6 @@
 package org.move.lang.completion
 
 import org.move.utils.tests.MoveV2
-import org.move.utils.tests.ResourceAccessControl
 import org.move.utils.tests.completion.CompletionTestCase
 
 class KeywordCompletionTest: CompletionTestCase() {
@@ -618,15 +617,15 @@ class KeywordCompletionTest: CompletionTestCase() {
         """
     )
 
-    @ResourceAccessControl()
-    fun `test completion for resource access modifiers`() = checkContainsCompletion(
-        listOf("reads", "writes", "pure", "acquires"),
-        """
-            module 0x1::m {
-                fun main() /*caret*/ {}
-            }            
-        """
-    )
+//    @ResourceAccessControl()
+//    fun `test completion for resource access modifiers`() = checkContainsCompletion(
+//        listOf("reads", "writes", "pure", "acquires"),
+//        """
+//            module 0x1::m {
+//                fun main() /*caret*/ {}
+//            }
+//        """
+//    )
 
     fun `test enum completion`() = doSingleCompletion(
         """

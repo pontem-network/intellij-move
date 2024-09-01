@@ -194,8 +194,7 @@ object MoveParserUtil: GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun isResourceAccessEnabled(b: PsiBuilder, level: Int): Boolean =
-        b.project.moveSettings.enableResourceAccessControl
+    fun isResourceAccessEnabled(b: PsiBuilder, level: Int): Boolean = false
 
     @JvmStatic
     fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {

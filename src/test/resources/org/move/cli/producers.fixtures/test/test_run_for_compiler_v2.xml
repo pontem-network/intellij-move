@@ -3,7 +3,6 @@
     <option name="command" value="move test --filter MoveTests::test_add --move-2" />
     <option name="workingDirectory" value="file://" />
     <envs>
-      <env name="MOVE_LANGUAGE_V2" value="true" />
       <env name="APTOS_DISABLE_TELEMETRY" value="true" />
     </envs>
     <method v="2" />

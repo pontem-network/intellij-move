@@ -447,7 +447,7 @@ private VariantArgs ::= BlockFields | TupleFields
 
 fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
-                        ReturnType? (ResourceAccessItemList | AcquiresType)?
+                        ReturnType? AcquiresType?
                         (';' | CodeBlock)?
 {
     implements = [
@@ -484,8 +484,7 @@ NativeFunctionInner ::= Attr* NativeFunctionModifierSetInner fun FunctionSignatu
 private FunctionItem ::= NativeFunctionInner | FunctionInner
 
 private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
-                                    FunctionParameterList ReturnType?
-                                    (ResourceAccessItemList | AcquiresType)?
+                                    FunctionParameterList ReturnType? AcquiresType?
 {
     recoverWhile = "FunctionSignatureInner_recover"
 }
