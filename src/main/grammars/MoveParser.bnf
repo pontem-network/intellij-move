@@ -215,7 +215,7 @@ private ScriptItem ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
-private is ::= <<hasKeyword>>
+private is ::= <<isKeyword>>
 private entry ::= <<entryKeyword>>
 private inline ::= <<inlineKeyword>>
 private schema ::= <<schemaKeyword>>
