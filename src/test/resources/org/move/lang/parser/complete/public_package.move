@@ -4,5 +4,5 @@ module 0x1::public_package {
         let package = package + 1;
         package
     }
-
+    package fun my_package_fun(): u8 {}
 }

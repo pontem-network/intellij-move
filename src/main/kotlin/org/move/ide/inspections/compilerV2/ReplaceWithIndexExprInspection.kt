@@ -2,6 +2,7 @@ package org.move.ide.inspections.compilerV2
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import org.move.cli.settings.moveSettings
 import org.move.ide.inspections.MvLocalInspectionTool
 import org.move.ide.inspections.compilerV2.fixes.ReplaceWithIndexExprFix
 import org.move.lang.core.psi.*
@@ -16,6 +17,9 @@ class ReplaceWithIndexExprInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object: MvVisitor() {
             override fun visitCallExpr(callExpr: MvCallExpr) {
+                // disable for move v1
+                if (!callExpr.project.moveSettings.enableMove2) return
+
                 val function = callExpr.path.reference?.resolveFollowingAliases() as? MvFunction ?: return
                 val module = function.module ?: return
                 val moveProject = function.moveProject ?: return

@@ -154,7 +154,9 @@ private val VISIBILITY_MODIFIERS = arrayOf(
     "public",
 //    "public(script)",
     "public(friend)",
-    "public(package)"
+    "public(package)",
+    "friend",
+    "package",
 )
 
 private val CONTEXT_FUNCTION_MODIFIERS = arrayOf("entry", "inline")

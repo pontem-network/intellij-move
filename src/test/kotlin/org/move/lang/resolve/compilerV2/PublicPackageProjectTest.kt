@@ -83,6 +83,32 @@ class PublicPackageProjectTest: ResolveProjectTestCase() {
             }
         }
 
+    fun `test package function is available from another module of the same package with package modifier`() =
+        checkByFileTree {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "a.move", """
+        module 0x1::a {
+            package fun call() {}
+                       //X
+        }        
+            """
+                )
+                main(
+                    """
+        module 0x1::main {
+            use 0x1::a::call;
+            fun main() {
+                call();
+                //^
+            }
+        }
+            """
+                )
+            }
+        }
+
     fun `test package function is available from another module of the same package with module import`() =
         checkByFileTree {
             namedMoveToml("MyPackage")

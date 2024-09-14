@@ -9,7 +9,6 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.BitUtil
-import org.move.cli.settings.moveSettings
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
@@ -247,7 +246,7 @@ object MoveParserUtil: GeneratedParserUtilBase() {
         visParser: Parser,
         native: Boolean,
     ): Boolean {
-        val modifiersLeft = FunModifier.values().toMutableSet()
+        val modifiersLeft = FunModifier.entries.toMutableSet()
         if (!native) {
             modifiersLeft.remove(FunModifier.NATIVE)
         }
@@ -258,7 +257,9 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
         while (modifiersLeft.isNotEmpty()) {
             when {
-                b.tokenType == PUBLIC -> {
+                b.tokenType == PUBLIC
+                        || isContextualKeyword(b, "friend", FRIEND)
+                        || isContextualKeyword(b, "package", PACKAGE) -> {
                     if (FunModifier.VIS !in modifiersLeft) return isParsed()
                     if (!visParser.parse(b, level)) return false
                     modifiersLeft.remove(FunModifier.VIS)
@@ -286,8 +287,23 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
         }
         return isParsed()
-
     }
+
+//    @JvmStatic
+//    fun parseCastOrIsExpr(
+//        b: PsiBuilder,
+//        level: Int,
+//        exprParser: Parser,
+//        allowColon: Boolean
+//    ): Boolean {
+//        if (!recursion_guard_(b, level, "parseCastOrIsExpr")) return false
+//        var result = false
+//
+//        val isExpr = exprParser.parse(b, level + 1);
+//        if (isExpr) {
+//
+//        }
+//    }
 
     @JvmStatic
     fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
@@ -335,6 +351,9 @@ object MoveParserUtil: GeneratedParserUtilBase() {
 
     @JvmStatic
     fun hasKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "has", HAS)
+
+    @JvmStatic
+    fun isKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "is", IS)
 
     @JvmStatic
     fun entryKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "entry", ENTRY)
@@ -484,15 +503,23 @@ object MoveParserUtil: GeneratedParserUtilBase() {
         get() = getUserData(MSL_LEVEL) ?: 0
         set(value) = putUserData(MSL_LEVEL, value)
 
+    private fun isContextualKeyword(
+        b: PsiBuilder,
+        keyword: String,
+        elementType: IElementType,
+        nextElementPredicate: (IElementType?) -> Boolean = { it !in tokenSetOf() }
+    ): Boolean {
+        return b.tokenType == elementType ||
+                b.tokenType == IDENTIFIER && b.tokenText == keyword && nextElementPredicate(b.lookAhead(1))
+    }
+
     private fun contextualKeyword(
         b: PsiBuilder,
         keyword: String,
         elementType: IElementType,
         nextElementPredicate: (IElementType?) -> Boolean = { it !in tokenSetOf() }
     ): Boolean {
-        if (b.tokenType == elementType ||
-            b.tokenType == IDENTIFIER && b.tokenText == keyword && nextElementPredicate(b.lookAhead(1))
-        ) {
+        if (isContextualKeyword(b, keyword, elementType, nextElementPredicate)) {
             b.remapCurrentToken(elementType)
             b.advanceLexer()
             return true

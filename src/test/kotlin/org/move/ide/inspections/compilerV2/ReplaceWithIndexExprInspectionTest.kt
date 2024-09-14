@@ -1,8 +1,10 @@
 package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
+@MoveV2()
 class ReplaceWithIndexExprInspectionTest: InspectionTestBase(ReplaceWithIndexExprInspection::class) {
 
     fun `test no error if types of arguments are incorrect`() = doTest("""
@@ -113,6 +115,22 @@ class ReplaceWithIndexExprInspectionTest: InspectionTestBase(ReplaceWithIndexExp
             fun main() {
                 let v = vector[1, 2];
                 v[0];
+            }            
+        }
+    """)
+
+    @MoveV2(enabled = false)
+    fun `test no error if compiler v1`() = doFixUnavailableTest("""
+        module 0x1::vector {
+            native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
+            native public fun borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        }                
+        module 0x1::m {
+            use 0x1::vector;
+            
+            fun main() {
+                let v = vector[1, 2];
+                /*caret*/*vector::borrow(&v, 0);
             }            
         }
     """)
@@ -370,4 +388,9 @@ class ReplaceWithIndexExprInspectionTest: InspectionTestBase(ReplaceWithIndexExp
     ) =
         checkFixByText("Replace with index expr", before, after,
                        checkWarn = false, checkWeakWarn = true)
+
+    private fun doFixUnavailableTest(@Language("Move") text: String) =
+        checkFixIsUnavailable("Replace with index expr", text,
+                              checkWarn = false,
+                              checkWeakWarn = true)
 }

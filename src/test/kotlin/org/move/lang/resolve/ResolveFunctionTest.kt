@@ -260,7 +260,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
-    fun `test resolve friend function`() = checkByCode(
+    fun `test resolve friend function with public friend modifier`() = checkByCode(
         """
         address 0x1 {
         module Original {
@@ -276,6 +276,44 @@ class ResolveFunctionTest: ResolveTestCase() {
                         //^
             }
         }    
+        }
+    """
+    )
+
+    fun `test resolve friend function with friend modifier`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            friend 0x1::M;
+            friend fun call() {}
+                       //X
+        }
+        
+        module M {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test unresolved friend function if friend of another module`() = checkByCode(
+        """
+        module 0x1::m1 {
+            friend 0x1::main;
+        }
+        module 0x1::m2 {
+            friend fun call() {}
+        }
+        module 0x1::main {
+            use 0x1::m2;
+            fun main() {
+                m2::call();
+                   //^ unresolved
+            }
         }
     """
     )
