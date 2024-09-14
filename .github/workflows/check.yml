@@ -25,17 +25,17 @@ jobs:
                     distribution: 'corretto'
                     java-version: 17
 
-            -   name: Setup Gradle and dependencies
-                uses: gradle/actions/setup-gradle@v3
-                with:
-                    gradle-version: wrapper
-                    cache-read-only: false
-                    arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
-                    gradle-home-cache-cleanup: true
-                    gradle-home-cache-excludes: |
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+#            -   name: Setup Gradle and dependencies
+#                uses: gradle/actions/setup-gradle@v3
+#                with:
+#                    gradle-version: wrapper
+#                    cache-read-only: false
+#                    arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
+#                    gradle-home-cache-cleanup: true
+#                    gradle-home-cache-excludes: |
+#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
+#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
                 uses: gradle/actions/setup-gradle@v3
