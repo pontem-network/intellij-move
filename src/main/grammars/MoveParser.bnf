@@ -16,7 +16,7 @@
     tokenTypeClass="org.move.lang.core.MvTokenType"
 
     extends(".*Expr")=Expr
-    extends("Pat(Struct|TupleStruct|Binding|Tuple|Wild|Const)")=Pat
+    extends("Pat(Struct|TupleStruct|Binding|Tuple|Wild|Rest|Const)")=Pat
     extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
@@ -729,6 +729,7 @@ TypeArgument ::= Type
 //        | ConstPat
 
 Pat ::= PatWild
+        | PatRest
         | PatTuple
         | PatBinding
         | PatStruct
@@ -741,6 +742,8 @@ EnumVariantPat ::= PathImpl
 
 PatWild ::= '_'
 WildPat ::= '_'
+
+PatRest ::= '..'
 
 ConstPat ::= PathImpl
 PatConst ::= PathExpr
@@ -766,7 +769,7 @@ PatBinding ::= IDENTIFIER !ForbiddenPatBindingLast {
 BindingPat ::= IDENTIFIER !ForbiddenPatBindingLast
 
 //private ForbiddenBindingPatLast ::= '...' | '::' | '..=' | '..' | '<' | '(' | '{' | '!' {
-private ForbiddenPatBindingLast ::= '::' | '<' | '(' | '{' | '!'
+private ForbiddenPatBindingLast ::= '::' | '..' | '<' | '(' | '{' | '!'
 {
   consumeTokenMethod = "consumeTokenFast"
 }
@@ -775,7 +778,7 @@ TuplePat ::= '(' PatParenListElem_with_recover* ')'
 PatTuple ::= '(' PatParenListElem_with_recover* ')'
 
 StructPat ::= PathImpl '{' PatField_with_recover* '}'
-PatStruct ::= PathImpl '{' PatField_with_recover* '}'
+PatStruct ::= PathImpl '{' PatField_with_recover* PatRest? '}'
 {
     implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
 }
@@ -790,13 +793,13 @@ private PatParenListElem_with_recover ::= !')' Pat (',' | &')') {
 }
 private PatParenListElem_recover ::= !(')' | Pat_first)
 
-private PatField_with_recover ::= !'}' PatField (',' | &'}')
+private PatField_with_recover ::= !('}' | '..') PatField (',' | &'}')
 {
     pin = 1
     recoverWhile = PatField_recover
 
 }
-private PatField_recover ::= !('}' | IDENTIFIER)
+private PatField_recover ::= !('}' | '..' | IDENTIFIER)
 
 PatFieldFull ::= IDENTIFIER ':' Pat
 {
@@ -821,7 +824,7 @@ FieldPat ::= PatFieldFull | PatBinding
 //}
 FieldPatBinding ::= ':' Pat
 
-private Pat_first ::= '_' | '(' | Path_first | AnyLitToken_first
+private Pat_first ::= '_' | '..' | '(' | Path_first | AnyLitToken_first
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Stmts
@@ -1101,7 +1104,7 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
 
 LambdaExpr ::= '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr { pin = 1 }
 
-RangeExpr ::= Expr dotdot Expr { pin = 2 }
+RangeExpr ::= Expr '..' Expr { pin = 2 }
 
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
