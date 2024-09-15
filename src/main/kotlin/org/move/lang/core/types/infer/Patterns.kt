@@ -82,7 +82,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                     ?: (expected as? TyAdt)?.item as? MvStruct
                     ?: return
             val tupleFields = item.positionalFields
-            inferTupleFieldsTypes(fcx, patList, patBm) { indx ->
+            inferTupleFieldsTypes(fcx, patList, patBm, tupleFields.size) { indx ->
                 tupleFields
                     .getOrNull(indx)
                     ?.type
@@ -106,7 +106,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             }
 
             val types = (ty as? TyTuple)?.types.orEmpty()
-            inferTupleFieldsTypes(fcx, patList, BindByValue) { types.getOrElse(it) { TyUnknown } }
+            inferTupleFieldsTypes(fcx, patList, BindByValue, types.size) { types.getOrElse(it) { TyUnknown } }
         }
     }
 }
@@ -115,32 +115,28 @@ private fun inferTupleFieldsTypes(
     fcx: TypeInferenceWalker,
     patList: List<MvPat>,
     bm: RsBindingModeKind,
-//    tupleSize: Int,
+    tupleSize: Int,
     type: (Int) -> Ty,
 ) {
 
     // In correct code, tuple or tuple struct patterns contain only one `..` pattern.
     // But it's pretty simple to support type inference for cases with multiple `..` patterns like `let (x, .., y, .., z) = tuple`
     // just ignoring all binding between first and last `..` patterns
-//    val firstPatRestIndex = Int.MAX_VALUE
-//    val lastPatRestIndex = -1
-//    for ((index, pat) in patList.withIndex()) {
-//        if (pat.isRest) {
-//            firstPatRestIndex = minOf(firstPatRestIndex, index)
-//            lastPatRestIndex = maxOf(lastPatRestIndex, index)
-//        }
-//    }
-//    for ((idx, p) in patList.withIndex()) {
-//        val fieldType = when {
-//            idx < firstPatRestIndex -> type(idx)
-//            idx > lastPatRestIndex -> type(tupleSize - (patList.size - idx))
-//            else -> TyUnknown
-//        }
-//        p.extractBindings(fcx, fieldType, bm)
-//    }
+    var firstPatRestIndex = Int.MAX_VALUE
+    var lastPatRestIndex = -1
+    for ((index, pat) in patList.withIndex()) {
+        if (pat is MvPatRest) {
+            firstPatRestIndex = minOf(firstPatRestIndex, index)
+            lastPatRestIndex = maxOf(lastPatRestIndex, index)
+        }
+    }
 
-    for ((indx, p) in patList.withIndex()) {
-        val fieldType = type(indx)
+    for ((idx, p) in patList.withIndex()) {
+        val fieldType = when {
+            idx < firstPatRestIndex -> type(idx)
+            idx > lastPatRestIndex -> type(tupleSize - (patList.size - idx))
+            else -> TyUnknown
+        }
         p.extractBindings(fcx, fieldType, bm)
     }
 }
