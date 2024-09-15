@@ -53,4 +53,30 @@ class StructFieldsNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
         }    
     """)
 
+    fun `test missing positional fields for struct`() = checkErrors("""
+        module 0x1::m {
+            struct S(u8, u8);
+            fun main(s: S) {
+                let <error descr="Tuple struct pattern does not correspond to its declaration: expected 2 fields, found 1">S (val)</error> = s;
+            }
+        }        
+    """)
+
+    fun `test missing positional fields with rest`() = checkErrors("""
+        module 0x1::m {
+            struct S(u8, u8);
+            fun main(s: S) {
+                let S(val, ..) = s;
+            }
+        }        
+    """)
+
+    fun `test missing positional fields for enum variant`() = checkErrors("""
+        module 0x1::m {
+            enum S { Inner(u8, u8) }
+            fun main(s: S) {
+                let <error descr="Enum variant pattern does not correspond to its declaration: expected 2 fields, found 1">S::Inner(val)</error> = s;
+            }
+        }        
+    """)
 }

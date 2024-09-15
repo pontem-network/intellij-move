@@ -230,6 +230,23 @@ sealed class Diagnostic(
         }
     }
 
+    class MissingFieldsInTuplePattern(
+        pat: MvPat,
+        private val declaration: MvFieldsOwner,
+        private val expectedAmount: Int,
+        private val actualAmount: Int
+    ): Diagnostic(pat) {
+
+        override fun prepare(): PreparedAnnotation {
+            val itemType = if (declaration is MvEnumVariant) "Enum variant" else "Tuple struct"
+            return PreparedAnnotation(
+                ERROR,
+                "$itemType pattern does not correspond to its declaration: " +
+                        "expected $expectedAmount ${pluralize("field", expectedAmount)}, found $actualAmount"
+            )
+        }
+    }
+
     class MissingFieldsInStructPattern(
         patStruct: MvPatStruct,
         private val declaration: MvFieldsOwner,

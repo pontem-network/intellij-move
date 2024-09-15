@@ -160,6 +160,8 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 }
             }
 
+            override fun visitPatTupleStruct(o: MvPatTupleStruct) = checkPatTupleStruct(moveHolder, o)
+
             override fun visitStructLitExpr(o: MvStructLitExpr) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val struct = o.path.maybeStruct ?: return
@@ -354,6 +356,23 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             .addToHolder(holder)
                     }
             }
+        }
+    }
+
+    private fun checkPatTupleStruct(holder: MvAnnotationHolder, patTupleStruct: MvPatTupleStruct) {
+        val declaration = patTupleStruct.path.reference?.resolveFollowingAliases() as? MvFieldsOwner ?: return
+
+        val declarationFieldsAmount = declaration.fields.size
+        // Rest is non-binding, meaning it is accepted even if all fields are already bound
+        val bodyFieldsAmount = patTupleStruct.patList.filterNot { it is MvPatRest }.size
+
+        if (bodyFieldsAmount < declarationFieldsAmount && patTupleStruct.patRest == null) {
+            Diagnostic.MissingFieldsInTuplePattern(
+                patTupleStruct,
+                declaration,
+                declarationFieldsAmount,
+                bodyFieldsAmount
+            ).addToHolder(holder)
         }
     }
 }
