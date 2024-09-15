@@ -6,6 +6,7 @@ import com.intellij.psi.util.parentOfType
 import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.testAttrItem
+import org.move.lang.core.psi.ext.unqualifiedName
 import org.move.lang.core.psi.ext.valueArguments
 
 /**
@@ -54,7 +55,7 @@ private fun removeTestSignerAssignment(function: MvFunction, signerParameterName
         val attrItemList = testAttrItem.attrItemList
         if (attrItemList != null) {
             val signerAssigment =
-                attrItemList.attrItemList.find { it.identifier.text == signerParameterName }
+                attrItemList.attrItemList.find { it.unqualifiedName == signerParameterName }
             signerAssigment?.deleteWithSurroundingCommaAndWhitespace()
             if (attrItemList.attrItemList.isEmpty()) {
                 attrItemList.delete()

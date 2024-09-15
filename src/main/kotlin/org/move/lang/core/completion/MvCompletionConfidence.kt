@@ -8,7 +8,7 @@ import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.psi.ext.owner
+import org.move.lang.core.psi.ext.bindingOwner
 
 class MvCompletionConfidence : CompletionConfidence() {
     override fun shouldSkipAutopopup(contextElement: PsiElement, psiFile: PsiFile, offset: Int): ThreeState {
@@ -17,7 +17,7 @@ class MvCompletionConfidence : CompletionConfidence() {
         // (`let Foo { ... }`), so we show the completion popup in this case
         if (contextElement.elementType == IDENTIFIER) {
             val parent = contextElement.parent
-            if (parent is MvPatBinding && parent.owner is MvLetStmt) {
+            if (parent is MvPatBinding && parent.bindingOwner is MvLetStmt) {
                 val identText = contextElement.node.chars
                 if (identText.firstOrNull()?.isLowerCase() == true) {
                     return ThreeState.YES

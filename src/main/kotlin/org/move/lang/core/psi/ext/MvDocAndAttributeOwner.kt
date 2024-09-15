@@ -11,7 +11,7 @@ import org.move.lang.core.psi.MvAttrItem
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.stubs.MvAttributeOwnerStub
 
-interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
+interface MvDocAndAttributeOwner: MvElement, NavigatablePsiElement {
     val attrList: List<MvAttr>
 
     fun docComments(): Sequence<PsiElement> {
@@ -63,10 +63,8 @@ class QueryAttributes(
     val isVerifyOnly: Boolean get() = hasAttrItem("verify_only")
 
     fun hasAttrItem(attributeName: String): Boolean = getAttrItem(attributeName) != null
-
-    fun getAttrItem(attributeName: String): MvAttrItem? {
-        return this.attrItems.find { it.referenceName == attributeName }
-    }
+    fun getAttrItem(attributeName: String): MvAttrItem? =
+        this.attrItems.find { it.unqualifiedName == attributeName }
 
     val attrItems: Sequence<MvAttrItem> get() = this.attributes.flatMap { it.attrItemList }
 
