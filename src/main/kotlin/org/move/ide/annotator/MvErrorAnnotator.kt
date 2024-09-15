@@ -149,12 +149,15 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 }
             }
 
-            override fun visitPatStruct(o: MvPatStruct) {
-                val nameElement = o.path.referenceNameElement ?: return
-                val refStruct = o.path.maybeStruct ?: return
-                checkMissingFields(
-                    moveHolder, nameElement, o.fieldNames, refStruct
-                )
+            override fun visitPatStruct(patStruct: MvPatStruct) {
+                val declaration =
+                    patStruct.path.reference?.resolveFollowingAliases() as? MvFieldsOwner ?: return
+                val bodyFieldNames = patStruct.fieldNames
+                val missingFields = declaration.namedFields.filter { it.name !in bodyFieldNames }
+                if (missingFields.isNotEmpty() && patStruct.patRest == null) {
+                    Diagnostic.MissingFieldsInStructPattern(patStruct, declaration, missingFields)
+                        .addToHolder(moveHolder)
+                }
             }
 
             override fun visitStructLitExpr(o: MvStructLitExpr) {
@@ -358,10 +361,10 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 private fun checkMissingFields(
     holder: MvAnnotationHolder,
     target: PsiElement,
-    providedFieldNames: Set<String>,
-    referredStruct: MvStruct,
+    bodyFieldNames: Set<String>,
+    declaration: MvFieldsOwner,
 ) {
-    if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
+    if ((declaration.fieldNames.toSet() - bodyFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
     }
 }
