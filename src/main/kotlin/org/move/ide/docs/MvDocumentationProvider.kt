@@ -33,9 +33,9 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (
-            docElement is MvPatBinding && docElement.owner is MvConst
+            docElement is MvPatBinding && docElement.bindingOwner is MvConst
         )
-            docElement = docElement.owner
+            docElement = docElement.bindingOwner
 
         when (docElement) {
             is MvNamedAddress -> {

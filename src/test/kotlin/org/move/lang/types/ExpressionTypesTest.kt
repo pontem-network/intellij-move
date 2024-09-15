@@ -2123,4 +2123,37 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test pattern with rest`() = testExpr("""
+        module 0x1::m {
+            struct S { f1: u8, f2: u8 }
+            fun main(s: S) {
+                let S { f1, .. } = s;
+                f1;
+               //^ u8
+            }
+        }        
+    """)
+
+    fun `test tuple struct pat with rest at the beginning`() = testExpr("""
+        module 0x1::m {
+            struct S(u8, u8, bool);
+            fun main(s: S) {
+                let S(.., f1) = s;
+                f1;
+               //^ bool
+            }
+        }        
+    """)
+
+    fun `test tuple struct pat with rest in the middle`() = testExpr("""
+        module 0x1::m {
+            struct S(u8, u8, u8, bool);
+            fun main(s: S) {
+                let S(f1, .., fb) = s;
+                fb;
+               //^ bool
+            }
+        }        
+    """)
 }

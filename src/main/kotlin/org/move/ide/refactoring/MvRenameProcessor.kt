@@ -9,7 +9,7 @@ import com.intellij.usageView.UsageInfo
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.ext.isShorthand
-import org.move.lang.core.psi.ext.owner
+import org.move.lang.core.psi.ext.bindingOwner
 
 
 class MvRenameProcessor: RenamePsiElementProcessor() {
@@ -50,7 +50,7 @@ class MvRenameProcessor: RenamePsiElementProcessor() {
                 }
             }
             is MvPatBinding -> {
-                val owner = element.owner
+                val owner = element.bindingOwner
                 usages.forEach {
                     when (owner) {
                         is MvSchemaFieldStmt -> {

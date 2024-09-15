@@ -75,7 +75,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
         override fun visitSchemaLitField(field: MvSchemaLitField) {
             if (field.isShorthand) {
                 val resolvedItems = field.reference.multiResolve()
-                val fieldBinding = resolvedItems.find { it is MvPatBinding && it.owner is MvSchemaFieldStmt }
+                val fieldBinding = resolvedItems.find { it is MvPatBinding && it.bindingOwner is MvSchemaFieldStmt }
                 if (fieldBinding == null) {
                     holder.registerProblem(
                         field.referenceNameElement,

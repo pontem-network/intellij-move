@@ -13,7 +13,7 @@ import org.move.lang.core.resolve2.ref.MvBindingPatReferenceImpl
 import org.move.lang.core.types.ty.Mutability
 import javax.swing.Icon
 
-val MvPatBinding.owner: PsiElement?
+val MvPatBinding.bindingOwner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
@@ -44,14 +44,14 @@ abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwner
     override val referenceName: String get() = name
 
     override fun getIcon(flags: Int): Icon =
-        when (this.owner) {
+        when (this.bindingOwner) {
             is MvFunctionParameter -> MoveIcons.PARAMETER
             is MvConst -> MoveIcons.CONST
             else -> MoveIcons.VARIABLE
         }
 
     override fun getUseScope(): SearchScope {
-        return when (this.owner) {
+        return when (this.bindingOwner) {
             is MvFunctionParameter -> {
                 val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
                 var combinedScope: SearchScope = LocalSearchScope(function)

@@ -8,6 +8,7 @@ import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.util.text.StringUtil.pluralize
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
@@ -15,9 +16,7 @@ import org.move.ide.annotator.fixes.WrapWithParensExprFix
 import org.move.ide.annotator.pluralise
 import org.move.ide.inspections.fixes.EnableMoveV2Fix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.itemSpecBlock
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Severity.*
 
 sealed class Diagnostic(
@@ -227,6 +226,40 @@ sealed class Diagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "public(package) and public(friend) cannot be used together in the same module"
+            )
+        }
+    }
+
+    class MissingFieldsInTuplePattern(
+        pat: MvPat,
+        private val declaration: MvFieldsOwner,
+        private val expectedAmount: Int,
+        private val actualAmount: Int
+    ): Diagnostic(pat) {
+
+        override fun prepare(): PreparedAnnotation {
+            val itemType = if (declaration is MvEnumVariant) "Enum variant" else "Tuple struct"
+            return PreparedAnnotation(
+                ERROR,
+                "$itemType pattern does not correspond to its declaration: " +
+                        "expected $expectedAmount ${pluralize("field", expectedAmount)}, found $actualAmount"
+            )
+        }
+    }
+
+    class MissingFieldsInStructPattern(
+        patStruct: MvPatStruct,
+        private val declaration: MvFieldsOwner,
+        private val missingFields: List<MvFieldDecl>
+    ): Diagnostic(patStruct.path.referenceNameElement!!) {
+
+        override fun prepare(): PreparedAnnotation {
+            val itemType = if (declaration is MvEnumVariant) "Enum variant" else "Struct"
+            val missingFieldNames = missingFields.joinToString(", ") { "`${it.name!!}`" }
+            return PreparedAnnotation(
+                ERROR,
+                "$itemType pattern does not mention " +
+                        "${pluralize("field", missingFields.size)} $missingFieldNames"
             )
         }
     }

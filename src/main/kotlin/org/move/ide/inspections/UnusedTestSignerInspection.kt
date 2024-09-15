@@ -6,6 +6,8 @@ import org.move.ide.inspections.fixes.RemoveTestSignerFix
 import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvAttrItem
 import org.move.lang.core.psi.MvVisitor
+import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.unqualifiedName
 
 class UnusedTestSignerInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
@@ -14,11 +16,11 @@ class UnusedTestSignerInspection: MvLocalInspectionTool() {
                 // stop if not a top-level item
                 if (attrItem.parent !is MvAttr) return
                 // stop if not a #[test]
-                if (attrItem.referenceName != "test") return
+                if (!attrItem.isTest) return
 
                 val innerAttrItems = attrItem.attrItemList?.attrItemList.orEmpty()
                 for (innerAttrItem in innerAttrItems) {
-                    val refName = innerAttrItem.referenceName ?: continue
+                    val refName = innerAttrItem.unqualifiedName ?: continue
                     if (innerAttrItem.unresolved) {
                         holder.registerProblem(
                             innerAttrItem,

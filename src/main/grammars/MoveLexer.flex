@@ -101,6 +101,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       ";"        { return SEMICOLON; }
       ","        { return COMMA; }
       "."        { return DOT; }
+      ".."        { return DOT_DOT; }
       "="        { return EQ; }
       "=="       { return EQ_EQ; }
       "!="       { return NOT_EQ; }

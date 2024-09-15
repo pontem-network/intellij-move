@@ -62,7 +62,7 @@ class TypeInferenceWalker(
             else -> emptyList()
         }
         for (binding in bindings) {
-            val bindingContext = binding.owner
+            val bindingContext = binding.bindingOwner
             val ty = when (bindingContext) {
                 null -> TyUnknown
                 is MvFunctionParameter -> bindingContext.type?.loweredType(msl) ?: TyUnknown

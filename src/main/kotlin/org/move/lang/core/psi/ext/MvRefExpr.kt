@@ -11,5 +11,5 @@ fun MvPathExpr.isAbortCodeConst(): Boolean {
             ?.takeIf { it.isAbortCode }
             ?: return false
     val attr = abortCodeItem.ancestorStrict<MvAttr>() ?: return false
-    return (attr.owner as? MvFunction)?.hasTestAttr ?: false
+    return (attr.attributeOwner as? MvFunction)?.hasTestAttr ?: false
 }

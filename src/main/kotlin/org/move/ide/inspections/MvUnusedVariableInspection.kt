@@ -7,7 +7,7 @@ import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.owner
+import org.move.lang.core.psi.ext.bindingOwner
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
@@ -37,7 +37,7 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                     // filter out #[test] attributes
                     .filter { it.element !is MvAttrItem }
                 if (references.none()) {
-                    val fixes = when (binding.owner) {
+                    val fixes = when (binding.bindingOwner) {
                         is MvFunctionParameter -> arrayOf(
                             RenameFix(binding, "_$bindingName"),
                             RemoveParameterFix(binding, bindingName)
