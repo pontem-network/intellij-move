@@ -2,6 +2,7 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.isMsl
 
 abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
 
@@ -66,6 +67,10 @@ class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
             val parent = o.parent
             // filter out constants
             if (parent is MvConst) return
+
+            // violations allowed in msl
+            if (o.isMsl()) return
+
             // match expr
             if (parent is MvMatchArm) return
 
