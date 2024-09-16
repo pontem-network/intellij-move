@@ -3,6 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
+import org.move.lang.core.psi.MvAbilitiesList
 import org.move.lang.core.psi.MvEnum
 import org.move.lang.core.psi.MvEnumVariant
 import org.move.lang.core.stubs.MvEnumStub
@@ -36,4 +37,6 @@ abstract class MvEnumMixin: MvStubbedNamedElementImpl<MvEnumStub>,
             val moduleFQName = this.module.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+    override val abilitiesList: MvAbilitiesList? get() = abilitiesListList.firstOrNull()
 }
