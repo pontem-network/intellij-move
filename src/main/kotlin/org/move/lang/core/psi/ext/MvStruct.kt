@@ -6,10 +6,7 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvNamedFieldDecl
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.psiFactory
-import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
@@ -110,4 +107,6 @@ abstract class MvStructMixin: MvStubbedNamedElementImpl<MvStructStub>,
             null
         )
     }
+
+    override val abilitiesList: MvAbilitiesList? get() = abilitiesListList.firstOrNull()
 }

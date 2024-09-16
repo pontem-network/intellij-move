@@ -381,8 +381,9 @@ SpecInlineFunctionStmt ::= SpecInlineFunctionInner
 //    stubClass = "org.move.lang.core.stubs.MvStructStub"
 //    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 //}
-Struct ::= Attr* STRUCT_KW IDENTIFIER TypeParameterList? AbilitiesList?
-            ( TupleStructTail | BlockStructTail )
+Struct ::= Attr* STRUCT_KW IDENTIFIER TypeParameterList?
+            // abilities are at the beginning or at the end
+            AbilitiesList? ( TupleStructTail | BlockStructTail )
 {
     pin = 2
     implements = [
@@ -394,10 +395,12 @@ Struct ::= Attr* STRUCT_KW IDENTIFIER TypeParameterList? AbilitiesList?
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+private TrailingAbilitiesList ::= AbilitiesList ';'
+//private StructBody ::= ( TupleStructTail | BlockStructTail )
 
-private TupleStructTail ::= TupleFields ';' { pin = 1 }
-private BlockStructTail ::= BlockFields
-private UnitStructTail ::= ';'
+private TupleStructTail ::= TupleFields AbilitiesList? ';' { pin = 1 }
+private BlockStructTail ::= BlockFields (AbilitiesList ';')?
+private UnitStructTail ::= AbilitiesList? ';'
 
 //private StructInnerFirst ::= STRUCT_KW
 //StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
@@ -416,7 +419,7 @@ private UnitStructTail ::= ';'
 //}
 //private StructItem ::= StructInner
 
-Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
+Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody (AbilitiesList ';')?
 {
     pin = "enum"
     implements = [

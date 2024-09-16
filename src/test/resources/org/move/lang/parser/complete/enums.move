@@ -9,7 +9,7 @@ module 0x1::enums {
         RGB{red: u64, green: u64, blue: u64}
         Red,
         Blue,
-    }
+    } has copy;
 
     enum CommonFields {
         Foo{x: u64, y: u8},
