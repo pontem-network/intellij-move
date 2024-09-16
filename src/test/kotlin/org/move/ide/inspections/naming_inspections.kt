@@ -102,4 +102,12 @@ module 0x1::M {
             }
         }        
     """)
+
+    fun `test let variables can be upper case in specs`() = checkByText("""
+        module 0x1::m { 
+            spec module {
+                let MY_CONST = 1;
+            }
+        }        
+    """)
 }
