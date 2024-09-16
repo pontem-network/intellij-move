@@ -62,17 +62,21 @@ sealed class Diagnostic(
         }
     }
 
+    @Suppress("ReplaceRangeStartEndInclusiveWithFirstLast")
     class ValueArgumentsNumberMismatch(
         target: PsiElement,
-        private val expectedCount: Int,
+        private val expectedRange: IntRange,
         private val realCount: Int,
     ): Diagnostic(target) {
         override fun prepare(): PreparedAnnotation {
+            val min = expectedRange.start
+            val max = expectedRange.endInclusive
+            val expectedCount = if (min == max) "$min" else "$min to $max"
             val errorMessage =
                 "This function takes " +
-                        "$expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
-                        "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
-                        "${pluralise(realCount, "was", "were")} supplied"
+                        "$expectedCount ${pluralize("parameter", max)} " +
+                        "but $realCount ${pluralize("parameter", realCount)} " +
+                        "${if (realCount == 1) "was" else "were"} supplied"
             return PreparedAnnotation(
                 ERROR,
                 errorMessage

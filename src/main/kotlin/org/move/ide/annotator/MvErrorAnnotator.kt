@@ -93,61 +93,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 }
             }
 
-            override fun visitValueArgumentList(arguments: MvValueArgumentList) {
-                val parentCallable = arguments.parent
-                val expectedCount =
-                    when (parentCallable) {
-                        is MvCallExpr -> {
-                            val msl = parentCallable.path.isMslScope
-                            val callTy =
-                                parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable
-                                    ?: return
-                            callTy.paramTypes.size
-                        }
-                        is MvMethodCall -> {
-                            val msl = parentCallable.isMslScope
-                            val callTy =
-                                parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable
-                                    ?: return
-                            // 1 for self
-                            callTy.paramTypes.size - 1
-                        }
-                        is MvAssertMacroExpr -> {
-                            if (parentCallable.identifier.text == "assert") {
-                                2
-                            } else {
-                                return
-                            }
-                        }
-                        else -> return
-                    }
-
-                val valueArguments = arguments.valueArgumentList
-                if (valueArguments.any { it.expr == null }) return
-
-                val argumentExprs = valueArguments.map { it.expr!! }
-                val realCount = argumentExprs.size
-
-                when {
-                    realCount < expectedCount -> {
-                        val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
-                        Diagnostic
-                            .ValueArgumentsNumberMismatch(target, expectedCount, realCount)
-                            .addToHolder(moveHolder)
-                        return
-                    }
-                    realCount > expectedCount -> {
-                        argumentExprs
-                            .drop(expectedCount)
-                            .forEach {
-                                Diagnostic
-                                    .ValueArgumentsNumberMismatch(it, expectedCount, realCount)
-                                    .addToHolder(moveHolder)
-                            }
-                        return
-                    }
-                }
-            }
+            override fun visitValueArgumentList(o: MvValueArgumentList) = checkValueArgumentList(moveHolder, o)
 
             override fun visitPatStruct(patStruct: MvPatStruct) {
                 val declaration =
@@ -355,6 +301,59 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             )
                             .addToHolder(holder)
                     }
+            }
+        }
+    }
+
+    @Suppress("ReplaceRangeStartEndInclusiveWithFirstLast")
+    private fun checkValueArgumentList(holder: MvAnnotationHolder, argumentList: MvValueArgumentList) {
+        val callable = argumentList.parent
+
+        val valueArguments = argumentList.valueArgumentList
+        if (valueArguments.any { it.expr == null }) return
+
+        val argumentExprs = valueArguments.map { it.expr!! }
+        val realCount = argumentExprs.size
+
+        // use range, because assert! can have either 1 or 2 arguments
+        val expectedRange =
+            when (callable) {
+                is MvCallExpr -> {
+                    val msl = callable.path.isMslScope
+                    val callTy =
+                        callable.inference(msl)?.getCallableType(callable) as? TyCallable
+                            ?: return
+                    val count = callTy.paramTypes.size
+                    IntRange(count, count)
+                }
+                is MvMethodCall -> {
+                    val msl = callable.isMslScope
+                    val callTy =
+                        callable.inference(msl)?.getCallableType(callable) as? TyCallable
+                            ?: return
+                    // 1 for self
+                    val count = callTy.paramTypes.size - 1
+                    IntRange(count, count)
+                }
+                is MvAssertMacroExpr -> IntRange(1, 2)
+                else -> return
+            }
+
+        when {
+            realCount < expectedRange.start -> {
+                val target = argumentList.findFirstChildByType(R_PAREN) ?: argumentList
+                Diagnostic.ValueArgumentsNumberMismatch(target, expectedRange, realCount)
+                    .addToHolder(holder)
+                return
+            }
+            realCount > expectedRange.endInclusive -> {
+                argumentExprs
+                    .drop(expectedRange.endInclusive)
+                    .forEach {
+                        Diagnostic.ValueArgumentsNumberMismatch(it, expectedRange, realCount)
+                            .addToHolder(holder)
+                    }
+                return
             }
         }
     }
