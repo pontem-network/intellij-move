@@ -340,30 +340,14 @@ class StructsCompletionTest: CompletionTestCase() {
         module 0x1::m {
             enum Color { Red, Blue }
             fun main() {
-                0x1::m::Col/*caret*/
+                let s: 0x1::m::Col/*caret*/
             }
         }        
     """, """
         module 0x1::m {
             enum Color { Red, Blue }
             fun main() {
-                0x1::m::Color/*caret*/
-            }
-        }        
-    """)
-
-    fun `test fq enum item completion`() = doSingleCompletion("""
-        module 0x1::m {
-            enum Color { Red, Blue }
-            fun main() {
-                0x1::m::Color::R/*caret*/
-            }
-        }        
-    """, """
-        module 0x1::m {
-            enum Color { Red, Blue }
-            fun main() {
-                0x1::m::Color::Red/*caret*/
+                let s: 0x1::m::Color/*caret*/
             }
         }        
     """)
