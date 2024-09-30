@@ -349,6 +349,12 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     """
     )
 
+    fun `test enum highlighting`() = checkHighlighting("""
+        module 0x1::m {
+            <KEYWORD>enum</KEYWORD> <ENUM>S</ENUM> { One, Two(u8) }
+        }        
+    """)
+
 //    fun `test resource access control keywords highlighting`() = checkHighlighting(
 //        """
 //        module 0x1::m {
