@@ -335,4 +335,20 @@ class StructsCompletionTest: CompletionTestCase() {
             }
         }        
     """)
+
+    fun `test fq enum completion`() = doSingleCompletion("""
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main() {
+                let s: 0x1::m::Col/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::m {
+            enum Color { Red, Blue }
+            fun main() {
+                let s: 0x1::m::Color/*caret*/
+            }
+        }        
+    """)
 }

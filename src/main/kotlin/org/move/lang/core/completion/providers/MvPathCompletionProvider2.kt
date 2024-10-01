@@ -161,9 +161,9 @@ fun applySharedCompletionFilters(
 ): RsResolveProcessor {
     var processor = processor0
     processor = filterPathVariantsByUseGroupContext(resolutionCtx, processor)
-    if (MODULE in ns) {
-        processor = removeCurrentModuleItem(resolutionCtx, processor)
-    }
+//    if (MODULE in ns) {
+//        processor = removeCurrentModuleItem(resolutionCtx, processor)
+//    }
     return processor
 }
 

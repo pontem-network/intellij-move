@@ -196,15 +196,15 @@ class ModulesCompletionTest: CompletionTestCase() {
     """
     )
 
-    fun `test module name itself should not be present in completion`() = checkNoCompletion(
-        """
-    module 0x1::Main {
-        fun call() {
-            Ma/*caret*/
-        }
-    }    
-    """
-    )
+//    fun `test module name itself should not be present in completion`() = checkNoCompletion(
+//        """
+//    module 0x1::Main {
+//        fun call() {
+//            Ma/*caret*/
+//        }
+//    }
+//    """
+//    )
 
     fun `test test_only modules not present in non test_only scopes`() = checkNoCompletion(
         """
@@ -271,5 +271,19 @@ class ModulesCompletionTest: CompletionTestCase() {
             fun main(a: 0x1::Transaction::Tra/*caret*/) {
             }
         }
+    """)
+
+    fun `test current module completion for the fq address`() = doSingleCompletion("""
+        module 0x1::main {
+            fun main() {
+                0x1::m/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::main {
+            fun main() {
+                0x1::main/*caret*/
+            }
+        }        
     """)
 }
