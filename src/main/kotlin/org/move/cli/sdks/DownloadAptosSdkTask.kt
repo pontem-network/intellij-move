@@ -3,7 +3,6 @@ package org.move.cli.sdks
 import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkDownloaderLogger
 import com.intellij.openapi.util.component1
 import com.intellij.openapi.util.component2
 import com.intellij.openapi.util.io.FileUtil
@@ -82,7 +81,8 @@ class DownloadAptosSdkTask(
 
         } catch (t: Throwable) {
             //if we were cancelled in the middle or failed, let's clean up
-            JdkDownloaderLogger.logDownload(false)
+            // todo: log download somehow
+//            JdkDownloaderLogger.logDownload(false)
             throw t
         } finally {
             runCatching { FileUtil.delete(tmpExtractionDir) }

@@ -173,14 +173,11 @@ allprojects {
         }
 
         pluginVerification {
-            ides {
-                recommended()
+            if ("SNAPSHOT" !in shortPlatformVersion) {
+                ides {
+                    recommended()
+                }
             }
-//            if ("SNAPSHOT" !in shortPlatformVersion) {
-//                ides {
-//                    ide(prop("verifierIdeVersion").trim())
-//                }
-//            }
             failureLevel.set(
                 EnumSet.complementOf(
                     EnumSet.of(
