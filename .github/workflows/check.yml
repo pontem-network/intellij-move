@@ -10,7 +10,7 @@ jobs:
     tests:
         strategy:
             matrix:
-                gradle-properties-version: [ 241, 242 ]
+                gradle-properties-version: [ 242 ]
 
         runs-on: ubuntu-latest
         env:
@@ -19,11 +19,11 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
 
-            -   name: Set up JDK 17
+            -   name: Set up JDK 21
                 uses: actions/setup-java@v4
                 with:
                     distribution: 'corretto'
-                    java-version: 17
+                    java-version: 21
 
             -   name: Setup Gradle and dependencies
                 uses: gradle/actions/setup-gradle@v3

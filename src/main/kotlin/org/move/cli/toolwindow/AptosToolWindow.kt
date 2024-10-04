@@ -44,7 +44,9 @@ private class AptosToolWindowPanel(project: Project): SimpleToolWindowPanel(true
         setContent(aptosTab.content)
     }
 
+    @Deprecated("Migrate to [uiDataSnapshot] ASAP")
     override fun getData(dataId: String): Any? =
+        @Suppress("DEPRECATION")
         when {
             AptosToolWindow.SELECTED_MOVE_PROJECT.`is`(dataId) -> aptosTab.selectedProject
             PlatformDataKeys.TREE_EXPANDER.`is`(dataId) -> aptosTab.treeExpander

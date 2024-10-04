@@ -2,7 +2,7 @@ import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -63,7 +63,7 @@ val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 val pluginJarName = "intellij-move-$pluginVersion"
 
-val javaVersion = JavaVersion.VERSION_17
+val javaVersion = JavaVersion.VERSION_21
 //val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
 val aptosVersion = "4.2.0"
@@ -116,16 +116,17 @@ allprojects {
 
             pluginVerifier(Constraints.LATEST_VERSION)
             bundledPlugin("org.toml.lang")
-            jetbrainsRuntime("17.0.11b1207.30")
+            jetbrainsRuntime()
+//            jetbrainsRuntime("17.0.11b1207.30")
 
             testFramework(TestFrameworkType.Platform)
         }
     }
 
-    configure<JavaPluginExtension> {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
+//    configure<JavaPluginExtension> {
+//        sourceCompatibility = javaVersion
+//        targetCompatibility = javaVersion
+//    }
 
     sourceSets {
         main {
@@ -134,6 +135,7 @@ allprojects {
     }
 
     kotlin {
+        jvmToolchain(21)
         if (file("src/$shortPlatformVersion/main/kotlin").exists()) {
             sourceSets {
                 main {
@@ -195,7 +197,7 @@ allprojects {
     tasks {
         compileKotlin {
             compilerOptions {
-                jvmTarget.set(JVM_17)
+//                jvmTarget.set(JVM_21)
                 languageVersion.set(KOTLIN_2_0)
                 apiVersion.set(KOTLIN_1_9)
                 freeCompilerArgs.add("-Xjvm-default=all")

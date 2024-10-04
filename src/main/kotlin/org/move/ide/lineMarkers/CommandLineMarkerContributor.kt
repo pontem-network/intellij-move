@@ -32,9 +32,8 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TEST_ITEM,
-                            { config.configurationName },
-                            *contextActions()
-                        )
+                            contextActions(),
+                        ) { config.configurationName }
                     }
                 }
                 parent.isEntry -> {
@@ -42,9 +41,8 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TRANSACTION_ITEM,
-                            { config.configurationName },
-                            *contextActions()
-                        )
+                            contextActions(),
+                        ) { config.configurationName }
                     }
                 }
                 parent.isView -> {
@@ -52,9 +50,8 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
                     if (config != null) {
                         return Info(
                             MoveIcons.VIEW_FUNCTION_ITEM,
-                            { config.configurationName },
-                            *contextActions()
-                        )
+                            contextActions(),
+                        ) { config.configurationName }
                     }
                 }
             }
@@ -65,9 +62,8 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
             if (testConfig != null) {
                 return Info(
                     MoveIcons.RUN_ALL_TESTS_IN_ITEM,
-                    { testConfig.configurationName },
-                    *contextActions()
-                )
+                    contextActions(),
+                ) { testConfig.configurationName }
             }
         }
         return null
