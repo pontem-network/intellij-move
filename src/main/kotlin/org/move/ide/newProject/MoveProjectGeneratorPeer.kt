@@ -50,13 +50,8 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
 
     override fun getComponent(myLocationField: TextFieldWithBrowseButton, checkValid: Runnable): JComponent {
         this.checkValid = checkValid
-        return super.getComponent(myLocationField, checkValid)
-    }
-
-    override fun getComponent(): JComponent {
         return panel {
-            chooseAptosCliPanel
-                .attachToLayout(this)
+            chooseAptosCliPanel.attachToLayout(this)
         }
     }
 

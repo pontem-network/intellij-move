@@ -97,7 +97,6 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
     }
 }
 
-@Suppress("DataClassPrivateConstructor")
 data class ImportContext private constructor(
     val pathElement: MvPath,
     val ns: Set<Namespace>,
