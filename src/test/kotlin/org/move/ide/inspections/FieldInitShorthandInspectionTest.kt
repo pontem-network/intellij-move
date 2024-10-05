@@ -3,7 +3,7 @@ package org.move.ide.inspections
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class FieldInitShorthandInspectionTest: InspectionTestBase(FieldInitShorthandInspection::class) {
+class FieldInitShorthandInspectionTest: InspectionTestBase(MvFieldInitShorthandInspection::class) {
 
     fun `test not applicable`() = doFixIsUnavailableTest(
         "Use initialization shorthand", """

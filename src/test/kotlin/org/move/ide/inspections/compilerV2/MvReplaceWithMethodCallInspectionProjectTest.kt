@@ -1,14 +1,14 @@
 package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.ReplaceWithMethodCallInspection
+import org.move.ide.inspections.MvReplaceWithMethodCallInspection
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.annotation.InspectionProjectTestBase
 
 @MoveV2()
-class ReplaceWithMethodCallInspectionProjectTest:
-    InspectionProjectTestBase(ReplaceWithMethodCallInspection::class) {
+class MvReplaceWithMethodCallInspectionProjectTest:
+    InspectionProjectTestBase(MvReplaceWithMethodCallInspection::class) {
 
     fun `test no warning with vector as self param with local method`() = doTest {
         namedMoveToml("MyPackage")

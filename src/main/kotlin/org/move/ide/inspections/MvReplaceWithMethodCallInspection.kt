@@ -14,7 +14,7 @@ import org.move.lang.core.types.ty.TyReference.Companion.isCompatibleWithAutobor
 import org.move.lang.core.types.ty.hasTyUnknown
 import org.move.lang.moveProject
 
-class ReplaceWithMethodCallInspection: MvLocalInspectionTool() {
+class MvReplaceWithMethodCallInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object: MvVisitor() {
             override fun visitCallExpr(callExpr: MvCallExpr) {

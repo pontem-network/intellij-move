@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParameterInspection::class) {
+class PhantomTypeParameterInspectionTest : InspectionTestBase(MvPhantomTypeParameterInspection::class) {
     fun `test no inspection if type parameter is used`() = checkErrors(
         """
     module 0x1::M {

@@ -1,12 +1,12 @@
 package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.ReplaceWithMethodCallInspection
+import org.move.ide.inspections.MvReplaceWithMethodCallInspection
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
 @MoveV2()
-class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodCallInspection::class) {
+class ReplaceWithMethodCallInspectionTest: InspectionTestBase(MvReplaceWithMethodCallInspection::class) {
 
     fun `test no warning if first parameter is not self`() = doTest(
         """

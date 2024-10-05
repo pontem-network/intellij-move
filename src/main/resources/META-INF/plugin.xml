@@ -220,11 +220,11 @@
     <localInspection language="Move" groupName="Move"
                      displayName="Field initialization shorthand"
                      enabledByDefault="true" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+                     implementationClass="org.move.ide.inspections.MvFieldInitShorthandInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Invalid module declaration"
                      enabledByDefault="true" level="ERROR"
-                     implementationClass="org.move.ide.inspections.InvalidModuleDeclarationInspection" />
+                     implementationClass="org.move.ide.inspections.MvInvalidModuleDeclarationInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Constant naming convention"
                      enabledByDefault="true" level="WARNING"
@@ -256,7 +256,7 @@
     <localInspection language="Move" groupName="Move"
                      displayName="Unused struct type parameter"
                      enabledByDefault="true" level="ERROR"
-                     implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection" />
+                     implementationClass="org.move.ide.inspections.MvPhantomTypeParameterInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused import"
                      enabledByDefault="true" level="WARNING"
@@ -268,19 +268,19 @@
     <localInspection language="Move" groupName="Move"
                      displayName="Unused test signer"
                      enabledByDefault="true" level="WARNING"
-                     implementationClass="org.move.ide.inspections.UnusedTestSignerInspection" />
+                     implementationClass="org.move.ide.inspections.MvUnusedTestSignerInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Redundant type cast"
                      enabledByDefault="true" level="WARNING"
-                     implementationClass="org.move.ide.inspections.RedundantTypeCastInspection" />
+                     implementationClass="org.move.ide.inspections.MvRedundantTypeCastInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Convert to method call"
                      enabledByDefault="true" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.ReplaceWithMethodCallInspection" />
+                     implementationClass="org.move.ide.inspections.MvReplaceWithMethodCallInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Convert to index expr"
                      enabledByDefault="true" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.compilerV2.ReplaceWithIndexExprInspection" />
+                     implementationClass="org.move.ide.inspections.compilerV2.MvReplaceWithIndexExprInspection" />
 
     <!--  cannot be run on-the-fly, therefore enabled  -->
     <globalInspection language="Move" groupName="Move"
