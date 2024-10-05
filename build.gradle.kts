@@ -77,7 +77,6 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.1.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
-    id("org.gradle.idea")
     id("de.undercouch.download") version "5.5.0"
 }
 
@@ -286,13 +285,6 @@ allprojects {
                 .map { it.configurations }
                 .flatMap { it.filter { c -> c.isCanBeResolved } }
                 .forEach { it.resolve() }
-        }
-    }
-
-    idea {
-        pathVariables(mapOf("USER_HOME" to file("/home/mkurnikov")))
-        module {
-            name = "intellij-move.main"
         }
     }
 }
