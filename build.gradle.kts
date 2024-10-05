@@ -77,7 +77,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.1.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
-    id("de.undercouch.download") version "5.5.0"
+    id("de.undercouch.download") version "5.6.0"
 }
 
 allprojects {
@@ -100,10 +100,10 @@ allprojects {
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-        implementation("io.sentry:sentry:7.2.0") {
+        implementation("io.sentry:sentry:7.14.0") {
             exclude("org.slf4j")
         }
-        implementation("com.github.ajalt.clikt:clikt:3.5.2")
+        implementation("com.github.ajalt.clikt:clikt:4.4.0")
 
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
