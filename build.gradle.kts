@@ -103,7 +103,8 @@ allprojects {
         implementation("io.sentry:sentry:7.14.0") {
             exclude("org.slf4j")
         }
-        implementation("com.github.ajalt.clikt:clikt:4.4.0")
+        // cannot be updated further, problems with underlying library
+        implementation("com.github.ajalt.clikt:clikt:3.5.4")
 
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
