@@ -64,7 +64,7 @@ val pluginJarName = "intellij-move-$pluginVersion"
 val javaVersion = JavaVersion.VERSION_21
 //val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "4.2.0"
+val aptosVersion = "4.2.3"
 
 val remoteRobotVersion = "0.11.22"
 
@@ -263,7 +263,7 @@ allprojects {
 
     val runIdeWithPlugins by intellijPlatformTesting.runIde.registering {
         plugins {
-            plugin("com.google.ide-perf:1.3.1")
+            plugin("com.google.ide-perf:1.3.2")
 //            plugin("PsiViewer:PsiViewer 241.14494.158-EAP-SNAPSHOT")
         }
         task {
