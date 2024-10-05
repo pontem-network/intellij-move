@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class UnusedTestSignerInspectionTest: InspectionTestBase(UnusedTestSignerInspection::class) {
+class UnusedTestSignerInspectionTest: InspectionTestBase(MvUnusedTestSignerInspection::class) {
     fun `test all signers are used`() = checkByText("""
     module 0x1::M {
         #[test(acc_1 = @0x1, acc_2 = @0x2)]

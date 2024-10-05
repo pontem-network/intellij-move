@@ -5,7 +5,7 @@ import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
 @MoveV2()
-class ReplaceWithIndexExprInspectionTest: InspectionTestBase(ReplaceWithIndexExprInspection::class) {
+class ReplaceWithIndexExprInspectionTest: InspectionTestBase(MvReplaceWithIndexExprInspection::class) {
 
     fun `test no error if types of arguments are incorrect`() = doTest("""
         module 0x1::vector {

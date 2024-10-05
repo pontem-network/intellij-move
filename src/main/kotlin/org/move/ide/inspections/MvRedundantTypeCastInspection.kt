@@ -13,7 +13,7 @@ import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 
-class RedundantTypeCastInspection : MvLocalInspectionTool() {
+class MvRedundantTypeCastInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitCastExpr(castExpr: MvCastExpr) {
             val msl = castExpr.isMsl()

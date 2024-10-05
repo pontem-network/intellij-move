@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.unqualifiedName
 
-class UnusedTestSignerInspection: MvLocalInspectionTool() {
+class MvUnusedTestSignerInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
         object: MvVisitor() {
             override fun visitAttrItem(attrItem: MvAttrItem) {

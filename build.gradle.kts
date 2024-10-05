@@ -47,7 +47,7 @@ fun gitTimestamp(): String {
 
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.38.0"
+val codeVersion = "1.38.1"
 
 var pluginVersion = "$codeVersion.$shortPlatformVersion"
 if (publishingChannel != "default") {
@@ -64,7 +64,7 @@ val pluginJarName = "intellij-move-$pluginVersion"
 val javaVersion = JavaVersion.VERSION_21
 //val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "4.2.0"
+val aptosVersion = "4.2.3"
 
 val remoteRobotVersion = "0.11.22"
 
@@ -77,8 +77,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.1.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
-    id("org.gradle.idea")
-    id("de.undercouch.download") version "5.5.0"
+    id("de.undercouch.download") version "5.6.0"
 }
 
 allprojects {
@@ -101,10 +100,11 @@ allprojects {
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-        implementation("io.sentry:sentry:7.2.0") {
+        implementation("io.sentry:sentry:7.14.0") {
             exclude("org.slf4j")
         }
-        implementation("com.github.ajalt.clikt:clikt:3.5.2")
+        // cannot be updated further, problems with underlying library
+        implementation("com.github.ajalt.clikt:clikt:3.5.4")
 
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
@@ -263,7 +263,7 @@ allprojects {
 
     val runIdeWithPlugins by intellijPlatformTesting.runIde.registering {
         plugins {
-            plugin("com.google.ide-perf:1.3.1")
+            plugin("com.google.ide-perf:1.3.2")
 //            plugin("PsiViewer:PsiViewer 241.14494.158-EAP-SNAPSHOT")
         }
         task {
@@ -286,13 +286,6 @@ allprojects {
                 .map { it.configurations }
                 .flatMap { it.filter { c -> c.isCanBeResolved } }
                 .forEach { it.resolve() }
-        }
-    }
-
-    idea {
-        pathVariables(mapOf("USER_HOME" to file("/home/mkurnikov")))
-        module {
-            name = "intellij-move.main"
         }
     }
 }

@@ -55,81 +55,79 @@ inline fun <reified T: PsiElement> PsiElement.descendantOfType(predicate: (T) ->
     return descendantsOfType<T>().firstOrNull(predicate)
 }
 
-@Suppress("unused")
-inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeStrict(): Collection<T> =
-    getStubDescendantsOfType(this, true, T::class.java)
+//inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeStrict(): Collection<T> =
+//    getStubDescendantsOfType(this, true, T::class.java)
+//
+//inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeOrSelf(): Collection<T> =
+//    getStubDescendantsOfType(this, false, T::class.java)
 
-inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeOrSelf(): Collection<T> =
-    getStubDescendantsOfType(this, false, T::class.java)
+//inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrStrict(): T? =
+//    getStubDescendantOfType(this, true, T::class.java)
 
-inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrStrict(): T? =
-    getStubDescendantOfType(this, true, T::class.java)
+//inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrSelf(): T? =
+//    getStubDescendantOfType(this, false, T::class.java)
 
-@Suppress("unused")
-inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrSelf(): T? =
-    getStubDescendantOfType(this, false, T::class.java)
+//fun <T: PsiElement> getStubDescendantsOfType(
+//    element: PsiElement?,
+//    strict: Boolean,
+//    aClass: Class<T>
+//): Collection<T> {
+//    if (element == null) return emptyList()
+//    val stub = (element as? PsiFileImpl)?.greenStub
+//        ?: (element as? StubBasedPsiElement<*>)?.greenStub
+//        ?: return PsiTreeUtil.findChildrenOfAnyType(element, strict, aClass)
+//
+//    val result = SmartList<T>()
+//
+//    fun go(childrenStubs: List<StubElement<out PsiElement>>) {
+//        for (childStub in childrenStubs) {
+//            val child = childStub.psi
+//            if (aClass.isInstance(child)) {
+//                result.add(aClass.cast(child))
+//            }
+//            go(childStub.childrenStubs)
+//        }
+//
+//    }
+//
+//    if (strict) {
+//        go(stub.childrenStubs)
+//    } else {
+//        go(listOf(stub))
+//    }
+//
+//    return result
+//}
 
-fun <T: PsiElement> getStubDescendantsOfType(
-    element: PsiElement?,
-    strict: Boolean,
-    aClass: Class<T>
-): Collection<T> {
-    if (element == null) return emptyList()
-    val stub = (element as? PsiFileImpl)?.greenStub
-        ?: (element as? StubBasedPsiElement<*>)?.greenStub
-        ?: return PsiTreeUtil.findChildrenOfAnyType(element, strict, aClass)
-
-    val result = SmartList<T>()
-
-    fun go(childrenStubs: List<StubElement<out PsiElement>>) {
-        for (childStub in childrenStubs) {
-            val child = childStub.psi
-            if (aClass.isInstance(child)) {
-                result.add(aClass.cast(child))
-            }
-            go(childStub.childrenStubs)
-        }
-
-    }
-
-    if (strict) {
-        go(stub.childrenStubs)
-    } else {
-        go(listOf(stub))
-    }
-
-    return result
-}
-
-fun <T: PsiElement> getStubDescendantOfType(
-    element: PsiElement?,
-    strict: Boolean,
-    aClass: Class<T>
-): T? {
-    if (element == null) return null
-    val stub = (element as? PsiFileImpl)?.greenStub
-        ?: (element as? StubBasedPsiElement<*>)?.greenStub
-        ?: return PsiTreeUtil.findChildOfType(element, aClass, strict)
-
-    fun go(childrenStubs: List<StubElement<out PsiElement>>): T? {
-        for (childStub in childrenStubs) {
-            val child = childStub.psi
-            if (aClass.isInstance(child)) {
-                return aClass.cast(child)
-            } else {
-                go(childStub.childrenStubs)?.let { return it }
-            }
-        }
-
-        return null
-    }
-
-    return if (strict) {
-        go(stub.childrenStubs)
-    } else {
-        go(listOf(stub))
-    }
-}
+//fun <T: PsiElement> getStubDescendantOfType(
+//    element: PsiElement?,
+//    strict: Boolean,
+//    aClass: Class<T>
+//): T? {
+//    if (element == null) return null
+//    val stub = (element as? PsiFileImpl)?.greenStub
+//        ?: (element as? StubBasedPsiElement<*>)?.greenStub
+//        ?: return PsiTreeUtil.findChildOfType(element, aClass, strict)
+//
+//    fun go(childrenStubs: List<StubElement<out PsiElement>>): T? {
+//        for (childStub in childrenStubs) {
+//            val child = childStub.psi
+//            if (aClass.isInstance(child)) {
+//                return aClass.cast(child)
+//            } else {
+//                go(childStub.childrenStubs)?.let { return it }
+//            }
+//        }
+//
+//        return null
+//    }
+//
+//    return if (strict) {
+//        go(stub.childrenStubs)
+//    } else {
+//        go(listOf(stub))
+//    }
+//}
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {

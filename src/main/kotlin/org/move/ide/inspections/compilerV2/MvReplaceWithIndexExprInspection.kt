@@ -13,7 +13,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.isCopy
 import org.move.lang.moveProject
 
-class ReplaceWithIndexExprInspection: MvLocalInspectionTool() {
+class MvReplaceWithIndexExprInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object: MvVisitor() {
             override fun visitCallExpr(callExpr: MvCallExpr) {

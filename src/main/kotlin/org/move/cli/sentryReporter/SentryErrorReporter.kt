@@ -94,15 +94,17 @@ class SentryErrorReporter: ErrorReportSubmitter() {
 //            sentryEvent.contexts["Projects"] =
 //                project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }.toList()
         }
-        // IdeaLoggingEvent only provides text stacktrace
+        // IdeaReportingEvent only provides text-based stacktrace, no way to convert into SentryException
         sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
-
 
         val sentryMessage = Message()
         sentryMessage.formatted = event.errorMessage
         sentryEvent.message = sentryMessage
 
         sentryEvent.fingerprints = listOf("{{ default }}", event.errorMessage)
+
+        // add pluginId to environment to filter out sui plugin
+        sentryEvent.environment = "production:${plugin?.pluginId ?: "unknownId"}"
 
         return sentryEvent
     }

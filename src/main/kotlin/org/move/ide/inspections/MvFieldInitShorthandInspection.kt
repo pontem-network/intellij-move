@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.fixes.FieldShorthandFix
 import org.move.lang.core.psi.*
 
-class FieldInitShorthandInspection : MvLocalInspectionTool() {
+class MvFieldInitShorthandInspection : MvLocalInspectionTool() {
     override val isSyntaxOnly: Boolean get() = true
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {

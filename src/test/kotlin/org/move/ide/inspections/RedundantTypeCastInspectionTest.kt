@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class RedundantTypeCastInspectionTest: InspectionTestBase(RedundantTypeCastInspection::class) {
+class RedundantTypeCastInspectionTest: InspectionTestBase(MvRedundantTypeCastInspection::class) {
     fun `test no error in correct cast from integer`() = checkByText("""
 module 0x1::main {
     fun main() {

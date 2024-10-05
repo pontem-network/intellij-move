@@ -6,7 +6,7 @@ import org.move.ide.inspections.fixes.PhantomFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
-class PhantomTypeParameterInspection: MvLocalInspectionTool() {
+class MvPhantomTypeParameterInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object: MvVisitor() {
             override fun visitStruct(o: MvStruct) {
