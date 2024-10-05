@@ -29,7 +29,7 @@ jobs:
         needs: [ check-for-tests-success ]
         strategy:
             matrix:
-                gradle-properties-version: [ 241, 242 ]
+                gradle-properties-version: [ 242, 243-SNAPSHOT ]
 
         runs-on: ubuntu-latest
         env:
@@ -44,7 +44,7 @@ jobs:
                 uses: actions/setup-java@v4
                 with:
                     distribution: 'corretto'
-                    java-version: 17
+                    java-version: 21
 
             -   name: Setup Gradle and dependencies
                 uses: gradle/actions/setup-gradle@v3
