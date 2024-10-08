@@ -627,6 +627,7 @@ class KeywordCompletionTest: CompletionTestCase() {
 //        """
 //    )
 
+    @MoveV2(enabled = true)
     fun `test enum completion`() = doSingleCompletion(
         """
             module 0x1::m {
@@ -640,6 +641,16 @@ class KeywordCompletionTest: CompletionTestCase() {
         """,
     )
 
+    @MoveV2(enabled = false)
+    fun `test no enum completion for v1`() = checkNoCompletion(
+        """
+            module 0x1::m {
+                enu/*caret*/
+            }            
+                """
+    )
+
+    @MoveV2(enabled = true)
     fun `test match completion`() = doSingleCompletion(
         """
             module 0x1::m {
@@ -655,6 +666,17 @@ class KeywordCompletionTest: CompletionTestCase() {
                 }
             }            
         """,
+    )
+
+    @MoveV2(enabled = false)
+    fun `test no match completion for v1`() = checkNoCompletion(
+        """
+            module 0x1::m {
+                fun main() {
+                    mat/*caret*/
+                }
+            }            
+                """
     )
 
     fun `test no boolean completion in fq path`() = checkNoCompletion("""

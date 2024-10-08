@@ -6,9 +6,11 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.util.containers.addAllIfNotNull
 import org.move.cli.settings.moveSettings
-import org.move.lang.MvElementTypes.*
-import org.move.lang.core.*
+import org.move.lang.MvElementTypes.FUNCTION_PARAMETER_LIST
+import org.move.lang.core.FUNCTION_MODIFIERS
+import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.MvPsiPattern.afterAnySibling
 import org.move.lang.core.MvPsiPattern.anySpecStart
 import org.move.lang.core.MvPsiPattern.codeStatementPattern
@@ -20,6 +22,7 @@ import org.move.lang.core.MvPsiPattern.moduleSpecBlock
 import org.move.lang.core.MvPsiPattern.script
 import org.move.lang.core.MvPsiPattern.toplevel
 import org.move.lang.core.MvPsiPattern.typeParameter
+import org.move.lang.core.TYPES
 import org.move.lang.core.completion.providers.FunctionModifierCompletionProvider
 import org.move.lang.core.completion.providers.KeywordCompletionProvider
 
@@ -43,18 +46,24 @@ class KeywordCompletionContributor: CompletionContributor() {
         extend(
             CompletionType.BASIC,
             module().and(identifierStatementBeginningPattern()),
-            KeywordCompletionProvider(
-                *VISIBILITY_MODIFIERS,
-                *CONTEXT_FUNCTION_MODIFIERS,
-                "native",
-                "fun",
-                "struct",
-                "const",
-                "use",
-                "spec",
-                "friend",
-                "enum",
-            )
+            KeywordCompletionProvider { project ->
+                buildList {
+                    addAllIfNotNull(
+                        *VISIBILITY_MODIFIERS,
+                        *CONTEXT_FUNCTION_MODIFIERS,
+                        "native",
+                        "fun",
+                        "struct",
+                        "const",
+                        "use",
+                        "spec",
+                        "friend",
+                    )
+                    if (project.moveSettings.enableMove2) {
+                        add("enum")
+                    }
+                }
+            }
         )
         extend(
             CompletionType.BASIC,
@@ -87,19 +96,25 @@ class KeywordCompletionContributor: CompletionContributor() {
         extend(
             CompletionType.BASIC,
             codeStatementPattern().and(identifierStatementBeginningPattern()),
-            KeywordCompletionProvider(
-                "let",
-                "loop",
-                "while",
-                "continue",
-                "break",
-                "if",
-                "else",
-                "abort",
-                "return",
-                "for",
-                "match",
-            )
+            KeywordCompletionProvider { project ->
+                buildList {
+                    addAllIfNotNull(
+                        "let",
+                        "loop",
+                        "while",
+                        "continue",
+                        "break",
+                        "if",
+                        "else",
+                        "abort",
+                        "return",
+                        "for",
+                    )
+                    if (project.moveSettings.enableMove2) {
+                        add("match")
+                    }
+                }
+            }
         )
         extend(
             CompletionType.BASIC,

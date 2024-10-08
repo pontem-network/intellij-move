@@ -203,6 +203,28 @@ sealed class Diagnostic(
         }
     }
 
+    class EnumIsNotSupportedInCompilerV1(enum: MvEnum): Diagnostic(enum.enumKw!!) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Enums are not supported in Aptos Move V1",
+                fixes = listOf(EnableMoveV2Fix(element))
+            )
+        }
+    }
+
+    class MatchExprIsNotSupportedInCompilerV1(matchExpr: MvMatchExpr): Diagnostic(matchExpr.matchKw!!) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Match expressions are not supported in Aptos Move V1",
+                fixes = listOf(EnableMoveV2Fix(element))
+            )
+        }
+    }
+
     class PublicPackageIsNotSupportedInCompilerV1(modifier: MvVisibilityModifier): Diagnostic(modifier) {
 
         override fun prepare(): PreparedAnnotation {
