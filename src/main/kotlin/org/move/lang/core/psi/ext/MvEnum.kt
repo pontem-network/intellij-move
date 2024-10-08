@@ -1,8 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
+import org.move.lang.MvElementTypes.ENUM_KW
 import org.move.lang.core.psi.MvAbilitiesList
 import org.move.lang.core.psi.MvEnum
 import org.move.lang.core.psi.MvEnumVariant
@@ -13,6 +15,7 @@ import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
+val MvEnum.enumKw: PsiElement? get() = findFirstChildByType(ENUM_KW)
 val MvEnum.variants: List<MvEnumVariant> get() = enumBody?.enumVariantList.orEmpty()
 
 val MvEnum.tupleVariants: List<MvEnumVariant> get() = variants.filter { it.tupleFields != null }

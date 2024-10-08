@@ -18,19 +18,37 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object: MvVisitor() {
+
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
             override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
-//            override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
             override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
             override fun visitMethodCall(o: MvMethodCall) = checkMethodCall(moveHolder, o)
+            override fun visitEnum(o: MvEnum) = checkEnum(moveHolder, o)
+            override fun visitMatchExpr(o: MvMatchExpr) = checkMatchExpr(moveHolder, o)
 
             override fun visitModule(o: MvModule) {
                 checkVisibilityModifiers(moveHolder, o)
             }
         }
         element.accept(visitor)
+    }
+
+    private fun checkEnum(holder: MvAnnotationHolder, enum: MvEnum) {
+        if (!enum.project.moveSettings.enableMove2) {
+            Diagnostic
+                .EnumIsNotSupportedInCompilerV1(enum)
+                .addToHolder(holder)
+        }
+    }
+
+    private fun checkMatchExpr(holder: MvAnnotationHolder, matchExpr: MvMatchExpr) {
+        if (!matchExpr.project.moveSettings.enableMove2) {
+            Diagnostic
+                .MatchExprIsNotSupportedInCompilerV1(matchExpr)
+                .addToHolder(holder)
+        }
     }
 
     private fun checkFunction(holder: MvAnnotationHolder, function: MvFunction) {
@@ -74,13 +92,6 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
                 .addToHolder(holder)
         }
     }
-
-//    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
-//        val native = struct.native ?: return
-//        val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
-//        Diagnostic.NativeStructNotSupported(struct, errorRange)
-//            .addToHolder(holder)
-//    }
 
     private fun checkVisibilityModifiers(
         holder: MvAnnotationHolder,
