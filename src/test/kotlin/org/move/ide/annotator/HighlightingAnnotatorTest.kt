@@ -355,6 +355,13 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
         }        
     """)
 
+    fun `test attribute highlighting`() = checkHighlighting("""
+        module 0x1::m {
+            <ATTRIBUTE>#</ATTRIBUTE><ATTRIBUTE>[</ATTRIBUTE><ATTRIBUTE>view</ATTRIBUTE><ATTRIBUTE>]</ATTRIBUTE>
+            fun foo() {}
+        }        
+    """)
+
 //    fun `test resource access control keywords highlighting`() = checkHighlighting(
 //        """
 //        module 0x1::m {
