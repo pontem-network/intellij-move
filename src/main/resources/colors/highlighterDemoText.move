@@ -3,18 +3,18 @@ module 0x1::<MODULE>main</MODULE> {
 
     /// this is docstring
     /// with two lines
-    struct MyStruct<T> {
-        addr: <BUILTIN_TYPE>address</BUILTIN_TYPE>,
-        val: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>
-        field: <TYPE_PARAMETER>T</TYPE_PARAMETER>
+    struct <STRUCT>MyStruct</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>> {
+        <FIELD>addr</FIELD>: <BUILTIN_TYPE>address</BUILTIN_TYPE>,
+        <FIELD>val</FIELD>: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>
+        <FIELD>field</FIELD>: <TYPE_PARAMETER>T</TYPE_PARAMETER>
     }
 
-    fun <FUNCTION>main</FUNCTION>(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>, val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, s: MyStruct) {
+    fun <FUNCTION>main</FUNCTION>(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>, val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, s: <STRUCT>MyStruct</STRUCT>) {
         // this is comment
-        let local_val = val;
+        let <VARIABLE>local_val</VARIABLE> = val;
 
         <FUNCTION_CALL>call</FUNCTION_CALL>(1);
-        let myresource = <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>(signer);
+        let <VARIABLE>myresource</VARIABLE> = <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>(signer);
         <MACRO>assert!</MACRO>(true, 1);
 
         <VECTOR_LITERAL>vector</VECTOR_LITERAL>[];
@@ -25,10 +25,10 @@ module 0x1::<MODULE>main</MODULE> {
     #[view]
     public fun <VIEW_FUNCTION>view_fun</VIEW_FUNCTION>() {}
 
-    fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 {
-        <SELF_PARAMETER>self</SELF_PARAMETER>.field
+    fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>): <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> {
+        <SELF_PARAMETER>self</SELF_PARAMETER>.<FIELD>field</FIELD>
     }
-    fun main(s: S) {
+    fun <FUNCTION>main</FUNCTION>(s: S) {
         s.<METHOD_CALL>receiver</METHOD_CALL>();
     }
 }
