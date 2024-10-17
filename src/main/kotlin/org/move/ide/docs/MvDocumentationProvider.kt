@@ -85,11 +85,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
 }
 
 fun MvDocAndAttributeOwner.documentationAsHtml(): String {
-    return docComments()
-        .flatMap { it.text.split("\n") }
-        .map { it.trimStart('/', ' ') }
-        .map { "<p>$it</p>" }
-        .joinToString("\n")
+    val commentText = docComments().map { it.text }.joinToString("\n")
+    return documentationAsHtml(commentText, this)
 }
 
 fun generateFunction(function: MvFunction, buffer: StringBuilder) {
