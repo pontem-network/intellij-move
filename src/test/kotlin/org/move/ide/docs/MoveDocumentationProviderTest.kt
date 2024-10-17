@@ -195,6 +195,24 @@ module 0x1::M {}
 </div>
     """)
 
+    fun `test markdown multiline code with extra spaces`() = doTest("""
+/// Move code:
+/// ```
+/// module 0x1::M {
+///    // comment
+/// }
+/// ```
+module 0x1::M {}
+          //^   
+    """, """
+<div class='definition'><pre>module 0x1::M</pre></div>
+<div class='content'><p>Move code:</p><pre style="text-indent: 10px; margin-bottom: -20px;"><span style="color: #000080; font-weight: bold;">module </span><span style="color: #000000;">0x1::M {</span>
+   <span style="color: #808080; font-style: italic;">// comment</span>
+<span style="color: #000000;">}</span>
+</pre>
+</div>
+    """)
+
     fun `test markdown list`() = doTest("""
 /// - The number of "items" in global storage.
 /// - The number of bytes in global storage.
