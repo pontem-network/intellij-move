@@ -22,7 +22,7 @@ module 0x1::<MODULE>main</MODULE> {
 
     entry fun <ENTRY_FUNCTION>entry_fun</ENTRY_FUNCTION>() {}
     inline fun <INLINE_FUNCTION>inline_fun</INLINE_FUNCTION>() {}
-    #[view]
+    <ATTRIBUTE>#[view]</ATTRIBUTE>
     public fun <VIEW_FUNCTION>view_fun</VIEW_FUNCTION>() {}
 
     fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 {

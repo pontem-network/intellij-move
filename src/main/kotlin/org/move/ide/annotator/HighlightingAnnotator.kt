@@ -51,6 +51,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             leafType == IDENTIFIER -> highlightIdentifier(parent)
             leafType == HEX_INTEGER_LITERAL -> MvColor.NUMBER
             parent is MvAssertMacroExpr -> MvColor.MACRO
+            parent is MvAttr -> MvColor.ATTRIBUTE
             parent is MvCopyExpr
                     && element.text == "copy" -> MvColor.KEYWORD
             else -> null
@@ -80,6 +81,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (element is MvConst) return MvColor.CONSTANT
         if (element is MvModule) return MvColor.MODULE
         if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
+        if (element is MvAttrItem) return MvColor.ATTRIBUTE
 
         return when (element) {
             is MvPath -> highlightPathElement(element)

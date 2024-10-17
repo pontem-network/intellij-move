@@ -44,6 +44,7 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     METHOD_CALL("Functions//Method call", Default.FUNCTION_CALL),
 
     MACRO("Functions//Macro", Default.IDENTIFIER),
+    ATTRIBUTE("Attribute", Default.METADATA),
 
     KEYWORD("Keywords//Keyword", Default.KEYWORD),
     SELF_PARAMETER("Keywords//Self Parameter", Default.KEYWORD),
