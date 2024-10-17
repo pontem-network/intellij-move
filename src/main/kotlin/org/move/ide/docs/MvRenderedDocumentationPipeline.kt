@@ -27,7 +27,7 @@ enum class MvDocRenderMode {
     /**
      * Inline Editor Documentation mode.
      *
-     * Such documentation is displayed directly in the ed
+     * Such documentation is displayed directly in the editor.
      */
     INLINE_DOC_COMMENT,
 }
