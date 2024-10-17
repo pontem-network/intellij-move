@@ -19,7 +19,16 @@ import org.intellij.markdown.parser.MarkdownParser
 import java.net.URI
 
 enum class MvDocRenderMode {
+    /**
+     * Hover Documentation mode.
+     */
     QUICK_DOC_POPUP,
+
+    /**
+     * Inline Editor Documentation mode.
+     *
+     * Such documentation is displayed directly in the ed
+     */
     INLINE_DOC_COMMENT,
 }
 
@@ -30,6 +39,12 @@ fun documentationAsHtml(text: String, context: PsiElement): String {
     return HtmlGenerator(documentationText, root, flavour).generateHtml()
 }
 
+/**
+ * Prepares passed a comment text for the Markdown parser.
+ *
+ * For example, a line with a dot at the end will be split by "\n\n" to separate two paragraphs,
+ * without this, [HtmlGenerator] will render it as one paragraph for this and the next lines.
+ */
 fun processDocumentationText(text: String): String {
     // Comments spanning multiple lines are merged using spaces, unless
     //
@@ -71,6 +86,9 @@ fun processDocumentationText(text: String): String {
 
 val ORDERED_LIST_REGEX = """^(\d+\.|-|\*)\s.*$""".toRegex()
 
+/**
+ * Defines how to render Markdown into HTML.
+ */
 private class MvDocMarkdownFlavourDescriptor(
     private val context: PsiElement,
     private val uri: URI? = null,
@@ -82,7 +100,7 @@ private class MvDocMarkdownFlavourDescriptor(
         val generatingProviders = HashMap(gfm.createHtmlGeneratingProviders(linkMap, uri ?: baseURI))
         // Filter out MARKDOWN_FILE to avoid producing unnecessary <body> tags
         generatingProviders.remove(MarkdownElementTypes.MARKDOWN_FILE)
-        // h1 and h2 are too large
+        // Use smaller header providers as h1 and h2 are too large
         generatingProviders[MarkdownElementTypes.ATX_1] = SimpleTagProvider("h2")
         generatingProviders[MarkdownElementTypes.ATX_2] = SimpleTagProvider("h3")
         generatingProviders[MarkdownElementTypes.CODE_FENCE] = MvCodeFenceProvider(context, renderMode)
@@ -91,6 +109,9 @@ private class MvDocMarkdownFlavourDescriptor(
     }
 }
 
+/**
+ * Defines how to render multiline code blocks.
+ */
 private class MvCodeFenceProvider(
     private val context: PsiElement,
     private val renderMode: MvDocRenderMode,
@@ -108,7 +129,7 @@ private class MvCodeFenceProvider(
 
         var isContentStarted = false
 
-        loop@ for (child in childrenToConsider) {
+        for (child in childrenToConsider) {
             if (isContentStarted && child.type in listOf(MarkdownTokenTypes.CODE_FENCE_CONTENT, MarkdownTokenTypes.EOL)) {
                 val rawLine = HtmlGenerator.trimIndents(child.getTextInNode(text), indentBefore)
                 codeText.append(rawLine)
@@ -126,6 +147,8 @@ private class MvCodeFenceProvider(
         var htmlCodeText = HTMLTextPainter.convertCodeFragmentToHTMLFragmentWithInlineStyles(context, codeText)
 
         val scheme = EditorColorsManager.getInstance().globalScheme
+
+        // replace <pre> with <pre> with nicer looking styles in the rendered view
         htmlCodeText = htmlCodeText.replaceFirst(
             "<pre>",
             "<pre style=\"text-indent: ${CODE_SNIPPET_INDENT}px; margin-bottom: -20px;\">"
@@ -137,6 +160,12 @@ private class MvCodeFenceProvider(
         }
     }
 
+    /**
+     * Makes the colors muted to show it in the comment that is rendered directly in the code.
+     * This function is mostly for minor visual improvements.
+     *
+     * TODO: this code is not used yet, but we will need it for the next steps
+     */
     private fun String.dimColors(scheme: EditorColorsScheme): String {
         val alpha = if (isColorSchemeDark(scheme)) DARK_THEME_ALPHA else LIGHT_THEME_ALPHA
 
