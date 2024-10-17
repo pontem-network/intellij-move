@@ -42,7 +42,9 @@ fun processDocumentationText(text: String): String {
 
     var insideCodeBlock = false
     val lines = text.lines()
-    val newLines = lines.map { it.trimStart('/', ' ') }.map { line ->
+    val newLines = lines.map { l ->
+        // don't trim extra spaces in code blocks
+        val line = if (insideCodeBlock) l.trimStart('/').removePrefix(" ") else l.trimStart('/', ' ')
         if (line.startsWith("```")) {
             insideCodeBlock = !insideCodeBlock
         } else if (insideCodeBlock) {
