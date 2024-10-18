@@ -18,7 +18,7 @@ interface MvDocAndAttributeOwner: MvElement, NavigatablePsiElement {
         return childrenWithLeaves
             // All these outer elements have been edge bound; if we reach something that isn't one
             // of these, we have reached the actual parse children of this item.
-            .takeWhile { it is PsiComment || it is PsiWhiteSpace }
+            .takeWhile { it is PsiComment || it is PsiWhiteSpace || it is MvAttr }
             .filter { it is PsiComment && it.tokenType == MoveParserDefinition.EOL_DOC_COMMENT }
     }
 }
