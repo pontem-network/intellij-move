@@ -165,7 +165,7 @@ File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 
 QualPathCodeFragmentElement ::= PathImpl
 
-Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
+Attr ::= '#' '[' <<comma_separated_list AttrItem>> ']' { pin = 1 }
 private Attr_first ::= '#'
 
 AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
@@ -176,7 +176,7 @@ AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
     ]
     mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
 }
-AttrItemList ::= '(' <<non_empty_comma_sep_items AttrItem>>? ')' { pin = 1 }
+AttrItemList ::= '(' <<comma_separated_list AttrItem>>? ')' { pin = 1 }
 //AttrItemArgument ::= IDENTIFIER ('=' Expr)?
 //{
 //    implements = [
@@ -540,7 +540,7 @@ private ReturnTypeItem_recover ::= !( '{' | ';' | acquires | reads | writes | pu
 ResourceAccessItemList ::= <<isResourceAccessEnabled>> ResourceAccessItem*
 ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
 
-AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
+AccessSpecifierList ::= <<comma_separated_list AccessSpecifier>>
 AccessSpecifier ::= <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
 
 AddressSpecifier ::= '(' AddressSpecifierArg ')' { pin = 1 }
@@ -555,13 +555,13 @@ AddressSpecifierCallParamImpl ::= PathIdent { elementType = Path }
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
-private AcquiresType_items ::= <<non_empty_comma_sep_items PathType>>
+private AcquiresType_items ::= <<comma_separated_list PathType>>
 {
     recoverWhile = AcquiresType_items_recover
 }
 private AcquiresType_items_recover ::= !(';' | '{')
 
-AbilitiesList ::= has <<non_empty_comma_sep_items Ability>> { pin = 1 }
+AbilitiesList ::= has <<comma_separated_list Ability>> { pin = 1 }
 Ability ::= copy | IDENTIFIER
 {
     name = "ability"
@@ -673,7 +673,7 @@ PathType ::= PathImpl
 
 TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
 
-LambdaType ::= '|' <<non_empty_comma_sep_items LambdaTypeParam>>? '|' Type? { pin = 1 }
+LambdaType ::= '|' !',' <<comma_separated_list LambdaTypeParam>>? '|' Type?
 LambdaTypeParam ::= Type
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
@@ -718,7 +718,7 @@ ColonTypeArgumentList ::= &'::' TypeArgumentListImpl { elementType = TypeArgumen
 
 //private TypeArgumentListImpl ::= '::'? '<' !'=' TypeArgumentImpl* '>' { pin = 3 }
 //private TypeArgumentImpl ::= !'>' TypeArgument (',' | &'>') { pin = 2 }
-private TypeArgumentListImpl ::= '::'? '<' !'=' <<non_empty_comma_sep_items ( TypeArgument &(',' | '>') )>>? '>'
+private TypeArgumentListImpl ::= '::'? '<' !'=' <<comma_separated_list ( TypeArgument &(',' | '>') )>>? '>'
 
 TypeArgument ::= Type
 
@@ -1060,7 +1060,7 @@ BreakExpr ::= break
 ContinueExpr ::= continue
 
 VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
-VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
+VectorLitItems ::= '[' <<comma_separated_list Expr>>? ']'
 {
     pin = 1
 }
@@ -1105,7 +1105,10 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
     elementType = TupleLitExpr
 }
 
-LambdaExpr ::= '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr { pin = 1 }
+LambdaExpr ::= LambdaParameterList Expr? { pin = 1 }
+
+LambdaParameterList ::= '|' !',' <<comma_separated_list LambdaParameter>>? '|'
+LambdaParameter ::= PatBinding
 
 RangeExpr ::= Expr '..' Expr { pin = 2 }
 
@@ -1523,7 +1526,7 @@ GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAscription
     mixin = "org.move.lang.core.psi.ext.MvGlobalVariableMixin"
 }
 
-PragmaSpecStmt ::= pragma <<non_empty_comma_sep_items PragmaAttribute>> ';' {
+PragmaSpecStmt ::= pragma <<comma_separated_list PragmaAttribute>> ';' {
     pin = 1
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
@@ -1543,7 +1546,7 @@ AbortsIfWith ::= with Expr {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
 
-AbortsWithSpecExpr ::= aborts_with SpecPropertyList? <<non_empty_comma_sep_items Expr>> {
+AbortsWithSpecExpr ::= aborts_with SpecPropertyList? <<comma_separated_list Expr>> {
     pin = 1
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
@@ -1708,16 +1711,16 @@ ApplySchemaStmt ::= apply SchemaRef ApplyTo ApplyExcept? ';' {
     pin = 1
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
-ApplyTo ::= to <<non_empty_comma_sep_items FunctionPattern>> {
+ApplyTo ::= to <<comma_separated_list FunctionPattern>> {
     pin = 1
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
-ApplyExcept ::= except <<non_empty_comma_sep_items FunctionPattern>> {
+ApplyExcept ::= except <<comma_separated_list FunctionPattern>> {
     pin = 1
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
 
-SchemaRef ::= PathImpl ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
+SchemaRef ::= PathImpl ('{' <<comma_separated_list ApplySchemaNameAttribute>> '}')?
 {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
@@ -1750,7 +1753,7 @@ ExistsQuantExpr ::= <<mslOnly exists>> QuantBindings QuantWhere? ':' Expr
         "org.move.lang.core.psi.MslOnlyElement"
     ]
 }
-QuantBindings ::= <<non_empty_comma_sep_items QuantBinding>>
+QuantBindings ::= <<comma_separated_list QuantBinding>>
 
 // TODO: should be single QuantBinding, multiple are not allowed
 ChooseQuantExpr ::= choose min? QuantBindings QuantWhere?
@@ -1791,5 +1794,5 @@ private lt_eqeq_gt ::= <<lteqeqgtImpl>>
 
 private dotdot ::= <<dotdotImpl>>
 
-private meta non_empty_comma_sep_items ::= <<param>> ( ',' <<param>> )* ','?
+private meta comma_separated_list ::= <<param>> ( ',' <<param>> )* ','?
 private meta list_element ::= !'>' <<param>> (',' | &'>') { pin = 2 }

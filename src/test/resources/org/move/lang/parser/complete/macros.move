@@ -19,4 +19,10 @@ module 0x1::macros {
                              g: |Element, (|Element| Element)| Element): Element {
         f(a, g)
     }
+
+    fun main(f: ||, g: ||u64) {
+        foo(|| {});
+        bar(|| 1);
+
+    }
 }

@@ -380,11 +380,11 @@ class TypeInferenceWalker(
     }
 
     private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
-        val bindings = lambdaExpr.patBindingList
+        val bindings = lambdaExpr.parametersAsBindings
         val lambdaTy =
             (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
 
-        for ((i, binding) in lambdaExpr.patBindingList.withIndex()) {
+        for ((i, binding) in lambdaExpr.parametersAsBindings.withIndex()) {
             val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
             ctx.writePatTy(binding, ty)
         }
