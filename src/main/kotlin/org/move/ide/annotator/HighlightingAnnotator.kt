@@ -82,6 +82,8 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (element is MvModule) return MvColor.MODULE
         if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
         if (element is MvAttrItem) return MvColor.ATTRIBUTE
+        if (element is MvEnum) return MvColor.ENUM
+        if (element is MvEnumVariant) return MvColor.ENUM_VARIANT
 
         return when (element) {
             is MvPath -> highlightPathElement(element)
@@ -125,6 +127,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                         when (item) {
                             is MvTypeParameter -> MvColor.TYPE_PARAMETER
                             is MvStruct -> MvColor.STRUCT
+                            is MvEnum -> MvColor.ENUM
                             else -> null
                         }
                     }

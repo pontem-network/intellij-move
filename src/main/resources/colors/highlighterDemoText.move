@@ -9,6 +9,12 @@ module 0x1::<MODULE>main</MODULE> {
         <FIELD>field</FIELD>: <TYPE_PARAMETER>T</TYPE_PARAMETER>
     }
 
+    <KEYWORD>enum</KEYWORD> <ENUM>Thing</ENUM> {
+        <ENUM_VARIANT>Plain</ENUM_VARIANT>
+        <ENUM_VARIANT>Positional</ENUM_VARIANT>(<PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>)
+        <ENUM_VARIANT>Structural</ENUM_VARIANT> { <FIELD>x</FIELD>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, <FIELD>y</FIELD>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> }
+    }
+
     fun <FUNCTION>main</FUNCTION>(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>, val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, s: <STRUCT>MyStruct</STRUCT>) {
         // this is comment
         let <VARIABLE>local_val</VARIABLE> = val;

@@ -362,6 +362,18 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
         }        
     """)
 
+    @MoveV2
+    fun `test enums and variants are highlighted`() = checkHighlighting("""
+        module 0x1::m {
+            enum <ENUM>Thing</ENUM> {
+                <ENUM_VARIANT>Plain</ENUM_VARIANT>
+                <ENUM_VARIANT>Positional</ENUM_VARIANT>(<PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>)
+                <ENUM_VARIANT>Structural</ENUM_VARIANT> { <FIELD>x</FIELD>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, <FIELD>y</FIELD>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> }
+            }
+        }
+    """
+    )
+
 //    fun `test resource access control keywords highlighting`() = checkHighlighting(
 //        """
 //        module 0x1::m {
