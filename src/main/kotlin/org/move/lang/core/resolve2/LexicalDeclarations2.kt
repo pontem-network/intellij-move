@@ -43,7 +43,7 @@ fun processItemsInScope(
                     is MvModuleSpecBlock -> processor.processAllItems(elementNs, scope.schemaList)
                     is MvScript -> processor.processAllItems(elementNs, scope.constList)
                     is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.patBindingList)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.parametersAsBindings)
                     is MvForExpr -> {
                         val iterBinding = scope.forIterCondition?.patBinding
                         if (iterBinding != null) {
@@ -169,7 +169,7 @@ fun processItemsInScope(
                         )
                     }
                     is MvFunctionLike -> processor.processAll(elementNs, scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.patBindingList)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.parametersAsBindings)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
