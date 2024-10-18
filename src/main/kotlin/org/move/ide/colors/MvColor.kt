@@ -53,6 +53,8 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     PRIMITIVE_TYPE("Types//Primitive", Default.KEYWORD),
     BUILTIN_TYPE("Types//Builtins", Default.IDENTIFIER),
     STRUCT("Types//Struct", Default.CLASS_NAME),
+    ENUM("Types//Enum", Default.CLASS_NAME),
+    ENUM_VARIANT("Types//Enum variant", Default.STATIC_FIELD),
     TYPE_PARAMETER("Types//Generic type parameters", Default.IDENTIFIER),
 
     VECTOR_LITERAL("Literals//Vector", Default.FUNCTION_CALL),
