@@ -9,12 +9,17 @@ import org.move.ide.utils.getSignature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve2.PathKind
+import org.move.lang.core.resolve2.pathKind
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fullname
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyCallable
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyTypeParameter
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
@@ -160,23 +165,29 @@ class MvErrorAnnotator: MvAnnotatorBase() {
     }
 
     private fun checkMethodOrPath(methodOrPath: MvMethodOrPath, holder: MvAnnotationHolder) {
-        val item = methodOrPath.reference?.resolveFollowingAliases()
-        val msl = methodOrPath.isMslScope
         val realCount = methodOrPath.typeArguments.size
-
-        val parent = methodOrPath.parent
-        if (item == null && methodOrPath is MvPath
-            && methodOrPath.qualifier == null && methodOrPath.identifierName == "vector"
-        ) {
-            val expectedCount = 1
-            if (realCount != expectedCount) {
-                Diagnostic
-                    .TypeArgumentsNumberMismatch(methodOrPath, "vector", expectedCount, realCount)
-                    .addToHolder(holder)
+        if (methodOrPath is MvPath && methodOrPath.identifierName == "vector") {
+            // try to check whether it's a `vector<>` type instantiation
+            // and it has a single type argument for the element type
+            run {
+                val rootPath = methodOrPath.rootPath()
+                // only if `vector` is 1-element path
+                if (rootPath.pathKind() !is PathKind.UnqualifiedPath) return@run
+                // relevant only in type position
+                if (rootPath.parent !is MvPathType) return@run
+                if (realCount != 1) {
+                    Diagnostic
+                        .TypeArgumentsNumberMismatch(methodOrPath, "vector", 1, realCount)
+                        .addToHolder(holder)
+                }
+                return
             }
-            return
         }
-        val qualItem = item as? MvQualNamedElement ?: return
+
+        val msl = methodOrPath.isMslScope
+        val parent = methodOrPath.parent
+        val qualItem = methodOrPath.reference?.resolveFollowingAliases() as? MvQualNamedElement ?: return
+
         val qualName = qualItem.qualName ?: return
         when {
             qualItem is MvStruct && parent is MvPathType -> {
