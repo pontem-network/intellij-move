@@ -1,6 +1,5 @@
 package org.move.ide.docs
 
-import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvDocumentationProviderTestCase
 
 class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
@@ -232,7 +231,4 @@ module 0x1::M {}
 <div class='definition'><pre>module 0x1::M</pre></div>
 <div class='content'><ol><li>The number of &quot;items&quot; in global storage.</li><li>The number of bytes in global storage.</li></ol></div>
     """)
-
-    private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
-        doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }
