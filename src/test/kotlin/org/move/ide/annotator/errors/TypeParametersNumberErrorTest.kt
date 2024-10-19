@@ -188,4 +188,43 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             }
         }        
     """)
+
+
+    fun `test no error for vector in fq expr if unresolved`() = checkErrors("""
+        module 0x1::m {
+            fun main() {
+                vector::push_back();
+            }
+        }        
+    """)
+
+    fun `test no error for vector in local path expr`() = checkErrors("""
+        module 0x1::m {
+            fun main() {
+                vector;
+            }
+        }        
+    """)
+
+    fun `test no error for vector in type position`() = checkErrors("""
+        module 0x1::m {
+            fun main(s: vector::Vector) {
+            }
+        }        
+    """)
+
+    fun `test no error for vector in type position with qualifier`() = checkErrors("""
+        module 0x1::m {
+            fun main(s: std::vector) {
+            }
+        }        
+    """)
+
+    fun `test vector type position arguments error in presence of vector module`() = checkErrors("""
+        module 0x1::vector {}
+        module 0x1::m {
+            use 0x1::vector;
+            fun main(s: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error>) {}
+        }
+    """)
 }
