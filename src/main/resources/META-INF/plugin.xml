@@ -76,8 +76,8 @@
     <stubIndex implementation="org.move.lang.index.MvModuleIndex" />
     <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
-    <lang.documentationProvider language="Move"
-                                implementationClass="org.move.ide.docs.MvDocumentationProvider" />
+    <platform.backend.documentation.psiTargetProvider
+            implementation="org.move.ide.docs.MvPsiDocumentationTargetProvider"/>
 
     <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer" />
 

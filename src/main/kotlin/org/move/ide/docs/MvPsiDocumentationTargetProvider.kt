@@ -1,35 +1,92 @@
 package org.move.ide.docs
 
-import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationMarkup
-import com.intellij.openapi.editor.Editor
+import com.intellij.model.Pointer
+import com.intellij.openapi.vfs.newvfs.VfsPresentationUtil
+import com.intellij.platform.backend.documentation.DocumentationResult
+import com.intellij.platform.backend.documentation.DocumentationTarget
+import com.intellij.platform.backend.documentation.PsiDocumentationTargetProvider
+import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+import com.intellij.psi.createSmartPointer
 import org.move.ide.presentation.presentationInfo
 import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.MvAbility
+import org.move.lang.core.psi.MvConst
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvFunctionParameter
+import org.move.lang.core.psi.MvFunctionParameterList
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvNamedAddress
+import org.move.lang.core.psi.MvNamedFieldDecl
+import org.move.lang.core.psi.MvPatBinding
+import org.move.lang.core.psi.MvReturnType
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.MvType
+import org.move.lang.core.psi.MvTypeParameter
+import org.move.lang.core.psi.MvTypeParameterList
+import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
+import org.move.lang.core.psi.ext.abilityBounds
+import org.move.lang.core.psi.ext.ancestorOrSelf
+import org.move.lang.core.psi.ext.bindingOwner
+import org.move.lang.core.psi.ext.fieldOwner
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.isMslOnlyItem
+import org.move.lang.core.psi.ext.isPhantom
+import org.move.lang.core.psi.ext.itemElement
+import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.isNative
+import org.move.lang.core.psi.module
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
+import org.toml.lang.psi.TomlKeySegment
 
-class MvDocumentationProvider : AbstractDocumentationProvider() {
-    override fun getCustomDocumentationElement(
-        editor: Editor,
-        file: PsiFile,
-        contextElement: PsiElement?,
-        targetOffset: Int
-    ): PsiElement? {
-        val namedAddress = contextElement?.ancestorOrSelf<MvNamedAddress>()
-        if (namedAddress != null) return namedAddress
-        return super.getCustomDocumentationElement(editor, file, contextElement, targetOffset)
+class MvPsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
+    override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
+        if (element is MvElement) {
+            return MvDocumentationTarget(element, originalElement)
+        }
+        if (element is TomlKeySegment) {
+            val namedAddress = originalElement?.ancestorOrSelf<MvNamedAddress>()
+            if (namedAddress != null) return MvDocumentationTarget(namedAddress, originalElement)
+            return MvDocumentationTarget(element, originalElement)
+        }
+        return null
+    }
+}
+
+@Suppress("UnstableApiUsage")
+class MvDocumentationTarget(val element: PsiElement, private val originalElement: PsiElement?) : DocumentationTarget {
+    override fun computePresentation(): TargetPresentation {
+        val project = element.project
+        val file = element.containingFile?.virtualFile
+
+        return TargetPresentation.builder("")
+            .backgroundColor(file?.let { VfsPresentationUtil.getFileBackgroundColor(project, file) })
+            .presentation()
     }
 
-    override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
+    override fun computeDocumentation(): DocumentationResult? {
+        val content = generateDoc(element) ?: return null
+        return DocumentationResult.documentation(content)
+    }
+
+    override fun createPointer(): Pointer<out DocumentationTarget> {
+        val elementPtr = element.createSmartPointer()
+        val originalElementPtr = originalElement?.createSmartPointer()
+        return Pointer {
+            val element = elementPtr.dereference() ?: return@Pointer null
+            MvDocumentationTarget(element, originalElementPtr?.dereference())
+        }
+    }
+
+    fun generateDoc(element: PsiElement?): String? {
         val buffer = StringBuilder()
         var docElement = element
         if (

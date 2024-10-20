@@ -24,6 +24,6 @@ class MvNamedModulePathDocumentationTest : MvDocumentationProviderProjectTestCas
                 )
             }
         },
-        "Std = \"0x42\"", block = MvDocumentationProvider::generateDoc
+        "Std = \"0x42\""
     )
 }
