@@ -1,4 +1,4 @@
-name: Publish EAP
+name: Publish EAP to the Marketplace
 
 on:
 #    # only works on 'master' branch as it is a default branch

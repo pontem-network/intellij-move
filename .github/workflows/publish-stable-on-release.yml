@@ -1,4 +1,4 @@
-name: Publish stable version to Jetbrains Marketplace
+name: Publish stable version to the Marketplace
 
 on:
     release:
