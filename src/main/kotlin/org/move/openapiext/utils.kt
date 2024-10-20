@@ -247,3 +247,13 @@ inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {
         throw AssertionError(message)
     }
 }
+
+fun PsiElement.line(): Int {
+    val document = PsiDocumentManager.getInstance(project).getDocument(containingFile)
+    val lineNumber = if (document != null) {
+        document.getLineNumber(textRange.startOffset) + 1
+    } else {
+        0
+    }
+    return lineNumber
+}

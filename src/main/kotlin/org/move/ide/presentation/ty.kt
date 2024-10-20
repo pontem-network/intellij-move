@@ -1,5 +1,13 @@
 package org.move.ide.presentation
 
+import com.intellij.util.applyIf
+import io.ktor.util.*
+import org.move.ide.docs.DocumentationUtils.asBuiltin
+import org.move.ide.docs.DocumentationUtils.asKeyword
+import org.move.ide.docs.DocumentationUtils.asPrimitiveTy
+import org.move.ide.docs.DocumentationUtils.colorize
+import org.move.ide.docs.DocumentationUtils.leftAngle
+import org.move.ide.docs.DocumentationUtils.rightAngle
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
@@ -20,6 +28,10 @@ fun Ty.name(): String {
     return text(fq = false)
 }
 
+fun Ty.colorizedName(): String {
+    return text(fq = false, colors = true)
+}
+
 fun Ty.fullnameNoArgs(): String {
     return this.fullname().replace(Regex("<.*>"), "")
 }
@@ -28,23 +40,28 @@ fun Ty.fullname(): String {
     return text(fq = true)
 }
 
+fun Ty.colorizedFullname(): String {
+    return text(fq = true, colors = true)
+}
+
 fun Ty.typeLabel(relativeTo: MvElement): String {
     val typeModule = this.declaringModule()
-    if (typeModule != null && typeModule != relativeTo.containingModule) {
-        return this.fullname()
+    return if (typeModule != null && typeModule != relativeTo.containingModule) {
+        this.colorizedFullname()
     } else {
-        return this.name()
+        this.colorizedName()
     }
 }
 
 fun Ty.hintText(): String =
     render(this, level = 3, unknown = "?", tyVar = { "?" })
 
-fun Ty.text(fq: Boolean = false): String =
+fun Ty.text(fq: Boolean = false, colors: Boolean = false): String =
     render(
         this,
         level = 3,
-        fq = fq
+        fq = fq,
+        colors = colors,
     )
 
 fun Ty.expectedTyText(): String {
@@ -90,24 +107,25 @@ private fun render(
     integer: String = "integer",
     typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
     tyVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
-    fq: Boolean = false
+    fq: Boolean = false,
+    colors: Boolean = false
 ): String {
     check(level >= 0)
     if (ty is TyUnknown) return unknown
     if (ty is TyPrimitive) {
         return when (ty) {
-            is TyBool -> "bool"
-            is TyAddress -> "address"
-            is TySigner -> "signer"
+            is TyBool -> colorize("bool", asPrimitiveTy, !colors)
+            is TyAddress -> colorize("address", asBuiltin, !colors)
+            is TySigner -> colorize("signer", asBuiltin, !colors)
             is TyUnit -> "()"
-            is TyNum -> "num"
+            is TyNum -> colorize("num", asPrimitiveTy, !colors)
             is TySpecBv -> "bv"
             is TyInteger -> {
-                if (ty.kind == TyInteger.DEFAULT_KIND) {
+                colorize(if (ty.kind == TyInteger.DEFAULT_KIND) {
                     integer
                 } else {
                     ty.kind.toString()
-                }
+                }, asPrimitiveTy, !colors)
             }
             is TyNever -> "<never>"
             else -> error("unreachable")
@@ -116,7 +134,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq, colors) }
 
     return when (ty) {
         is TyFunction -> {
@@ -128,13 +146,22 @@ private fun render(
             s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
-        is TyVector -> "vector<${r(ty.item)}>"
-        is TyRange -> "range<${r(ty.item)}>"
+        is TyVector -> {
+            buildString {
+                colorize("vector", asBuiltin, !colors)
+                append("<".applyIf(colors) { leftAngle })
+                append(r(ty.item))
+                append(">".applyIf(colors) { rightAngle })
+            }
+        }
+        is TyRange -> colorize("range", asBuiltin, !colors) + "<${r(ty.item)}>".applyIf(colors) { this.escapeHTML() }
         is TyReference -> {
-            val prefix = if (ty.mutability.isMut) "&mut " else "&"
+            val prefix = if (ty.mutability.isMut) "&" + colorize("mut ", asKeyword, !colors) else "&"
             "$prefix${r(ty.referenced)}"
         }
-        is TyTypeParameter -> typeParam(ty)
+        is TyTypeParameter -> {
+            typeParam(ty)
+        }
 //        is TyStruct -> {
 //            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
 //            val args =
@@ -147,7 +174,7 @@ private fun render(
             val args =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-            name + args
+            name + args.applyIf(colors) { this.escapeHTML() }
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
@@ -166,7 +193,7 @@ private fun render(
             val args =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-            name + args
+            name + args.applyIf(colors) { this.escapeHTML() }
         }
         else -> error("unimplemented for type ${ty.javaClass.name}")
     }
