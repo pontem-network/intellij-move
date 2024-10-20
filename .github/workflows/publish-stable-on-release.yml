@@ -1,15 +1,8 @@
-name: Publish EAP
+name: Publish stable version to Jetbrains Marketplace
 
 on:
-#    # only works on 'master' branch as it is a default branch
-#    workflow_run:
-#        workflows: [ Check ]
-#        types:
-#            - completed
-#        branches:
-#            - master
     release:
-        types: [prereleased]
+        types: [released]
 
 jobs:
 #    check-for-tests-success:
@@ -37,7 +30,6 @@ jobs:
         env:
             ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
             JB_PUB_TOKEN: ${{ secrets.JB_PUB_TOKEN }}
-            JB_PUB_CHANNEL: eap
 
         steps:
             -   uses: actions/checkout@v4
