@@ -2,6 +2,7 @@ package org.move.cli.runConfigurations
 
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PtyCommandLine
 import com.intellij.openapi.util.text.StringUtil
 import java.nio.file.Path
 
@@ -23,6 +24,21 @@ data class AptosCommandLine(
             .withParameters(this.arguments)
             .withWorkDirectory(this.workingDirectory?.toString())
             .withCharset(Charsets.UTF_8)
+        this.environmentVariables.configureCommandLine(generalCommandLine, true)
+        return generalCommandLine
+    }
+
+    fun toColoredCommandLine(cliExePath: Path): GeneralCommandLine {
+        // preudo-tty emulation makes aptos-cli recognize console as tty and show ANSI colors
+        val generalCommandLine = PtyCommandLine()
+            .withExePath(cliExePath.toString())
+            // subcommand can be null
+            .withParameters(subCommand?.split(" ").orEmpty())
+            .withParameters(this.arguments)
+            .withWorkDirectory(this.workingDirectory?.toString())
+            .withCharset(Charsets.UTF_8)
+            // disables default coloring for stderr
+            .withRedirectErrorStream(true)
         this.environmentVariables.configureCommandLine(generalCommandLine, true)
         return generalCommandLine
     }
