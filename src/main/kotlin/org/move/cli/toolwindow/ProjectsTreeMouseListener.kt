@@ -13,7 +13,7 @@ import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
 
-class MoveEntrypointMouseAdapter : MouseAdapter() {
+class ProjectsTreeMouseListener : MouseAdapter() {
     override fun mouseClicked(e: MouseEvent) {
         if (e.clickCount < 2 || !SwingUtilities.isLeftMouseButton(e)) return
 
