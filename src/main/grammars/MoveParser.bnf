@@ -868,7 +868,8 @@ LetMslStmt ::= (let post?) Pat TypeAscription? Initializer? ';'
 }
 
 ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
-private ExprStmt_expr ::= ItemSpecBlockExpr | Expr
+private ExprStmt_expr ::= Expr
+//private ExprStmt_expr ::= ItemSpecBlockExpr | Expr
 {
     recoverWhile = "ExprStmt_recover"
 }
@@ -973,6 +974,7 @@ private AtomExpr ::=
 //                    | RefExpr
                     | LambdaExpr
                     | LitExpr
+                    | SpecBlockExpr
                     | CodeBlockExpr
 
 
@@ -1182,7 +1184,7 @@ LoopExpr ::= loop AnyBlock {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
-WhileExpr ::= while Condition AnyBlock {
+WhileExpr ::= while Condition AnyBlock SpecBlockExpr? {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
@@ -1190,7 +1192,7 @@ ForExpr ::= for ForIterCondition AnyBlock {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
-ForIterCondition ::= '(' PatBinding in Expr ')' {
+ForIterCondition ::= '(' PatBinding in Expr SpecBlockExpr? ')' {
     pin = 1
 }
 
@@ -1462,11 +1464,12 @@ Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
+SpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
     implements = [
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
 }
+ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>>
 
 SpecCodeBlock ::= '{' ItemSpecBlock_items '}'
 {

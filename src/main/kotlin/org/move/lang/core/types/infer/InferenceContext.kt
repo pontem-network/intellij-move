@@ -236,10 +236,10 @@ class InferenceContext(
         when (owner) {
             is MvFunctionLike -> owner.anyBlock?.let { inference.inferFnBody(it) }
             is MvItemSpec -> {
-                owner.itemSpecBlock?.let { inference.inferSpec(it) }
+                owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
             }
-            is MvModuleItemSpec -> owner.itemSpecBlock?.let { inference.inferSpec(it) }
-            is MvSchema -> owner.specBlock?.let { inference.inferSpec(it) }
+            is MvModuleItemSpec -> owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
+            is MvSchema -> owner.specBlock?.let { inference.inferSpecBlock(it) }
         }
 
         fallbackUnresolvedTypeVarsIfPossible()
