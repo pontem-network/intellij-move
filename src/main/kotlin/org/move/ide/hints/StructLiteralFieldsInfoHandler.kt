@@ -11,7 +11,6 @@ import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.type
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.utils.AsyncParameterInfoHandlerBase
