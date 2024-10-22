@@ -896,18 +896,21 @@ fake BinaryExpr ::= Expr BinaryOp Expr {
 }
 
 //noinspection BnfUnusedRule
-fake BinaryOp ::= '<==>' | '==>' | '='
+fake BinaryOp ::= '<<=' | '>>=' | '|=' | '^=' | '&=' | '+=' | '-=' | '*=' | '/=' | '%='
+                    | '<==>' | '==>' | '='
                     | '==' | '!='
                     | '<' | '>' | '<=' | '>='
                     | '<<' | '>>'
                     | '+' | '-' | '*' | '/' | '%'
                     | '||' | '&&' | '|' | '&' | '^'
 
-AssignBinExpr ::= Expr AssignBinaryOp Expr { rightAssociative = true }
-AssignBinaryOp ::= gtgteq | ltlteq | '|=' | '^=' | '&=' | '=' | '+=' | '-=' | '*=' | '/=' | '%='
+
+AssignBinExpr ::= Expr AssignBinOp Expr { rightAssociative = true }
+AssignBinOp ::= gtgteq | ltlteq | '|=' | '^=' | '&=' | '+=' | '-=' | '*=' | '/=' | '%='
 {
     name = "operator"
 }
+AssignBinaryOp ::= gtgteq | ltlteq | '|=' | '^=' | '&=' | '+=' | '-=' | '*=' | '/=' | '%='
 
 private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
@@ -918,8 +921,7 @@ private LogicalEqExpr_items ::=
 private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
 private UnaryExpr_items ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                             | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
-private AtomExpr ::=
-                    AnnotatedExpr
+private AtomExpr ::= AnnotatedExpr
                     | TupleLitOrParenExpr
                     | StructLitExpr
                     | VectorLitExpr
