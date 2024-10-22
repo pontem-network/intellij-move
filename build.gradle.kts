@@ -241,7 +241,7 @@ allprojects {
         generateLexer {
             sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
             targetOutputDir.set(file("src/main/gen/org/move/lang"))
-//            purgeOldFiles.set(true)
+            purgeOldFiles.set(true)
         }
         generateParser {
             sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
@@ -249,7 +249,7 @@ allprojects {
             // not used if purgeOldFiles set to false
             pathToParser.set("/org/move/lang/MoveParser.java")
             pathToPsiRoot.set("/org/move/lang/core/psi")
-//            purgeOldFiles.set(true)
+            purgeOldFiles.set(true)
         }
         withType<KotlinCompile> {
             dependsOn(generateLexer, generateParser)
