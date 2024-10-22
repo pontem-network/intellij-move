@@ -28,16 +28,17 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.concurrency.annotations.RequiresReadLock
+import io.ktor.http.*
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
 import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
+import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
 import org.move.openapiext.TaskResult
 import org.move.openapiext.contentRoots
-import org.move.openapiext.resolveExisting
-import org.move.openapiext.toVirtualFile
 import org.move.stdext.iterateFiles
 import org.move.stdext.unwrapOrElse
 import org.move.stdext.withExtended
@@ -279,6 +280,7 @@ class MoveProjectsSyncTask(
 
         private data class DepId(val rootPath: String)
 
+        @RequiresReadLock
         private fun loadDependencies(
             project: Project,
             rootMoveToml: MoveToml,
@@ -296,16 +298,21 @@ class MoveProjectsSyncTask(
             }
             for ((dep, addressMap) in parsedDeps) {
                 val depRoot = dep.localPath()
+                if (depRoot == null) {
+                    // root does not exist
+                    LOG.logOrShowBalloon(
+                        "Cannot resolve the ${dep.name.quote()} dependency. " +
+                                "Root directory does not exist."
+                    )
+                    continue
+                }
 
-                val depId = DepId(depRoot.toString())
+                val depId = DepId(depRoot.path)
                 if (depId in visitedIds) continue
 
-                val depTomlFile = depRoot
-                    .resolveExisting(MvConstants.MANIFEST_FILE)
-                    ?.toVirtualFile()
-                    ?.toTomlFile(project) ?: continue
+                val depTomlFile =
+                    depRoot.findChild(MvConstants.MANIFEST_FILE)?.toTomlFile(project) ?: continue
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
-//                val depMoveToml = MoveToml.fromTomlFile(depTomlFile, depRoot)
 
                 // first try to parse MovePackage from dependency, no need for nested if parent is invalid
                 val depPackage = MovePackage.fromMoveToml(depMoveToml)

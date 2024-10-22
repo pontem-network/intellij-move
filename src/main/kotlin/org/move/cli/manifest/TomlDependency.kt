@@ -1,20 +1,27 @@
 package org.move.cli.manifest
 
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.findDirectory
 import com.intellij.util.SystemProperties
-import java.nio.file.Files
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import java.nio.file.Path
-import java.nio.file.Paths
 
 sealed class TomlDependency {
     abstract val name: String
 
-    abstract fun localPath(): Path
+    @RequiresReadLock
+    abstract fun localPath(): VirtualFile?
 
     data class Local(
         override val name: String,
         private val localPath: Path,
     ) : TomlDependency() {
-        override fun localPath(): Path = localPath
+
+        @RequiresReadLock
+        override fun localPath(): VirtualFile? = VfsUtil.findFile(localPath, true)
     }
 
     data class Git(
@@ -24,18 +31,11 @@ sealed class TomlDependency {
         private val subdir: String,
     ) : TomlDependency() {
 
-        override fun localPath(): Path {
-            val home = SystemProperties.getUserHome()
-            // TODO: add choice based on selected blockchain
-            val dirNameAptos = dirNameAptos(repo, rev)
-            val aptosPath = Paths.get(home, ".move", dirNameAptos, subdir)
-            if (Files.exists(aptosPath)) {
-                return aptosPath
-            } else {
-                val dirNameSui = dirNameSui(repo, rev)
-                val suiPath = Paths.get(home, ".move", dirNameSui, subdir)
-                return suiPath
-            }
+        @RequiresReadLock
+        override fun localPath(): VirtualFile? {
+            val userHome = VfsUtil.getUserHomeDir() ?: return null
+            val sourceDirName = dirNameAptos(repo, rev)
+            return userHome.findDirectory(".move/$sourceDirName/$subdir")
         }
 
         companion object {
@@ -43,11 +43,6 @@ sealed class TomlDependency {
                 val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
                 val aptosRevName = rev.replace("/", "_")
                 return "${sanitizedRepoName}_$aptosRevName"
-            }
-            fun dirNameSui(repo: String, rev: String): String {
-                val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
-                val suiRevName = rev.replace("/", "__")
-                return "${sanitizedRepoName}_$suiRevName"
             }
         }
     }
