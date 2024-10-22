@@ -41,10 +41,16 @@ object MoveParserUtil: GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun gtgteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_GT_EQ, GT, GT, EQ)
+
+    @JvmStatic
     fun gtgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_GT, GT, GT)
 
     @JvmStatic
     fun gteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_EQ, GT, EQ)
+
+    @JvmStatic
+    fun ltlteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_LT_EQ, LT, LT, EQ)
 
     @JvmStatic
     fun ltltImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_LT, LT, LT)

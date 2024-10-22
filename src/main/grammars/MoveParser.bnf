@@ -88,8 +88,10 @@
 
         // Contextual tokens
         LT_EQ           = '<='
+        LT_LT_EQ           = '<<='
         LT_LT           = '<<'
         GT_EQ           = '>='
+        GT_GT_EQ           = '>>='
         GT_GT           = '>>'
         OR_OR           = '||'
         AND_AND         = '&&'
@@ -866,6 +868,7 @@ private CodeBlock_items_recover ::= !('}' | <<eof>>)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
 Expr ::= AssignmentExpr
+        | AssignBinExpr
         | RangeExpr
         | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
         | CastLikeExpr_items
@@ -880,7 +883,7 @@ Expr ::= AssignmentExpr
         | AddExpr_items
         | MulExpr_items
         | ControlFlowExpr_items
-        | UnaryExpr
+        | UnaryExpr_items
         | BorrowExpr
         | AtomExpr
 
@@ -900,6 +903,11 @@ fake BinaryOp ::= '<==>' | '==>' | '='
                     | '+' | '-' | '*' | '/' | '%'
                     | '||' | '&&' | '|' | '&' | '^'
 
+AssignBinExpr ::= Expr AssignBinaryOp Expr { rightAssociative = true }
+AssignBinaryOp ::= gtgteq | ltlteq | '|=' | '^=' | '&=' | '=' | '+=' | '-=' | '*=' | '/=' | '%='
+{
+    name = "operator"
+}
 
 private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
@@ -908,8 +916,8 @@ private LogicalEqExpr_items ::=
         | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
 private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
-private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
-                      | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
+private UnaryExpr_items ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
+                            | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
                     AnnotatedExpr
                     | TupleLitOrParenExpr
@@ -1541,7 +1549,7 @@ UpdateSpecStmt ::= update UpdateExpr_items '=' Expr ';' {
         "org.move.lang.core.psi.MslOnlyElement"
     ]
 }
-private UpdateExpr_items ::= UnaryExpr | BorrowExpr | AtomExpr
+private UpdateExpr_items ::= UnaryExpr_items | BorrowExpr | AtomExpr
 
 IncludeItem ::= SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
 {
@@ -1718,8 +1726,10 @@ TypeQuantBinding ::= PatBinding ':' Type {
 // Meta rules
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+private gtgteq   ::= <<gtgteqImpl>>
 private gtgt   ::= <<gtgtImpl>>
 private gteq   ::= <<gteqImpl>>
+private ltlteq   ::= <<ltlteqImpl>>
 private ltlt   ::= <<ltltImpl>>
 private lteq   ::= <<lteqImpl>>
 private oror   ::= <<ororImpl>>
