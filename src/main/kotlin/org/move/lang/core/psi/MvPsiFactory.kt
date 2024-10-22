@@ -44,6 +44,9 @@ class MvPsiFactory(val project: Project) {
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
 
+    fun module(@Language("Move") moduleText: String): MvModule =
+        createFromText(moduleText) ?: error("failed to create module")
+
     fun inlineModule(address: String, name: String, blockText: String): MvModule =
         createFromText("module $address::$name $blockText") ?: error("failed to create module")
 
