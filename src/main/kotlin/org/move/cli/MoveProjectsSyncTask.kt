@@ -13,6 +13,7 @@ import com.intellij.build.progress.BuildProgressDescriptor
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -34,7 +35,7 @@ import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
 import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
-import org.move.ide.notifications.logOrShowBalloon
+import org.move.ide.notifications.showBalloon
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
 import org.move.openapiext.TaskResult
@@ -297,12 +298,13 @@ class MoveProjectsSyncTask(
                 parsedDeps = parsedDeps.withExtended(rootMoveToml.dev_deps)
             }
             for ((dep, addressMap) in parsedDeps) {
-                val depRoot = dep.localPath()
+                val depRoot = dep.rootDirectory()
                 if (depRoot == null) {
                     // root does not exist
-                    LOG.logOrShowBalloon(
+                    project.showBalloon(
                         "Cannot resolve the ${dep.name.quote()} dependency. " +
-                                "Root directory does not exist."
+                                "Root directory does not exist.",
+                        ERROR
                     )
                     continue
                 }

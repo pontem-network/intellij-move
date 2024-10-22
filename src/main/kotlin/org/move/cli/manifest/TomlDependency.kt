@@ -1,11 +1,8 @@
 package org.move.cli.manifest
 
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findDirectory
-import com.intellij.util.SystemProperties
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import java.nio.file.Path
 
@@ -13,7 +10,7 @@ sealed class TomlDependency {
     abstract val name: String
 
     @RequiresReadLock
-    abstract fun localPath(): VirtualFile?
+    abstract fun rootDirectory(): VirtualFile?
 
     data class Local(
         override val name: String,
@@ -21,7 +18,7 @@ sealed class TomlDependency {
     ) : TomlDependency() {
 
         @RequiresReadLock
-        override fun localPath(): VirtualFile? = VfsUtil.findFile(localPath, true)
+        override fun rootDirectory(): VirtualFile? = VfsUtil.findFile(localPath, true)
     }
 
     data class Git(
@@ -32,7 +29,7 @@ sealed class TomlDependency {
     ) : TomlDependency() {
 
         @RequiresReadLock
-        override fun localPath(): VirtualFile? {
+        override fun rootDirectory(): VirtualFile? {
             val userHome = VfsUtil.getUserHomeDir() ?: return null
             val sourceDirName = dirNameAptos(repo, rev)
             return userHome.findDirectory(".move/$sourceDirName/$subdir")
