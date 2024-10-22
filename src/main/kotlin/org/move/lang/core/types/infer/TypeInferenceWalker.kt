@@ -79,7 +79,7 @@ class TypeInferenceWalker(
     }
 
     fun inferFnBody(block: AnyBlock): Ty = block.inferBlockCoercableTo(returnTy)
-    fun inferSpec(block: AnyBlock): Ty =
+    fun inferSpecBlock(block: AnyBlock): Ty =
         mslScope { block.inferBlockType(NoExpectation) }
 
     private fun AnyBlock.inferBlockCoercableTo(expectedTy: Ty): Ty {
@@ -240,7 +240,7 @@ class TypeInferenceWalker(
             is MvMoveExpr -> expr.expr?.inferType() ?: TyUnknown
             is MvCopyExpr -> expr.expr?.inferType() ?: TyUnknown
 
-            is MvItemSpecBlockExpr -> expr.specBlock?.let { inferSpec(it) } ?: TyUnknown
+            is MvSpecBlockExpr -> inferSpecBlockExprTy(expr)
 
             is MvCastExpr -> {
                 expr.expr.inferType()
@@ -636,6 +636,14 @@ class TypeInferenceWalker(
                 emptyList(),
                 macroExpr.valueArguments.map { it.expr }.map { InferArg.ArgExpr(it) }
             )
+        }
+        return TyUnit
+    }
+
+    private fun inferSpecBlockExprTy(specBlockExpr: MvSpecBlockExpr): Ty {
+        val specBlock = specBlockExpr.specBlock
+        if (specBlock != null) {
+            inferSpecBlock(specBlock)
         }
         return TyUnit
     }

@@ -2156,4 +2156,13 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test spec block type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                spec {}
+                //^ ()
+            }
+        }        
+    """)
 }

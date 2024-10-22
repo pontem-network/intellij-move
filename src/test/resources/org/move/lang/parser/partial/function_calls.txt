@@ -340,7 +340,7 @@ FILE
               PsiElement())(')')
           PsiElement(;)(';')
         PsiWhiteSpace('\n\n        ')
-        MvItemSpecBlockExprImpl(ITEM_SPEC_BLOCK_EXPR)
+        MvSpecBlockExprImpl(SPEC_BLOCK_EXPR)
           PsiElement(spec)('spec')
           PsiWhiteSpace(' ')
           MvSpecCodeBlockImpl(SPEC_CODE_BLOCK)

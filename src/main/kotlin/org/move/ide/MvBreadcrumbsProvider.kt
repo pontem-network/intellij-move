@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.ui.breadcrumbs.BreadcrumbsProvider
 import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.expr
 
 class MvBreadcrumbsProvider : BreadcrumbsProvider {
 
