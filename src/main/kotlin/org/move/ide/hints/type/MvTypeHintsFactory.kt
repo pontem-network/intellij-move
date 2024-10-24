@@ -1,9 +1,9 @@
 package org.move.ide.hints.type
 
-import com.intellij.codeInsight.hints.declarative.CollapseState
+import com.intellij.codeInsight.hints.declarative.*
 import com.intellij.codeInsight.hints.declarative.CollapseState.Collapsed
 import com.intellij.codeInsight.hints.declarative.CollapseState.Expanded
-import com.intellij.codeInsight.hints.declarative.PresentationTreeBuilder
+import com.intellij.psi.createSmartPointer
 import org.move.ide.presentation.hintText
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -15,7 +15,7 @@ object MvTypeHintsFactory {
         treeBuilder.typeHint(0, type)
     }
 
-//    private const val UNNAMED_MARK = "<unnamed>"
+    //    private const val UNNAMED_MARK = "<unnamed>"
     private const val ANONYMOUS_MARK = "<anonymous>"
 
     private fun PresentationTreeBuilder.typeHint(level: Int, type: Ty) {
@@ -31,7 +31,13 @@ object MvTypeHintsFactory {
 
     private fun PresentationTreeBuilder.adtTypeHint(level: Int, tyAdt: TyAdt) {
         val itemName = tyAdt.item.name ?: ANONYMOUS_MARK
-        text(itemName)
+        text(
+            itemName,
+            InlayActionData(
+                PsiPointerInlayActionPayload(tyAdt.item.createSmartPointer()),
+                PsiPointerInlayActionNavigationHandler.HANDLER_ID
+            )
+        )
         if (tyAdt.typeArguments.isEmpty()) return
         collapsibleList(
             state = calcCollapseState(level, tyAdt),
@@ -83,35 +89,6 @@ object MvTypeHintsFactory {
                 toggleButton { text("[...]") }
             })
     }
-
-//    private fun PresentationTreeBuilder.classTypeHint(level: Int, classType: PsiClassType) {
-//        val aClass = classType.resolve()
-//
-//        val className = classType.className ?: ANONYMOUS_MARK // TODO here it may be not exactly true, the class might be unresolved
-//        text(className, aClass?.qualifiedName?.let { InlayActionData(StringInlayActionPayload(it), JavaFqnDeclarativeInlayActionHandler.HANDLER_NAME) })
-//        if (classType.parameterCount == 0) return
-//        collapsibleList(expandedState = {
-//            toggleButton {
-//                text("<")
-//            }
-//            join(
-//                classType.parameters,
-//                op = {
-//                    typeHint(level + 1, it)
-//                },
-//                separator = {
-//                    text(", ")
-//                }
-//            )
-//            toggleButton {
-//                text(">")
-//            }
-//        }, collapsedState = {
-//            toggleButton {
-//                text("<...>")
-//            }
-//        })
-//    }
 
     private fun <T> PresentationTreeBuilder.join(
         elements: List<T>,

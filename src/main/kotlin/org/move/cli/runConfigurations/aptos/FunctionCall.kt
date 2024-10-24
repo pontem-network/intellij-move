@@ -1,6 +1,7 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.psi.createSmartPointer
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.parametersAsBindings
 import org.move.lang.core.psi.ext.*
@@ -59,7 +60,7 @@ data class FunctionCall(
             for (parameterName in parameterNames) {
                 nullParams[parameterName] = null
             }
-            return FunctionCall(function.asSmartPointer(), nullTypeParams, nullParams)
+            return FunctionCall(function.createSmartPointer(), nullTypeParams, nullParams)
         }
     }
 }
