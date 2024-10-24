@@ -159,11 +159,13 @@ fun MvInferenceContextOwner.inference(msl: Boolean): InferenceResult {
     }
 }
 
+fun MvElement.inferenceOwner(): MvInferenceContextOwner? = this.ancestorOrSelf()
 
 fun MvElement.inference(msl: Boolean): InferenceResult? {
-    val contextOwner = this.ancestorOrSelf<MvInferenceContextOwner>() ?: return null
+    val contextOwner = inferenceOwner() ?: return null
     return contextOwner.inference(msl)
 }
+
 
 //data class ResolvedPath(val element: MvElement, val isVisible: Boolean) {
 //    companion object {
