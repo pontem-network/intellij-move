@@ -117,7 +117,16 @@ class InlayTypeHintsProvider2Test: DeclarativeInlayHintsProviderTestCase() {
             }
         }
     """)
-    
+
+    fun `test lambda expr`() = checkByText("""
+        module 0x1::m {
+            fun callback(elem: u8, ident: |u8|u8): u8 { ident(elem) }
+            fun main() {
+                callback(10, |elem/*<# : |u8 #>*/| elem + 1);
+            }
+        }        
+    """)
+
     private fun checkByText(@Language("Move") code: String) {
         doTestProvider("main.move", code, MvTypeInlayHintsProvider2())
     }

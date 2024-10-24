@@ -235,7 +235,7 @@ class TypeInferenceWalker(
             is MvDerefExpr -> inferDerefExprTy(expr)
             is MvLitExpr -> inferLitExprTy(expr, expected)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
-            is MvLambdaExpr -> inferLambdaExpr(expr, expected)
+            is MvLambdaExpr -> inferLambdaExprTy(expr, expected)
 
             is MvMoveExpr -> expr.expr?.inferType() ?: TyUnknown
             is MvCopyExpr -> expr.expr?.inferType() ?: TyUnknown
@@ -379,7 +379,7 @@ class TypeInferenceWalker(
         return TyReference(innerRefTy, mutability, ctx.msl)
     }
 
-    private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
+    private fun inferLambdaExprTy(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
         val bindings = lambdaExpr.parametersAsBindings
         val lambdaTy =
             (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
@@ -398,10 +398,7 @@ class TypeInferenceWalker(
         val baseFuncTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    val itemTy = instantiatePath<TyFunction>(path, namedItem) ?: return TyUnknown
-//                    val (itemTy, _) = instantiateMethodOrPath<TyFunction>(path, namedItem)
-//                        ?: return TyUnknown
-                    itemTy
+                    instantiatePath<TyFunction>(path, namedItem) ?: return TyUnknown
                 }
                 is MvFieldsOwner -> {
                     val tupleFields = namedItem.tupleFields
@@ -658,9 +655,9 @@ class TypeInferenceWalker(
         formalArgs: List<Ty>,
     ): List<Ty> {
         val resolvedFormalRet = resolveTypeVarsIfPossible(formalRet)
-        val retTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
+        val expectedRetTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
         return ctx.freezeUnification {
-            if (ctx.combineTypes(retTy, resolvedFormalRet).isOk) {
+            if (ctx.combineTypes(expectedRetTy, resolvedFormalRet).isOk) {
                 formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
             } else {
                 emptyList()

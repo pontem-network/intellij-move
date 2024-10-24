@@ -6,8 +6,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.ide.presentation.hintText
+import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.MvPatBinding
+import org.move.lang.core.psi.MvSchemaFieldStmt
 import org.move.lang.core.psi.ext.bindingOwner
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.hasAncestor
@@ -31,8 +33,9 @@ class MvTypeInlayHintsProvider2: InlayHintsProvider {
             // skip private variables
             if (patBinding.name.startsWith("_")) return
 
-            // only show bindings for let statements
-            if (patBinding.bindingOwner !is MvLetStmt) return
+            // does not show hints for bindings with explicit type annotations
+            val owner = patBinding.bindingOwner
+            if (owner is MvFunctionParameter || owner is MvSchemaFieldStmt) return
 
             val contextInferenceOwner = patBinding.inferenceOwner() ?: return
 
