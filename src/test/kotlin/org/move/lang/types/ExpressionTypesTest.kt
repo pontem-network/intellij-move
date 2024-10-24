@@ -2165,4 +2165,24 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test lambda expr binding`() = testBinding("""
+        module 0x1::m {
+            fun callback(elem: u8, ident: |u8|u8): u8 { ident(elem) }
+            fun main() {
+                callback(10, |elem| elem + 1);
+                             //^ u8
+            }
+        }        
+    """)
+
+    fun `test lambda expr binding with inference`() = testBinding("""
+        module 0x1::m {
+            fun callback<E>(elem: E, ident: |E|E): E { ident(elem) }
+            fun main() {
+                callback(10u8, |elem| elem + 1);
+                               //^ u8
+            }
+        }        
+    """)
 }

@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.LogLevel.WARNING
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
+import com.intellij.util.PsiNavigateUtil
 import org.move.cli.toolwindow.MoveProjectsTreeStructure.MoveSimpleNode
 import org.move.ide.notifications.logOrShowBalloon
 import java.awt.event.MouseAdapter

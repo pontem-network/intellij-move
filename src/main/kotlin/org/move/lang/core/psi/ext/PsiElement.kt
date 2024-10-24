@@ -295,8 +295,6 @@ fun PsiElement.cameBefore(element: PsiElement) =
 inline val <T: StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
     get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
 
-fun <T: PsiElement> T.asSmartPointer() = SmartPointerManager.createPointer(this)
-
 val PsiElement.stubParent: PsiElement?
     get() {
         if (this is StubBasedPsiElement<*>) {
