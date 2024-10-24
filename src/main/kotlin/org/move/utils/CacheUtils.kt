@@ -5,14 +5,22 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
-import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
-import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.psi.util.*
+import com.intellij.psi.util.CachedValueProvider.Result
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 
 val Project.cacheManager: CachedValuesManager get() = CachedValuesManager.getManager(this)
+
+fun <T> Project.globalPsiDependentCache(
+    key: Key<CachedValue<T>>,
+    provider: (Project) -> T
+): T {
+    val cacheManager = this.cacheManager
+    return cacheManager.getCachedValue(this, key, {
+        Result.create(provider(this), PsiModificationTracker.MODIFICATION_COUNT)
+    }, false)
+}
 
 fun <T> CachedValuesManager.cache(
     dataHolder: UserDataHolder,

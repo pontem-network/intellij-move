@@ -68,25 +68,29 @@ val MvModule.isSpecBuiltins: Boolean
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
-        val text = """
-            /// Removes `T` from address and returns it. 
-            /// Aborts if address does not hold a `T`.
-            native fun move_from<T: key>(addr: address): T acquires T;
-                        
-            /// Publishes `T` under `signer.address`. 
-            /// Aborts if `signer.address` already holds a `T`.
-            native fun move_to<T: key>(acc: &signer, res: T);
-                                    
-            native fun borrow_global<T: key>(addr: address): &T acquires T;           
-                                     
-            native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;
-            
-            /// Returns `true` if a `T` is stored under address
-            native fun exists<T: key>(addr: address): bool;
-            
-            native fun freeze<S>(mut_ref: &mut S): &S;
+        val builtinModule = it.project.psiFactory.module(
+            """
+            module 0x0::builtins {
+                /// Removes `T` from address and returns it. 
+                /// Aborts if address does not hold a `T`.
+                native fun move_from<T: key>(addr: address): T acquires T;
+                            
+                /// Publishes `T` under `signer.address`. 
+                /// Aborts if `signer.address` already holds a `T`.
+                native fun move_to<T: key>(acc: &signer, res: T);
+                                        
+                native fun borrow_global<T: key>(addr: address): &T acquires T;           
+                                         
+                native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;
+                
+                /// Returns `true` if a `T` is stored under address
+                native fun exists<T: key>(addr: address): bool;
+                
+                native fun freeze<S>(mut_ref: &mut S): &S;
+            }            
         """.trimIndent()
-        val builtinFunctions = it.project.psiFactory.functions(text, moduleName = "builtins")
+        )
+        val builtinFunctions = builtinModule.functionList
         builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
         builtinFunctions
     }
@@ -114,35 +118,36 @@ fun MvModule.structs(): List<MvStruct> {
     }
 }
 
+//private val BUILTIN_SPEC_FUNCTIONS_KEY =
+//    Key.create<CachedValue<List<MvSpecFunction>>>("org.move.BUILTIN_SPEC_FUNCTIONS_KEY")
+
 fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
     return getProjectPsiDependentCache(this) {
-        val project = it.project
-        listOf(
-            builtinSpecFunction("spec native fun max_u8(): num;", project),
-            builtinSpecFunction("spec native fun max_u64(): num;", project),
-            builtinSpecFunction("spec native fun max_u128(): num;", project),
-            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
-            builtinSpecFunction("spec native fun old<T>(_: T): T;", project),
-            builtinSpecFunction(
-                "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
-                project
-            ),
-            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
-            // vector functions
-            builtinSpecFunction(
-                "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
-                project
-            ),
-            builtinSpecFunction("spec native fun vec<T>(_: T): vector<T>;", project),
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
-            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
-            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
-            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
-            builtinSpecFunction("spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;", project),
-            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
-            builtinSpecFunction("spec native fun int2bv(_: num): bv;", project),
-            builtinSpecFunction("spec native fun bv2int(_: bv): num;", project),
+        val builtinsModule = it.project.psiFactory.module(
+            """
+            module 0x0::builtin_spec_functions {
+                spec native fun max_u8(): num;
+                spec native fun max_u64(): num;
+                spec native fun max_u128(): num;
+                spec native fun global<T: key>(addr: address): T;
+                spec native fun old<T>(_: T): T;
+                spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;
+                spec native fun TRACE<T>(_: T): T;
+                
+                spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;
+                spec native fun vec<T>(_: T): vector<T>;
+                spec native fun len<T>(_: vector<T>): num;
+                spec native fun contains<T>(v: vector<T>, e: T): bool;
+                spec native fun index_of<T>(_: vector<T>, _: T): num;
+                spec native fun range<T>(_: vector<T>): range;
+                spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;
+                spec native fun in_range<T>(_: vector<T>, _: num): bool;
+                spec native fun int2bv(_: num): bv;
+                spec native fun bv2int(_: bv): num;
+            }            
+        """.trimIndent()
         )
+        builtinsModule.specFunctionList
     }
 }
 
