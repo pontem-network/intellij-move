@@ -164,9 +164,7 @@
                implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
 
     <codeInsight.parameterInfo language="Move"
-                               implementationClass="org.move.ide.hints.FunctionParameterInfoHandler" />
-    <codeInsight.parameterInfo language="Move"
-                               implementationClass="org.move.ide.hints.TypeParameterInfoHandler" />
+                               implementationClass="org.move.ide.hints.paramInfo.CompositeParameterInfoHandler" />
     <codeInsight.parameterInfo language="Move"
                                implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler" />
     <codeInsight.parameterNameHints language="Move"

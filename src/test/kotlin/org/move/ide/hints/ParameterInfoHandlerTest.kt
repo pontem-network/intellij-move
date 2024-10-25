@@ -1,15 +1,18 @@
 package org.move.ide.hints
 
-import org.move.lang.core.psi.MvValueArgumentList
+import com.intellij.psi.PsiElement
+import org.move.ide.hints.paramInfo.CompositeParameterInfoHandler
+import org.move.ide.hints.paramInfo.ParameterInfoProvider
+import org.move.ide.hints.paramInfo.ParameterInfoProvider.ParametersInfo
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
-class ParameterInfoHandlerTest
-    : ParameterInfoHandlerTestCase<MvValueArgumentList, ParamsDescription>(FunctionParameterInfoHandler()) {
+class ParameterInfoHandlerTest:
+    ParameterInfoHandlerTestCase<PsiElement, ParametersInfo>(CompositeParameterInfoHandler()) {
 
     fun `test fun no args`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo() {}
             fun main() { foo(/*caret*/); }    
         }
@@ -18,7 +21,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun no args before args`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo() {}
             fun main() { foo/*caret*/(); }    
         }
@@ -27,7 +30,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun one arg`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(arg: u8) {}
             fun main() { foo(/*caret*/); }    
         }
@@ -36,7 +39,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun one arg end`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(arg: u8) {}
             fun main() { foo(42/*caret*/); }    
         }
@@ -45,7 +48,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun many args`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(arg: u8, s: &signer, v: vector<u8>) {}
             fun main() { foo(/*caret*/); }    
         }
@@ -65,7 +68,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun poorly formatted args`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(arg:          u8,     s:    &signer,    v   : vector<u8>) {}
             fun main() { foo(/*caret*/); }    
         }
@@ -74,7 +77,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun args index 0`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(val1: u8, val2: u8) {}
             fun main() { foo(42/*caret*/); }    
         }
@@ -83,7 +86,7 @@ class ParameterInfoHandlerTest
 
     fun `test fun args index 1`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(val1: u8, val2: u8) {}
             fun main() { foo(42, 10/*caret*/); }    
         }
@@ -92,7 +95,7 @@ class ParameterInfoHandlerTest
 
     fun `test multiline call`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(val1: u8, val2: u8) {}
             fun main() { 
                 foo(
@@ -106,7 +109,7 @@ class ParameterInfoHandlerTest
 
     fun `test builtin function`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun main() {
                 borrow_global(/*caret*/);
             }    
@@ -119,7 +122,7 @@ class ParameterInfoHandlerTest
         module 0x1::string {
             public fun call(addr: address) {}
         }
-        module M {
+        module 0x1::m {
             use 0x1::string::call as mycall;
             fun main() {
                 mycall(/*caret*/);
@@ -130,7 +133,7 @@ class ParameterInfoHandlerTest
 
     fun `test not applied within declaration`() = checkByText(
         """
-        module M {
+        module 0x1::m {
             fun foo(val1/*caret*/: u8, val2: u8) {}
         }
     """, "", -1
@@ -165,5 +168,41 @@ class ParameterInfoHandlerTest
             }
         }        
     """, "modifier: bool", 0
+    )
+
+    @MoveV2()
+    fun `test receiver style fun called as a function`() = checkByText(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+            fun get_val(self: &S, modifier: bool): u8 { self.val }
+            fun main(s: S) {
+                get_val(/*caret*/);
+            }
+        }        
+    """, "self: &S, modifier: bool", 0
+    )
+
+    @MoveV2()
+    fun `test receiver style function with generic parameter`() = checkByText(
+        """
+        module 0x1::m {
+            struct S<R> {}
+            fun push_back<R>(self: &mut S<R>, e: R);
+            fun main(s: S<u8>) {
+                s.push_back(/*caret*/);
+            }
+        }        
+    """, "e: u8", 0
+    )
+
+    fun `test parameter info for assert macro`() = checkByText(
+        """
+        module 0x1::m {
+            fun main() {
+                assert!(/*caret*/);
+            }
+        }        
+    """, "_: bool, err: u64", 0
     )
 }

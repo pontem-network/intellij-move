@@ -19,6 +19,7 @@ import java.util.concurrent.Executor
  */
 abstract class AsyncParameterInfoHandlerBase<ParameterOwner : PsiElement, ParameterType : Any> :
     ParameterInfoHandler<ParameterOwner, ParameterType> {
+
     abstract fun findTargetElement(file: PsiFile, offset: Int): ParameterOwner?
 
     /**
