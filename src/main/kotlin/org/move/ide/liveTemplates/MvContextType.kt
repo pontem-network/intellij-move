@@ -1,6 +1,5 @@
 package org.move.ide.liveTemplates
 
-import com.intellij.codeInsight.template.EverywhereContextType
 import com.intellij.codeInsight.template.TemplateActionContext
 import com.intellij.codeInsight.template.TemplateContextType
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
@@ -13,13 +12,8 @@ import org.move.ide.MvHighlighter
 import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.MvCodeBlock
 import org.move.lang.core.psi.MvModule
-import kotlin.reflect.KClass
 
-sealed class MvContextType(
-    id: String,
-    presentableName: String,
-    baseContextType: KClass<out TemplateContextType>
-) : TemplateContextType(id, presentableName, baseContextType.java) {
+sealed class MvContextType(presentableName: String): TemplateContextType(presentableName) {
 
     final override fun isInContext(context: TemplateActionContext): Boolean {
         if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MoveLanguage)) {
@@ -38,20 +32,16 @@ sealed class MvContextType(
 
     override fun createHighlighter(): SyntaxHighlighter = MvHighlighter()
 
-    class Generic : MvContextType("MOVE_FILE", "Move", EverywhereContextType::class) {
+    class Generic: MvContextType("Move") {
         override fun isInContext(element: PsiElement) = true
     }
 
-    class Module : MvContextType("MOVE_MODULE", "Module", Generic::class) {
-        override fun isInContext(element: PsiElement): Boolean
-        // inside MvModuleDef
-                = owner(element) is MvModule
+    class Module: MvContextType("Module") {
+        override fun isInContext(element: PsiElement): Boolean = owner(element) is MvModule
     }
 
-    class Block : MvContextType("MOVE_BLOCK", "Block", Generic::class) {
-        override fun isInContext(element: PsiElement): Boolean
-        // inside MvCodeBlock
-                = owner(element) is MvCodeBlock
+    class Block: MvContextType("Block") {
+        override fun isInContext(element: PsiElement): Boolean = owner(element) is MvCodeBlock
     }
 
     companion object {
