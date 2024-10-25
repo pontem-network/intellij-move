@@ -18,6 +18,7 @@ val MvPatBinding.bindingOwner: PsiElement?
         it is MvLetStmt
                 || it is MvFunctionParameter
                 || it is MvSchemaFieldStmt
+                || it is MvLambdaParameter
     }
 
 sealed class RsBindingModeKind {
