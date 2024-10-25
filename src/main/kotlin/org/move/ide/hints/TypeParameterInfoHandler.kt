@@ -76,15 +76,15 @@ class TypeParamsDescription(
  * Calculates the text representation and ranges for parameters
  */
 private fun typeParamsDescription(params: List<MvTypeParameter>): TypeParamsDescription {
-    val parts = params.map {
+    val arguments = params.map {
         val name = it.name ?: "_"
         val bound = it.typeParamBound?.text ?: ""
         name + bound
     }
-    val presentText = if (parts.isEmpty()) "<no arguments>" else parts.joinToString(", ")
+    val presentText = if (arguments.isEmpty()) "<no arguments>" else arguments.joinToString(", ")
     return TypeParamsDescription(
         presentText,
-        parts.indices.map { parts.calculateRange(it) }
+        arguments.indices.map { arguments.calculateRange(it) }
     )
 }
 

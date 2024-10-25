@@ -72,12 +72,12 @@
     <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
     <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
     <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
-<!--    <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />-->
+    <!--    <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />-->
     <stubIndex implementation="org.move.lang.index.MvModuleIndex" />
     <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
     <platform.backend.documentation.psiTargetProvider
-            implementation="org.move.ide.docs.MvPsiDocumentationTargetProvider"/>
+        implementation="org.move.ide.docs.MvPsiDocumentationTargetProvider" />
 
     <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer" />
 
@@ -164,9 +164,7 @@
                implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
 
     <codeInsight.parameterInfo language="Move"
-                               implementationClass="org.move.ide.hints.FunctionParameterInfoHandler" />
-    <codeInsight.parameterInfo language="Move"
-                               implementationClass="org.move.ide.hints.TypeParameterInfoHandler" />
+                               implementationClass="org.move.ide.hints.paramInfo.CompositeParameterInfoHandler" />
     <codeInsight.parameterInfo language="Move"
                                implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler" />
     <codeInsight.parameterNameHints language="Move"
@@ -182,9 +180,18 @@
                                           nameKey="inlay.hints.types"/>
 
     <defaultLiveTemplates file="liveTemplates/Move.xml" />
-    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Generic" />
-    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Module" />
-    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Block" />
+    <liveTemplateContext
+        implementation="org.move.ide.liveTemplates.MvContextType$Generic"
+        contextId="MOVE_FILE"
+        baseContextId="OTHER" />
+    <liveTemplateContext
+        implementation="org.move.ide.liveTemplates.MvContextType$Module"
+        contextId="MOVE_MODULE"
+        baseContextId="MOVE_FILE" />
+    <liveTemplateContext
+        implementation="org.move.ide.liveTemplates.MvContextType$Block"
+        contextId="MOVE_BLOCK"
+        baseContextId="MOVE_FILE" />
 
     <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
                                order="first"
@@ -355,11 +362,11 @@
       <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
       <category>Move</category>
     </intentionAction>
-<!--    <intentionAction>-->
-<!--      <language>Move</language>-->
-<!--      <className>org.move.ide.intentions.InlineAddressBlockIntention</className>-->
-<!--      <category>Move</category>-->
-<!--    </intentionAction>-->
+    <!--    <intentionAction>-->
+    <!--      <language>Move</language>-->
+    <!--      <className>org.move.ide.intentions.InlineAddressBlockIntention</className>-->
+    <!--      <category>Move</category>-->
+    <!--    </intentionAction>-->
     <intentionAction>
       <language>Move</language>
       <className>org.move.ide.intentions.ChopParameterListIntention</className>

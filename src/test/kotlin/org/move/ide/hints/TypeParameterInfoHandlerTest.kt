@@ -1,13 +1,16 @@
 package org.move.ide.hints
 
+import com.intellij.psi.PsiElement
+import org.move.ide.hints.paramInfo.CompositeParameterInfoHandler
+import org.move.ide.hints.paramInfo.ParameterInfoProvider.ParametersInfo
 import org.move.lang.core.psi.MvTypeArgumentList
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class TypeParameterInfoHandlerTest :
-    ParameterInfoHandlerTestCase<MvTypeArgumentList, TypeParamsDescription>(TypeParameterInfoHandler()) {
+    ParameterInfoHandlerTestCase<PsiElement, ParametersInfo>(CompositeParameterInfoHandler()) {
 
     fun `test struct as type`() = checkByText("""
-        module M {
+        module 0x1::m {
             struct S<T: copy> {
                 field: T
             }
@@ -17,7 +20,7 @@ class TypeParameterInfoHandlerTest :
     """, "T: copy", 0)
 
     fun `test struct as literal`() = checkByText("""
-        module M {
+        module 0x1::m {
             struct S<T: copy> {
                 field: T
             }
@@ -29,7 +32,7 @@ class TypeParameterInfoHandlerTest :
     """, "T: copy", 0)
 
     fun `test function no arguments`() = checkByText("""
-        module M {
+        module 0x1::m {
             fun call() {}
             
             fun main() {
@@ -39,7 +42,7 @@ class TypeParameterInfoHandlerTest :
     """, "<no arguments>", 0)
 
     fun `test function`() = checkByText("""
-        module M {
+        module 0x1::m {
             fun call<R: store>() {}
             
             fun main() {
@@ -52,7 +55,7 @@ class TypeParameterInfoHandlerTest :
         module 0x1::mod {
             public fun call<R: store>() {}
         }
-        module M {
+        module 0x1::m {
             use 0x1::mod::call as mycall;
             fun main() {
                 mycall</*caret*/>()
@@ -61,7 +64,7 @@ class TypeParameterInfoHandlerTest :
     """, "R: store", 0)
 
     fun `test function index 0`() = checkByText("""
-        module M {
+        module 0x1::m {
             fun call<R: store, S: copy>() {}
             
             fun main() {
@@ -71,7 +74,7 @@ class TypeParameterInfoHandlerTest :
     """, "R: store, S: copy", 0)
 
     fun `test function index 1`() = checkByText("""
-        module M {
+        module 0x1::m {
             fun call<R: store, S: copy>() {}
             
             fun main() {
