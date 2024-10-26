@@ -730,4 +730,27 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test compound assigment lhs binding`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let x = 1;
+                  //X
+                x += 1;
+              //^  
+            }
+        }        
+    """)
+
+    fun `test compound assigment rhs binding`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let x = 1;
+                let y = 2;
+                  //X
+                x += y;
+                   //^
+            }
+        }        
+    """)
 }

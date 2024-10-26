@@ -57,6 +57,7 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test dot dot pattern`() = doTest()
 
     fun `test loop invariants`() = doTest()
+    fun `test assign bin expr`() = doTest()
 
     // feature declaration is required here, as it's a parser-level feature
 //    @ResourceAccessControl()

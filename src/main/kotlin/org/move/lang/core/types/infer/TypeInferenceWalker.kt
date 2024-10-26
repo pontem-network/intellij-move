@@ -887,6 +887,11 @@ class TypeInferenceWalker(
             "||", "&&", "==>", "<==>" -> inferLogicBinaryExprTy(binaryExpr)
             "^", "|", "&" -> inferBitOpsExprTy(binaryExpr)
             "<<", ">>" -> inferBitShiftsExprTy(binaryExpr)
+
+            "+=", "-=", "*=", "/=", "%=" -> inferArithmeticBinaryExprTy(binaryExpr)
+            "|=", "^=", "&=" -> inferBitOpsExprTy(binaryExpr)
+            ">>=", "<<=" -> inferBitShiftsExprTy(binaryExpr)
+
             else -> TyUnknown
         }
     }
