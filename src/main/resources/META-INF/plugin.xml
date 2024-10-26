@@ -290,7 +290,7 @@
     <localInspection language="Move" groupName="Move"
                      displayName="Convert to method call"
                      enabledByDefault="true" level="WEAK WARNING"
-                     implementationClass="org.move.ide.inspections.MvReplaceWithMethodCallInspection" />
+                     implementationClass="org.move.ide.inspections.compilerV2.MvReplaceWithMethodCallInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Convert to index expr"
                      enabledByDefault="true" level="WEAK WARNING"

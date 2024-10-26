@@ -1,4 +1,4 @@
-package org.move.ide.inspections.fixes
+package org.move.ide.inspections.compilerV2.fixes
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
