@@ -1,8 +1,9 @@
-package org.move.ide.inspections
+package org.move.ide.inspections.compilerV2
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import org.move.ide.inspections.fixes.ReplaceWithMethodCallFix
+import org.move.ide.inspections.MvLocalInspectionTool
+import org.move.ide.inspections.compilerV2.fixes.ReplaceWithMethodCallFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemModule
