@@ -10,8 +10,8 @@ abstract class Move2OnlyInspectionBase<TElement: MvElement>(
     val elementClass: Class<TElement>
 ): MvLocalInspectionTool() {
 
-    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
-        return object: MvVisitor() {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
+        object: MvVisitor() {
             override fun visitElement(o: MvElement) {
                 super.visitElement(o)
                 if (!elementClass.isInstance(o) || o.textLength == 0) return
@@ -23,7 +23,6 @@ abstract class Move2OnlyInspectionBase<TElement: MvElement>(
                 visitTargetElement(o as TElement, holder, isOnTheFly)
             }
         }
-    }
 
     abstract fun visitTargetElement(element: TElement, holder: ProblemsHolder, isOnTheFly: Boolean)
 }
