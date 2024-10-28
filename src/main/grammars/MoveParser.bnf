@@ -77,6 +77,7 @@
         DOT         =  '.'
 
         EXCL        =  '!'
+
         PLUS        =  '+'
         MINUS       =  '-'
         XOR         =  '^'
@@ -100,6 +101,16 @@
         LT_EQ_EQ_GT     = '<==>'
         DOT_DOT     = '..'
         FAT_ARROW       = '=>'
+
+        PLUS_EQ = '+='
+        MINUS_EQ = '-='
+        MUL_EQ = '*='
+        DIV_EQ = '/='
+        MODULO_EQ = '%='
+
+        AND_EQ = '&='
+        OR_EQ = '|='
+        XOR_EQ = '^='
 
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'

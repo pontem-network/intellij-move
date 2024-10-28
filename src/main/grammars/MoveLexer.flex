@@ -106,20 +106,33 @@ QUOTE_IDENTIFIER=\'[_a-zA-Z][_a-zA-Z0-9]*
       "!="       { return NOT_EQ; }
 
       "!"        { return EXCL; }
+
+      "<"        { return LT; }
+      ">"        { return GT; }
+      "@"        { return AT; }
+      "#"        { return HASH; }
+      "=>"       { return FAT_ARROW; }
+
+      "+="       { return PLUS_EQ; }
+      "-="       { return MINUS_EQ; }
+      "*="       { return MUL_EQ; }
+      "/="       { return DIV_EQ; }
+      "%="       { return MODULO_EQ; }
+
       "+"        { return PLUS; }
       "-"        { return MINUS; }
       "*"        { return MUL; }
       "/"        { return DIV; }
       "%"        { return MODULO; }
-      "^"        { return XOR; }
 
-      "<"        { return LT; }
-      ">"        { return GT; }
+      "&="       { return AND_EQ; }
+      "|="       { return OR_EQ; }
+      "^="       { return XOR_EQ; }
+
       "&"        { return AND; }
       "|"        { return OR; }
-      "@"        { return AT; }
-      "#"        { return HASH; }
-      "=>"       { return FAT_ARROW; }
+      "^"        { return XOR; }
+
 
       // keywords
       "script"         { return SCRIPT_KW; }
