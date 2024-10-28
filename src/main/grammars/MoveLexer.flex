@@ -76,15 +76,14 @@ HEX_STRING_LITERAL=x\" ( [0-9a-zA-Z]* ) (\")?
 BYTE_STRING_LITERAL=b\" ( [^\\\"\n] | \\[^] )* (\")?
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+QUOTE_IDENTIFIER=\'[_a-zA-Z][_a-zA-Z0-9]*
 
 %%
 <YYINITIAL> {
       {WHITE_SPACE}        { return WHITE_SPACE; }
       {EOL_DOC_COMMENT}                 { return EOL_DOC_COMMENT; }
       "//" .*              { return EOL_COMMENT; }
-      "/*"                 {
-          yybegin(IN_BLOCK_COMMENT); yypushback(2);
-       }
+      "/*"                 { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
 }
 
 <YYINITIAL> {
@@ -158,7 +157,9 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
-  {IDENTIFIER}               { return IDENTIFIER; }
+
+  {QUOTE_IDENTIFIER}               { return QUOTE_IDENTIFIER; }
+  {IDENTIFIER}             { return IDENTIFIER; }
 }
 
 <IN_BLOCK_COMMENT> {

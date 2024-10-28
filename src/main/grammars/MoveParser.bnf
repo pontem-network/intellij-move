@@ -54,6 +54,7 @@
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+//        QUOTE_IDENTIFIER='regexp:\'[_a-zA-Z][_a-zA-Z0-9]*'
         FUNCTION_PATTERN_IDENT='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
 
         L_BRACE          =  '{'
@@ -829,7 +830,7 @@ private ExprStmt_recover ::= !(';' | '}' | <<mslOnly SpecExpr_first>> | Expr_fir
 private Expr_first ::= let | if | while | loop | continue | break | return | spec
                         | copy | move | abort
 //                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
-                        | IDENTIFIER
+                        | IDENTIFIER | QUOTE_IDENTIFIER
                         | '*' | '&' | '!' | '|' | '{' | '('
                         | AnyLitToken_first
                         | (AddressRef '::')
@@ -1017,8 +1018,9 @@ MoveExpr ::= move Expr
 ReturnExpr ::= return Expr?
 
 AbortExpr ::= abort Expr
-BreakExpr ::= break
-ContinueExpr ::= continue
+
+BreakExpr ::= break Label?
+ContinueExpr ::= continue Label?
 
 VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
 VectorLitItems ::= '[' <<comma_separated_list Expr>>? ']'
@@ -1139,12 +1141,12 @@ private ConditionBody_recover ::= !')'
 
 ElseBlock ::= else AnyBlock { pin = 1 }
 
-LoopExpr ::= loop AnyBlock {
-    pin = 1
+LoopExpr ::= LabelDecl? loop AnyBlock {
+    pin = 2
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
-WhileExpr ::= while Condition AnyBlock SpecBlockExpr? {
-    pin = 1
+WhileExpr ::= LabelDecl? while Condition AnyBlock SpecBlockExpr? {
+    pin = 2
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
 ForExpr ::= for ForIterCondition AnyBlock {
@@ -1154,6 +1156,9 @@ ForExpr ::= for ForIterCondition AnyBlock {
 ForIterCondition ::= '(' PatBinding in Expr SpecBlockExpr? ')' {
     pin = 1
 }
+
+LabelDecl ::= QUOTE_IDENTIFIER ':'
+Label ::= QUOTE_IDENTIFIER
 
 AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 Initializer ::= '=' Expr { pin = 1 }
