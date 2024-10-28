@@ -295,6 +295,10 @@
                      displayName="Convert to index expr"
                      enabledByDefault="true" level="WEAK WARNING"
                      implementationClass="org.move.ide.inspections.compilerV2.MvReplaceWithIndexExprInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Convert to compound expr"
+                     enabledByDefault="true" level="WEAK WARNING"
+                     implementationClass="org.move.ide.inspections.compilerV2.MvReplaceWithCompoundAssignmentInspection" />
 
     <!--  cannot be run on-the-fly, therefore enabled  -->
     <globalInspection language="Move" groupName="Move"
