@@ -8,7 +8,7 @@ import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
 
-class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
+class MvTokenType(debugName: String): IElementType(debugName, MoveLanguage)
 
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 
@@ -37,7 +37,9 @@ val MOVE_BINARY_OPS = tokenSetOf(
     OR, AND, XOR,
     MUL, DIV, MODULO,
     PLUS, MINUS,
-    XOR, AND, OR
+    XOR, AND, OR,
+    PLUS_EQ, MINUS_EQ, MUL_EQ, DIV_EQ, MODULO_EQ,
+    AND_EQ, OR_EQ, XOR_EQ, GT_GT_EQ, LT_LT_EQ,
 )
 
 val LIST_OPEN_SYMBOLS = tokenSetOf(L_PAREN, LT)

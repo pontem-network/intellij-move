@@ -14,4 +14,5 @@ class FormatterTest : MvFormatterTestBase() {
     fun `test inner block`() = doTest()
     fun `test expressions`() = doTest()
     fun `test chop wraps`() = doTest()
+    fun `test compound assignments`() = doTest()
 }
