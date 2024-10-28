@@ -1020,7 +1020,15 @@ ReturnExpr ::= return Expr?
 AbortExpr ::= abort Expr
 
 BreakExpr ::= break Label?
+{
+    implements = [ "org.move.lang.core.psi.ext.label.MvLabelReferenceOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvBreakExprMixin"
+}
 ContinueExpr ::= continue Label?
+{
+    implements = [ "org.move.lang.core.psi.ext.label.MvLabelReferenceOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvContinueExprMixin"
+}
 
 VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
 VectorLitItems ::= '[' <<comma_separated_list Expr>>? ']'
@@ -1143,11 +1151,17 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 
 LoopExpr ::= LabelDecl? loop AnyBlock {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MvLoopLike" ]
+    implements = [
+        "org.move.lang.core.psi.ext.label.MvLabeledExpression"
+        "org.move.lang.core.psi.MvLoopLike"
+    ]
 }
 WhileExpr ::= LabelDecl? while Condition AnyBlock SpecBlockExpr? {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MvLoopLike" ]
+    implements = [
+        "org.move.lang.core.psi.ext.label.MvLabeledExpression"
+        "org.move.lang.core.psi.MvLoopLike"
+    ]
 }
 ForExpr ::= for ForIterCondition AnyBlock {
     pin = 1
@@ -1158,7 +1172,15 @@ ForIterCondition ::= '(' PatBinding in Expr SpecBlockExpr? ')' {
 }
 
 LabelDecl ::= QUOTE_IDENTIFIER ':'
+{
+    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.label.MvLabelDeclMixin"
+}
 Label ::= QUOTE_IDENTIFIER
+{
+    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.label.MvLabelMixin"
+}
 
 AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 Initializer ::= '=' Expr { pin = 1 }

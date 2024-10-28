@@ -145,6 +145,19 @@ inline fun <reified T: PsiElement> PsiElement.ancestorsOfTypeWithSelf(): Sequenc
 //    return this.ancestors.filterIsInstance<T>()
 }
 
+/**
+ * Returns the element which should be used as the parent of this element in a tree up
+ * walk during a resolve operation. For most elements, this returns {@code getParent()},
+ * but the context can be overridden for some elements like code fragments (see
+ * {@link JavaCodeFragmentFactory#createCodeBlockCodeFragment(String, PsiElement, boolean)}).
+ *
+ * @return the resolve context element.
+ */
+val PsiElement.contexts: Sequence<PsiElement>
+    get() = generateSequence(this) {
+        if (it is PsiFile) null else it.context
+    }
+
 fun PsiElement.findFirstParent(strict: Boolean = true, cond: Condition<in PsiElement>) =
     PsiTreeUtil.findFirstParent(this, strict, cond)
 
