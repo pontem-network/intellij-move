@@ -374,12 +374,14 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     """
     )
 
-//    fun `test resource access control keywords highlighting`() = checkHighlighting(
-//        """
-//        module 0x1::m {
-//            fun f_multiple() <KEYWORD>reads</KEYWORD> R <KEYWORD>writes</KEYWORD> T, S <KEYWORD>reads</KEYWORD> G<u64> {}
-//            fun f_multiple2() <KEYWORD>pure</KEYWORD> {}
-//        }
-//    """
-//    )
+    @MoveV2
+    fun `test loop labels`() = checkHighlighting("""
+        module 0x1::m {
+            fun main() {
+                <LABEL>'label</LABEL>: loop {
+                    break <LABEL>'label</LABEL>;
+                }
+            }
+        }        
+    """)
 }

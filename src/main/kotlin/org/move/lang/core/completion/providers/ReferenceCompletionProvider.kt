@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
+import org.move.lang.core.psi.MvLabel
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
 import org.move.lang.core.psi.ext.fieldNames
@@ -17,6 +18,7 @@ import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.wrapWithFilter
+import org.move.lang.core.resolve2.processLabelResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
 
 object ReferenceCompletionProvider: MvCompletionProvider() {
@@ -57,6 +59,7 @@ object ReferenceCompletionProvider: MvCompletionProvider() {
                     val processor = skipAlreadyProvidedFields(element, processor0)
                     processPatBindingResolveVariants(element, true, processor)
                 }
+                is MvLabel -> processLabelResolveVariants(element, it)
             }
         }
     }

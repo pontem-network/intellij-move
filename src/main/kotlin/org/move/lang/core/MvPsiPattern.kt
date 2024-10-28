@@ -26,6 +26,9 @@ object MvPsiPattern {
     fun identifierStatementBeginningPattern(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         psiElement(IDENTIFIER).and(onStatementBeginning(*startWords))
 
+//    fun quoteIdentifierStatementBeginning(): PsiElementPattern.Capture<PsiElement> =
+//        psiElement(QUOTE_IDENTIFIER).and(onStatementBeginning())
+
 //    val onStatementBeginning: PsiElementPattern.Capture<PsiElement> =
 //        psiElement().with(OnStatementBeginning())
 
@@ -139,6 +142,19 @@ object MvPsiPattern {
                 })
             return psiElement().withParent(simplePath)
         }
+
+    val inAnyLoop: PsiElementPattern.Capture<PsiElement> =
+        psiElement().inside(
+            true,
+            psiElement<MvCodeBlock>().withParent(
+                or(
+                    psiElement<MvForExpr>(),
+                    psiElement<MvLoopExpr>(),
+                    psiElement<MvWhileExpr>()
+                )
+            ),
+            psiElement<MvLambdaExpr>()
+        )
 
     class AfterSibling(val sibling: IElementType, val withPossibleError: Boolean = true):
         PatternCondition<PsiElement>("afterSiblingKeywords") {

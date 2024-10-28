@@ -841,7 +841,7 @@ private SpecExpr_first ::= include | apply | pragma | emits | assume | assert | 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-private AnyBlock ::= CodeBlock | InlineBlock
+private AnyBlockImpl ::= CodeBlock | InlineBlock
 
 InlineBlock ::= Expr
 
@@ -1141,29 +1141,29 @@ private MatchArm_with_recover ::= !'}' MatchArm
 }
 private MatchArm_recover ::= !(Pat_first | Attr_first | '}')
 
-IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
+IfExpr ::= if Condition AnyBlockImpl ElseBlock? { pin = 1 }
 
 Condition ::= '(' ConditionBody ')' { pin = 1 }
 private ConditionBody ::= Expr { recoverWhile = "ConditionBody_recover" }
 private ConditionBody_recover ::= !')'
 
-ElseBlock ::= else AnyBlock { pin = 1 }
+ElseBlock ::= else AnyBlockImpl { pin = 1 }
 
-LoopExpr ::= LabelDecl? loop AnyBlock {
+LoopExpr ::= LabelDecl? loop AnyBlockImpl {
     pin = 2
     implements = [
         "org.move.lang.core.psi.ext.label.MvLabeledExpression"
         "org.move.lang.core.psi.MvLoopLike"
     ]
 }
-WhileExpr ::= LabelDecl? while Condition AnyBlock SpecBlockExpr? {
+WhileExpr ::= LabelDecl? while Condition AnyBlockImpl SpecBlockExpr? {
     pin = 2
     implements = [
         "org.move.lang.core.psi.ext.label.MvLabeledExpression"
         "org.move.lang.core.psi.MvLoopLike"
     ]
 }
-ForExpr ::= for ForIterCondition AnyBlock {
+ForExpr ::= for ForIterCondition AnyBlockImpl {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
