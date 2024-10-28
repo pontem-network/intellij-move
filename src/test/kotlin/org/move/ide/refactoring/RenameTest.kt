@@ -559,6 +559,24 @@ class RenameTest : MvTestBase() {
     """
     )
 
+    fun `test rename loop label`() = doTest("'mylabel", """
+        module 0x1::m {
+            fun main() {
+                '/*caret*/label: loop {
+                    break 'label;
+                }
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                'mylabel: loop {
+                    break 'mylabel;
+                }
+            }
+        }        
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

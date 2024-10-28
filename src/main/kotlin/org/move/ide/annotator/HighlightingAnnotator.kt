@@ -5,8 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.move.cli.settings.moveSettings
 import org.move.ide.colors.MvColor
-import org.move.lang.MvElementTypes.HEX_INTEGER_LITERAL
-import org.move.lang.MvElementTypes.IDENTIFIER
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inference
@@ -49,6 +48,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (leafType.toString().endsWith("_kw")) return MvColor.KEYWORD
         return when {
             leafType == IDENTIFIER -> highlightIdentifier(parent)
+            leafType == QUOTE_IDENTIFIER -> MvColor.LABEL
             leafType == HEX_INTEGER_LITERAL -> MvColor.NUMBER
             parent is MvAssertMacroExpr -> MvColor.MACRO
             parent is MvAttr -> MvColor.ATTRIBUTE

@@ -62,7 +62,7 @@ class MvPsiFactory(val project: Project) {
             ?: error("Failed to create identifier: `$text`")
 
     fun quoteIdentifier(identifierName: String): PsiElement =
-        createFromText<MvLabelDecl>("module 0x0::m { fun main() { '$identifierName: loop (); } }")
+        createFromText<MvLabelDecl>("module 0x0::m { fun main() { $identifierName: loop (); } }")
             ?.quoteIdentifier
             ?: error("Failed to create quote identifier: `$identifierName`")
 
