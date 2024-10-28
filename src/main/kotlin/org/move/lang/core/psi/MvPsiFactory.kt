@@ -61,6 +61,11 @@ class MvPsiFactory(val project: Project) {
         createFromText<MvModule>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
+    fun quoteIdentifier(identifierName: String): PsiElement =
+        createFromText<MvLabelDecl>("module 0x0::m { fun main() { '$identifierName: loop (); } }")
+            ?.quoteIdentifier
+            ?: error("Failed to create quote identifier: `$identifierName`")
+
     fun createComma(): PsiElement =
         createFromText<MvValueArgument>(
             """
@@ -87,7 +92,7 @@ class MvPsiFactory(val project: Project) {
 //    fun specBuiltinConst(text: String): MvConst =
 //        createFromText("module 0x0::spec_builtins { $text }") ?: error("Failed to create const")
 
-    inline fun <reified T : MvExpr> expr(text: String): T =
+    inline fun <reified T: MvExpr> expr(text: String): T =
         createFromText("module 0x0::_DummyModule { fun call() { let _ = $text; } }")
             ?: error("Failed to create expr")
 
@@ -123,8 +128,9 @@ class MvPsiFactory(val project: Project) {
     }
 
     fun useSpeckForGroupWithDummyAlias(text: String): MvUseSpeck {
-        val useGroup = createFromText<MvUseGroup>("module 0x0::_DummyModule { use 0x1::Module::{$text as dummy}; }")
-            ?: error("Failed to create an item import from text: `$text`")
+        val useGroup =
+            createFromText<MvUseGroup>("module 0x0::_DummyModule { use 0x1::Module::{$text as dummy}; }")
+                ?: error("Failed to create an item import from text: `$text`")
         return useGroup.useSpeckList.first()
     }
 
@@ -198,7 +204,7 @@ class MvPsiFactory(val project: Project) {
 
     fun createNewline(): PsiElement = createWhitespace("\n")
 
-    inline fun <reified T : MvElement> createFromText(@Language("Move") code: CharSequence): T? {
+    inline fun <reified T: MvElement> createFromText(@Language("Move") code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
                 MvConstants.PSI_FACTORY_DUMMY_FILE,

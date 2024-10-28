@@ -1,9 +1,5 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.cli.MovePackage
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.MvVisibilityOwner
 import java.util.*
 
 sealed class Visibility2 {
@@ -22,11 +18,12 @@ enum class Namespace {
     TYPE,
     ENUM,
     SCHEMA,
-    MODULE;
+    MODULE,
+    LABEL;
 
     companion object {
         fun all(): Set<Namespace> {
-            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA, MODULE)
+            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA, MODULE, LABEL)
         }
 
         fun none(): Set<Namespace> = setOf()
@@ -42,6 +39,7 @@ val FUNCTIONS = setOf(Namespace.FUNCTION)
 val SCHEMAS = setOf(Namespace.SCHEMA)
 val TYPES = setOf(Namespace.TYPE)
 val ENUMS = setOf(Namespace.ENUM)
+val LABELS = setOf(Namespace.LABEL)
 val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
 
 val TYPES_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME)
