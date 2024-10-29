@@ -316,8 +316,6 @@
     <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml" />
     <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml" />
 
-    <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
-
     <!-- Project Creation -->
     <projectOpenProcessor id="Move" implementation="org.move.ide.newProject.MoveLangProjectOpenProcessor" />
     <directoryProjectGenerator implementation="org.move.ide.newProject.MoveProjectGenerator" />

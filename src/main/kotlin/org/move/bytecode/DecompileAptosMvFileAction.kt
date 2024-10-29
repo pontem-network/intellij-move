@@ -9,7 +9,7 @@ import org.move.bytecode.AptosBytecodeNotificationProvider.DecompilationModalTas
 import org.move.cli.settings.getAptosCli
 import org.move.ide.MoveIcons
 import org.move.ide.notifications.showBalloon
-import org.move.openapiext.openFile
+import org.move.openapiext.openFileInEditor
 import org.move.stdext.unwrapOrElse
 import java.util.*
 
@@ -27,7 +27,7 @@ class DecompileAptosMvFileAction: DumbAwareAction("Decompile .mv File", null, Mo
                 project.showBalloon("Error with decompilation process", it, ERROR)
                 return
             }
-        project.openFile(decompiledFile)
+        project.openFileInEditor(decompiledFile)
     }
 
     override fun update(e: AnActionEvent) {

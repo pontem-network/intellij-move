@@ -18,7 +18,7 @@ import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.getAptosCliDisposedOnFileChange
 import org.move.ide.notifications.showDebugBalloon
 import org.move.ide.notifications.updateAllNotifications
-import org.move.openapiext.openFile
+import org.move.openapiext.openFileInEditor
 import org.move.openapiext.pathAsPath
 import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
@@ -60,7 +60,8 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                     // file exists
                     text = "Decompiled source file exists"
                     createActionLabel("Open source file") {
-                        project.openFile(existingDecompiledFile)
+                        project.openFileInEditor(existingDecompiledFile)
+                        updateAllNotifications(project)
                     }
                     return@apply
                 }
@@ -70,7 +71,7 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                 if (decompilationFailed) {
                     text = "Decompilation command failed"
                     createActionLabel("Try again") {
-                        val virtualFile = decompilationTask.runWithProgress()
+                        val decompiledFile = decompilationTask.runWithProgress()
                             .unwrapOrElse {
                                 // something went wrong with the decompilation command again
                                 project.showDebugBalloon("Error with decompilation process", it, ERROR)
@@ -78,7 +79,8 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                             }
 
                         properties.setValue(decompilationFailedKey, false)
-                        project.openFile(virtualFile)
+                        project.openFileInEditor(decompiledFile, true)
+
                         updateAllNotifications(project)
                     }
                 } else {
@@ -92,8 +94,9 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                             // something went wrong with the decompilation command
                             properties.setValue(decompilationFailedKey, true)
                         } else {
-                            project.openFile(decompiledFile)
+                            project.openFileInEditor(decompiledFile)
                         }
+
                         updateAllNotifications(project)
                     }
                 }

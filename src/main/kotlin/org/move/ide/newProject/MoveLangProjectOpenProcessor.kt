@@ -9,6 +9,8 @@ import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.move.cli.MvConstants
 import org.move.ide.MoveIcons
+import org.move.ide.notifications.updateAllNotifications
+import org.move.openapiext.openFileInEditor
 import javax.swing.Icon
 
 /// called only when IDE opens a project from existing sources
@@ -35,11 +37,14 @@ class MoveLangProjectOpenProcessor: ProjectOpenProcessor() {
                 StartupManager.getInstance(project)
                     .runWhenProjectIsInitialized(object: DumbAwareRunnable {
                         override fun run() {
-                            ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
                             // NOTE:
                             // this cannot be moved to a ProjectActivity, as Move.toml files
                             // are not created by the time those activities are executed
-                            ProjectInitializationSteps.openMoveTomlInEditor(project)
+                            val moveTomlFile = project.guessMoveTomlFile()
+                            if (moveTomlFile != null) {
+                                project.openFileInEditor(moveTomlFile, true)
+                            }
+                            updateAllNotifications(project)
                         }
                     })
             }
