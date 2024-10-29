@@ -47,7 +47,7 @@ fun gitTimestamp(): String {
 
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.38.1"
+val codeVersion = "1.39.0"
 
 var pluginVersion = "$codeVersion.$shortPlatformVersion"
 if (publishingChannel != "default") {
@@ -62,18 +62,15 @@ val pluginName = "intellij-move"
 val pluginJarName = "intellij-move-$pluginVersion"
 
 val javaVersion = JavaVersion.VERSION_21
-//val javaVersion = if (shortPlatformVersion == "241") JavaVersion.VERSION_17 else JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "4.2.3"
-
-val remoteRobotVersion = "0.11.22"
+val aptosVersion = "4.2.6"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("org.jetbrains.intellij.platform") version "2.1.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
