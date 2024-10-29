@@ -63,7 +63,7 @@ val pluginJarName = "intellij-move-$pluginVersion"
 
 val javaVersion = JavaVersion.VERSION_21
 val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "4.2.3"
+val aptosVersion = "4.2.6"
 
 group = pluginGroup
 version = pluginVersion
