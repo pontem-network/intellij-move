@@ -1,17 +1,16 @@
 # Move on Aptos language plugin for the IntelliJ-based IDEs
 
+The plugin supports the latest version of the Move on Aptos language, including the new features of v2, like enums or receiver-style functions. 
 Plugin documentation is available at https://intellij-move.github.io/. 
 
 ## Installation
 
 Open `Settings > Plugins > Marketplace` in your IDE, search for _Move on Aptos_ and install the plugin.
 
-EAP builds are also available, which contain the build from the current `master` branch. See the [docs on EAPs](https://intellij-move.github.io/quick-start.html#install-eap-version-of-the-plugin) for the how-to instructions.
-
 ## Compatible IDEs
 
-The plugin is compatible with all IntelliJ-based IDEs starting from 2023.3. 
-Versions older than 2023.3 have an older version of the Intellij-Move plugin available.
+The plugin is compatible with all IntelliJ-based IDEs starting from 2024.2. 
+On the other versions, older versions of the plugin are available. 
 
 New features are announced in [What's New section of the documentation](https://intellij-move.github.io/what-s-new.html). 
 
