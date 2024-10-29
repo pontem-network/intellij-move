@@ -18,6 +18,7 @@ import org.move.cli.settings.aptos.AptosExecType
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
+import org.move.openapiext.openFileInEditor
 import org.move.stdext.unwrapOrThrow
 
 data class AptosProjectConfig(
@@ -45,7 +46,7 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
             AptosExecType.aptosExecPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
                 ?: error("validated before")
         val aptos = Aptos(aptosPath, disposable)
-        val manifestFile =
+        val moveTomlFile =
             project.computeWithCancelableProgress("Generating Aptos project...") {
                 val manifestFile =
                     aptos.init(
@@ -62,11 +63,10 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
             it.localAptosPath = projectConfig.localAptosPath
         }
 
-        ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
         // NOTE:
         // this cannot be moved to a ProjectActivity, as Move.toml files
         // are not created by the time those activities are executed
-        ProjectInitializationSteps.openMoveTomlInEditor(project, manifestFile)
+        project.openFileInEditor(moveTomlFile)
 
         project.moveProjectsService.scheduleProjectsRefresh("After `aptos move init`")
     }

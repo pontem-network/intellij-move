@@ -3,12 +3,12 @@ package org.move.openapiext
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.ide.util.PsiNavigationSupport
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
+import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
@@ -41,14 +41,11 @@ fun Project.addRunConfiguration(
     return runnerAndConfigurationSettings
 }
 
-data class GeneratedFilesHolder(val manifest: VirtualFile)
 
-fun Project.openFile(file: VirtualFile) = openFiles(GeneratedFilesHolder(file))
-
-fun Project.openFiles(files: GeneratedFilesHolder) = invokeLater {
+fun Project.openFileInEditor(file: VirtualFile, requestFocus: Boolean = true) {
     if (!isHeadlessEnvironment) {
-        val navigation = PsiNavigationSupport.getInstance()
-        navigation.createNavigatable(this, files.manifest, -1).navigate(false)
+        val navigatable = PsiNavigationSupport.getInstance().createNavigatable(this, file, -1)
+        navigatable.navigate(requestFocus)
     }
 }
 
