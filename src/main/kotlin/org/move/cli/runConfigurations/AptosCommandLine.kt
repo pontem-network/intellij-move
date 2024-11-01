@@ -3,8 +3,7 @@ package org.move.cli.runConfigurations
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.PtyCommandLine
-import com.intellij.execution.util.ExecUtil
-import com.intellij.openapi.util.text.StringUtil
+import com.intellij.util.execution.ParametersListUtil
 import java.nio.file.Path
 
 data class AptosCommandLine(
@@ -13,9 +12,8 @@ data class AptosCommandLine(
     val workingDirectory: Path? = null,
     val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
-    fun joinArgs(): String {
-        return StringUtil.join(subCommand?.split(" ").orEmpty() + arguments, " ")
-    }
+    val commandLineString: String
+        get() = ParametersListUtil.join(subCommand?.split(" ").orEmpty() + arguments)
 
     fun toGeneralCommandLine(cliExePath: Path): GeneralCommandLine {
         val generalCommandLine = GeneralCommandLine()
