@@ -63,10 +63,10 @@ abstract class CommandConfigurationBase(
     }
 
     fun clean(): CleanConfiguration {
-        val workingDirectory = workingDirectory
-            ?: return configurationError("No working directory specified")
         val (subcommand, arguments) = parseAptosCommand(command)
             ?: return configurationError("No subcommand specified")
+        val workingDirectory = workingDirectory
+            ?: return configurationError("No working directory specified")
 
         val aptosPath = project.aptosExecPath ?: return configurationError("No Aptos CLI specified")
         if (!aptosPath.exists()) {

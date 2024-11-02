@@ -26,7 +26,7 @@ abstract class CommandConfigurationProducerBase:
         templateConfiguration.name = cmdConf.configurationName
 
         val commandLine = cmdConf.commandLine
-        templateConfiguration.command = commandLine.joinArgs()
+        templateConfiguration.command = commandLine.commandLineString
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var environment = commandLine.environmentVariables.envs
@@ -45,7 +45,7 @@ abstract class CommandConfigurationProducerBase:
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
-                && configuration.command == cmdConf.commandLine.joinArgs()
+                && configuration.command == cmdConf.commandLine.commandLineString
                 && configuration.workingDirectory == cmdConf.commandLine.workingDirectory
                 && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
     }

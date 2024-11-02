@@ -115,11 +115,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         networkUrl: String? = null,
         connectionTimeoutSecs: Int = -1,
         nodeApiKey: String? = null,
-        runner: CapturingProcessHandler.() -> ProcessOutput = {
-            runProcessWithGlobalProgress(
-                timeoutInMilliseconds = null
-            )
-        }
+        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): RsProcessResult<ProcessOutput> {
         val commandLine = AptosCommandLine(
             subCommand = "move download",
@@ -184,11 +180,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     private fun executeCommandLine(
         commandLine: AptosCommandLine,
         listener: ProcessListener? = null,
-        runner: CapturingProcessHandler.() -> ProcessOutput = {
-            runProcessWithGlobalProgress(
-                timeoutInMilliseconds = null
-            )
-        }
+        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): RsProcessResult<ProcessOutput> {
         return commandLine
             .toGeneralCommandLine(this.cliLocation)
