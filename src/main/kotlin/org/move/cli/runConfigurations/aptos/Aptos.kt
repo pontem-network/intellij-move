@@ -27,7 +27,11 @@ import java.nio.file.Paths
 
 data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disposable {
 
+    private val innerDisposable = Disposer.newCheckedDisposable("Aptos CLI disposable")
+
     init {
+        Disposer.register(this, innerDisposable)
+
         if (parentDisposable != null) {
             Disposer.register(parentDisposable, this)
         }
@@ -184,7 +188,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     ): RsProcessResult<ProcessOutput> {
         return commandLine
             .toGeneralCommandLine(this.cliLocation)
-            .execute(this, stdIn = null, listener = listener, runner = runner)
+            .execute(innerDisposable, stdIn = null, listener = listener, runner = runner)
     }
 
     override fun dispose() {}

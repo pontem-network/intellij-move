@@ -26,7 +26,6 @@ import org.move.cli.settings.isValidExecutable
 import org.move.ide.actions.DownloadAptosSDKAction
 import org.move.ide.notifications.logOrShowBalloon
 import org.move.openapiext.BundledAptosManager
-import org.move.openapiext.SUPPORTED_PLATFORMS
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
 import org.move.stdext.toPathOrNull
@@ -62,6 +61,13 @@ enum class AptosExecType {
 }
 
 class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
+
+    private val innerDisposable =
+        Disposer.newCheckedDisposable("Internal checked disposable for ChooseAptosCliPanel")
+
+    init {
+        Disposer.register(this, innerDisposable)
+    }
 
     data class Data(
         val aptosExecType: AptosExecType,
@@ -100,7 +106,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
             onTextChanged = { _ ->
                 updateVersion()
             })
-    private val versionLabel = VersionLabel(this, versionUpdateListener)
+    private val versionLabel = VersionLabel(innerDisposable, versionUpdateListener)
 
     private val bundledRadioButton = JBRadioButton("Bundled")
     private val localRadioButton = JBRadioButton("Local")

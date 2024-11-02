@@ -1,6 +1,7 @@
 package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import org.move.cli.runConfigurations.AptosCommandLine
@@ -30,7 +31,7 @@ open class TextOrErrorLabel(icon: Icon?): JBLabel(icon) {
 }
 
 class VersionLabel(
-    parentDisposable: Disposable,
+    parentDisposable: CheckedDisposable,
     private val versionUpdateListener: (() -> Unit)? = null
 ):
     TextOrErrorLabel(null) {
