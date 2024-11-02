@@ -59,11 +59,9 @@ if (publishingChannel != "default") {
 
 val pluginGroup = "org.move"
 val pluginName = "intellij-move"
-val pluginJarName = "intellij-move-$pluginVersion"
 
-val javaVersion = JavaVersion.VERSION_21
-val kotlinReflectVersion = "1.9.10"
-val aptosVersion = "4.2.6"
+val kotlinReflectVersion = "2.0.21"
+val aptosVersion = "4.3.0"
 
 group = pluginGroup
 version = pluginVersion
@@ -117,11 +115,6 @@ allprojects {
             testFramework(TestFrameworkType.Platform)
         }
     }
-
-//    configure<JavaPluginExtension> {
-//        sourceCompatibility = javaVersion
-//        targetCompatibility = javaVersion
-//    }
 
     sourceSets {
         main {
