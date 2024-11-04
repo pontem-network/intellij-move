@@ -169,7 +169,7 @@
                                implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler" />
     <codeInsight.parameterNameHints language="Move"
                                     implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider" />
-    
+
 <!--    <codeInsight.inlayProvider language="Move"-->
 <!--                               implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider" />-->
     <codeInsight.declarativeInlayProvider group="TYPES_GROUP"
@@ -355,9 +355,9 @@
     <notificationGroup id="Move Language" displayType="BALLOON" />
     <notificationGroup id="Move Compile Log" displayType="NONE" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.InvalidBlockchainCliConfiguration" />
+        implementation="org.move.ide.notifications.InvalidAptosCliConfigurationNotification" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider" />
+        implementation="org.move.ide.notifications.NoAptosProjectDetectedNotification" />
 
     <intentionAction>
       <language>Move</language>

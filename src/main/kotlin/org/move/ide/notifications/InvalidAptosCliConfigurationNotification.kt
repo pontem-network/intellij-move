@@ -1,38 +1,30 @@
 package org.move.ide.notifications
 
-import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.PerProjectAptosConfigurable
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
-import org.move.cli.settings.aptosExecPath
+import org.move.cli.settings.aptosCliPath
 import org.move.cli.settings.isValidExecutable
 import org.move.cli.settings.moveSettings
-import org.move.lang.isMoveFile
-import org.move.lang.isMoveTomlManifestFile
-import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettingsDialog
 import org.move.stdext.getCliFromPATH
 
-class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
-                                                           DumbAware {
+class InvalidAptosCliConfigurationNotification(project: Project): MvAptosEditorNotificationProvider(project),
+                                                                  DumbAware {
 
-    override val VirtualFile.disablingKey: String get() = NOTIFICATION_STATUS_KEY + path
+    override val notificationProviderId: String get() = NOTIFICATION_STATUS_KEY
 
-    override fun createNotificationPanel(file: VirtualFile, project: Project): EditorNotificationPanel? {
-        if (isUnitTestMode) return null
-        if (!(file.isMoveFile || file.isMoveTomlManifestFile)) return null
-        @Suppress("UnstableApiUsage")
-        if (!project.isTrusted()) return null
-        if (isNotificationDisabled(file)) return null
+    override fun createAptosNotificationPanel(file: VirtualFile, project: Project): EditorNotificationPanel? {
 
-        if (project.aptosExecPath.isValidExecutable()) return null
+        if (project.aptosCliPath.isValidExecutable()) return null
 
-        val aptosCliFromPATH = getCliFromPATH("aptos")?.toString()
         return EditorNotificationPanel().apply {
             text = "Aptos CLI path is not provided or invalid"
+
+            val aptosCliFromPATH = getCliFromPATH("aptos")?.toString()
             if (aptosCliFromPATH != null) {
                 createActionLabel("Set to \"$aptosCliFromPATH\"") {
                     project.moveSettings.modify {
@@ -41,6 +33,7 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
                     }
                 }
             }
+
             createActionLabel("Configure") {
                 project.showSettingsDialog<PerProjectAptosConfigurable>()
             }
@@ -50,6 +43,10 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
             }
         }
     }
+
+    override val enableForScratchFiles: Boolean get() = true
+
+    override val enableForDecompiledFiles: Boolean get() = true
 
     companion object {
         private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"

@@ -14,7 +14,7 @@ import org.move.cli.readString
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration.Companion.configurationError
 import org.move.cli.runConfigurations.test.AptosTestConsoleProperties.Companion.TEST_TOOL_WINDOW_SETTING_KEY
 import org.move.cli.runConfigurations.test.AptosTestRunState
-import org.move.cli.settings.aptosExecPath
+import org.move.cli.settings.aptosCliPath
 import org.move.cli.writePath
 import org.move.cli.writeString
 import org.move.stdext.exists
@@ -68,7 +68,7 @@ abstract class CommandConfigurationBase(
         val workingDirectory = workingDirectory
             ?: return configurationError("No working directory specified")
 
-        val aptosPath = project.aptosExecPath ?: return configurationError("No Aptos CLI specified")
+        val aptosPath = project.aptosCliPath ?: return configurationError("No Aptos CLI specified")
         if (!aptosPath.exists()) {
             return configurationError("Invalid Aptos CLI location: $aptosPath")
         }
