@@ -14,6 +14,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.SystemProperties
 import org.move.cli.runConfigurations.MvCapturingProcessHandler
@@ -38,7 +39,7 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
 
 /// `owner` parameter represents the object whose lifetime it's using for the process lifetime
 fun GeneralCommandLine.execute(
-    owner: Disposable,
+    owner: CheckedDisposable,
     stdIn: ByteArray? = null,
     runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() },
     listener: ProcessListener? = null
@@ -55,11 +56,10 @@ fun GeneralCommandLine.execute(
         }
     }
 
-    @Suppress("DEPRECATION")
     val ownerIsAlreadyDisposed =
         runReadAction {
             // check that owner is disposed, kill process then
-            if (Disposer.isDisposed(owner)) {
+            if (owner.isDisposed) {
                 true
             } else {
                 Disposer.register(owner, processKiller)

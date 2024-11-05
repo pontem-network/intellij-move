@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts.DialogTitle
 import com.intellij.ui.DocumentAdapter
@@ -22,7 +23,7 @@ import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 
 class UiDebouncer(
-    private val parentDisposable: Disposable,
+    private val parentDisposable: CheckedDisposable,
     private val delayMillis: Int = 200
 ) {
     private val alarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD, parentDisposable)
@@ -32,14 +33,12 @@ class UiDebouncer(
      * Use it only for UI updates
      */
     fun <T> update(onPooledThread: () -> T, onUiThread: (T) -> Unit) {
-        @Suppress("DEPRECATION")
-        if (Disposer.isDisposed(parentDisposable)) return
+        if (parentDisposable.isDisposed) return
         alarm.cancelAllRequests()
         alarm.addRequest({
                              val r = onPooledThread()
                              invokeLater(ModalityState.any()) {
-                                 @Suppress("DEPRECATION")
-                                 if (!Disposer.isDisposed(parentDisposable)) {
+                                 if (!parentDisposable.isDisposed) {
                                      onUiThread(r)
                                  }
                              }
