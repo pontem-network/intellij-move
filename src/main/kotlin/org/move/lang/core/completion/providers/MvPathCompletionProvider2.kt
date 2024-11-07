@@ -2,6 +2,8 @@ package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.checkCanceled
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
@@ -91,6 +93,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
         }
 
+        ProgressManager.checkCanceled()
+
         addCompletionsForOutOfScopeItems(
             parameters,
             pathElement,
@@ -127,6 +131,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                 processedNames,
                 importContext,
             )
+
         var candidatesCollector = createProcessor { e ->
             e as CandidateScopeEntry
             val lookupElement = e.element.createLookupElement(
@@ -138,6 +143,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         }
         candidatesCollector =
             applySharedCompletionFilters(ns, completionContext.resolutionCtx!!, candidatesCollector)
+
         candidatesCollector.processAll(
             candidates.map { CandidateScopeEntry(it.qualName.itemName, it.element, ns, it) }
         )
