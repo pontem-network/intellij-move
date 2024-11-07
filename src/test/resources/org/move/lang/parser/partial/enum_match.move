@@ -5,5 +5,7 @@ module 0x1::enum_match {
         match (s) { Red }
         match (s) { Red => }
         match (s) { Red => true, Blue => }
+
+        match () {}
     }
 }

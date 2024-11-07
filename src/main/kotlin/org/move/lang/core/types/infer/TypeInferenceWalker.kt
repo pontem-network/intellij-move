@@ -1179,10 +1179,11 @@ class TypeInferenceWalker(
     }
 
     private fun inferMatchExprTy(matchExpr: MvMatchExpr): Ty {
-        val matchingTy = ctx.resolveTypeVarsIfPossible(matchExpr.matchArgument.expr.inferType())
+        val matchArgExpr = matchExpr.matchArgument.expr ?: return TyUnknown
+        val matchArgTy = ctx.resolveTypeVarsIfPossible(matchArgExpr.inferType())
         val arms = matchExpr.arms
         for (arm in arms) {
-            arm.pat.extractBindings(matchingTy)
+            arm.pat.extractBindings(patTy = matchArgTy)
             arm.expr?.inferType()
             arm.matchArmGuard?.expr?.inferType(TyBool)
         }
@@ -1212,8 +1213,8 @@ class TypeInferenceWalker(
         updateStmt.exprList.forEach { it.inferType() }
     }
 
-    private fun MvPat.extractBindings(ty: Ty) {
-        this.extractBindings(this@TypeInferenceWalker, ty)
+    private fun MvPat.extractBindings(patTy: Ty) {
+        this.extractBindings(this@TypeInferenceWalker, patTy)
     }
 
     private fun checkTypeMismatch(

@@ -1135,7 +1135,7 @@ MatchExpr ::= Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody
 {
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
-MatchArgument ::= '(' Expr ')'
+MatchArgument ::= '(' Expr ')' { pin = 1 }
 
 MatchBody ::= '{' MatchArm_with_recover* '}' { pin = 1 }
 MatchArm ::= Attr* Pat MatchArmGuard? '=>' Expr ','?
