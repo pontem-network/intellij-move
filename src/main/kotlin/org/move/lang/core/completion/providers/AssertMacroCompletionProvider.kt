@@ -14,7 +14,7 @@ import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.MACRO_PRIORITY
 import org.move.lang.core.psi.MvPath
 
-object MacrosCompletionProvider : MvCompletionProvider() {
+object AssertMacroCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPattern.path()
             .andNot(MvPsiPattern.pathType())

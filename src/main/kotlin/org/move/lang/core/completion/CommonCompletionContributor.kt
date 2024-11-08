@@ -3,9 +3,7 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
 import com.intellij.psi.util.elementType
-import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.MvElementTypes.MODULE_KW
-import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.providers.*
 import org.move.lang.core.completion.sort.COMPLETION_WEIGHERS_GROUPED
 import org.move.lang.core.psi.MvModule
@@ -14,7 +12,6 @@ import org.move.lang.core.psi.ext.prevNonWsSibling
 class CommonCompletionContributor: CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
-//        extend(CompletionType.BASIC, SpecItemCompletionProvider)
 
         // addresses
         extend(CompletionType.BASIC, NamedAddressInUseStmtCompletionProvider)
@@ -26,11 +23,9 @@ class CommonCompletionContributor: CompletionContributor() {
         extend(CompletionType.BASIC, SchemaFieldsCompletionProvider)
         extend(CompletionType.BASIC, MvPathCompletionProvider2)
 
-        extend(CompletionType.BASIC, MvPsiPattern.ability(), AbilitiesCompletionProvider)
-//        extend(CompletionType.BASIC, MvPsiPattern.refExpr(), BoolsCompletionProvider)
-
+        extend(CompletionType.BASIC, AbilitiesCompletionProvider)
         extend(CompletionType.BASIC, BoolsCompletionProvider)
-        extend(CompletionType.BASIC, MacrosCompletionProvider)
+        extend(CompletionType.BASIC, AssertMacroCompletionProvider)
         extend(CompletionType.BASIC, VectorLiteralCompletionProvider)
         extend(CompletionType.BASIC, MethodOrFieldCompletionProvider)
 
