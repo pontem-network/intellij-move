@@ -12,7 +12,7 @@ import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupFromNamedElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -132,7 +132,8 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         var candidatesCollector = createProcessor { e ->
             e as CandidateScopeEntry
-            val lookupElement = e.element.createLookupFromNamedElement(
+            val lookupElement = createLookupElement(
+                e,
                 completionContext,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, e.candidate)

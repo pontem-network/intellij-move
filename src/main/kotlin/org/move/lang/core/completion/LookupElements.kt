@@ -8,13 +8,12 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
 
@@ -48,12 +47,6 @@ const val VECTOR_LITERAL_PRIORITY = 30.0
 //const val MACRO_PRIORITY = -0.1
 //const val DEPRECATED_PRIORITY = -1.0
 
-fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
-    return LookupElementBuilder
-        .createWithIcon(this)
-        .withLookupString(this.name ?: "")
-}
-
 data class MvCompletionContext(
     val contextElement: MvElement,
     val msl: Boolean,
@@ -61,21 +54,6 @@ data class MvCompletionContext(
     val resolutionCtx: ResolutionContext? = null,
     val structAsType: Boolean = false
 )
-
-fun MvNamedElement.createLookupFromNamedElement(
-    completionCtx: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
-    priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionCtx),
-): LookupElement {
-    val scopeName = this.name ?: ""
-    val builder =
-        this.getLookupElementBuilder2(completionCtx, scopeName, subst)
-            .withInsertHandler(insertHandler)
-            .withPriority(priority)
-    val props = getLookupElementProperties(this, subst, completionCtx)
-    return builder.toMvLookupElement(properties = props)
-}
 
 fun InsertionContext.addSuffix(suffix: String) {
     document.insertString(selectionEndOffset, suffix)

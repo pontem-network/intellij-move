@@ -9,12 +9,14 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupFromNamedElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
+import org.move.lang.core.resolve.SimpleScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.lang.core.resolve.ref.NAMES
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
@@ -196,8 +198,11 @@ class LookupElementTest: MvTestBase() {
         val element = myFixture.findElementInEditor<T>() as? MvNamedElement
             ?: error("Marker `^` should point to the MvNamedElement")
 
+        val name = element.name ?: error("name == null")
+        val scopeEntry = SimpleScopeEntry(name, element, NAMES)
         val completionCtx = MvCompletionContext(element, false)
-        val lookup = element.createLookupFromNamedElement(completionCtx)
+
+        val lookup = createLookupElement(scopeEntry, completionCtx)
         checkLookupPresentation(
             lookup,
             tailText = tailText,

@@ -8,9 +8,10 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupFromNamedElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider: MvCompletionProvider() {
@@ -67,8 +68,10 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         completionContext: MvCompletionContext,
     ) {
         for (field in referredStruct.namedFields.filter { it.name !in providedFieldNames }) {
+            val scopeEntry = FieldResolveVariant(field.name, field)
+            createLookupElement(scopeEntry, completionContext)
             result.addElement(
-                field.createLookupFromNamedElement(completionContext)
+                createLookupElement(scopeEntry, completionContext)
             )
         }
     }
