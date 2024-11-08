@@ -43,6 +43,7 @@ address 0x1 {
         struct Struct2 {
             field2: u8
         }
+        enum S { One, Two, Three { val: u8 }, Four(u8, u8)}
         public fun call_pub() {}
         public(friend) fun call_pub_friend() {}
         entry fun call_entry() {}
@@ -59,6 +60,12 @@ address 0x1 {
    field1: u8
   -Struct2
    field2: u8
+  -S
+   One
+   Two
+   -Three
+    val: u8
+   Four(u8, u8)
   call_pub()
   call_pub_friend()
   call_entry()

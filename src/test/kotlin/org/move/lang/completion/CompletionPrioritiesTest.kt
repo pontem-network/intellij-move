@@ -187,6 +187,18 @@ module 0x1::Main {
         """
     )
 
+    @MoveV2
+    fun `test match keyword should be before the main function`() = checkCompletionsOrder(
+        listOf("match", "main"),
+        """
+            module 0x1::mod {
+                fun main() {
+                    m/*caret*/                    
+                }
+            }                
+        """
+    )
+
     private fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings = variants.map { it.lookupString }

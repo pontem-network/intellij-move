@@ -1,10 +1,8 @@
 package org.move.ide.utils.imports
 
-import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.VisibilityStatus.Visible
@@ -21,9 +19,12 @@ object ImportCandidateCollector {
 
         val candidates = mutableListOf<ImportCandidate>()
         val elementsFromIndex = MvNamedElementIndex.getElementsByName(project, targetName, indexSearchScope)
-        for (elementFromIndex in elementsFromIndex) {
-            if (elementFromIndex !is MvQualNamedElement) continue
 
+        for ((i, elementFromIndex) in elementsFromIndex.withIndex()) {
+            // check for cancellation sometimes
+            if (i % 100 == 0) ProgressManager.checkCanceled()
+
+            if (elementFromIndex !is MvQualNamedElement) continue
             if (elementFromIndex.namespace !in ns) continue
 
             val visFilter = elementFromIndex.visInfo().createFilter()
@@ -47,18 +48,15 @@ object ImportCandidateCollector {
         prefixMatcher: PrefixMatcher,
         processedPathNames: Set<String>,
         importContext: ImportContext,
-//        itemFilter: (PsiElement) -> Boolean = { true }
     ): List<ImportCandidate> {
         val keys = hashSetOf<String>().apply {
             val names = MvNamedElementIndex.getAllKeys(project)
             addAll(names)
             removeAll(processedPathNames)
         }
-
-        return prefixMatcher.sortMatching(keys)
-            .flatMap { targetName ->
-                ProgressManager.checkCanceled()
-                getImportCandidates(importContext, targetName).distinctBy { it.element }
-            }
+        val matchingKeys = prefixMatcher.sortMatching(keys)
+        return matchingKeys.flatMap { targetName ->
+            getImportCandidates(importContext, targetName).distinctBy { it.element }
+        }
     }
 }

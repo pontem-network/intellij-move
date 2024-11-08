@@ -1,5 +1,6 @@
 package org.move.ide.utils.imports
 
+import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
