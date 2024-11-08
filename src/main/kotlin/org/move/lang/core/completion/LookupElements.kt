@@ -62,21 +62,18 @@ data class MvCompletionContext(
     val structAsType: Boolean = false
 )
 
-fun MvNamedElement.createLookupElement(
-    completionContext: MvCompletionContext,
+fun MvNamedElement.createLookupFromNamedElement(
+    completionCtx: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
+    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionCtx),
 ): LookupElement {
+    val scopeName = this.name ?: ""
     val builder =
-        this.getLookupElementBuilder(
-            completionContext,
-            subst = subst,
-            structAsType = completionContext.structAsType
-        )
+        this.getLookupElementBuilder2(completionCtx, scopeName, subst)
             .withInsertHandler(insertHandler)
             .withPriority(priority)
-    val props = getLookupElementProperties(this, subst, completionContext)
+    val props = getLookupElementProperties(this, subst, completionCtx)
     return builder.toMvLookupElement(properties = props)
 }
 
@@ -201,67 +198,6 @@ open class DefaultInsertHandler(val completionCtx: MvCompletionContext? = null):
                 }
             }
         }
-    }
-}
-
-private fun MvNamedElement.getLookupElementBuilder(
-    completionCtx: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
-    structAsType: Boolean = false
-): LookupElementBuilder {
-    val lookupElementBuilder = this.createLookupElementWithIcon()
-    val msl = completionCtx.msl
-    return when (this) {
-        is MvFunction -> {
-            val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
-            if (completionCtx.contextElement is MvMethodOrField) {
-                lookupElementBuilder
-                    .withTailText(signature.paramsText())
-                    .withTypeText(signature.retTypeText())
-            } else {
-                lookupElementBuilder
-                    .withTailText(this.signatureText)
-                    .withTypeText(this.outerFileName)
-            }
-        }
-        is MvSpecFunction -> lookupElementBuilder
-            .withTailText(this.parameters.joinToSignature())
-            .withTypeText(this.returnType?.type?.text ?: "()")
-
-        is MvModule -> lookupElementBuilder
-            .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
-            .withTypeText(this.containingFile?.name)
-
-        is MvStruct -> {
-            val tailText = if (structAsType) "" else " { ... }"
-            lookupElementBuilder
-                .withTailText(tailText)
-                .withTypeText(this.containingFile?.name)
-        }
-
-        is MvNamedFieldDecl -> {
-            val fieldTy = this.type?.loweredType(msl)?.substitute(subst) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(fieldTy.text(false))
-        }
-        is MvConst -> {
-            val constTy = this.type?.loweredType(msl) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(constTy.text(true))
-        }
-
-        is MvPatBinding -> {
-            val bindingInference = this.inference(msl)
-            // race condition sometimes happens, when file is too big, inference is not finished yet
-            val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(ty.text(true))
-        }
-
-        is MvSchema -> lookupElementBuilder
-            .withTypeText(this.containingFile?.name)
-
-        else -> lookupElementBuilder
     }
 }
 

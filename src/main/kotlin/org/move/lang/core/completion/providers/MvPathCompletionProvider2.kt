@@ -3,7 +3,6 @@ package org.move.lang.core.completion.providers
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.checkCanceled
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
@@ -13,14 +12,13 @@ import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createLookupFromNamedElement
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
 import org.move.lang.core.resolve2.PathKind
 import org.move.lang.core.resolve2.pathKind
@@ -134,7 +132,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         var candidatesCollector = createProcessor { e ->
             e as CandidateScopeEntry
-            val lookupElement = e.element.createLookupElement(
+            val lookupElement = e.element.createLookupFromNamedElement(
                 completionContext,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, e.candidate)

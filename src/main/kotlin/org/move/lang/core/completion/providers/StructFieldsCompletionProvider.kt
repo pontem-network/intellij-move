@@ -8,7 +8,7 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createLookupFromNamedElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.withParent
@@ -68,7 +68,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
     ) {
         for (field in referredStruct.namedFields.filter { it.name !in providedFieldNames }) {
             result.addElement(
-                field.createLookupElement(completionContext)
+                field.createLookupFromNamedElement(completionContext)
             )
         }
     }

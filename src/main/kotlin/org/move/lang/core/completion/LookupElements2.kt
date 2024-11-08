@@ -21,25 +21,27 @@ fun createLookupElement(
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext)
 ): LookupElement {
     val element = scopeEntry.element
-    val lookup = element.getLookupElementBuilder(completionContext, scopeEntry.name, subst)
+    val lookup = element
+        .getLookupElementBuilder2(completionContext, scopeEntry.name, subst)
         .withInsertHandler(insertHandler)
         .withPriority(priority)
     val props = getLookupElementProperties(element, subst, completionContext)
     return lookup.toMvLookupElement(properties = props)
 }
 
-private fun MvNamedElement.getLookupElementBuilder(
-    context: MvCompletionContext,
+fun MvNamedElement.getLookupElementBuilder2(
+    completionCtx: MvCompletionContext,
     scopeName: String,
     subst: Substitution = emptySubstitution,
 ): LookupElementBuilder {
-    val msl = context.msl
-    val base = LookupElementBuilder.createWithSmartPointer(scopeName, this)
-        .withIcon(this.getIcon(0))
+    val base =
+        LookupElementBuilder.createWithSmartPointer(scopeName, this)
+            .withIcon(this.getIcon(0))
+    val msl = completionCtx.msl
     return when (this) {
         is MvFunction -> {
             val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
-            if (context.contextElement is MvMethodOrField) {
+            if (completionCtx.contextElement is MvMethodOrField) {
                 base
                     .withTailText(signature.paramsText())
                     .withTypeText(signature.retTypeText())
@@ -58,7 +60,7 @@ private fun MvNamedElement.getLookupElementBuilder(
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {
-            val tailText = if (context.structAsType) "" else " { ... }"
+            val tailText = if (completionCtx.structAsType) "" else " { ... }"
             base
                 .withTailText(tailText)
                 .withTypeText(this.containingFile?.name)
