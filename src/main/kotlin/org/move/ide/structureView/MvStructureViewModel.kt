@@ -39,15 +39,12 @@ class MvStructureViewModel(editor: Editor?, moveFile: MoveFile):
 class HidePrivateFunctionsFilter: Filter {
     override fun isVisible(treeNode: TreeElement): Boolean {
         // if action is set, only public items are visible
-        return (treeNode as? MvStructureViewTreeElement)?.isPublic ?: true
+        return (treeNode as? MvStructureViewTreeElement)?.isPublicItem != false
     }
 
     @Suppress("DialogTitleCapitalization")
-    override fun getPresentation(): ActionPresentation {
-        return ActionPresentationData(
-            "Hide private functions", null, PlatformIcons.PRIVATE_ICON
-        )
-    }
+    override fun getPresentation(): ActionPresentation =
+        ActionPresentationData("Hide private functions", null, PlatformIcons.PRIVATE_ICON)
 
     override fun getName() = ID
 
@@ -65,11 +62,8 @@ class HideTestFunctionsFilter: Filter {
     }
 
     @Suppress("DialogTitleCapitalization")
-    override fun getPresentation(): ActionPresentation {
-        return ActionPresentationData(
-            "Hide #[test] functions", null, AllIcons.Nodes.Test
-        )
-    }
+    override fun getPresentation(): ActionPresentation =
+        ActionPresentationData("Hide #[test] functions", null, AllIcons.Nodes.Test)
 
     override fun getName() = ID
 
@@ -87,11 +81,8 @@ class HideTestOnlyItemsFilter: Filter {
     }
 
     @Suppress("DialogTitleCapitalization")
-    override fun getPresentation(): ActionPresentation {
-        return ActionPresentationData(
-            "Hide #[test_only] items", null, AllIcons.Nodes.Type
-        )
-    }
+    override fun getPresentation(): ActionPresentation =
+        ActionPresentationData("Hide #[test_only] items", null, AllIcons.Nodes.Type)
 
     override fun getName() = ID
 

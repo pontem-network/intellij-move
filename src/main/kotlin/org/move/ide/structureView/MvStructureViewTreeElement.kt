@@ -2,65 +2,76 @@ package org.move.ide.structureView
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.structureView.StructureViewTreeElement
+import com.intellij.ide.util.treeView.TreeAnchorizer
 import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
+import com.intellij.psi.PsiElement
+import com.intellij.util.containers.map2Array
+import org.move.ide.presentation.getPresentationForStructure
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.openapiext.common.isUnitTestMode
 
-class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureViewTreeElement,
-                                                                      Queryable {
-    val isPublic: Boolean
-        get() {
-            return when (element) {
-                is MvFunction -> element.isPublic
-                is MvConst -> false
-                else -> true
-            }
+class MvStructureViewTreeElement(element: NavigatablePsiElement): StructureViewTreeElement,
+                                                                  Queryable {
+
+    val psiAnchor = TreeAnchorizer.getService().createAnchor(element)
+    val psi: NavigatablePsiElement?
+        get() =
+            TreeAnchorizer.getService().retrieveElement(psiAnchor) as? NavigatablePsiElement
+
+    val isPublicItem: Boolean =
+        when (val psi = psi) {
+            is MvFunction -> psi.isPublic
+            is MvConst -> false
+            else -> true
         }
 
-    val isTestFunction: Boolean
-        get() =
-            (element as? MvFunction)?.hasTestAttr ?: false
+    val isTestFunction: Boolean get() = (psi as? MvFunction)?.hasTestAttr == true
 
-    val isTestOnlyItem: Boolean
-        get() =
-            (element as? MvDocAndAttributeOwner)?.hasTestOnlyAttr ?: false
+    val isTestOnlyItem: Boolean get() = (psi as? MvDocAndAttributeOwner)?.hasTestOnlyAttr == true
 
-    override fun navigate(requestFocus: Boolean) = element.navigate(requestFocus)
-    override fun canNavigate(): Boolean = element.canNavigate()
-    override fun canNavigateToSource(): Boolean = element.canNavigateToSource()
-    override fun getPresentation(): ItemPresentation = this.element.presentation ?: PresentationData()
-
-    override fun getChildren(): Array<TreeElement> {
-        val items = when (element) {
-            is MoveFile -> {
-                listOf(
-                    element.modules().toList(),
-                    element.scripts().flatMap { it.functionList }
-                ).flatten()
-            }
-            is MvAddressDef -> element.modules()
-            is MvModule -> {
-                listOf(
-                    element.consts(),
-                    element.structs(),
-                    element.enumList,
-                    element.allFunctions(),
-                    element.specFunctions(),
-                ).flatten()
-            }
-            is MvFieldsOwner -> element.namedFields
-            is MvEnum -> element.variants
-            else -> emptyList()
-        }
-        return items.map { MvStructureViewTreeElement(it) }.toTypedArray()
+    override fun navigate(requestFocus: Boolean) {
+        psi?.navigate(requestFocus)
     }
 
-    override fun getValue(): Any = this.element
+    override fun canNavigate(): Boolean = psi?.canNavigate() == true
+    override fun canNavigateToSource(): Boolean = psi?.canNavigateToSource() == true
+    override fun getValue(): PsiElement? = psi
+
+    override fun getPresentation(): ItemPresentation =
+        psi?.let(::getPresentationForStructure) ?: PresentationData("", null, null, null)
+
+    override fun getChildren(): Array<out TreeElement?> =
+        childElements.map2Array { MvStructureViewTreeElement(it) }
+
+    private val childElements: List<NavigatablePsiElement>
+        get() {
+            return when (val psi = psi) {
+                is MoveFile -> {
+                    listOf(
+                        psi.modules().toList(),
+                        psi.scripts().flatMap { it.functionList }
+                    ).flatten()
+                }
+                is MvAddressDef -> psi.modules()
+                is MvModule -> {
+                    listOf(
+                        psi.consts(),
+                        psi.structs(),
+                        psi.enumList,
+                        psi.allFunctions(),
+                        psi.specFunctions(),
+                    ).flatten()
+                }
+                is MvFieldsOwner -> psi.namedFields
+                is MvEnum -> psi.variants
+                else -> emptyList()
+            }
+        }
 
     // Used in `RsStructureViewTest`
     override fun putInfo(info: MutableMap<in String, in String>) {

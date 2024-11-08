@@ -98,15 +98,5 @@ abstract class MvStructMixin: MvStubbedNamedElementImpl<MvStructStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 
-    override fun getPresentation(): ItemPresentation? {
-        val structName = this.name ?: return null
-        return PresentationData(
-            structName,
-            this.locationString(true),
-            MoveIcons.STRUCT,
-            null
-        )
-    }
-
     override val abilitiesList: MvAbilitiesList? get() = abilitiesListList.firstOrNull()
 }

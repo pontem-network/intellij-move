@@ -11,10 +11,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.prevLeaf
-import com.intellij.util.SmartList
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.impl.MvFileStub
+import org.move.lang.core.types.address
+import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.document
 import org.move.openapiext.rootPath
@@ -354,20 +355,5 @@ private fun PsiElement.getLineCount(): Int {
     return (text ?: "").count { it == '\n' } + 1
 }
 
-fun PsiWhiteSpace.isMultiLine(): Boolean = getLineCount() > 1
-
-fun PsiElement.locationPath(tryRelative: Boolean): Path? {
-    val containingFilePath = this.containingFile.toNioPathOrNull() ?: return null
-    if (tryRelative) {
-        val rootPath = this.project.rootPath
-        if (rootPath != null) {
-            return rootPath.relativize(containingFilePath)
-        }
-    }
-    return containingFilePath
-}
-
-fun PsiElement.locationString(tryRelative: Boolean): String? =
-    locationPath(tryRelative)?.toString()
 
 

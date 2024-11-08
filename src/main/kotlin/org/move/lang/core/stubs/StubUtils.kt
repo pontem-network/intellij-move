@@ -2,6 +2,7 @@ package org.move.lang.core.stubs
 
 import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
@@ -9,6 +10,7 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.MvPsiFactory
+import org.move.ide.presentation.getPresentation
 
 abstract class MvStubbedElementImpl<StubT : StubElement<*>> : StubBasedPsiElementBase<StubT>, MvElement {
 
@@ -41,4 +43,6 @@ abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
     }
 
     override fun getTextOffset(): Int = nameIdentifier?.textOffset ?: super.getTextOffset()
+
+    override fun getPresentation(): ItemPresentation? = getPresentation(this)
 }

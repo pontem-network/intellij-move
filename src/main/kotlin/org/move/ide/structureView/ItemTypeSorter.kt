@@ -14,8 +14,8 @@ class ItemTypeComparator: Comparator<MvStructureViewTreeElement> {
     }
 
     private fun getIntKind(treeElement: MvStructureViewTreeElement): Int {
-        val element = treeElement.element
-        return when (element) {
+        val psi = treeElement.psi
+        return when (psi) {
             is MvConst -> 0
             is MvStruct -> 1
             is MvFunction -> 2
@@ -29,13 +29,8 @@ class ItemTypeComparator: Comparator<MvStructureViewTreeElement> {
 class ItemTypeSorter: Sorter {
     override fun getComparator(): Comparator<*> = ItemTypeComparator()
 
-    override fun getPresentation(): ActionPresentation {
-        return ActionPresentationData(
-            "By Type",
-            null,
-            AllIcons.ObjectBrowser.SortByType
-        )
-    }
+    override fun getPresentation(): ActionPresentation =
+        ActionPresentationData("By Type", null, AllIcons.ObjectBrowser.SortByType)
 
     override fun isVisible(): Boolean = true
 

@@ -43,15 +43,5 @@ abstract class MvEnumMixin: MvStubbedNamedElementImpl<MvEnumStub>,
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
-    override fun getPresentation(): ItemPresentation? {
-        val enumName = this.name ?: return null
-        return PresentationData(
-            enumName,
-            this.locationString(true),
-            MoveIcons.STRUCT,
-            null
-        )
-    }
-
     override val abilitiesList: MvAbilitiesList? get() = abilitiesListList.firstOrNull()
 }
