@@ -28,95 +28,17 @@ jobs:
             -   name: Setup Gradle
                 uses: gradle/actions/setup-gradle@v4
                 with:
+                    # with `true`, caches will only be created in `master` branch, and PRs will run read-only
                     cache-read-only: false
-
-#            -   name: Setup dependencies
-#                uses: gradle/actions/setup-gradle@v3
-#                with:
-#                    gradle-version: wrapper
-#                    cache-read-only: false
-#                    arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
                 run: ./gradlew assemble --stacktrace -Pkotlin.incremental=false
 
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
-#            -   name: Build
-#                uses: gradle/actions/setup-gradle@v3
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
-
             -   name: Tests
                 run: ./gradlew test --stacktrace -Pkotlin.incremental=false
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
-#            -   name: Tests
-#                uses: gradle/actions/setup-gradle@v3
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin.xml
                 run: ./gradlew verifyPluginConfiguration
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: ":verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
-
-#            -   name: Verify plugin.xml
-#                uses: gradle/actions/setup-gradle@v3
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: ":verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin
                 run: ./gradlew verifyPlugin
-
-#            -   name: Verify plugin
-#                uses: gradle/actions/setup-gradle@v3
-#                with:
-#                    gradle-version: wrapper
-#                    arguments: ":verifyPlugin -Pkotlin.incremental=false --no-daemon"
-#                    gradle-home-cache-cleanup: true
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
