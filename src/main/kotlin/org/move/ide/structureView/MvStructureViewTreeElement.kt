@@ -48,11 +48,13 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
                 listOf(
                     element.consts(),
                     element.structs(),
+                    element.enumList,
                     element.allFunctions(),
                     element.specFunctions(),
                 ).flatten()
             }
-            is MvStruct -> element.namedFields
+            is MvFieldsOwner -> element.namedFields
+            is MvEnum -> element.variants
             else -> emptyList()
         }
         return items.map { MvStructureViewTreeElement(it) }.toTypedArray()

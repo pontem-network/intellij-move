@@ -1,6 +1,8 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
@@ -40,6 +42,16 @@ abstract class MvEnumMixin: MvStubbedNamedElementImpl<MvEnumStub>,
             val moduleFQName = this.module.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+    override fun getPresentation(): ItemPresentation? {
+        val enumName = this.name ?: return null
+        return PresentationData(
+            enumName,
+            this.locationString(true),
+            MoveIcons.STRUCT,
+            null
+        )
+    }
 
     override val abilitiesList: MvAbilitiesList? get() = abilitiesListList.firstOrNull()
 }
