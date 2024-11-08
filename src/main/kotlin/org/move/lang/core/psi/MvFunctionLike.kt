@@ -23,18 +23,6 @@ interface MvFunctionLike: MvNameIdentifierOwner,
     val returnType: MvReturnType?
 }
 
-val MvFunctionLike.functionItemPresentation: PresentationData?
-    get() {
-        val name = this.name ?: return null
-        val signature = this.signatureText
-        return PresentationData(
-            "$name$signature",
-            this.locationString(true),
-            MoveIcons.FUNCTION,
-            TextAttributesKey.createTextAttributesKey("public")
-        )
-    }
-
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()

@@ -8,13 +8,12 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
 
@@ -48,12 +47,6 @@ const val VECTOR_LITERAL_PRIORITY = 30.0
 //const val MACRO_PRIORITY = -0.1
 //const val DEPRECATED_PRIORITY = -1.0
 
-fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
-    return LookupElementBuilder
-        .createWithIcon(this)
-        .withLookupString(this.name ?: "")
-}
-
 data class MvCompletionContext(
     val contextElement: MvElement,
     val msl: Boolean,
@@ -61,24 +54,6 @@ data class MvCompletionContext(
     val resolutionCtx: ResolutionContext? = null,
     val structAsType: Boolean = false
 )
-
-fun MvNamedElement.createLookupElement(
-    completionContext: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
-    priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
-): LookupElement {
-    val builder =
-        this.getLookupElementBuilder(
-            completionContext,
-            subst = subst,
-            structAsType = completionContext.structAsType
-        )
-            .withInsertHandler(insertHandler)
-            .withPriority(priority)
-    val props = getLookupElementProperties(this, subst, completionContext)
-    return builder.toMvLookupElement(properties = props)
-}
 
 fun InsertionContext.addSuffix(suffix: String) {
     document.insertString(selectionEndOffset, suffix)
@@ -201,67 +176,6 @@ open class DefaultInsertHandler(val completionCtx: MvCompletionContext? = null):
                 }
             }
         }
-    }
-}
-
-private fun MvNamedElement.getLookupElementBuilder(
-    completionCtx: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
-    structAsType: Boolean = false
-): LookupElementBuilder {
-    val lookupElementBuilder = this.createLookupElementWithIcon()
-    val msl = completionCtx.msl
-    return when (this) {
-        is MvFunction -> {
-            val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
-            if (completionCtx.contextElement is MvMethodOrField) {
-                lookupElementBuilder
-                    .withTailText(signature.paramsText())
-                    .withTypeText(signature.retTypeText())
-            } else {
-                lookupElementBuilder
-                    .withTailText(this.signatureText)
-                    .withTypeText(this.outerFileName)
-            }
-        }
-        is MvSpecFunction -> lookupElementBuilder
-            .withTailText(this.parameters.joinToSignature())
-            .withTypeText(this.returnType?.type?.text ?: "()")
-
-        is MvModule -> lookupElementBuilder
-            .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
-            .withTypeText(this.containingFile?.name)
-
-        is MvStruct -> {
-            val tailText = if (structAsType) "" else " { ... }"
-            lookupElementBuilder
-                .withTailText(tailText)
-                .withTypeText(this.containingFile?.name)
-        }
-
-        is MvNamedFieldDecl -> {
-            val fieldTy = this.type?.loweredType(msl)?.substitute(subst) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(fieldTy.text(false))
-        }
-        is MvConst -> {
-            val constTy = this.type?.loweredType(msl) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(constTy.text(true))
-        }
-
-        is MvPatBinding -> {
-            val bindingInference = this.inference(msl)
-            // race condition sometimes happens, when file is too big, inference is not finished yet
-            val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown
-            lookupElementBuilder
-                .withTypeText(ty.text(true))
-        }
-
-        is MvSchema -> lookupElementBuilder
-            .withTypeText(this.containingFile?.name)
-
-        else -> lookupElementBuilder
     }
 }
 

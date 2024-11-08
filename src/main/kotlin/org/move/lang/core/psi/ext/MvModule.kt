@@ -215,18 +215,6 @@ abstract class MvModuleMixin: MvStubbedNamedElementImpl<MvModuleStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 
-    override fun getPresentation(): ItemPresentation? {
-        val name = this.name ?: return null
-        val moveProj = this.moveProject
-        val locationString = this.address(moveProj)?.text() ?: ""
-        return PresentationData(
-            name,
-            locationString,
-            MoveIcons.MODULE,
-            null
-        )
-    }
-
     override val qualName: ItemQualName?
         get() {
             // from stub

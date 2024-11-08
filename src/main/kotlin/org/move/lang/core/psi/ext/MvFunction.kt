@@ -139,6 +139,4 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
     override fun canNavigateToSource(): Boolean = !builtIn
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
-
-    override fun getPresentation(): ItemPresentation? = this.functionItemPresentation
 }

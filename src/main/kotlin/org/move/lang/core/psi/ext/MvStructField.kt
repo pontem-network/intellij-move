@@ -17,14 +17,4 @@ abstract class MvNamedFieldDeclMixin(node: ASTNode) : MvMandatoryNameIdentifierO
                                                       MvNamedFieldDecl {
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT_FIELD
-
-    override fun getPresentation(): ItemPresentation {
-        val type = this.type?.let { ": ${it.text}" } ?: ""
-        return PresentationData(
-            "${this.name}$type",
-            this.locationString(true),
-            MoveIcons.STRUCT_FIELD,
-            null
-        )
-    }
 }

@@ -14,9 +14,7 @@ abstract class StructureViewTestBase: MvTestBase() {
         actions: StructureViewComponent.() -> Unit
     ) {
         myFixture.configureByText("main.move", code)
-        myFixture.testStructureView {
-            it.actions()
-        }
+        myFixture.testStructureView { it.actions() }
     }
 
     protected fun assertTreeEqual(tree: JTree, expected: String) {

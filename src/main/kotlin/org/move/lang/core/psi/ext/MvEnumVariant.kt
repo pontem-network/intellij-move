@@ -21,26 +21,5 @@ abstract class MvEnumVariantMixin: MvStubbedNamedElementImpl<MvEnumVariantStub>,
 
     constructor(stub: MvEnumVariantStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
-    override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
-
-    override fun getPresentation(): ItemPresentation? {
-        val variant = this
-        val variantName = this.name ?: return null
-        val presentationText = buildString {
-            append(variantName)
-            val fields = variant.tupleFields
-            if (fields != null) {
-                append('(')
-                val xs = fields.tupleFieldDeclList.map { it.type.text }
-                append(xs.joinToString(", "))
-                append(')')
-            }
-        }
-        return PresentationData(
-            presentationText,
-            this.locationString(true),
-            MoveIcons.ENUM_VARIANT,
-            null
-        )
-    }
+    override fun getIcon(flags: Int): Icon = MoveIcons.ENUM_VARIANT
 }
