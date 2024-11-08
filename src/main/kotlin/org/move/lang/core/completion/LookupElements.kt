@@ -10,9 +10,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve2.ref.ResolutionContext
-import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 
 const val KEYWORD_PRIORITY = 80.0
@@ -114,6 +112,16 @@ open class DefaultInsertHandler(val completionCtx: MvCompletionContext? = null):
         item: LookupElement
     ) {
         val document = context.document
+
+        val itemSpecRef = context.getElementOfType<MvItemSpecRef>()
+        if (itemSpecRef != null) {
+            // inserting item in `spec /*caret*/ {}`, no need for the signature, just insert with leading space
+            if (!context.alreadyHasSpace) {
+                context.addSuffix(" ")
+            }
+            return
+        }
+
         when (element) {
             is MvFunctionLike -> {
                 // no suffix for imports
