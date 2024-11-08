@@ -1,8 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
-import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.IStubElementType
@@ -51,16 +49,8 @@ fun MvModule.allFunctions(): List<MvFunction> {
     return stub?.childrenStubsOfType<MvFunctionStub>()?.map { it.psi } ?: functionList
 }
 
-fun MvModule.allNonTestFunctions(): List<MvFunction> =
-//    allFunctions().filter { f -> !f.isTest }
-    this.allFunctions().filter { f -> !f.hasTestAttr }
-//    getProjectPsiDependentCache(this) {
-//    }
-
-fun MvModule.testFunctions(): List<MvFunction> =
-    getProjectPsiDependentCache(this) {
-        it.allFunctions().filter { f -> f.hasTestAttr }
-    }
+fun MvModule.allNonTestFunctions(): List<MvFunction> = this.allFunctions().filter { f -> !f.hasTestAttr }
+fun MvModule.testFunctions(): List<MvFunction> = this.allFunctions().filter { f -> f.hasTestAttr }
 
 val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
 val MvModule.isSpecBuiltins: Boolean

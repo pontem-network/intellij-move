@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
+import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.MvLabel
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
@@ -17,6 +18,7 @@ import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
 import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.resolve2.processLabelResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
@@ -46,9 +48,9 @@ object ReferenceCompletionProvider: MvCompletionProvider() {
     fun addCompletionVariants(
         element: MvReferenceElement,
         result: CompletionResultSet,
-        context: MvCompletionContext,
+        completionCtx: MvCompletionContext,
     ) {
-        collectCompletionVariants(result, context) {
+        collectCompletionVariants(result, completionCtx) {
             val processor0 = filterCompletionVariantsByVisibility(element, it)
             // todo: filter test functions
             when (element) {
@@ -59,7 +61,10 @@ object ReferenceCompletionProvider: MvCompletionProvider() {
                     val processor = skipAlreadyProvidedFields(element, processor0)
                     processPatBindingResolveVariants(element, true, processor)
                 }
+                // loop labels
                 is MvLabel -> processLabelResolveVariants(element, it)
+                // `spec ITEM {}` module items, where ITEM is a reference to the function/struct/enum
+                is MvItemSpecRef -> processItemSpecRefResolveVariants(element, it)
             }
         }
     }

@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.prevNonWsSibling
 class CommonCompletionContributor: CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
-        extend(CompletionType.BASIC, SpecItemCompletionProvider)
+//        extend(CompletionType.BASIC, SpecItemCompletionProvider)
 
         // addresses
         extend(CompletionType.BASIC, NamedAddressInUseStmtCompletionProvider)

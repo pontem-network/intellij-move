@@ -11,10 +11,6 @@ val MvItemSpec.funcItem get() = this.item as? MvFunction
 
 val MvModuleItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
 
-val MvModule.mslSpecifiableItems: List<MvNameIdentifierOwner>
-    get() =
-        this.allFunctions().chain(this.structs()).toList()
-
 val MvItemSpec.module: MvModule?
     get() {
         val parent = this.parent
