@@ -27,9 +27,6 @@ jobs:
 
             -   name: Setup Gradle
                 uses: gradle/actions/setup-gradle@v4
-                with:
-                    # with `true`, caches will only be created in `master` branch, and PRs will run read-only
-                    cache-read-only: true
 
             -   name: Build
                 run: ./gradlew assemble --stacktrace -Pkotlin.incremental=false
