@@ -63,25 +63,21 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     }
 
     fun fetchPackageDependencies(
-        project: Project,
         projectDir: Path,
         skipLatest: Boolean,
         processListener: ProcessListener
     ): RsProcessResult<Unit> {
-        if (project.moveSettings.fetchAptosDeps) {
-            val commandLine =
-                AptosCommandLine(
-                    subCommand = "move compile",
-                    arguments = listOfNotNull(
-                        "--skip-fetch-latest-git-deps".takeIf { skipLatest }
-                    ),
-                    workingDirectory = projectDir
-                )
-            // TODO: as Aptos does not yet support fetching dependencies without compiling, ignore errors here,
-            // TODO: still better than no call at all
-            executeCommandLine(commandLine, listener = processListener)
-//                .unwrapOrElse { return Err(it) }
-        }
+        val commandLine =
+            AptosCommandLine(
+                subCommand = "move compile",
+                arguments = listOfNotNull(
+                    "--skip-fetch-latest-git-deps".takeIf { skipLatest }
+                ),
+                workingDirectory = projectDir
+            )
+        commandLine
+            .toColoredCommandLine(this.cliLocation)
+            .execute(innerDisposable, listener = processListener)
         return Ok(Unit)
     }
 
