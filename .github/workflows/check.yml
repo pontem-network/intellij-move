@@ -30,6 +30,8 @@ jobs:
                 with:
                     # with `true`, caches will only be created in `master` branch, and PRs will run read-only
                     cache-read-only: true
+                    gradle-home-cache-includes: |
+                        build/zip/*.zip
 
             -   name: Build
                 run: ./gradlew assemble --stacktrace -Pkotlin.incremental=false
