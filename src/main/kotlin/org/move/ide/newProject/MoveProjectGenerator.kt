@@ -43,7 +43,7 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
     ) {
         val packageName = project.name
         val aptosPath =
-            AptosExecType.aptosExecPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
+            AptosExecType.aptosCliPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
                 ?: error("validated before")
         val aptos = Aptos(aptosPath, disposable)
         val moveTomlFile =

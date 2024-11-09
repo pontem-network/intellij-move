@@ -89,15 +89,16 @@ class MvProjectSettingsService(
 
 val Project.moveSettings: MvProjectSettingsService get() = service()
 
-fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? {
-    val aptosExecPath =
-        AptosExecType.aptosExecPath(
-            this.moveSettings.aptosExecType,
-            this.moveSettings.localAptosPath
-        )
-    val aptos = aptosExecPath?.let { Aptos(it, parentDisposable) }
-    return aptos
-}
+val Project.aptosCliPath: Path?
+    get() {
+        val settings = this.moveSettings
+        return AptosExecType.aptosCliPath(settings.aptosExecType, settings.localAptosPath)
+    }
+
+fun Project.getAptosCli(
+    parentDisposable: Disposable? = null
+): Aptos? =
+    this.aptosCliPath?.let { Aptos(it, parentDisposable) }
 
 val Project.isAptosConfigured: Boolean get() = this.getAptosCli() != null
 
@@ -105,8 +106,6 @@ fun Project.getAptosCliDisposedOnFileChange(file: VirtualFile): Aptos? {
     val anyChangeDisposable = this.createDisposableOnFileChange(file)
     return this.getAptosCli(anyChangeDisposable)
 }
-
-val Project.aptosExecPath: Path? get() = this.getAptosCli()?.cliLocation
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

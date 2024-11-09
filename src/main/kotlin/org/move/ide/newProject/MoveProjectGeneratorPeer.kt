@@ -58,7 +58,7 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
     override fun validate(): ValidationInfo? {
         val panelData = this.chooseAptosCliPanel.data
         val aptosExecPath =
-            AptosExecType.aptosExecPath(panelData.aptosExecType, panelData.localAptosPath)
+            AptosExecType.aptosCliPath(panelData.aptosExecType, panelData.localAptosPath)
         if (aptosExecPath == null) {
             return ValidationInfo("Invalid path to Aptos executable")
         }

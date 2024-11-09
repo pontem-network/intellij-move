@@ -49,7 +49,7 @@ enum class AptosExecType {
 
         val bundledAptosCLIPath: Path? get() = BundledAptosManager.getBundledAptosPath()
 
-        fun aptosExecPath(execType: AptosExecType, localAptosPath: String?): Path? {
+        fun aptosCliPath(execType: AptosExecType, localAptosPath: String?): Path? {
             val pathCandidate =
                 when (execType) {
                     BUNDLED -> bundledAptosCLIPath

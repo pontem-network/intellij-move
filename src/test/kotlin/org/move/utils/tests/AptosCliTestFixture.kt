@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
-import org.move.cli.settings.aptosExecPath
+import org.move.cli.settings.aptosCliPath
 import org.move.cli.settings.moveSettings
 import org.move.stdext.getCliFromPATH
 import java.nio.file.Path
@@ -20,7 +20,7 @@ class AptosCliTestFixture(
     override fun setUp() {
         super.setUp()
 
-        var aptosSdkPath = project.aptosExecPath
+        var aptosSdkPath = project.aptosCliPath
         if (aptosSdkPath == null) {
             aptosSdkPath = getCliFromPATH("aptos")
             project.moveSettings.modifyTemporary(testRootDisposable) {
