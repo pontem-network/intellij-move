@@ -33,24 +33,6 @@ fun Logger.logOrShowBalloon(@NotificationContent content: String, productionLeve
     }
 }
 
-fun Project.showDebugBalloon(
-    @NotificationContent content: String,
-    type: NotificationType,
-    action: AnAction? = null
-) {
-    if (isDebugModeEnabled()) {
-        showBalloon(content, type, action)
-    }
-}
-
-fun Project.showBalloon(
-    @NotificationContent content: String,
-    type: NotificationType,
-    action: AnAction? = null
-) {
-    showBalloon("", content, type, action)
-}
-
 fun Project.showBalloon(
     @NotificationTitle title: String,
     @NotificationContent content: String,

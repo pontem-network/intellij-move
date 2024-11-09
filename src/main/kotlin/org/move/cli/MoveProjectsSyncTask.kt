@@ -36,6 +36,7 @@ import org.move.cli.manifest.MoveToml
 import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
 import org.move.ide.notifications.showBalloon
+import org.move.ide.notifications.showDebugBalloon
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
 import org.move.openapiext.TaskResult
@@ -298,16 +299,16 @@ class MoveProjectsSyncTask(
                 parsedDeps = parsedDeps.withExtended(rootMoveToml.dev_deps)
             }
             for ((dep, addressMap) in parsedDeps) {
-                val depRoot = dep.rootDirectory()
-                if (depRoot == null) {
-                    // root does not exist
-                    project.showBalloon(
-                        "Cannot resolve the ${dep.name.quote()} dependency. " +
-                                "Root directory does not exist.",
-                        ERROR
-                    )
-                    continue
-                }
+                val depRoot = dep.rootDirectory() ?: continue
+//                if (depRoot == null) {
+//                    // root does not exist
+//                    project.showDebugBalloon(
+//                        title = "Cannot resolve the ${dep.name.quote()} dependency.",
+//                        content = "Root directory does not exist.",
+//                        ERROR
+//                    )
+//                    continue
+//                }
 
                 val depId = DepId(depRoot.path)
                 if (depId in visitedIds) continue
