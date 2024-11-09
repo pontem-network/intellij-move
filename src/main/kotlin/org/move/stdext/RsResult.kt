@@ -41,6 +41,11 @@ sealed class RsResult<out T, out E> {
         }
     }
 
+    fun unwrapErr(): E = when (this) {
+        is Err -> err
+        is Ok -> throw IllegalStateException("called `RsResult.unwrapErr()` on an `Ok` value")
+    }
+
     fun unwrapOrNull(): T? = when (this) {
         is Ok -> ok
         is Err -> null

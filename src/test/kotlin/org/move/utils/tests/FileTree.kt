@@ -84,9 +84,16 @@ interface FileTreeBuilder {
     name = "$packageName"    
     """
     )
+    fun namedMoveToml(packageName: String, @Language("TOML") code: String) = moveToml(
+        """
+        [package]
+        name = "packageName"
+        
+        $code
+    """)
 
     fun git(repo: String, rev: String, builder: TreeBuilder = {}) {
-        val dirName = TomlDependency.Git.dirNameAptos(repo, rev)
+        val dirName = TomlDependency.Git.dependencyDirName(repo, rev)
         return dir(dirName, builder)
     }
 
