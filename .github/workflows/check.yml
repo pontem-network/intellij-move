@@ -29,7 +29,7 @@ jobs:
                 uses: gradle/actions/setup-gradle@v4
                 with:
                     # with `true`, caches will only be created in `master` branch, and PRs will run read-only
-                    cache-read-only: true
+                    cache-read-only: false
                     gradle-home-cache-includes: |
                         build/zip/*.zip
 
