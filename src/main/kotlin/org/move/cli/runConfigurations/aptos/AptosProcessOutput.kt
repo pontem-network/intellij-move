@@ -1,10 +1,10 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.execution.process.ProcessOutput
-import org.move.openapiext.RsProcessExecutionException
+import org.move.openapiext.RsProcessExecutionOrDeserializationException
 import org.move.stdext.RsResult
 
-typealias AptosProcessResult<T> = RsResult<AptosProcessOutput<T>, RsProcessExecutionException>
+typealias AptosProcessResult<T> = RsResult<AptosProcessOutput<T>, RsProcessExecutionOrDeserializationException>
 
 data class AptosProcessOutput<T>(
     val item: T,

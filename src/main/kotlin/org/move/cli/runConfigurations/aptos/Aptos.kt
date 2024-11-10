@@ -1,5 +1,6 @@
 package org.move.cli.runConfigurations.aptos
 
+import com.fasterxml.jackson.core.JacksonException
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessListener
@@ -72,9 +73,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 ),
                 workingDirectory = projectDir
             )
-        val aptosProcessOutput =
-            executeAptosCommandLine(commandLine, colored = true, listener = processListener)
-        return aptosProcessOutput
+        return executeAptosCommandLine(commandLine, colored = true, listener = processListener)
     }
 
     fun checkProject(args: AptosCompileArgs): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
@@ -203,7 +202,11 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 
         val json = processOutput.stdout
             .lines().dropWhile { l -> !l.startsWith("{") }.joinToString("\n").trim()
-        val exitStatus = AptosExitStatus.fromJson(json)
+        val exitStatus = try {
+            AptosExitStatus.fromJson(json)
+        } catch (e: JacksonException) {
+            return Err(RsDeserializationException(e))
+        }
         val aptosProcessOutput = AptosProcessOutput(Unit, processOutput, exitStatus)
 
         return Ok(aptosProcessOutput)
