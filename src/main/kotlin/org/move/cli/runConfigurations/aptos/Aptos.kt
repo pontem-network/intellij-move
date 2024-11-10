@@ -9,12 +9,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
-import org.move.cli.MvConstants
 import org.move.cli.MoveProject
-import org.move.cli.externalLinter.ExternalLinter
-import org.move.cli.externalLinter.externalLinterSettings
+import org.move.cli.MvConstants
 import org.move.cli.runConfigurations.AptosCommandLine
-import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.RsResult
@@ -56,9 +53,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         executeCommandLine(commandLine).unwrapOrElse { return Err(it) }
 
         fullyRefreshDirectory(rootDirectory)
-
         val manifest =
             checkNotNull(rootDirectory.findChild(MvConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
+
         return Ok(manifest)
     }
 
@@ -66,7 +63,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         projectDir: Path,
         skipLatest: Boolean,
         processListener: ProcessListener
-    ): RsProcessResult<Unit> {
+    ): AptosProcessResult<Unit> {
         val commandLine =
             AptosCommandLine(
                 subCommand = "move compile",
@@ -75,10 +72,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 ),
                 workingDirectory = projectDir
             )
-        commandLine
-            .toColoredCommandLine(this.cliLocation)
-            .execute(innerDisposable, listener = processListener)
-        return Ok(Unit)
+        val aptosProcessOutput =
+            executeAptosCommandLine(commandLine, colored = true, listener = processListener)
+        return aptosProcessOutput
     }
 
     fun checkProject(args: AptosCompileArgs): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
@@ -179,44 +175,42 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 
     private fun executeCommandLine(
         commandLine: AptosCommandLine,
+        colored: Boolean = false,
         listener: ProcessListener? = null,
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): RsProcessResult<ProcessOutput> {
-        return commandLine
-            .toGeneralCommandLine(this.cliLocation)
-            .execute(innerDisposable, listener = listener, runner = runner)
+        val generalCommandLine = if (colored) {
+            commandLine.toColoredCommandLine(this.cliLocation)
+        } else {
+            commandLine.toGeneralCommandLine(this.cliLocation)
+        }
+        return generalCommandLine.execute(innerDisposable, runner, listener)
+    }
+
+    private fun executeAptosCommandLine(
+        commandLine: AptosCommandLine,
+        colored: Boolean = false,
+        listener: ProcessListener? = null,
+        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
+    ): AptosProcessResult<Unit> {
+        val processOutput = executeCommandLine(commandLine, colored, listener, runner)
+            .unwrapOrElse {
+                if (it !is RsProcessExecutionException.FailedWithNonZeroExitCode) {
+                    return Err(it)
+                }
+                it.output
+            }
+
+        val json = processOutput.stdout
+            .lines().dropWhile { l -> !l.startsWith("{") }.joinToString("\n").trim()
+        val exitStatus = AptosExitStatus.fromJson(json)
+        val aptosProcessOutput = AptosProcessOutput(Unit, processOutput, exitStatus)
+
+        return Ok(aptosProcessOutput)
     }
 
     override fun dispose() {}
 }
 
-data class AptosCompileArgs(
-    val linter: ExternalLinter,
-    val moveProjectDirectory: Path,
-    val extraArguments: String,
-    val envs: Map<String, String>,
-    val enableMove2: Boolean,
-    val skipLatestGitDeps: Boolean,
-) {
-    companion object {
-        fun forMoveProject(moveProject: MoveProject): AptosCompileArgs {
-            val linterSettings = moveProject.project.externalLinterSettings
-            val moveSettings = moveProject.project.moveSettings
-
-            val additionalArguments = linterSettings.additionalArguments
-            val enviroment = linterSettings.envs
-            val workingDirectory = moveProject.workingDirectory
-
-            return AptosCompileArgs(
-                linterSettings.tool,
-                workingDirectory,
-                additionalArguments,
-                enviroment,
-                enableMove2 = moveSettings.enableMove2,
-                skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
-            )
-        }
-    }
-}
 
 val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath

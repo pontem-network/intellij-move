@@ -97,7 +97,7 @@ fun GeneralCommandLine.execute(
         output.isCancelled -> RsResult.Err(RsProcessExecutionException.Canceled(commandLineString, output))
         output.isTimeout -> RsResult.Err(RsProcessExecutionException.Timeout(commandLineString, output))
         output.exitCode != 0 -> RsResult.Err(
-            RsProcessExecutionException.ProcessAborted(
+            RsProcessExecutionException.FailedWithNonZeroExitCode(
                 commandLineString,
                 output
             )
