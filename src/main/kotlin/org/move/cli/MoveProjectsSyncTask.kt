@@ -30,6 +30,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
+import org.move.cli.runConfigurations.aptos.AptosExitStatus
 import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
@@ -182,7 +183,6 @@ class MoveProjectsSyncTask(
     }
 
     private fun fetchDependencyPackages(childContext: SyncContext, projectRoot: Path): TaskResult<Unit> {
-        val taskResult: TaskResult<Unit>? = null
         val syncListener =
             SyncProcessListener(childContext) { event ->
                 childContext.syncProgress.output(event.text, true)
@@ -192,17 +192,36 @@ class MoveProjectsSyncTask(
         return when {
             aptos == null -> TaskResult.Err("Invalid Aptos CLI configuration")
             else -> {
-                aptos.fetchPackageDependencies(
-                    projectRoot,
-                    skipLatest,
-                    processListener = syncListener
-                ).unwrapOrElse {
-                    return TaskResult.Err(
-                        "Failed to fetch / update dependencies",
-                        it.message
-                    )
+                val aptosProcessOutput =
+                    aptos.fetchPackageDependencies(
+                        projectRoot,
+                        skipLatest,
+                        processListener = syncListener
+                    ).unwrapOrElse {
+                        return TaskResult.Err(
+                            "Failed to fetch / update dependencies",
+                            it.message
+                        )
+                    }
+                when (val exitStatus = aptosProcessOutput.exitStatus) {
+                    is AptosExitStatus.Result -> TaskResult.Ok(Unit)
+                    is AptosExitStatus.Error -> {
+                        if (exitStatus.message.contains("Unable to resolve packages for package")) {
+                            return TaskResult.Err(
+                                "Unable to resolve packages",
+                                exitStatus.message.split(": ").joinToString(": \n")
+                            )
+                        }
+                        if (!exitStatus.message.contains("Compilation error")) {
+                            return TaskResult.Err(
+                                "Error occurred",
+                                exitStatus.message.split(": ").joinToString(": \n")
+                            )
+                        }
+                        TaskResult.Ok(Unit)
+                    }
+                    is AptosExitStatus.Malformed -> TaskResult.Ok(Unit)
                 }
-                TaskResult.Ok(Unit)
             }
         }
     }
@@ -310,7 +329,7 @@ class MoveProjectsSyncTask(
                 val depRoot = dep.rootDirectory()
                     .unwrapOrElse {
                         syncContext.syncProgress.message(
-                            "Failed to load ${dep.name}.",
+                            "Failed to load ${dep.name}",
                             "Error when resolving dependency root, \n${it.message}",
                             MessageEvent.Kind.ERROR,
                             null

@@ -43,7 +43,7 @@ sealed class RsProcessExecutionException : RsProcessExecutionOrDeserializationEx
     ) : RsProcessExecutionException(errorMessage(commandLineString, output))
 
     /** The process exited with non-zero exit code */
-    class ProcessAborted(
+    class FailedWithNonZeroExitCode(
         override val commandLineString: String,
         val output: ProcessOutput,
     ) : RsProcessExecutionException(errorMessage(commandLineString, output))
@@ -65,6 +65,6 @@ fun RsProcessResult<ProcessOutput>.ignoreExitCode(): RsResult<ProcessOutput, RsP
             is RsProcessExecutionException.Start -> RsResult.Err(err)
             is RsProcessExecutionException.Canceled -> RsResult.Ok(err.output)
             is RsProcessExecutionException.Timeout -> RsResult.Ok(err.output)
-            is RsProcessExecutionException.ProcessAborted -> RsResult.Ok(err.output)
+            is RsProcessExecutionException.FailedWithNonZeroExitCode -> RsResult.Ok(err.output)
         }
     }

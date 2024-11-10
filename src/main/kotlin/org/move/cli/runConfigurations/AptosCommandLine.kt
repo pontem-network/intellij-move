@@ -23,6 +23,8 @@ data class AptosCommandLine(
             .withParameters(this.arguments)
             .withWorkingDirectory(this.workingDirectory)
             .withCharset(Charsets.UTF_8)
+            // disables default coloring for stderr
+            .withRedirectErrorStream(true)
         this.environmentVariables.configureCommandLine(generalCommandLine, true)
         return generalCommandLine
     }
