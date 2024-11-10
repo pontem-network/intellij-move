@@ -40,7 +40,6 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
 /// `owner` parameter represents the object whose lifetime it's using for the process lifetime
 fun GeneralCommandLine.execute(
     owner: CheckedDisposable,
-    stdIn: ByteArray? = null,
     runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() },
     listener: ProcessListener? = null
 ): RsProcessResult<ProcessOutput> {
@@ -84,9 +83,6 @@ fun GeneralCommandLine.execute(
     listener?.let { processHandler.addProcessListener(it) }
 
     val output = try {
-        if (stdIn != null) {
-            processHandler.processInput.use { it.write(stdIn) }
-        }
         // execution happens here
         processHandler.runner()
     } finally {

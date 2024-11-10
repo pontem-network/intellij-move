@@ -184,7 +184,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     ): RsProcessResult<ProcessOutput> {
         return commandLine
             .toGeneralCommandLine(this.cliLocation)
-            .execute(innerDisposable, stdIn = null, listener = listener, runner = runner)
+            .execute(innerDisposable, listener = listener, runner = runner)
     }
 
     override fun dispose() {}
