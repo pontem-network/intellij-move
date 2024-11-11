@@ -16,5 +16,5 @@ val MvNamedFieldDecl.fieldOwner: MvFieldsOwner get() = blockFields?.parent as Mv
 abstract class MvNamedFieldDeclMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                       MvNamedFieldDecl {
 
-    override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT_FIELD
+    override fun getIcon(flags: Int): Icon = MoveIcons.FIELD
 }
