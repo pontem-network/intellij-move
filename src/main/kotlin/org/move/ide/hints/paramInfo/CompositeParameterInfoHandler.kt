@@ -47,10 +47,6 @@ class CompositeParameterInfoHandler: ParameterInfoHandler<PsiElement, ParameterI
                     context.offset,
                     MvElementTypes.COMMA
                 )
-//                if (listElement.valueArgumentList.isEmpty()) {
-//                    0
-//                } else {
-//                }
             }
         context.setCurrentParameter(currentParameterIndex)
     }

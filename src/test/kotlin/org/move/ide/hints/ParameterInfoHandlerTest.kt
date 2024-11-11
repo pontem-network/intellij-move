@@ -205,4 +205,44 @@ class ParameterInfoHandlerTest:
         }        
     """, "_: bool, err: u64", 0
     )
+
+    @MoveV2
+    fun `test parameter info for named tuple struct`() = checkByText("""
+        module 0x1::m {
+            struct S(u8, u16);
+            fun main() {
+                S(/*caret*/);
+            }
+        }        
+    """, "u8, u16", 0)
+
+    @MoveV2
+    fun `test parameter info for generic named tuple struct`() = checkByText("""
+        module 0x1::m {
+            struct S<T>(T, T);
+            fun main() {
+                S<u8>(/*caret*/);
+            }
+        }        
+    """, "u8, u8", 0)
+
+    @MoveV2
+    fun `test parameter info for named tuple enum variant`() = checkByText("""
+        module 0x1::m {
+            enum S { One(u8, u8) }
+            fun main() {
+                S::One(/*caret*/);
+            }
+        }        
+    """, "u8, u8", 0)
+
+    @MoveV2
+    fun `test parameter info for generic named tuple enum variant`() = checkByText("""
+        module 0x1::m {
+            enum S<T> { One(T, T) }
+            fun main() {
+                S<u8>::One(/*caret*/);
+            }
+        }        
+    """, "u8, u8", 0)
 }
