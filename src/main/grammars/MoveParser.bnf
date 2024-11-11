@@ -1090,7 +1090,7 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
 LambdaExpr ::= LambdaParameterList Expr? { pin = 1 }
 
 LambdaParameterList ::= '|' !',' <<comma_separated_list LambdaParameter>>? '|'
-LambdaParameter ::= PatBinding
+LambdaParameter ::= PatBinding TypeAscription?
 
 RangeExpr ::= Expr '..' Expr { pin = 2 }
 
