@@ -80,8 +80,7 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
     }
 
     fun getDecompilerTargetFileDirOnTemp(project: Project, file: VirtualFile): Path? {
-        val rootDecompilerDir = decompiledArtifactsFolder()
-        val projectDecompilerDir = rootDecompilerDir.resolve(project.name)
+        val projectDecompilerDir = DECOMPILED_ARTIFACTS_FOLDER.resolve(project.name)
         val root = project.rootPath ?: return null
         val relativeFilePath = file.parent.pathAsPath.relativeTo(root)
         val targetFileDir = projectDecompilerDir.toPath().resolve(relativeFilePath)
@@ -97,11 +96,9 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
         val fileName = file.name
         return "$fileName#decompiled.move"
     }
-
-    companion object {
-        fun decompiledArtifactsFolder() = File(FileUtil.getTempDirectory(), "intellij-move-decompiled-artifacts")
-    }
 }
+
+val DECOMPILED_ARTIFACTS_FOLDER = File(FileUtil.getTempDirectory(), "intellij-move-decompiled-artifacts")
 
 fun Project.createDisposableOnFileChange(file: VirtualFile): Disposable {
     val filePath = file.path

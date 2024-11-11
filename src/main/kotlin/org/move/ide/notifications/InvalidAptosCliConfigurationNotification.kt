@@ -33,14 +33,11 @@ class InvalidAptosCliConfigurationNotification(project: Project): MvAptosEditorN
                     }
                 }
             }
-
             createActionLabel("Configure") {
                 project.showSettingsDialog<PerProjectAptosConfigurable>()
             }
-            createActionLabel("Do not show again") {
-                disableNotification(file)
-                updateAllNotifications(project)
-            }
+
+            `Do not show again`(file)
         }
     }
 

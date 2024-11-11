@@ -217,3 +217,5 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 
 
 val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath
+
+val APTOS_VERSION_REGEX = Regex("""\d+.\d+.\d""")

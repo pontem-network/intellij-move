@@ -8,6 +8,7 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import org.move.cli.runConfigurations.aptos.APTOS_VERSION_REGEX
 import org.move.openapiext.pathField
 import javax.swing.JComponent
 
@@ -36,7 +37,7 @@ class DownloadAptosSdkDialog(val project: Project?): DialogWrapper(project, true
                     .align(AlignX.FILL)
                     .columns(10)
                     .validationOnApply { field ->
-                        if (!field.text.matches(VERSION_REGEX)) {
+                        if (!field.text.matches(APTOS_VERSION_REGEX)) {
                             ValidationInfo("Version is invalid. Should be in form of MAJOR.MINOR.PATCH")
                         } else {
                             null
@@ -53,9 +54,5 @@ class DownloadAptosSdkDialog(val project: Project?): DialogWrapper(project, true
                 settings.state.sdksDir = targetSdksDirField.text
             }
         }
-    }
-
-    companion object {
-        private val VERSION_REGEX = Regex("""\d+.\d+.\d""")
     }
 }

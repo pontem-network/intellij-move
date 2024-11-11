@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.move.bytecode.AptosBytecodeDecompiler
+import org.move.bytecode.DECOMPILED_ARTIFACTS_FOLDER
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
@@ -84,10 +84,8 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
         if (nioFile == null) return null
 
         if (!enableForDecompiledFiles) {
-            // check whether file is a decompiler artifact
-            val decompiledArtifactsFolder = AptosBytecodeDecompiler.decompiledArtifactsFolder()
             // belongs to the decompiled artifacts directory
-            if (nioFile.relativeToOrNull(decompiledArtifactsFolder) != null) return null
+            if (nioFile.relativeToOrNull(DECOMPILED_ARTIFACTS_FOLDER) != null) return null
         }
 
         // explicitly disabled in file
@@ -96,4 +94,11 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
         return createAptosNotificationPanel(file, project)
     }
 
+    @Suppress("FunctionName")
+    protected fun EditorNotificationPanel.`Do not show again`(file: VirtualFile) {
+        createActionLabel("Do not show again") {
+            disableNotification(file)
+            updateAllNotifications(project)
+        }
+    }
 }
