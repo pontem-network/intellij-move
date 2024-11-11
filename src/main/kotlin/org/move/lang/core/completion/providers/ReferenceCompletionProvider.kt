@@ -6,22 +6,24 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.psi.MvItemSpecRef
-import org.move.lang.core.psi.MvLabel
-import org.move.lang.core.psi.MvPatBinding
-import org.move.lang.core.psi.MvPatField
-import org.move.lang.core.psi.ext.fieldNames
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.parentPatStruct
+import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.collectCompletionVariants
+import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
 import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.resolve2.processLabelResolveVariants
+import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.*
 
 object ReferenceCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
@@ -41,6 +43,11 @@ object ReferenceCompletionProvider: MvCompletionProvider() {
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
         val completionCtx = MvCompletionContext(element, msl, expectedTy)
+
+        // handles dot expr
+        if (element is MvMethodOrField) {
+            addMethodOrFieldVariants(element, result)
+        }
 
         addCompletionVariants(element, result, completionCtx)
     }
@@ -67,6 +74,43 @@ object ReferenceCompletionProvider: MvCompletionProvider() {
                 is MvItemSpecRef -> processItemSpecRefResolveVariants(element, it)
             }
         }
+    }
+
+    @VisibleForTesting
+    fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
+        val msl = element.isMsl()
+        val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
+        val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
+
+        val ctx = MvCompletionContext(element, msl, expectedTy)
+
+        val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
+        if (tyAdt != null) {
+            collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
+                processNamedFieldVariants(element, tyAdt, msl, it)
+            }
+        }
+
+        processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->
+            val function = e.element as? MvFunction ?: return@createProcessor
+            val subst = function.tyVarsSubst
+            val declaredFuncTy = function.functionTy(msl).substitute(subst) as TyFunction
+            val declaredSelfTy = declaredFuncTy.paramTypes.first()
+            val autoborrowedReceiverTy =
+                TyReference.autoborrow(receiverTy, declaredSelfTy)
+                    ?: error("unreachable, references always compatible")
+
+            val inferenceCtx = InferenceContext(msl)
+            inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
+
+            result.addElement(
+                createLookupElement(
+                    e,
+                    ctx,
+                    subst = inferenceCtx.resolveTypeVarsIfPossible(subst)
+                )
+            )
+        })
     }
 }
 
