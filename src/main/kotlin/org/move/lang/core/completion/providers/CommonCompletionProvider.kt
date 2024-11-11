@@ -18,6 +18,7 @@ import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
 import org.move.lang.core.resolve.wrapWithFilter
+import org.move.lang.core.resolve2.processFieldLookupResolveVariants
 import org.move.lang.core.resolve2.processLabelResolveVariants
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
@@ -87,7 +88,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
         val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
         if (tyAdt != null) {
             collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
-                processNamedFieldVariants(element, tyAdt, msl, it)
+                processFieldLookupResolveVariants(element, tyAdt, msl, it)
             }
         }
 

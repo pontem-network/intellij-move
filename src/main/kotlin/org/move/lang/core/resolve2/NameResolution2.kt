@@ -13,7 +13,7 @@ import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.index.MvModuleIndex
 
 fun processFieldLookupResolveVariants(
-    fieldLookup: MvFieldLookup,
+    fieldLookup: MvMethodOrField,
     receiverTy: TyAdt,
     msl: Boolean,
     originalProcessor: RsResolveProcessorBase<FieldResolveVariant>
@@ -21,13 +21,11 @@ fun processFieldLookupResolveVariants(
     val receiverItem = receiverTy.item
     if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
 
-    val processor = originalProcessor.wrapWithMapper { it: ScopeEntry ->
-        FieldResolveVariant(it.name, it.element)
-    }
+    val processor = originalProcessor
+        .wrapWithMapper { it: ScopeEntry -> FieldResolveVariant(it.name, it.element) }
 
     return when (receiverItem) {
         is MvStruct -> processFieldDeclarations(receiverItem, processor)
-//        is MvStruct -> processor.processAll(NONE, receiverItem.fields)
         is MvEnum -> {
             val visitedFields = mutableSetOf<String>()
             for (variant in receiverItem.variants) {

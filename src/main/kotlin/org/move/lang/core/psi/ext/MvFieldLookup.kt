@@ -3,45 +3,10 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
-import org.move.lang.core.resolve.ref.NONE
-import org.move.lang.core.resolve2.ref.FieldResolveVariant
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyAdt
 import org.move.stdext.wrapWithList
-
-fun processNamedFieldVariants(
-    element: MvMethodOrField,
-    receiverTy: TyAdt,
-    msl: Boolean,
-    processor: RsResolveProcessor
-): Boolean {
-    val receiverItem = receiverTy.item
-    if (!isFieldsAccessible(element, receiverItem, msl)) return false
-
-    return when (receiverItem) {
-        is MvStruct -> processor.processAll(NONE, receiverItem.namedFields)
-        is MvEnum -> {
-            val visitedFields = mutableSetOf<String>()
-            for (variant in receiverItem.variants) {
-                val visitedVariantFields = mutableSetOf<String>()
-                for (namedField in variant.namedFields) {
-                    val fieldName = namedField.name
-                    if (fieldName in visitedFields) continue
-                    if (processor.process(NONE, namedField)) return true
-                    // collect all names for the variant
-                    visitedVariantFields.add(fieldName)
-                }
-                // add variant fields to the global fields list to skip them in the next variants
-                visitedFields.addAll(visitedVariantFields)
-            }
-            false
-        }
-        else -> error("unreachable")
-    }
-}
 
 // todo: change into VisibilityFilter
 fun isFieldsAccessible(
