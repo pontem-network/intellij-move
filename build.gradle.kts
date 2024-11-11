@@ -61,7 +61,7 @@ val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 
 val kotlinReflectVersion = "2.0.21"
-val aptosVersion = "4.3.0"
+val aptosVersion = "4.4.0"
 
 group = pluginGroup
 version = pluginVersion
