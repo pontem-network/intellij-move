@@ -10,7 +10,7 @@ import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
+import org.move.lang.core.completion.providers.CommonCompletionProvider
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
@@ -157,6 +157,18 @@ class LookupElementTest: MvTestBase() {
         }        
     """, tailText = "(&mut self)", typeText = "u8"
     )
+
+    fun `test named tuple field lookup`() = checkMethodOrFieldProvider(
+        """
+        module 0x1::m {
+            struct S(u8, u8);
+            fun main(s: S) {
+                s.0;
+                //^
+            }
+        }
+        """, typeText = "u8"
+    )
 //
 //    fun `test import module lookup`() = checkNamedItem("""
 //        module 0x1::m {
@@ -237,7 +249,7 @@ class LookupElementTest: MvTestBase() {
         }
 
         if (element is MvMethodOrField) {
-            MethodOrFieldCompletionProvider.addMethodOrFieldVariants(element, result)
+            CommonCompletionProvider.addMethodOrFieldVariants(element, result)
         }
 
         val lookup = lookups.single {

@@ -100,4 +100,16 @@ module 0x1::M {
             }            
         """
     )
+
+    fun `test named tuple field completion`() = checkContainsCompletionExact(
+        listOf("0", "1"),
+        """
+            module 0x1::m {
+                struct S(u8, u8);
+                fun main(s: S) {
+                    s./*caret*/
+                }
+            }            
+        """
+    )
 }

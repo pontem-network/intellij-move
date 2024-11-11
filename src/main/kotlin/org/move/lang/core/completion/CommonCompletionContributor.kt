@@ -27,9 +27,8 @@ class CommonCompletionContributor: CompletionContributor() {
         extend(CompletionType.BASIC, BoolsCompletionProvider)
         extend(CompletionType.BASIC, AssertMacroCompletionProvider)
         extend(CompletionType.BASIC, VectorLiteralCompletionProvider)
-        extend(CompletionType.BASIC, MethodOrFieldCompletionProvider)
 
-        extend(CompletionType.BASIC, ReferenceCompletionProvider)
+        extend(CompletionType.BASIC, CommonCompletionProvider)
     }
 
     fun extend(type: CompletionType?, provider: MvCompletionProvider) {
