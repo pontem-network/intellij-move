@@ -13,12 +13,23 @@ import org.move.lang.core.resolve2.ref.MvBindingPatReferenceImpl
 import org.move.lang.core.types.ty.Mutability
 import javax.swing.Icon
 
+// todo: replace with bindingTypeOwner later
 val MvPatBinding.bindingOwner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
                 || it is MvSchemaFieldStmt
                 || it is MvLambdaParameter
+                || it is MvConst
+    }
+
+val MvPatBinding.bindingTypeOwner: PsiElement?
+    get() {
+        var owner = this.parent
+        if (owner is MvPat) {
+            owner = this.findFirstParent { it is MvTypeAscriptionOwner }
+        }
+        return owner
     }
 
 sealed class RsBindingModeKind {
@@ -45,14 +56,14 @@ abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwner
     override val referenceName: String get() = name
 
     override fun getIcon(flags: Int): Icon =
-        when (this.bindingOwner) {
+        when (this.bindingTypeOwner) {
             is MvFunctionParameter -> MoveIcons.PARAMETER
             is MvConst -> MoveIcons.CONST
             else -> MoveIcons.VARIABLE
         }
 
     override fun getUseScope(): SearchScope {
-        return when (this.bindingOwner) {
+        return when (this.bindingTypeOwner) {
             is MvFunctionParameter -> {
                 val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
                 var combinedScope: SearchScope = LocalSearchScope(function)

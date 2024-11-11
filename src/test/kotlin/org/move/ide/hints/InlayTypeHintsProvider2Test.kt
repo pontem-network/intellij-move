@@ -127,6 +127,47 @@ class InlayTypeHintsProvider2Test: DeclarativeInlayHintsProviderTestCase() {
         }        
     """)
 
+    fun `test no inlay hint if explicit lambda param declared`() = checkByText("""
+        module 0x1::m {
+            fun callback(elem: u8, ident: |u8|u8): u8 { ident(elem) }
+            fun main() {
+                callback(10, |elem: u8| elem + 1);
+            }
+        }        
+    """)
+
+    fun `test no inlay hint if explicit let type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let a: u8 = 1;
+            }
+        }        
+    """)
+
+    fun `test no inlay hints for struct pattern destructor`() = checkByText("""
+        module 0x1::m {
+            struct S { val: u8 }
+            fun main(s: S) {
+                let S { val: myval } = s;
+            }
+        }        
+    """)
+
+    fun `test inlay hints for struct pattern destructor shorthand`() = checkByText("""
+        module 0x1::m {
+            struct S { val: u8 }
+            fun main(s: S) {
+                let S { val/*<# : |u8 #>*/ } = s;
+            }
+        }        
+    """)
+
+    fun `test no inlay hint for const`() = checkByText("""
+        module 0x1::m {
+            const MY_CONST: u8 = 1;
+        }        
+    """)
+
     private fun checkByText(@Language("Move") code: String) {
         doTestProvider("main.move", code, MvTypeInlayHintsProvider2())
     }

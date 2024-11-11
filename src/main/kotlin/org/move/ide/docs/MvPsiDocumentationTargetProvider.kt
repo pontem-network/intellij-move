@@ -27,16 +27,7 @@ import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.psi.MvTypeParameterList
-import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.abilityBounds
-import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.core.psi.ext.bindingOwner
-import org.move.lang.core.psi.ext.fieldOwner
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.isMslOnlyItem
-import org.move.lang.core.psi.ext.isPhantom
-import org.move.lang.core.psi.ext.itemElement
-import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.isNative
 import org.move.lang.core.psi.module
 import org.move.lang.core.types.infer.inference
@@ -88,11 +79,11 @@ class MvDocumentationTarget(val element: PsiElement, private val originalElement
 
     fun generateDoc(element: PsiElement?): String? {
         val buffer = StringBuilder()
+
         var docElement = element
-        if (
-            docElement is MvPatBinding && docElement.bindingOwner is MvConst
-        )
-            docElement = docElement.bindingOwner
+        if (docElement is MvPatBinding && docElement.bindingTypeOwner is MvConst) {
+            docElement = docElement.bindingTypeOwner
+        }
 
         when (docElement) {
             is MvNamedAddress -> {

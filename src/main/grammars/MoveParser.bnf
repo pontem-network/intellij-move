@@ -290,6 +290,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAscription Initializer ';'
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.ext.MvItemElement"
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
     stubClass = "org.move.lang.core.stubs.MvConstStub"
@@ -521,6 +522,9 @@ private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
 FunctionParameter ::= PatBinding TypeAscription {
     pin = 1
+    implements = [
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
+    ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionParameterMixin"
 }
 
@@ -589,6 +593,7 @@ NamedFieldDecl ::= Attr* IDENTIFIER TypeAscription &(',' | '}')
         "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.ext.MvFieldDecl"
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvNamedFieldDeclMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -819,6 +824,9 @@ private SpecExprStmt_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExp
 
 private post ::= <<postKeyword>>
 fake LetStmt ::= let post? Pat? TypeAscription? Initializer? ';'?
+{
+    implements = [ "org.move.lang.core.psi.ext.MvTypeAscriptionOwner" ]
+}
 
 LetMoveStmt ::= let Pat TypeAscription? Initializer? ';'
 {
@@ -1091,6 +1099,9 @@ LambdaExpr ::= LambdaParameterList Expr? { pin = 1 }
 
 LambdaParameterList ::= '|' !',' <<comma_separated_list LambdaParameter>>? '|'
 LambdaParameter ::= PatBinding TypeAscription?
+{
+    implements = [ "org.move.lang.core.psi.ext.MvTypeAscriptionOwner" ]
+}
 
 RangeExpr ::= Expr '..' Expr { pin = 2 }
 
@@ -1421,6 +1432,7 @@ ItemSpecFunctionParameter ::= IDENTIFIER TypeAscription {
     pin = 1
     implements = [
         "org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
@@ -1484,6 +1496,7 @@ fake SchemaFieldStmt ::= local? PatBinding TypeAscription ';'
 {
     implements = [
         "org.move.lang.core.psi.MslOnlyElement"
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
 }
 
@@ -1505,6 +1518,7 @@ GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAscription
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.MslOnlyElement"
         "org.move.lang.core.psi.ext.MvItemElement"
+        "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvGlobalVariableMixin"
 }
@@ -1756,7 +1770,7 @@ RangeQuantBinding ::= PatBinding in Expr {
     pin = 2
     extends = QuantBinding
 }
-TypeQuantBinding ::= PatBinding ':' Type {
+TypeQuantBinding ::= PatBinding TypeAscription {
     pin = 2
     extends = QuantBinding
 }
