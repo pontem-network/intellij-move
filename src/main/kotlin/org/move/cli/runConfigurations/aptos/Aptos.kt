@@ -178,11 +178,8 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         listener: ProcessListener? = null,
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): RsProcessResult<ProcessOutput> {
-        val generalCommandLine = if (colored) {
-            commandLine.toColoredCommandLine(this.cliLocation)
-        } else {
-            commandLine.toGeneralCommandLine(this.cliLocation)
-        }
+        val generalCommandLine =
+            commandLine.toGeneralCommandLine(this.cliLocation, emulateTerminal = colored)
         return generalCommandLine.execute(innerDisposable, runner, listener)
     }
 

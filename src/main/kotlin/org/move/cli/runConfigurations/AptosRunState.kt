@@ -18,7 +18,8 @@ abstract class AptosRunStateBase(
     val commandLine: AptosCommandLine = config.cmd
 
     override fun startProcess(): ProcessHandler {
-        val generalCommandLine = commandLine.toColoredCommandLine(config.aptosPath)
+        // emulateTerminal=true allows for the colored output
+        val generalCommandLine = commandLine.toGeneralCommandLine(config.aptosPath, emulateTerminal = true)
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination

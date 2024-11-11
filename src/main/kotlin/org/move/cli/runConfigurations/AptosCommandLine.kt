@@ -15,8 +15,8 @@ data class AptosCommandLine(
     val commandLineString: String
         get() = ParametersListUtil.join(subCommand?.split(" ").orEmpty() + arguments)
 
-    fun toGeneralCommandLine(cliExePath: Path): GeneralCommandLine {
-        val generalCommandLine = GeneralCommandLine()
+    fun toGeneralCommandLine(cliExePath: Path, emulateTerminal: Boolean = false): GeneralCommandLine {
+        var commandLine = GeneralCommandLine()
             .withExePath(cliExePath.toString())
             // subcommand can be null
             .withParameters(subCommand?.split(" ").orEmpty())
@@ -25,22 +25,12 @@ data class AptosCommandLine(
             .withCharset(Charsets.UTF_8)
             // disables default coloring for stderr
             .withRedirectErrorStream(true)
-        this.environmentVariables.configureCommandLine(generalCommandLine, true)
-        return generalCommandLine
-    }
+        this.environmentVariables.configureCommandLine(commandLine, true)
 
-    fun toColoredCommandLine(cliExePath: Path): GeneralCommandLine {
-        // preudo-tty emulation makes aptos-cli recognize console as tty and show ANSI colors
-        val generalCommandLine = PtyCommandLine()
-            .withExePath(cliExePath.toString())
-            // subcommand can be null
-            .withParameters(subCommand?.split(" ").orEmpty())
-            .withParameters(this.arguments)
-            .withWorkingDirectory(this.workingDirectory)
-            .withCharset(Charsets.UTF_8)
-            // disables default coloring for stderr
-            .withRedirectErrorStream(true)
-        this.environmentVariables.configureCommandLine(generalCommandLine, true)
-        return generalCommandLine
+        if (emulateTerminal) {
+           commandLine = PtyCommandLine(commandLine)
+        }
+
+        return commandLine
     }
 }
