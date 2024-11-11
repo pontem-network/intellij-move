@@ -1,7 +1,7 @@
 package org.move.ide.presentation
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.bindingOwner
+import org.move.lang.core.psi.ext.bindingTypeOwner
 
 class PresentationInfo(
     val element: MvNamedElement,
@@ -16,7 +16,7 @@ val MvNamedElement.presentationInfo: PresentationInfo?
         val type = when (this) {
             is MvTypeParameter -> "type parameter"
             is MvPatBinding -> {
-                val owner = this.bindingOwner
+                val owner = this.bindingTypeOwner
                 when (owner) {
                     is MvFunctionParameter -> "value parameter"
                     is MvLetStmt -> "variable"

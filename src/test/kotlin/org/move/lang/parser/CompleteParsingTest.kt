@@ -59,6 +59,7 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test loop invariants`() = doTest()
     fun `test loop labels`() = doTest()
     fun `test assign bin expr`() = doTest()
+    fun `test lambdas`() = doTest()
 
     fun doTest() {
         super.doTest(true, true)

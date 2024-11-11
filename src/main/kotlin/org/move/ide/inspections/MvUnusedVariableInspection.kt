@@ -6,12 +6,12 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.bindingTypeOwner
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.bindingOwner
 
-class MvUnusedVariableInspection : MvLocalInspectionTool() {
+class MvUnusedVariableInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
-        object : MvVisitor() {
+        object: MvVisitor() {
             override fun visitLetStmt(o: MvLetStmt) {
                 val bindings = o.pat?.descendantsOfType<MvPatBinding>().orEmpty()
                 for (binding in bindings) {
@@ -37,7 +37,7 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                     // filter out #[test] attributes
                     .filter { it.element !is MvAttrItem }
                 if (references.none()) {
-                    val fixes = when (binding.bindingOwner) {
+                    val fixes = when (binding.bindingTypeOwner) {
                         is MvFunctionParameter -> arrayOf(
                             RenameFix(binding, "_$bindingName"),
                             RemoveParameterFix(binding, bindingName)
