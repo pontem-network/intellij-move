@@ -358,6 +358,8 @@
         implementation="org.move.ide.notifications.InvalidAptosCliConfigurationNotification" />
     <editorNotificationProvider
         implementation="org.move.ide.notifications.NoAptosProjectDetectedNotification" />
+    <!--    <editorNotificationProvider-->
+    <!--        implementation="org.move.ide.notifications.UpdateAvailableNotification" />-->
 
     <intentionAction>
       <language>Move</language>
@@ -418,6 +420,12 @@
         default="false"
         groupKey="advanced.setting.aptos.group"
         descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
+    />
+    <advancedSetting
+        id="org.move.aptos.update.check"
+        default="false"
+        groupKey="advanced.setting.aptos.group"
+        descriptionKey="advanced.setting.org.move.aptos.update.check.description"
     />
 
   </extensions>
