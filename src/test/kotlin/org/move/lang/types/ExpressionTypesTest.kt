@@ -1,5 +1,6 @@
 package org.move.lang.types
 
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.types.TypificationTestCase
 
@@ -2182,6 +2183,41 @@ module 0x1::main {
             fun main() {
                 callback(10u8, |elem| elem + 1);
                                //^ u8
+            }
+        }        
+    """)
+
+    @MoveV2
+    fun `test generic enum variant`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One }
+            fun main() {
+                let a = S<u8>::One;
+                a;
+              //^ 0x1::m::S<u8>
+            }
+        }        
+    """)
+
+    @MoveV2
+    fun `test generic enum variant with positional fields`() = testExpr("""
+        module 0x1::m {
+            enum S<T> { One(T, T) }
+            fun main() {
+                let a = S<u8>::One(1, 1);
+                a;
+              //^ 0x1::m::S<u8>  
+            }
+        }        
+    """)
+
+    fun `test function with explicit integer parameter return type`() = testExpr("""
+        module 0x1::m {
+            fun call<T>(t: T): T { t }
+            fun main() {
+                let a = call<u8>(1);
+                a;
+              //^ u8  
             }
         }        
     """)

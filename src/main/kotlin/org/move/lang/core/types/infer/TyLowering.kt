@@ -74,7 +74,11 @@ class TyLowering {
                 val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
                 baseTy.substitute(explicitTypeParams)
             }
-            is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
+            is MvEnumVariant -> {
+                // has to be MvPath of form `ENUM_NAME::ENUM_VARIANT_NAME`
+                val enumPath = (methodOrPath as? MvPath)?.qualifier ?: return TyUnknown
+                lowerPath(enumPath, namedItem.enumItem, msl)
+            }
             else -> debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",
                 TyUnknown
@@ -84,16 +88,17 @@ class TyLowering {
 
     fun lowerCallable(
         methodOrPath: MvMethodOrPath,
-        item: MvGenericDeclaration,
+        namedItem: MvGenericDeclaration,
         parameterTypes: List<Ty>,
         returnType: Ty,
         msl: Boolean
     ): TyFunction {
-        val typeParamsSubst = item.typeParamsToTypeParamsSubst
-        val acqTypes = (item as? MvFunctionLike)?.acquiresPathTypes.orEmpty().map { it.loweredType(msl) }
-        val baseTy = TyFunction(item, typeParamsSubst, parameterTypes, returnType, acqTypes)
+        val acqTypes = (namedItem as? MvFunctionLike)?.acquiresPathTypes.orEmpty().map { it.loweredType(msl) }
+        val typeParamsSubst = namedItem.typeParamsToTypeParamsSubst
 
-        val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, item, msl)
+        val baseTy = TyFunction(namedItem, typeParamsSubst, parameterTypes, returnType, acqTypes)
+
+        val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
         return baseTy.substitute(explicitTypeParams) as TyFunction
     }
 

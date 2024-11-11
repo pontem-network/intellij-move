@@ -23,10 +23,10 @@ class CallInfo(
 
     companion object {
         fun resolve(callExpr: MvCallExpr): CallInfo? {
-            val fn = callExpr.path.reference?.resolveFollowingAliases() as? MvFunction ?: return null
             val msl = callExpr.isMsl()
             val callTy = callExpr.inference(msl)?.getCallableType(callExpr) as? TyFunction ?: return null
-            return buildFunctionParameters(fn, callTy)
+            val item = callExpr.path.reference?.resolveFollowingAliases() ?: return null
+            return buildFunctionParameters(item, callTy)
         }
 
         fun resolve(assertMacroExpr: MvAssertMacroExpr): CallInfo {
@@ -43,14 +43,24 @@ class CallInfo(
             return buildFunctionParameters(fn, callTy)
         }
 
-        private fun buildFunctionParameters(function: MvFunction, ty: TyFunction): CallInfo {
-            val tys = ty.paramTypes.drop(if (function.isMethod) 1 else 0)
-            val params = function.parameters
-                .drop(if (function.isMethod) 1 else 0).map { it.name to it.type }
-            val self = function.selfParam?.let {
-                ty.paramTypes.firstOrNull()?.let { "self: ${tyToString(it)}" } ?: "_"
+        private fun buildFunctionParameters(item: MvElement, ty: TyFunction): CallInfo? {
+            return when (item) {
+                is MvFunction -> {
+                    val tys = ty.paramTypes.drop(if (item.isMethod) 1 else 0)
+                    val params = item.parameters
+                        .drop(if (item.isMethod) 1 else 0).map { it.name to it.type }
+                    val self = item.selfParam?.let {
+                        ty.paramTypes.firstOrNull()?.let { "self: ${tyToString(it)}" } ?: "_"
+                    }
+                    CallInfo(self, buildParameters(tys, params))
+                }
+                is MvStruct, is MvEnumVariant -> {
+                    // tuple struct
+                    val tys = ty.paramTypes
+                    CallInfo(null, tys.map { Parameter(null, null, it) })
+                }
+                else -> null
             }
-            return CallInfo(self, buildParameters(tys, params))
         }
 
         private fun buildParameters(

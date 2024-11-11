@@ -2,6 +2,7 @@ package org.move.lang.types
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.text
+import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isMsl
@@ -54,6 +55,17 @@ class CallableTypeTest: TypificationTestCase() {
         }        
     """)
 
+    fun `test function with explicit integer parameter callable type`() = testFunctionType("""
+        module 0x1::m {
+            fun call<T>(t: T): T { t }
+            fun main() {
+                call<u8>(1);
+              //^ fn(u8) -> u8
+            }
+        }        
+    """)
+
+    private fun testFunctionType(@Language("Move") code: String) = testCallableType<MvCallExpr>(code)
     private fun testMethodType(@Language("Move") code: String) = testCallableType<MvMethodCall>(code)
 
     private inline fun <reified T: MvCallable> testCallableType(@Language("Move") code: String) {

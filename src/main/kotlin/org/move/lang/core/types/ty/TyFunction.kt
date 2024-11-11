@@ -60,19 +60,19 @@ data class TyFunction(
     }
 }
 
-// do not account for explicit type arguments
+// does not account for explicit type arguments
 fun MvFunctionLike.functionTy(msl: Boolean): TyFunction = rawFunctionTy(this, msl)
 
 private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyFunction {
     val typeParamsSubst = item.typeParamsToTypeParamsSubst
     val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-    val acquiredTypes = item.acquiresPathTypes.map { it.loweredType(msl) }
+    val acqTypes = item.acquiresPathTypes.map { it.loweredType(msl) }
     val retType = item.returnTypeTy(msl)
     return TyFunction(
         item,
         typeParamsSubst,
         paramTypes,
         retType,
-        acquiredTypes,
+        acqTypes,
     )
 }

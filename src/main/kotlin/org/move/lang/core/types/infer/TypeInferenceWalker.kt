@@ -324,7 +324,7 @@ class TypeInferenceWalker(
                     TyUnknown
                 }
             }
-            is MvEnumVariant -> item.enumItem.declaredType(ctx.msl)
+            is MvEnumVariant -> TyLowering().lowerPath(pathExpr.path, item, ctx.msl)
             is MvModule -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
@@ -403,8 +403,7 @@ class TypeInferenceWalker(
                 is MvFieldsOwner -> {
                     val tupleFields = namedItem.tupleFields
                     if (tupleFields == null) return TyUnknown
-                    val itemTy = instantiateTupleCallable(tupleFields, path, namedItem)
-                    itemTy
+                    instantiateTupleCallable(tupleFields, path, namedItem) ?: return TyUnknown
                 }
                 is MvPatBinding -> {
                     ctx.getBindingType(namedItem) as? TyLambda
@@ -594,34 +593,24 @@ class TypeInferenceWalker(
 
     private fun instantiateTupleCallable(
         tupleFields: MvTupleFields,
-        methodOrPath: MvMethodOrPath,
+        path: MvPath,
         item: MvFieldsOwner
-    ): TyFunction {
-        val genericItem = when (item) {
-            is MvStruct -> item
-            is MvEnumVariant -> item.enumItem
+    ): TyFunction? {
+        val (genericItem, genericPath) = when (item) {
+            is MvStruct -> item to path
+            is MvEnumVariant -> {
+                val qualifierPath = path.qualifier ?: return null
+                item.enumItem to qualifierPath
+            }
             else -> error("exhaustive")
         }
-//
         val parameterTypes = tupleFields.tupleFieldDeclList.map { it.type.loweredType(msl) }
         val returnType = genericItem.declaredType(msl)
+        val baseFuncTy =
+            TyLowering().lowerCallable(genericPath, genericItem, parameterTypes, returnType, msl)
 
-        val funcTy = TyLowering().lowerCallable(methodOrPath, genericItem, parameterTypes, returnType, msl)
-//
-//        val baseTy = TyFunction(
-//            genericItem,
-//            genericItem.typeParamsToTypeParamsSubst,
-//            paramTypes = parameterTypes,
-//            returnType = returnType,
-//            acquiresTypes = emptyList(),
-//        )
-//
-//        val explicitTypeParamsSubst = TyLowering().explicitTypeParamsSubst(methodOrPath, genericItem, msl)
-//        val funcTy = baseTy.substitute(explicitTypeParamsSubst)
-
-//        val baseTy = TyLowering().lowerTupleCallable(methodOrPath, item, tupleFields, msl)
         val tyVarsSubst = genericItem.tyVarsSubst
-        return funcTy.substitute(tyVarsSubst) as TyFunction
+        return baseFuncTy.substitute(tyVarsSubst) as TyFunction
     }
 
     fun inferMacroCallExprTy(macroExpr: MvAssertMacroExpr): Ty {
