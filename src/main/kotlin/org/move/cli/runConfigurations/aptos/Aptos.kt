@@ -190,11 +190,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): AptosProcessResult<Unit> {
         val processOutput = executeCommandLine(commandLine, colored, listener, runner)
+            .ignoreNonZeroExitCode()
             .unwrapOrElse {
-                if (it !is RsProcessExecutionException.FailedWithNonZeroExitCode) {
-                    return Err(it)
-                }
-                it.output
+                return Err(it)
             }
 
         val json = processOutput.stdout

@@ -12,41 +12,41 @@ import org.move.stdext.RsResult
 
 typealias RsProcessResult<T> = RsResult<T, RsProcessExecutionException>
 
-sealed class RsProcessExecutionOrDeserializationException : RuntimeException {
-    constructor(cause: Throwable) : super(cause)
-    constructor(message: String) : super(message)
+sealed class RsProcessExecutionOrDeserializationException: RuntimeException {
+    constructor(cause: Throwable): super(cause)
+    constructor(message: String): super(message)
 }
 
-class RsDeserializationException(cause: JacksonException) :
+class RsDeserializationException(cause: JacksonException):
     RsProcessExecutionOrDeserializationException(cause)
 
-sealed class RsProcessExecutionException : RsProcessExecutionOrDeserializationException {
-    constructor(message: String) : super(message)
-    constructor(cause: Throwable) : super(cause)
+sealed class RsProcessExecutionException: RsProcessExecutionOrDeserializationException {
+    constructor(message: String): super(message)
+    constructor(cause: Throwable): super(cause)
 
     abstract val commandLineString: String
 
     class Start(
         override val commandLineString: String,
         cause: ExecutionException,
-    ) : RsProcessExecutionException(cause)
+    ): RsProcessExecutionException(cause)
 
     class Canceled(
         override val commandLineString: String,
         val output: ProcessOutput,
         message: String = errorMessage(commandLineString, output),
-    ) : RsProcessExecutionException(message)
+    ): RsProcessExecutionException(message)
 
     class Timeout(
         override val commandLineString: String,
         val output: ProcessOutput,
-    ) : RsProcessExecutionException(errorMessage(commandLineString, output))
+    ): RsProcessExecutionException(errorMessage(commandLineString, output))
 
     /** The process exited with non-zero exit code */
     class FailedWithNonZeroExitCode(
         override val commandLineString: String,
         val output: ProcessOutput,
-    ) : RsProcessExecutionException(errorMessage(commandLineString, output))
+    ): RsProcessExecutionException(errorMessage(commandLineString, output))
 
     companion object {
         fun errorMessage(commandLineString: String, output: ProcessOutput): String = """
@@ -66,5 +66,14 @@ fun RsProcessResult<ProcessOutput>.ignoreExitCode(): RsResult<ProcessOutput, RsP
             is RsProcessExecutionException.Canceled -> RsResult.Ok(err.output)
             is RsProcessExecutionException.Timeout -> RsResult.Ok(err.output)
             is RsProcessExecutionException.FailedWithNonZeroExitCode -> RsResult.Ok(err.output)
+        }
+    }
+
+fun RsProcessResult<ProcessOutput>.ignoreNonZeroExitCode(): RsResult<ProcessOutput, RsProcessExecutionException> =
+    when (this) {
+        is RsResult.Ok -> this
+        is RsResult.Err -> when (err) {
+            is RsProcessExecutionException.FailedWithNonZeroExitCode -> RsResult.Ok(err.output)
+            else -> this
         }
     }
