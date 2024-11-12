@@ -56,9 +56,9 @@ abstract class CommandConfigurationBase(
     override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosRunStateBase? {
         val config = clean().ok ?: return null
         return if (showTestToolWindow(config.cmd)) {
-            AptosTestRunState(environment, this, config)
+            AptosTestRunState(environment, config)
         } else {
-            AptosRunState(environment, this, config)
+            AptosRunState(environment, config)
         }
     }
 
@@ -86,9 +86,6 @@ abstract class CommandConfigurationBase(
         when {
             !AdvancedSettings.getBoolean(TEST_TOOL_WINDOW_SETTING_KEY) -> false
             commandLine.subCommand != "move test" -> false
-//            "--nocapture" in commandLine.additionalArguments -> false
-//            Cargo.TEST_NOCAPTURE_ENABLED_KEY.asBoolean() -> false
-//            else -> !hasRemoteTarget
             else -> true
         }
 

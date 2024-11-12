@@ -7,19 +7,19 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.move.cli.MoveFileHyperlinkFilter
+import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration
 
 abstract class AptosRunStateBase(
-    environment: ExecutionEnvironment,
-    val runConfiguration: CommandConfigurationBase,
-    val config: CommandConfigurationBase.CleanConfiguration.Ok
+    environment: ExecutionEnvironment, val cleanConfiguration: CleanConfiguration.Ok
 ): CommandLineState(environment) {
 
     val project = environment.project
-    val commandLine: AptosCommandLine = config.cmd
+    val commandLine: AptosCommandLine = cleanConfiguration.cmd
 
     override fun startProcess(): ProcessHandler {
         // emulateTerminal=true allows for the colored output
-        val generalCommandLine = commandLine.toGeneralCommandLine(config.aptosPath, emulateTerminal = true)
+        val generalCommandLine =
+            commandLine.toGeneralCommandLine(cleanConfiguration.aptosPath, emulateTerminal = true)
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
@@ -37,11 +37,8 @@ abstract class AptosRunStateBase(
 }
 
 class AptosRunState(
-    environment: ExecutionEnvironment,
-    runConfiguration: CommandConfigurationBase,
-    config: CommandConfigurationBase.CleanConfiguration.Ok
-):
-    AptosRunStateBase(environment, runConfiguration, config) {
+    environment: ExecutionEnvironment, config: CleanConfiguration.Ok
+): AptosRunStateBase(environment, config) {
 
     init {
         createFilters().forEach { consoleBuilder.addFilter(it) }
