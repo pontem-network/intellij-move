@@ -11,6 +11,8 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.progress.BuildProgress
 import com.intellij.build.progress.BuildProgressDescriptor
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessListener
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -26,17 +28,21 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
+import org.move.cli.manifest.TomlDependency.Git.Companion.moveHome
 import org.move.cli.runConfigurations.aptos.AptosExitStatus
 import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
+import org.move.openapiext.AnsiEscapedProcessAdapter
 import org.move.openapiext.TaskResult
 import org.move.openapiext.contentRoots
+import org.move.openapiext.runProcessWithGlobalProgress
 import org.move.stdext.iterateFiles
 import org.move.stdext.unwrapOrElse
 import org.move.stdext.withExtended
@@ -149,19 +155,34 @@ class MoveProjectsSyncTask(
                 "Fetching dependencies disabled in the plugin settings",
             )
         } else {
-            context.runWithChildProgress("Fetching dependencies") { childContext ->
-                val result = fetchDependencyPackages(childContext, projectRoot)
-                if (result is TaskResult.Err) {
-                    moveProject =
-                        moveProject.copy(fetchDepsStatus = UpdateStatus.UpdateFailed("Failed to fetch dependency packages"))
+            context.runWithChildProgress("Fetch dependencies") { childContext ->
+                val taskResult = fetchDependencyPackages(childContext, projectRoot)
+                if (taskResult is TaskResult.Err) {
+                    moveProject = moveProject.copy(
+                        fetchDepsStatus = UpdateStatus.UpdateFailed("Failed to fetch dependency packages")
+                    )
                 }
-                result
+                childContext.checkCanceled()
+                // fetched any dependencies
+                if (taskResult is TaskResult.Ok) {
+                    val output = taskResult.value
+                    if (output.stdout.contains("FETCHING GIT DEPENDENCY")) {
+                        childContext.withProgressText("Preparing filesystem")
+                        VfsUtil.markDirtyAndRefresh(
+                            false,
+                            true,
+                            false,
+                            moveHome().toFile()
+                        )
+                    }
+                }
+                taskResult
             }
         }
         context.checkCanceled()
 
         val deps =
-            (context.runWithChildProgress("Loading dependencies") { childContext ->
+            (context.runWithChildProgress("Load modules") { childContext ->
                 // Blocks till completed or cancelled by the toml / file change
                 runReadAction {
                     val rootPackage = moveProject.currentPackage
@@ -182,11 +203,9 @@ class MoveProjectsSyncTask(
         projects.add(moveProject.copy(dependencies = deps))
     }
 
-    private fun fetchDependencyPackages(childContext: SyncContext, projectRoot: Path): TaskResult<Unit> {
-        val syncListener =
-            SyncProcessListener(childContext) { event ->
-                childContext.syncProgress.output(event.text, true)
-            }
+    private fun fetchDependencyPackages(
+        childContext: SyncContext, projectRoot: Path
+    ): TaskResult<ProcessOutput> {
         val skipLatest = project.moveSettings.skipFetchLatestGitDeps
         val aptos = project.getAptosCli(parentDisposable = this)
         return when {
@@ -196,15 +215,40 @@ class MoveProjectsSyncTask(
                     aptos.fetchPackageDependencies(
                         projectRoot,
                         skipLatest,
-                        processListener = syncListener
+                        runner = {
+                            // populate progress bar
+                            addProcessListener(object: AnsiEscapedProcessAdapter() {
+                                override fun onColoredTextAvailable(text: String) {
+                                    // show progress bars for the long operations
+                                    val line = text.trim()
+                                    if (line.startsWith("FETCHING GIT DEPENDENCY")) {
+                                        val gitRepo = line.substring("FETCHING GIT DEPENDENCY".length)
+                                        childContext.withProgressText("Fetching $gitRepo")
+                                    }
+                                    if (line.startsWith("UPDATING GIT DEPENDENCY")) {
+                                        val gitRepo = line.substring("UPDATING GIT DEPENDENCY".length)
+                                        childContext.withProgressText("Updating $gitRepo")
+                                    }
+                                }
+                            })
+                            addProcessListener(object: ProcessListener {
+                                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                                    childContext.syncProgress.output(event.text, true)
+                                }
+                            })
+                            runProcessWithGlobalProgress()
+                        }
                     ).unwrapOrElse {
                         return TaskResult.Err(
                             "Failed to fetch / update dependencies",
                             it.message
                         )
                     }
+                val output = aptosProcessOutput.output
                 when (val exitStatus = aptosProcessOutput.exitStatus) {
-                    is AptosExitStatus.Result -> TaskResult.Ok(Unit)
+                    is AptosExitStatus.Result -> {
+                        TaskResult.Ok(output)
+                    }
                     is AptosExitStatus.Error -> {
                         if (exitStatus.message.contains("Unable to resolve packages for package")) {
                             return TaskResult.Err(
@@ -218,9 +262,9 @@ class MoveProjectsSyncTask(
                                 exitStatus.message.split(": ").joinToString(": \n")
                             )
                         }
-                        TaskResult.Ok(Unit)
+                        TaskResult.Ok(output)
                     }
-                    is AptosExitStatus.Malformed -> TaskResult.Ok(Unit)
+                    is AptosExitStatus.Malformed -> TaskResult.Ok(output)
                 }
             }
         }
@@ -362,28 +406,6 @@ class MoveProjectsSyncTask(
             }
         }
     }
-}
-
-private class SyncProcessListener(
-    private val context: MoveProjectsSyncTask.SyncContext,
-    private val onTextAvailable: (ProcessEvent) -> Unit,
-): ProcessProgressListener {
-    override fun onTextAvailable(event: ProcessEvent, outputType: Key<Any>) {
-        onTextAvailable(event)
-        // show progress bars for the long operations
-        val text = event.text.trim { it <= ' ' }
-        if (text.startsWith("FETCHING GIT DEPENDENCY")) {
-            val gitRepo = text.substring("FETCHING GIT DEPENDENCY".length)
-            context.withProgressText("Fetching $gitRepo")
-        }
-        if (text.startsWith("UPDATING GIT DEPENDENCY")) {
-            val gitRepo = text.substring("UPDATING GIT DEPENDENCY".length)
-            context.withProgressText("Updating $gitRepo")
-        }
-    }
-
-    override fun error(title: String, message: String) = context.syncProgress.error(title, message)
-    override fun warning(title: String, message: String) = context.syncProgress.warning(title, message)
 }
 
 private fun <T, R> BuildProgress<BuildProgressDescriptor>.runWithChildProgress(
