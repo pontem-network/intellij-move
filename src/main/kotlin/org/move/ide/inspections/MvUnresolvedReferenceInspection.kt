@@ -14,8 +14,6 @@ import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
 
-//    var ignoreWithoutQuickFix: Boolean = false
-
     override val isSyntaxOnly get() = false
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object: MvVisitor() {
@@ -54,15 +52,19 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
 
             // checked in another method
             if (patField.patFieldFull != null) return
+            // pat struct unresolved, do not highlight fields
+            if (patField.patStruct.path.reference?.resolve() == null) return
 
-            patField.patBinding
-                ?.let { tryMultiResolveOrRegisterError(it, holder) }
+            patField.patBinding?.let { tryMultiResolveOrRegisterError(it, holder) }
         }
 
-        override fun visitPatFieldFull(o: MvPatFieldFull) {
-            if (o.isMsl() && !isDebugModeEnabled())
+        override fun visitPatFieldFull(patFieldFull: MvPatFieldFull) {
+            if (patFieldFull.isMsl() && !isDebugModeEnabled())
                 return
-            tryMultiResolveOrRegisterError(o, holder)
+            // pat struct unresolved, do not highlight fields
+            if (patFieldFull.patStruct.path.reference?.resolve() == null) return
+
+            tryMultiResolveOrRegisterError(patFieldFull, holder)
         }
 
         override fun visitStructLitField(litField: MvStructLitField) {

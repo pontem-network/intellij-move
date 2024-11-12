@@ -7,7 +7,7 @@ import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.MvPatStruct
 
 
-val MvPatField.parentPatStruct: MvPatStruct get() = ancestorStrict()!!
+val MvPatField.patStruct: MvPatStruct get() = parent as MvPatStruct
 
 val MvPatField.fieldReferenceName: String
     get() = if (this.patFieldFull != null) {

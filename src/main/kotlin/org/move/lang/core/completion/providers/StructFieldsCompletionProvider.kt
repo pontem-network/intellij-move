@@ -40,7 +40,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         val completionCtx = MvCompletionContext(element, element.isMsl())
         when (element) {
             is MvPatField -> {
-                val patStruct = element.parentPatStruct
+                val patStruct = element.patStruct
                 addFieldsToCompletion(
                     patStruct.path.maybeStruct ?: return,
                     patStruct.fieldNames,

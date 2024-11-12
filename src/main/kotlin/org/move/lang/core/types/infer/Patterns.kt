@@ -45,18 +45,18 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             val item =
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
-                    ?: return
 
             if (item is MvGenericDeclaration) {
                 val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
-//                val (patTy, _) = fcx.instantiateMethodOrPath<TyAdt>(this.path, item) ?: return
                 if (!isCompatible(expected, patTy, fcx.msl)) {
                     fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
                 }
             }
-            val structFields = item.namedFields.associateBy { it.name }
+
+            val structFields = item?.namedFields?.associateBy { it.name } ?: emptyMap()
             for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
+                // wil have TyUnknown on unresolved item
                 val fieldType = structFields[kind.fieldName]
                     ?.type
                     ?.loweredType(fcx.msl)
@@ -80,7 +80,10 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             val item =
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
-                    ?: return
+            if (item == null) {
+                patList.forEach { it.extractBindings(fcx, TyUnknown) }
+                return
+            }
             val tupleFields = item.positionalFields
             inferTupleFieldsTypes(fcx, patList, patBm, tupleFields.size) { indx ->
                 tupleFields
