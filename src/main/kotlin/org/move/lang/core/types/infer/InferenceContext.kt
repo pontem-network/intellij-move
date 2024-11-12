@@ -108,7 +108,6 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
 
-    fun hasResolvedPath(path: MvPath): Boolean = path in resolvedPaths
     fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
@@ -120,7 +119,7 @@ data class InferenceResult(
         resolvedLitFields[litField].orEmpty()
 
     override fun getPatFieldType(patField: MvPatField): Ty =
-        patFieldTypes[patField] ?: TyUnknown
+        patFieldTypes[patField] ?: inferenceErrorOrFallback(patField, TyUnknown)
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
@@ -332,15 +331,14 @@ class InferenceContext(
 //        resolvedPaths[path] = resolved
 //    }
 
-    override fun getPatFieldType(patField: MvPatField): Ty {
-        return patFieldTypes[patField] ?: TyUnknown
-    }
+    override fun getPatFieldType(patField: MvPatField): Ty =
+        patFieldTypes[patField] ?: inferenceErrorOrFallback(patField, TyUnknown)
 
     override fun getResolvedLitField(litField: MvStructLitField): List<MvNamedElement> =
         resolvedLitFields[litField].orEmpty()
 
     fun getExprType(expr: MvExpr): Ty {
-        return exprTypes[expr] ?: TyUnknown
+        return exprTypes[expr] ?: inferenceErrorOrFallback(expr, TyUnknown)
     }
 
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {

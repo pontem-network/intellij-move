@@ -541,4 +541,25 @@ module 0x1::m {
             }
         }        
     """)
+
+    @MoveV2
+    fun `test no error for fields if destructuring unknown struct`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let <error descr="Unresolved reference: `S`">S</error> { val } = 1;
+                let <error descr="Unresolved reference: `S`">S</error>(val) = 1;
+            }
+        }        
+    """)
+
+    @MoveV2
+    fun `test no error for fields if destructuring unknown tuple struct`() = checkByText("""
+        module 0x1::m {
+            enum R {}
+            fun main() {
+                let R::<error descr="Unresolved reference: `Inner`">Inner</error> { val } = 1;
+                let R::<error descr="Unresolved reference: `Inner`">Inner</error>(val) = 1;
+            }
+        }        
+    """)
 }

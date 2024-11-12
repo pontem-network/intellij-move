@@ -2221,4 +2221,45 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test struct destructuring for unknown type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let S { i } = s;
+                i;
+              //^ <unknown>  
+            }
+         }        
+    """)
+
+    fun `test enum variant destructuring for unknown type`() = testExpr("""
+        module 0x1::m {
+            enum S {  }
+            fun main() {
+                let S::Inner { i } = s;
+                i;
+              //^ <unknown>  
+            }
+         }        
+    """)
+
+    fun `test tuple struct destructuring for unknown type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let S(i, j) = s;
+                i;
+              //^ <unknown>  
+            }
+         }        
+    """)
+    fun `test tuple enum variant destructuring for unknown type`() = testExpr("""
+        module 0x1::m {
+            enum S {}
+            fun main() {
+                let S::Inner(i, j) = s;
+                i;
+              //^ <unknown>                   
+            }
+         }        
+    """)
 }

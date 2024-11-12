@@ -63,10 +63,10 @@ fun processStructLitFieldResolveVariants(
 }
 
 fun processStructPatFieldResolveVariants(
-    field: MvPatFieldFull,
+    patFieldFull: MvPatFieldFull,
     processor: RsResolveProcessor
 ): Boolean {
-    val resolved = field.parentPatStruct.path.reference?.resolveFollowingAliases()
+    val resolved = patFieldFull.patStruct.path.reference?.resolveFollowingAliases()
     val resolvedStruct = resolved as? MvFieldsOwner ?: return false
     return processNamedFieldDeclarations(resolvedStruct, processor)
 }

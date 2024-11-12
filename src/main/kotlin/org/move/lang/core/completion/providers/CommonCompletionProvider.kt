@@ -122,7 +122,7 @@ private fun skipAlreadyProvidedFields(
     val parent = refElement.parent
     val providedFieldNames = when (parent) {
         // shorthand, skip all provided fields
-        is MvPatField -> parent.parentPatStruct.fieldNames
+        is MvPatField -> parent.patStruct.fieldNames
 //                    is MvStructLitField -> parent.parentStructLitExpr.providedFieldNames
         else -> emptySet()
     }
