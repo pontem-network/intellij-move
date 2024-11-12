@@ -8,9 +8,8 @@ import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 
 class AptosTestRunState(
     environment: ExecutionEnvironment,
-    runConfiguration: CommandConfigurationBase,
-    config: CommandConfigurationBase.CleanConfiguration.Ok
-): AptosRunStateBase(environment, runConfiguration, config) {
+    cleanConfiguration: CommandConfigurationBase.CleanConfiguration.Ok
+): AptosRunStateBase(environment, cleanConfiguration) {
 
     init {
         consoleBuilder =
