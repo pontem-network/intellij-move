@@ -105,6 +105,8 @@
 
     <lang.formatter language="Move"
                     implementationClass="org.move.ide.formatter.MvFormattingModelBuilder" />
+    <formattingService implementation="org.move.cli.externalFormatter.MovefmtFormattingService" />
+
     <langCodeStyleSettingsProvider
         implementation="org.move.ide.formatter.settings.MvLanguageCodeStyleSettingsProvider" />
 
@@ -340,6 +342,10 @@
                          parentId="language.move"
                          id="language.move.compiler.check"
                          displayName="External Linters" />
+    <projectConfigurable instance="org.move.cli.externalFormatter.MovefmtConfigurable"
+                         parentId="language.move"
+                         id="language.move.movefmt"
+                         displayName="Movefmt" />
 
     <projectService serviceInterface="org.move.utils.ProjectRootService"
                     serviceImplementation="org.move.utils.ProjectRootServiceImpl"
