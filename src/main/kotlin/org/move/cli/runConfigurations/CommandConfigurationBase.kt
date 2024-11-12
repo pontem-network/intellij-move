@@ -79,7 +79,8 @@ abstract class CommandConfigurationBase(
                 workingDirectory,
                 environmentVariables
             )
-        return CleanConfiguration.Ok(aptosPath, commandLine)
+        return CleanConfiguration.
+        Ok(aptosPath, commandLine)
     }
 
     protected fun showTestToolWindow(commandLine: AptosCommandLine): Boolean =
