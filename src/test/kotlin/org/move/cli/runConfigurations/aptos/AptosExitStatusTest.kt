@@ -37,4 +37,23 @@ class AptosExitStatusTest: MvTestBase() {
         )
         check(status is AptosExitStatus.Malformed)
     }
+
+    fun `test parse array of items`() {
+        val status = AptosExitStatus.fromJson(
+            """
+        {
+            "Result": [
+                "0000000000000000000000000000000000000000000000000000000000000001::system_addresses",
+                "0000000000000000000000000000000000000000000000000000000000000001::guid"
+              ]
+            }
+        }            
+        """
+        )
+        check(status is AptosExitStatus.Result)
+        check(status.message ==
+                      "[\"0000000000000000000000000000000000000000000000000000000000000001::system_addresses\"," +
+                      "\"0000000000000000000000000000000000000000000000000000000000000001::guid\"]",
+              { status.message })
+    }
 }

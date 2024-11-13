@@ -13,8 +13,10 @@ import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.MoveProject
 import org.move.cli.MvConstants
 import org.move.cli.runConfigurations.AptosCommandLine
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
+import org.move.stdext.CollectionBuilder
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
@@ -61,22 +63,23 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     }
 
     fun fetchPackageDependencies(
-        projectDir: Path,
-        skipLatest: Boolean,
+        project: Project,
+        packageRoot: Path,
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): AptosProcessResult<Unit> {
         val commandLine =
             AptosCommandLine(
                 subCommand = "move compile",
-                arguments = listOfNotNull(
-                    "--skip-fetch-latest-git-deps".takeIf { skipLatest }
-                ),
-                workingDirectory = projectDir
+                arguments = compileArguments(project),
+                workingDirectory = packageRoot
             )
         return executeAptosCommandLine(commandLine, colored = true, runner = runner)
     }
 
-    fun checkProject(args: AptosCompileArgs): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
+    fun checkProject(
+        project: Project,
+        args: AptosCompileArgs
+    ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
 //            val useClippy = args.linter == ExternalLinter.CLIPPY
 //                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
 //            val checkCommand = if (useClippy) "clippy" else "check"
@@ -84,18 +87,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         val commandLine =
             AptosCommandLine(
                 "move compile",
-                buildList {
-//                        add("--message-format=json")
-                    if ("--skip-fetch-latest-git-deps" !in extraArguments) {
-                        add("--skip-fetch-latest-git-deps")
-                    }
-                    if (args.enableMove2) {
-                        if ("--move-2" !in extraArguments) {
-                            add("--move-2")
-                        }
-                    }
-                    addAll(ParametersListUtil.parse(args.extraArguments))
-                },
+                arguments = compileArguments(project) { addAll(extraArguments) },
                 args.moveProjectDirectory,
             )
         return executeCommandLine(commandLine).ignoreExitCode()
@@ -205,6 +197,23 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         val aptosProcessOutput = AptosProcessOutput(Unit, processOutput, exitStatus)
 
         return Ok(aptosProcessOutput)
+    }
+
+    private fun compileArguments(
+        project: Project,
+        builder: (CollectionBuilder<String>.() -> Unit)? = null
+    ): List<String> {
+        val settings = project.moveSettings
+        val initialArguments = buildList { builder?.let { this.it() } }
+        return buildList {
+            addAll(initialArguments)
+            if (settings.enableMove2 && "--move-2" !in initialArguments) {
+                add("--move-2")
+            }
+            if (settings.skipFetchLatestGitDeps && "--skip-fetch-latest-git-deps" !in initialArguments) {
+                add("--skip-fetch-latest-git-deps")
+            }
+        }
     }
 
     override fun dispose() {}

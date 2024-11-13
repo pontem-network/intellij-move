@@ -6,11 +6,13 @@ import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.util.Disposer
 import org.move.cli.MoveFileHyperlinkFilter
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration
 
 abstract class AptosRunStateBase(
-    environment: ExecutionEnvironment, val cleanConfiguration: CleanConfiguration.Ok
+    environment: ExecutionEnvironment,
+    val cleanConfiguration: CleanConfiguration.Ok
 ): CommandLineState(environment) {
 
     val project = environment.project
@@ -21,7 +23,11 @@ abstract class AptosRunStateBase(
         val generalCommandLine =
             commandLine.toGeneralCommandLine(cleanConfiguration.aptosPath, emulateTerminal = true)
         val handler = KillableColoredProcessHandler(generalCommandLine)
-        consoleBuilder.console.attachToProcess(handler)
+
+        val console = consoleBuilder.console
+        Disposer.register(this.environment, console)
+        console.attachToProcess(handler)
+
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
         return handler
     }

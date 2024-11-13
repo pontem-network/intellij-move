@@ -321,6 +321,32 @@ module 0x1::main {
 }        
     """)
 
+    fun `test unused import with Self as`() = doTest("""
+module 0x1::pool { 
+    struct X1 {}    
+    public fun create_pool() {}        
+}        
+module 0x1::main {
+    use 0x1::pool::{Self as mypool, X1};
+
+    fun main() {
+        mypool::create_pool();
+    }
+}
+    """, """
+module 0x1::pool { 
+    struct X1 {}    
+    public fun create_pool() {}        
+}        
+module 0x1::main {
+    use 0x1::pool::Self as mypool;
+
+    fun main() {
+        mypool::create_pool();
+    }
+}
+    """)
+
     fun `test duplicate self import`() = doTest("""
         module 0x1::pool { 
             struct X1 {}    
@@ -375,6 +401,34 @@ module 0x1::main {
 //spec 0x1::main {
 //    spec main {
 //        let _a = string::utf8(b"hello");
+//    }
+//}
+//    """)
+
+    // todo
+//    fun `test vector import should be test_only if used only in tests`() = doTest("""
+//module 0x1::vector {
+//    public fun call() {}
+//}
+//module 0x1::main {
+//    use 0x1::vector;
+//
+//    #[test]
+//    fun test_main() {
+//        vector::call();
+//    }
+//}
+//    """, """
+//module 0x1::vector {
+//    public fun call() {}
+//}
+//module 0x1::main {
+//    #[test_only]
+//    use 0x1::vector;
+//
+//    #[test]
+//    fun test_main() {
+//        vector::call();
 //    }
 //}
 //    """)
