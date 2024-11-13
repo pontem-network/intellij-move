@@ -106,7 +106,7 @@ object RsExternalLinterUtils {
 
                 override fun run(indicator: ProgressIndicator) {
                     widget?.inProgress = true
-                    future.complete(check(aptosCli, args))
+                    future.complete(check(project, aptosCli, args))
                 }
 
                 override fun onFinished() {
@@ -118,13 +118,14 @@ object RsExternalLinterUtils {
     }
 
     private fun check(
+        project: Project,
         aptosCli: Aptos,
         aptosCompileArgs: AptosCompileArgs
     ): RsExternalLinterResult? {
         ProgressManager.checkCanceled()
         val started = Instant.now()
         val output = aptosCli
-            .checkProject(aptosCompileArgs)
+            .checkProject(project, aptosCompileArgs)
             .unwrapOrElse { e ->
                 LOG.error(e)
                 return null

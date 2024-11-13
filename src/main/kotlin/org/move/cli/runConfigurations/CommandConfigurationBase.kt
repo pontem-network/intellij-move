@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.util.execution.ParametersListUtil
 import org.jdom.Element
@@ -17,6 +18,7 @@ import org.move.cli.runConfigurations.test.AptosTestRunState
 import org.move.cli.settings.aptosCliPath
 import org.move.cli.writePath
 import org.move.cli.writeString
+import org.move.openapiext.rootPluginDisposable
 import org.move.stdext.exists
 import java.nio.file.Path
 
@@ -55,6 +57,11 @@ abstract class CommandConfigurationBase(
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosRunStateBase? {
         val config = clean().ok ?: return null
+
+        // environment is disposable to which all internal RunState disposables are connected
+        // todo: find shorter living disposable?
+        Disposer.register(project.rootPluginDisposable, environment)
+
         return if (showTestToolWindow(config.cmd)) {
             AptosTestRunState(environment, config)
         } else {

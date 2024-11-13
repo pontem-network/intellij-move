@@ -208,9 +208,7 @@ inline fun <R> Project.nonBlocking(crossinline block: () -> R, crossinline uiCon
 }
 
 @Service(PROJECT)
-class RootPluginDisposable: Disposable {
-    override fun dispose() {}
-}
+class RootPluginDisposable(val project: Project): Disposable.Default
 
 val Project.rootPluginDisposable get() = this.service<RootPluginDisposable>()
 

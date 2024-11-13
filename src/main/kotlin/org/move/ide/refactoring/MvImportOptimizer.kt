@@ -80,14 +80,16 @@ class MvImportOptimizer : ImportOptimizer {
     private fun removeCurlyBracesIfPossible(rootUseSpeck: MvUseSpeck, psiFactory: MvPsiFactory) {
         val itemUseSpeck = rootUseSpeck.useGroup?.asTrivial ?: return
 
-        val newUseSpeck = psiFactory.useSpeck("0x1::dummy::call")
+        val newUseSpeck = psiFactory.useSpeck("0x1::dummy::call as mycall")
         val newUseSpeckPath = newUseSpeck.path
         newUseSpeckPath.path?.replace(rootUseSpeck.path)
         itemUseSpeck.path.identifier?.let { newUseSpeckPath.identifier?.replace(it) }
 
-        val useAlias = itemUseSpeck.useAlias
-        if (useAlias != null) {
-            newUseSpeck.add(useAlias)
+        val oldUseAlias = itemUseSpeck.useAlias
+        if (oldUseAlias != null) {
+            newUseSpeck.useAlias?.replace(oldUseAlias)
+        } else {
+            newUseSpeck.useAlias?.delete()
         }
 
         rootUseSpeck.replace(newUseSpeck)

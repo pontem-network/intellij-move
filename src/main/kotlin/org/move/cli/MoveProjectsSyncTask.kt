@@ -139,7 +139,7 @@ class MoveProjectsSyncTask(
         projects: MutableList<MoveProject>,
         context: SyncContext
     ) {
-        val projectRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
+        val packageRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
         var (moveProject, rootMoveToml) =
             runReadAction {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
@@ -156,7 +156,7 @@ class MoveProjectsSyncTask(
             )
         } else {
             context.runWithChildProgress("Fetch dependencies") { childContext ->
-                val taskResult = fetchDependencyPackages(childContext, projectRoot)
+                val taskResult = fetchDependencyPackages(childContext, packageRoot)
                 if (taskResult is TaskResult.Err) {
                     moveProject = moveProject.copy(
                         fetchDepsStatus = UpdateStatus.UpdateFailed("Failed to fetch dependency packages")
@@ -204,17 +204,16 @@ class MoveProjectsSyncTask(
     }
 
     private fun fetchDependencyPackages(
-        childContext: SyncContext, projectRoot: Path
+        childContext: SyncContext, packageRoot: Path
     ): TaskResult<ProcessOutput> {
-        val skipLatest = project.moveSettings.skipFetchLatestGitDeps
         val aptos = project.getAptosCli(parentDisposable = this)
         return when {
             aptos == null -> TaskResult.Err("Invalid Aptos CLI configuration")
             else -> {
                 val aptosProcessOutput =
                     aptos.fetchPackageDependencies(
-                        projectRoot,
-                        skipLatest,
+                        project,
+                        packageRoot,
                         runner = {
                             // populate progress bar
                             addProcessListener(object: AnsiEscapedProcessAdapter() {
