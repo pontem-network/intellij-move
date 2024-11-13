@@ -66,7 +66,7 @@ class LookupElementTest: MvTestBase() {
             struct MyStruct { val: u8 }
                  //^
         }
-    """, tailText = " { ... }", typeText = "main.move"
+    """, typeText = "main.move"
     )
 
     fun `test module`() = checkNamedItem(
@@ -169,26 +169,13 @@ class LookupElementTest: MvTestBase() {
         }
         """, typeText = "u8"
     )
-//
-//    fun `test import module lookup`() = checkNamedItem("""
-//        module 0x1::m {
-//            public fun identity(a: u8): u8 { a }
-//        }
-//        module 0x1::main {
-//            use 0x1::m;
-//                   //^
-//        }
-//    """, tailText = " 0x1", typeText = "main.move")
 
-//    fun `test import function lookup`() = checkNamedItem("""
-//        module 0x1::m {
-//            public fun identity(a: u8): u8 { a }
-//        }
-//        module 0x1::main {
-//            use 0x1::m::identity;
-//                        //^
-//        }
-//    """, tailText = "(a: u8): u8", typeText = "main.move")
+    fun `test lookup for tuple struct`() = checkNamedItem("""
+        module 0x1::m {
+            struct SS(u8, u16);
+                 //^ 
+        }        
+    """, tailText = "(u8, u16)", typeText = "main.move")
 
     private fun checkNamedItem(
         @Language("Move") code: String,

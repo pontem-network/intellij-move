@@ -74,14 +74,14 @@ object MvPsiPattern {
         typeParameter()
             .afterLeafSkipping(
                 whitespaceAndErrors(),
-                PlatformPatterns.psiElement(COLON),
+                psiElement(COLON),
             )
 
     fun ability(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvAbility>()
 
     fun path(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvPath>()
 
-    fun refExpr(): PsiElementPattern.Capture<PsiElement> =
+    fun pathExpr(): PsiElementPattern.Capture<PsiElement> =
         path()
             .withSuperParent(2, MvPathExpr::class.java)
 
@@ -109,8 +109,9 @@ object MvPsiPattern {
 
     inline fun <reified I: PsiElement> psiElementWithParent() =
         psiElement()
-            .withParent(or(psiElement<I>(), psiElement<PsiErrorElement>().withParent(psiElement<I>()))
-        )
+            .withParent(
+                or(psiElement<I>(), psiElement<PsiErrorElement>().withParent(psiElement<I>()))
+            )
 
     inline fun <reified I: PsiElement> psiElementAfterSiblingSkipping(
         skip: ElementPattern<*>,
@@ -132,7 +133,7 @@ object MvPsiPattern {
     val simplePathPattern: PsiElementPattern.Capture<PsiElement>
         get() {
             val simplePath = psiElement<MvPath>()
-                .with(object : PatternCondition<MvPath>("SimplePath") {
+                .with(object: PatternCondition<MvPath>("SimplePath") {
                     override fun accepts(path: MvPath, context: ProcessingContext?): Boolean =
                         path.pathAddress == null &&
                                 path.path == null &&
@@ -224,7 +225,7 @@ private val PsiElement.prevVisibleOrNewLine: PsiElement?
     }
 
 inline fun <reified I: PsiElement> psiElement(): PsiElementPattern.Capture<I> {
-    return PlatformPatterns.psiElement(I::class.java)
+    return psiElement(I::class.java)
 }
 
 inline fun <reified I: PsiElement> PsiElementPattern.Capture<PsiElement>.withParent(): PsiElementPattern.Capture<PsiElement> {

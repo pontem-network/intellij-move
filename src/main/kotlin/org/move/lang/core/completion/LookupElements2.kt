@@ -57,9 +57,11 @@ fun MvNamedElement.getLookupElementBuilder2(
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {
-            val tailText = if (completionCtx.structAsType) "" else " { ... }"
-            base
-                .withTailText(tailText)
+            val tailText = this.tupleFields?.let {
+                it.tupleFieldDeclList
+                    .joinToString(", ", "(", ")") { it.type.text }
+            }
+            base.withTailText(tailText)
                 .withTypeText(this.containingFile?.name)
         }
 

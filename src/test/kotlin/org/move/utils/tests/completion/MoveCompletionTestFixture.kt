@@ -1,9 +1,13 @@
 package org.move.utils.tests.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.util.elementType
+import com.intellij.psi.util.prevLeaf
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
+import org.move.lang.MvElementTypes
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.hasCaretMarker
 import org.move.utils.tests.replaceCaretMarker
@@ -55,7 +59,16 @@ class MvCompletionTestFixture(
         val lookups = myFixture.completeBasic()
         checkNotNull(lookups) {
             val element = myFixture.file.findElementAt(myFixture.caretOffset - 1)
-            "Expected zero completions, but one completion was auto inserted: `${element?.text}`."
+            // handle assert!()
+            var elementText = element?.text
+            if (element != null) {
+                if (element.prevSibling.elementType == MvElementTypes.EXCL) {
+                    // IDENTIFIER + ! + (
+                    elementText =
+                        element.prevSibling.prevSibling.text + element.prevSibling.text + elementText
+                }
+            }
+            "Expected zero completions, but one completion was auto inserted: `$elementText`."
         }
         check(lookups.isEmpty()) {
             "Expected zero completions, got ${lookups.map { it.lookupString }}."
