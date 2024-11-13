@@ -192,6 +192,10 @@
         implementation="org.move.ide.liveTemplates.MvContextType$Block"
         contextId="MOVE_BLOCK"
         baseContextId="MOVE_FILE" />
+    <liveTemplateContext
+        implementation="org.move.ide.liveTemplates.MvContextType$Type"
+        contextId="MOVE_TYPE"
+        baseContextId="MOVE_FILE" />
 
     <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
                                order="first"
