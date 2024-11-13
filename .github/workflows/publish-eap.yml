@@ -31,7 +31,7 @@ jobs:
 #        needs: [ check-for-tests-success ]
         strategy:
             matrix:
-                gradle-properties-version: [ 242, 243-SNAPSHOT ]
+                gradle-properties-version: [ 242, 243 ]
 
         runs-on: ubuntu-latest
         env:
