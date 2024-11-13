@@ -10,8 +10,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.ide.MvHighlighter
 import org.move.lang.MoveLanguage
+import org.move.lang.core.psi.MvBlockFields
 import org.move.lang.core.psi.MvCodeBlock
+import org.move.lang.core.psi.MvEnumBody
 import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvType
 
 sealed class MvContextType(presentableName: String): TemplateContextType(presentableName) {
 
@@ -40,13 +43,22 @@ sealed class MvContextType(presentableName: String): TemplateContextType(present
         override fun isInContext(element: PsiElement): Boolean = owner(element) is MvModule
     }
 
-    class Block: MvContextType("Block") {
+    class Block: MvContextType("Code block") {
         override fun isInContext(element: PsiElement): Boolean = owner(element) is MvCodeBlock
+    }
+
+    class Type: MvContextType("Type") {
+        override fun isInContext(element: PsiElement): Boolean = owner(element) is MvType
     }
 
     companion object {
         private fun owner(element: PsiElement): PsiElement? = PsiTreeUtil.findFirstParent(element) {
-            it is MvCodeBlock || it is MvModule || it is PsiFile
+            it is MvCodeBlock
+                    || it is MvModule
+                    || it is PsiFile
+                    || it is MvType
+                    // filter out enum/struct body
+                    || it is MvEnumBody || it is MvBlockFields
         }
     }
 }
