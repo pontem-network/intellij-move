@@ -128,6 +128,57 @@ class BuiltInsCompletionTest : CompletionTestCase() {
         }        
     """)
 
+    fun `test no vector completion in use`() = checkNoCompletion("""
+        module 0x1::m {
+            use vec/*caret*/
+        }        
+    """)
+
+    fun `test no vector completion in fq path`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main() {
+                aptos::vec/*caret*/
+            }
+        }        
+    """)
+
+    fun `test no vector lit in path qualifier`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main() {
+                vec/*caret*/::call();
+            }
+        }        
+    """)
+
+    fun `test no assert! in use`() = checkNoCompletion("""
+        module 0x1::m {
+            use ass/*caret*/
+        }        
+    """)
+
+    fun `test no assert! in fq path`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main() {
+                aptos_framework::aptos::ass/*caret*/
+            }
+        }        
+    """)
+
+    fun `test no assert! in path qualifier`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main() {
+                ass/*caret*/::call();
+            }
+        }        
+    """)
+
+    fun `test no assert! in type`() = checkNoCompletion("""
+        module 0x1::m {
+            fun main(s: ass/*caret*/) {
+            }
+        }        
+    """)
+
     private fun checkContainsBuiltins(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {

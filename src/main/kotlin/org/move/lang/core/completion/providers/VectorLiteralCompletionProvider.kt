@@ -7,21 +7,22 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
+import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.MvElementTypes
+import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.VECTOR_LITERAL_PRIORITY
+import org.move.lang.core.completion.withPriority
 import org.move.lang.core.psi.MvPath
 
 object VectorLiteralCompletionProvider : MvCompletionProvider() {
+
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = MvPsiPattern.path()
-            .andNot(MvPsiPattern.pathType())
-            .andNot(MvPsiPattern.schemaLit())
+        get() = MvPsiPattern.pathExpr()
             .andNot(
-                PlatformPatterns.psiElement()
-                    .afterLeaf(PlatformPatterns.psiElement(MvElementTypes.COLON_COLON))
+                psiElement().afterLeaf(psiElement(COLON_COLON))
             )
 
 
@@ -41,7 +42,8 @@ object VectorLiteralCompletionProvider : MvCompletionProvider() {
             .withInsertHandler { ctx, _ ->
                 EditorModificationUtil.moveCaretRelatively(ctx.editor, -1)
             }
-        result.addElement(PrioritizedLookupElement.withPriority(lookupElement, VECTOR_LITERAL_PRIORITY))
+            .withPriority(VECTOR_LITERAL_PRIORITY)
+        result.addElement(lookupElement)
     }
 
 }
