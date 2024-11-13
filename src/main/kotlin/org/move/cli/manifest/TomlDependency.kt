@@ -25,7 +25,7 @@ sealed class TomlDependency {
 
         @RequiresReadLock
         override fun rootDirectory(): RsResult<VirtualFile, DependencyError> {
-            val vFile = VfsUtil.findFile(localPath, true)
+            val vFile = VfsUtil.findFile(localPath, false)
             if (vFile == null) {
                 return Err(DependencyError("Cannot find dependency folder: $localPath"))
             }
@@ -42,13 +42,14 @@ sealed class TomlDependency {
 
         @RequiresReadLock
         override fun rootDirectory(): RsResult<VirtualFile, DependencyError> {
-            val moveHomePath = SystemProperties.getUserHome().toPath().resolve(".move")
+            val moveHomePath = moveHome()
             if (!moveHomePath.exists()) {
                 return Err(DependencyError("$moveHomePath directory does not exist"))
             }
             val depDirName = dependencyDirName(repo, rev)
             val depRoot = moveHomePath.resolve(depDirName).resolve(subdir)
-            val depRootFile = VfsUtil.findFile(depRoot, true)
+            // NOTE: VFS cannot be refreshed from the read action
+            val depRootFile = VfsUtil.findFile(depRoot, false)
             if (depRootFile == null) {
                 return Err(DependencyError("cannot find folder: $depRoot"))
             }
@@ -56,6 +57,8 @@ sealed class TomlDependency {
         }
 
         companion object {
+            fun moveHome(): Path = SystemProperties.getUserHome().toPath().resolve(".move")
+
             fun dependencyDirName(repo: String, rev: String): String {
                 val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
                 val aptosRevName = rev.replace("/", "_")

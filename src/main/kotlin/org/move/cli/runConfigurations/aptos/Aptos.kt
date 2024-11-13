@@ -63,7 +63,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     fun fetchPackageDependencies(
         projectDir: Path,
         skipLatest: Boolean,
-        processListener: ProcessListener
+        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): AptosProcessResult<Unit> {
         val commandLine =
             AptosCommandLine(
@@ -73,7 +73,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 ),
                 workingDirectory = projectDir
             )
-        return executeAptosCommandLine(commandLine, colored = true, listener = processListener)
+        return executeAptosCommandLine(commandLine, colored = true, runner = runner)
     }
 
     fun checkProject(args: AptosCompileArgs): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
