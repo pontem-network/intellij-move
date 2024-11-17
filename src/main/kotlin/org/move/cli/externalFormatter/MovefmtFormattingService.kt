@@ -7,7 +7,6 @@ import com.intellij.execution.process.ProcessEvent
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
-import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.progress.util.ProgressIndicatorBase
 import com.intellij.openapi.util.Disposer
@@ -16,7 +15,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.formatter.FormatterUtil
 import org.move.cli.externalFormatter.MovefmtFormattingService.Companion.FormattingReason.*
 import org.move.cli.tools.Movefmt
-import org.move.ide.notifications.showBalloon
 import org.move.lang.MoveFile
 import org.move.openapiext.rootPath
 import org.move.stdext.blankToNull
@@ -48,18 +46,18 @@ class MovefmtFormattingService: AsyncDocumentFormattingService() {
             override fun run() {
                 val arguments = settings.additionalArguments.blankToNull()?.split(" ").orEmpty()
                 val envs = EnvironmentVariablesData.create(settings.envs, true)
-                val processOutput = movefmt.reformatFile(
+                movefmt.reformatFile(
                     fileOnDisk,
                     additionalArguments = arguments,
                     workingDirectory = projectDirectory,
                     envs,
                     runner = {
-                        addProcessListener(object : CapturingProcessAdapter() {
+                        addProcessListener(object: CapturingProcessAdapter() {
                             override fun processTerminated(event: ProcessEvent) {
                                 val exitCode = event.exitCode
                                 if (exitCode == 0) {
-                                    val cleanedStdout = filterBuggyLines(output.stdout)
-                                    request.onTextReady(cleanedStdout)
+                                    val filteredStdout = filterBuggyLines(output.stdout)
+                                    request.onTextReady(filteredStdout)
                                 } else {
                                     request.onError("Movefmt", output.stderr)
                                 }
@@ -69,7 +67,6 @@ class MovefmtFormattingService: AsyncDocumentFormattingService() {
                     }
                 )
                     .unwrapOrThrow()
-                project.showBalloon("movefmt stdout", processOutput.stdout, INFORMATION)
             }
 
             override fun cancel(): Boolean {
@@ -84,13 +81,8 @@ class MovefmtFormattingService: AsyncDocumentFormattingService() {
 
     private fun filterBuggyLines(stdout: String): String {
         return stdout.lines()
-            .dropWhile { !it.startsWith("options =") }
-            .filter { line ->
-                if (line.contains("options =")) return@filter false
-                if (line.contains("files successfully formatted")) return@filter false
-                true
-            }
-            .joinToString("\n").trimStart()
+            .takeWhile { !it.contains("files successfully formatted") }
+            .joinToString("\n")
     }
 
     override fun getNotificationGroupId(): String = "Move Language"

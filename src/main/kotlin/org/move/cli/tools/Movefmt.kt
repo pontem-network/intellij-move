@@ -40,8 +40,12 @@ class Movefmt(val cliLocation: Path, val parentDisposable: Disposable): Disposab
                 add(file.absolutePath)
             },
             workingDirectory = workingDirectory,
+            environmentVariables = envs.with(mapOf("MOVEFMT_LOG" to "error")),
         )
-        return commandLine.toGeneralCommandLine(this.cliLocation)
+        return commandLine
+            .toGeneralCommandLine(this.cliLocation)
+            // needs to skip stderr here
+            .withRedirectErrorStream(false)
             .execute(
                 innerDisposable,
                 runner,
