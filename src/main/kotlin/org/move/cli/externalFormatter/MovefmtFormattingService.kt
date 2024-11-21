@@ -19,7 +19,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.formatter.FormatterUtil
 import org.move.cli.externalFormatter.MovefmtFormattingService.Companion.FormattingReason.*
 import org.move.cli.tools.Movefmt
-import org.move.ide.actions.EditMovefmtSettingsAction
 import org.move.ide.notifications.showBalloon
 import org.move.lang.MoveFile
 import org.move.openapiext.rootPath
