@@ -1,26 +1,39 @@
 package org.move.cli.externalFormatter
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
+import org.move.cli.settings.VersionLabel
 import org.move.openapiext.pathField
 
 class MovefmtConfigurable(val project: Project): BoundConfigurable("Movefmt") {
-    private val innerDisposable = Disposer.newCheckedDisposable()
+    private val innerDisposable =
+        Disposer.newCheckedDisposable("Internal checked disposable for MovefmtConfigurable")
 
     private val movefmtPathField =
         pathField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             innerDisposable,
-            "Movefmt location")
+            "Movefmt location",
+            onTextChanged = { it ->
+                val path = it.toNioPathOrNull() ?: return@pathField
+                versionLabel.update(path)
+            })
+    private val versionLabel = VersionLabel(
+        innerDisposable,
+        envs = EnvironmentVariablesData.create(mapOf("MOVEFMT_LOG" to "error"), true)
+    )
+
     private val additionalArguments: RawCommandLineEditor = RawCommandLineEditor()
     private val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
 
@@ -42,6 +55,8 @@ class MovefmtConfigurable(val project: Project): BoundConfigurable("Movefmt") {
                         prop = state::movefmtPath.toMutableProperty()
                     )
             }
+            row("--version :") { cell(versionLabel) }
+            separator()
             row("Additional arguments:") {
                 cell(additionalArguments)
                     .align(AlignX.FILL)

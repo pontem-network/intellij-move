@@ -1,10 +1,10 @@
 package org.move.cli.settings
 
-import com.intellij.openapi.Disposable
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
-import org.move.cli.runConfigurations.AptosCommandLine
+import org.move.cli.tools.MvCommandLine
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.checkIsBackgroundThread
 import org.move.openapiext.common.isUnitTestMode
@@ -32,13 +32,14 @@ open class TextOrErrorLabel(icon: Icon?): JBLabel(icon) {
 
 class VersionLabel(
     parentDisposable: CheckedDisposable,
+    private val envs: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT,
     private val versionUpdateListener: (() -> Unit)? = null
 ):
     TextOrErrorLabel(null) {
 
     private val versionUpdateDebouncer = UiDebouncer(parentDisposable)
 
-    fun updateAndNotifyListeners(execPath: Path?) {
+    fun update(execPath: Path?) {
         versionUpdateDebouncer.update(
             onPooledThread = {
                 if (!isUnitTestMode) {
@@ -48,8 +49,11 @@ class VersionLabel(
                     return@update null
                 }
 
-                val commandLineArgs =
-                    AptosCommandLine(null, listOf("--version"), workingDirectory = null)
+                val commandLineArgs = MvCommandLine(
+                    listOf("--version"),
+                    workingDirectory = null,
+                    environmentVariables = envs
+                )
                 commandLineArgs
                     .toGeneralCommandLine(execPath)
                     .execute()
