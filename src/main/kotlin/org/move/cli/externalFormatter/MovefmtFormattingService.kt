@@ -40,8 +40,8 @@ class MovefmtFormattingService: AsyncDocumentFormattingService() {
         val settings = project.movefmtSettings
 
         val disposable = Disposer.newDisposable()
-        val movefmtPath = settings.movefmtPath?.toNioPathOrNull()
-        if (movefmtPath == null) {
+        val movefmt = project.getMovefmt(disposable)
+        if (movefmt == null) {
             project.showBalloon(MOVEFMT_ERROR,
                                 "movefmt executable configured incorrectly",
                                 ERROR,
@@ -54,7 +54,6 @@ class MovefmtFormattingService: AsyncDocumentFormattingService() {
             return null
         }
 
-        val movefmt = Movefmt(movefmtPath, disposable)
         val projectDirectory = project.rootPath ?: return null
         val fileOnDisk = request.ioFile ?: return null
 

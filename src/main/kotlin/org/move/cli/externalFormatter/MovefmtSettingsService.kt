@@ -1,14 +1,18 @@
 package org.move.cli.externalFormatter
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.*
 import com.intellij.openapi.components.Service.Level.PROJECT
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.util.text.nullize
 import org.move.cli.externalFormatter.MoveFmtSettingsService.MoveFmtSettings
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.MvProjectSettingsServiceBase
-
-val Project.movefmtSettings: MoveFmtSettingsService
-    get() = service<MoveFmtSettingsService>()
+import org.move.cli.settings.aptosCliPath
+import org.move.cli.settings.isValidExecutable
+import org.move.cli.tools.Movefmt
+import org.move.openapiext.RootPluginDisposable
 
 private const val SERVICE_NAME: String = "org.move.MoveFmtSettingsService"
 
@@ -53,3 +57,12 @@ class MoveFmtSettingsService(
         newState: MoveFmtSettings
     ): SettingsChangedEventBase<MoveFmtSettings>(oldState, newState)
 }
+
+val Project.movefmtSettings: MoveFmtSettingsService get() = service<MoveFmtSettingsService>()
+
+fun Project.getMovefmt(disposable: Disposable): Movefmt? {
+    val settings = this.movefmtSettings
+    val movefmtPath = settings.movefmtPath?.toNioPathOrNull()?.takeIf { it.isValidExecutable() } ?: return null
+    return Movefmt(movefmtPath, disposable)
+}
+
