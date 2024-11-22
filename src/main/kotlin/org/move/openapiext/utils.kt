@@ -31,6 +31,7 @@ import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
@@ -68,6 +69,12 @@ fun VirtualFile.toPsiFile(project: Project): PsiFile? =
 
 fun VirtualFile.toPsiDirectory(project: Project): PsiDirectory? =
     PsiManager.getInstance(project).findDirectory(this)
+
+val Document.virtualFile: VirtualFile?
+    get() = FileDocumentManager.getInstance().getFile(this)
+
+val VirtualFile.document: Document?
+    get() = FileDocumentManager.getInstance().getDocument(this)
 
 val PsiFile.document: Document?
     get() = PsiDocumentManager.getInstance(project).getDocument(this)
@@ -245,3 +252,5 @@ inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {
         throw AssertionError(message)
     }
 }
+
+val String.escaped: String get() = StringUtil.escapeXmlEntities(this)

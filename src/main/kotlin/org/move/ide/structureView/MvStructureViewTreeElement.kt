@@ -1,8 +1,6 @@
 package org.move.ide.structureView
 
-import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.structureView.StructureViewTreeElement
-import com.intellij.ide.util.treeView.TreeAnchorizer
 import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.ui.Queryable
@@ -15,13 +13,13 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.openapiext.common.isUnitTestMode
 
-class MvStructureViewTreeElement(element: NavigatablePsiElement): StructureViewTreeElement,
+class MvStructureViewTreeElement(val psi: NavigatablePsiElement): StructureViewTreeElement,
                                                                   Queryable {
 
-    val psiAnchor = TreeAnchorizer.getService().createAnchor(element)
-    val psi: NavigatablePsiElement?
-        get() =
-            TreeAnchorizer.getService().retrieveElement(psiAnchor) as? NavigatablePsiElement
+//    val psiAnchor = TreeAnchorizer.getService().createAnchor(element)
+//    val psi: NavigatablePsiElement?
+//        get() =
+//            TreeAnchorizer.getService().retrieveElement(psiAnchor) as? NavigatablePsiElement
 
     val isPublicItem: Boolean =
         when (val psi = psi) {
@@ -34,16 +32,12 @@ class MvStructureViewTreeElement(element: NavigatablePsiElement): StructureViewT
 
     val isTestOnlyItem: Boolean get() = (psi as? MvDocAndAttributeOwner)?.hasTestOnlyAttr == true
 
-    override fun navigate(requestFocus: Boolean) {
-        psi?.navigate(requestFocus)
-    }
+    override fun navigate(requestFocus: Boolean) = psi.navigate(requestFocus)
+    override fun canNavigate(): Boolean = psi.canNavigate()
+    override fun canNavigateToSource(): Boolean = psi.canNavigateToSource()
+    override fun getValue(): PsiElement = psi
 
-    override fun canNavigate(): Boolean = psi?.canNavigate() == true
-    override fun canNavigateToSource(): Boolean = psi?.canNavigateToSource() == true
-    override fun getValue(): PsiElement? = psi
-
-    override fun getPresentation(): ItemPresentation =
-        psi?.let(::getPresentationForStructure) ?: PresentationData("", null, null, null)
+    override fun getPresentation(): ItemPresentation = psi.let(::getPresentationForStructure)
 
     override fun getChildren(): Array<out TreeElement?> =
         childElements.map2Array { MvStructureViewTreeElement(it) }

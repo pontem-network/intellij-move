@@ -106,7 +106,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
             onTextChanged = { _ ->
                 updateVersion()
             })
-    private val versionLabel = VersionLabel(innerDisposable, versionUpdateListener)
+    private val versionLabel = VersionLabel(innerDisposable, versionUpdateListener = versionUpdateListener)
 
     private val bundledRadioButton = JBRadioButton("Bundled")
     private val localRadioButton = JBRadioButton("Local")
@@ -194,7 +194,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
     private fun updateVersion() {
         val aptosPath =
             if (isBundledSelected) AptosExecType.bundledAptosCLIPath else localPathField.text.toNioPathOrNull()
-        versionLabel.updateAndNotifyListeners(aptosPath)
+        versionLabel.update(aptosPath)
     }
 
     fun updateAptosSdks(sdkPath: String) {
