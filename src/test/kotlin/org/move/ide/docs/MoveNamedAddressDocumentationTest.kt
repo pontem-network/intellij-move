@@ -24,6 +24,6 @@ class MvNamedModulePathDocumentationTest : MvDocumentationProviderProjectTestCas
                 )
             }
         },
-        "Std = \"0x42\""
+        "<div class='definition'><pre>Std = \"0x42\"</pre></div>"
     )
 }

@@ -5,8 +5,10 @@ import com.intellij.platform.backend.documentation.DocumentationData
 import com.intellij.platform.backend.documentation.DocumentationResult
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
+import org.move.ide.docs.MvDocumentationTarget
 import org.move.ide.docs.MvPsiDocumentationTargetProvider
 import org.move.lang.core.psi.MvElement
+import org.move.stdext.chainIf
 import org.move.utils.tests.base.findElementAndOffsetInEditor
 
 abstract class MvDocumentationProviderProjectTestCase : MvProjectTestBase() {
@@ -37,10 +39,11 @@ abstract class MvDocumentationProviderTestCase : MvTestBase() {
     protected fun doTest(
         @Language("Move") code: String,
         @Language("Html") expected: String?,
+        hideStyles: Boolean = true,
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
     ) {
         @Suppress("NAME_SHADOWING")
-        doTest(code, expected, findElement) { actual, expected ->
+        doTest(code, expected, findElement, hideStyles) { actual, expected ->
             assertSameLines(expected.trimIndent(), actual)
         }
     }
@@ -57,10 +60,12 @@ abstract class MvDocumentationProviderTestCase : MvTestBase() {
 //        }
 //    }
 
+    @Suppress("OverrideOnly")
     protected fun <T> doTest(
         @Language("Move") code: String,
         expected: T?,
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
+        hideStyles: Boolean = true,
         check: (String, T) -> Unit
     ) {
         InlineFile(myFixture, code, "main.move")
@@ -72,13 +77,19 @@ abstract class MvDocumentationProviderTestCase : MvTestBase() {
         val target = provider.documentationTarget(element, originalElement)!!
         val doc = target.computeDocumentation()
 
-        val actual = doc?.content()
+        val actual = doc?.content()?.chainIf(hideStyles) { hideSpecificStyles() }
         if (expected == null) {
             check(actual == null) { "Expected null, got `$actual`" }
         } else {
             check(actual != null) { "Expected not null result" }
             check(actual, expected)
         }
+    }
+
+    protected fun String.hideSpecificStyles(): String = replace(STYLE_REGEX, """style="..."""")
+
+    companion object {
+        private val STYLE_REGEX = Regex("""style=".*?"""")
     }
 }
 

@@ -12,6 +12,9 @@ import org.move.lang.core.psi.MvFunctionLike
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvNamedFieldDecl
+import org.move.lang.core.psi.MvQualNamedElement
+import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
+import org.move.lang.core.psi.ext.enumItem
 import org.move.lang.core.psi.signatureText
 import org.move.lang.core.types.address
 import org.move.lang.moveProject
@@ -68,6 +71,13 @@ fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
     }
     else -> containingFilePath(tryRelative)?.toString()
 }
+
+val MvDocAndAttributeOwner.presentableQualifiedName: String?
+    get() {
+        val qName = (this as? MvQualNamedElement)?.qualName?.editorText()
+        if (qName != null) return qName
+        return name
+    }
 
 private fun PsiElement.containingFilePath(tryRelative: Boolean): Path? {
     val containingFilePath = this.containingFile.toNioPathOrNull() ?: return null

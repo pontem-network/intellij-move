@@ -9,36 +9,35 @@ import com.intellij.platform.backend.documentation.PsiDocumentationTargetProvide
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.createSmartPointer
+import io.ktor.http.quote
+import org.move.ide.docs.MvColorUtils.asAbility
+import org.move.ide.docs.MvColorUtils.asTypeParam
+import org.move.ide.docs.MvColorUtils.colored
+import org.move.ide.docs.MvColorUtils.keyword
+import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.presentationInfo
 import org.move.ide.presentation.text
-import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.MvAbility
 import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.MvFunctionParameterList
-import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedAddress
-import org.move.lang.core.psi.MvNamedFieldDecl
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvReturnType
-import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.psi.MvTypeParameterList
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.isNative
-import org.move.lang.core.psi.module
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
 import org.toml.lang.psi.TomlKeySegment
+import kotlin.collections.isNotEmpty
 
-class MvPsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
+class MvPsiDocumentationTargetProvider: PsiDocumentationTargetProvider {
     override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
         if (element is MvElement) {
             return MvDocumentationTarget(element, originalElement)
@@ -53,7 +52,10 @@ class MvPsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
 }
 
 @Suppress("UnstableApiUsage")
-class MvDocumentationTarget(val element: PsiElement, private val originalElement: PsiElement?) : DocumentationTarget {
+class MvDocumentationTarget(
+    val element: PsiElement,
+    private val originalElement: PsiElement?
+): DocumentationTarget {
     override fun computePresentation(): TargetPresentation {
         val project = element.project
         val file = element.containingFile?.virtualFile
@@ -86,47 +88,57 @@ class MvDocumentationTarget(val element: PsiElement, private val originalElement
         }
 
         when (docElement) {
+            is MvDocAndAttributeOwner -> generateDocumentationOwnerDoc(docElement, buffer)
             is MvNamedAddress -> {
-                // TODO: add docs for both [addresses] and [dev-addresses]
                 val moveProject = docElement.moveProject ?: return null
-                val refName = docElement.referenceName
-                val named = moveProject.getNamedAddressTestAware(refName) ?: return null
+                val addressName = docElement.referenceName
+                val named = moveProject.getNamedAddressTestAware(addressName) ?: return null
                 val address =
-                    named.addressLit()?.original ?: angleWrapped("unassigned")
-                return "$refName = \"$address\""
+                    named.addressLit()?.original ?: "<unassigned>".escapeForHtml()
+                definition(buffer) {
+                    it += "$addressName = ${address.quote()}"
+                }
+//                return "$refName = \"$address\""
             }
-            is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvPatBinding -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val msl = docElement.isMslOnlyItem
-                val inference = docElement.inference(msl) ?: return null
-                val type = inference.getBindingType(docElement).renderForDocs(true)
-                buffer += presentationInfo.type
-                buffer += " "
-                buffer.b { it += presentationInfo.name }
-                buffer += ": "
-                buffer += type
+                definition(buffer) {
+                    it.keyword(presentationInfo.type)
+                    it += " "
+                    it += presentationInfo.name
+                    val msl = docElement.isMslOnlyItem
+                    val inference = docElement.inference(msl) ?: return null
+                    val tyText = inference
+                        .getBindingType(docElement)
+                        .text(fq = true, colors = true)
+                    it += ": "
+                    it += tyText
+                }
             }
 
             is MvTypeParameter -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                buffer += presentationInfo.type
-                buffer += " "
-                buffer.b { it += presentationInfo.name }
-                val abilities = docElement.abilityBounds
-                if (abilities.isNotEmpty()) {
-                    abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
+                definition(buffer) {
+                    it.keyword(presentationInfo.type)
+                    it += " "
+                    it += presentationInfo.name
+                    val abilities = docElement.abilityBounds
+                    if (abilities.isNotEmpty()) {
+                        abilities.joinToWithBuffer(it, " + ", ": ") { generateDoc(it) }
+                    }
                 }
             }
         }
         return if (buffer.isEmpty()) null else buffer.toString()
     }
 
-    private fun generateOwnerDoc(element: MvDocAndAttributeOwner, buffer: StringBuilder) {
+    private fun generateDocumentationOwnerDoc(element: MvDocAndAttributeOwner, buffer: StringBuilder) {
         definition(buffer) {
+            element.header(it)
             element.signature(it)
         }
         val text = element.documentationAsHtml()
+        if (text.isEmpty()) return
         buffer += "\n" // Just for more pretty html text representation
         content(buffer) { it += text }
     }
@@ -137,118 +149,50 @@ fun MvDocAndAttributeOwner.documentationAsHtml(): String {
     return documentationAsHtml(commentText, this)
 }
 
-fun generateFunction(function: MvFunction, buffer: StringBuilder) {
-    val module = function.module
-    if (module != null) {
-        buffer += module.qualName?.editorText() ?: "unknown"
-        buffer += "\n"
-    }
-    if (function.isNative) buffer += "native "
-    buffer += "fun "
-    buffer.b { it += function.name }
-    function.typeParameterList?.generateDocumentation(buffer)
-    function.functionParameterList?.generateDocumentation(buffer)
-    function.returnType?.generateDocumentation(buffer)
-}
-
-fun MvElement.signature(builder: StringBuilder) {
-    val buffer = StringBuilder()
-    // no need for msl type conversion in docs
-    val msl = false
-//    val msl = this.isMslLegacy()
-    when (this) {
-        is MvFunction -> generateFunction(this, buffer)
-        is MvModule -> {
-            buffer += "module "
-            buffer += this.qualName?.editorText() ?: "unknown"
-        }
-
-        is MvStruct -> {
-            buffer += this.module.qualName?.editorText() ?: "unknown"
-            buffer += "\n"
-
-            buffer += "struct "
-            buffer.b { it += this.name }
-            this.typeParameterList?.generateDocumentation(buffer)
-            this.abilitiesList?.abilityList
-                ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
-        }
-
-        is MvNamedFieldDecl -> {
-            val module = this.fieldOwner.itemElement.module
-//            val itemContext = this.structItem.outerItemContext(msl)
-            buffer += module.qualName?.editorText() ?: "unknown"
-            buffer += "::"
-            buffer += this.fieldOwner.name ?: angleWrapped("anonymous")
-            buffer += "\n"
-            buffer.b { it += this.name }
-            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(true)}"
-//            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
-        }
-
-        is MvConst -> {
-//            val itemContext = this.outerItemContext(msl)
-            buffer += this.module?.qualName?.editorText() ?: angleWrapped("unknown")
-            buffer += "\n"
-            buffer += "const "
-            buffer.b { it += this.name ?: angleWrapped("unknown") }
-            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(false)}"
-//            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
-            this.initializer?.let { buffer += " ${it.text}" }
-        }
-
-        else -> return
-    } ?: return
-    listOf(buffer.toString()).joinTo(builder, "<br>")
-}
-
-private fun PsiElement.generateDocumentation(
-    buffer: StringBuilder,
-    prefix: String = "",
-    suffix: String = ""
-) {
-    buffer += prefix
+fun PsiElement.generateDoc(buf: StringBuilder) {
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            buffer += this.loweredType(msl)
-                .typeLabel(this)
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
+            val ty = this.loweredType(msl)
+
+            val tyItemModule = ty.declaringModule()
+            val fq = tyItemModule != null && tyItemModule != this.containingModule
+            buf += ty.text(fq, colors = true)
         }
 
         is MvFunctionParameterList ->
             this.functionParameterList
-                .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
+                .joinToWithBuffer(buf, ", ", "(", ")") { generateDoc(it) }
 
         is MvFunctionParameter -> {
-            buffer += this.patBinding.identifier.text
-            this.type?.generateDocumentation(buffer, ": ")
+            buf += this.patBinding.identifier.text
+            this.type?.let {
+                buf += ": "
+                it.generateDoc(buf)
+            }
         }
 
         is MvTypeParameterList ->
             this.typeParameterList
-                .joinToWithBuffer(buffer, ", ", "&lt;", "&gt;") { generateDocumentation(it) }
+                .joinToWithBuffer(buf, ", ", "&lt;", "&gt;") { generateDoc(it) }
 
         is MvTypeParameter -> {
             if (this.isPhantom) {
-                buffer += "phantom"
-                buffer += " "
+                buf.keyword("phantom")
+                buf += " "
             }
-            buffer += this.identifier?.text
+            buf.colored(this.name, asTypeParam)
             val bound = this.typeParamBound
             if (bound != null) {
-                abilityBounds.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
+                abilityBounds.joinToWithBuffer(buf, " + ", ": ") { generateDoc(it) }
             }
         }
-
-        is MvAbility -> {
-            buffer += this.text
+        is MvAbility -> buf.colored(this.text, asAbility)
+        is MvReturnType -> this.type?.let {
+            buf += ": "
+            it.generateDoc(buf)
         }
-
-        is MvReturnType -> this.type?.generateDocumentation(buffer, ": ")
     }
-    buffer += suffix
 }
 
 private inline fun definition(buffer: StringBuilder, block: (StringBuilder) -> Unit) {
@@ -263,16 +207,13 @@ private inline fun content(buffer: StringBuilder, block: (StringBuilder) -> Unit
     buffer += DocumentationMarkup.CONTENT_END
 }
 
-private fun angleWrapped(text: String): String = "&lt;$text&gt;"
-
-private fun Ty.renderForDocs(fq: Boolean): String {
-    val original = this.text(fq)
-    return original
+fun String.escapeForHtml(): String {
+    return this
         .replace("<", "&lt;")
         .replace(">", "&gt;")
 }
 
-private operator fun StringBuilder.plusAssign(value: String?) {
+operator fun StringBuilder.plusAssign(value: String?) {
     if (value != null) {
         append(value)
     }
@@ -283,3 +224,4 @@ private inline fun StringBuilder.b(action: (StringBuilder) -> Unit) {
     action(this)
     append("</b>")
 }
+
