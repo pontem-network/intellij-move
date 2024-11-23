@@ -63,7 +63,7 @@ Aborts if address does not hold a <code>T</code>.</p></div>
         }
     }
     """, expected = """
-        <span style="...">value parameter</span> a: <span style="...">u8</span>
+        <div class='definition'><pre><span style="...">value parameter</span> a: <span style="...">u8</span></pre></div>
     """)
 
     fun `test show signature for type parameter`() = doTest("""
@@ -73,7 +73,7 @@ Aborts if address does not hold a <code>T</code>.</p></div>
         }
     }
     """, expected = """
-        type parameter <b>R</b>: <span style="...">store</span> + <span style="...">drop</span>
+<div class='definition'><pre><span style="...">type parameter</span> R: <span style="...">store</span> + <span style="...">drop</span></pre></div>
     """)
 
     fun `test show signature for simple let variable`() = doTest("""
@@ -85,7 +85,7 @@ Aborts if address does not hold a <code>T</code>.</p></div>
         }
     }
     """, expected = """
-<span style="...">variable</span> a: <span style="...">vector</span>&lt;<span style="...">u8</span>&gt;
+<div class='definition'><pre><span style="...">variable</span> a: <span style="...">vector</span>&lt;<span style="...">u8</span>&gt;</pre></div>
     """)
 
     fun `test struct docstring`() = doTest("""
@@ -99,7 +99,7 @@ Aborts if address does not hold a <code>T</code>.</p></div>
     }    
     """, expected = """
 <div class='definition'><pre>0x1::M
-<span style="...">struct</span> <span style="...">S</span>&lt;<span style="...">R</span>: <span style="...">store</span>, <span style="...">phantom</span> <span style="...">PH</span>&gt; has <span style="...">copy</span>, <span style="...">drop</span>, <span style="...">store</span></pre></div>
+<span style="...">struct</span> <span style="...">S</span>&lt;<span style="...">R</span>: <span style="...">store</span>, <span style="...">phantom</span> <span style="...">PH</span>&gt; <span style="...">has</span> <span style="...">copy</span>, <span style="...">drop</span>, <span style="...">store</span></pre></div>
 <div class='content'><p>docstring</p></div>
     """)
 
@@ -148,7 +148,7 @@ module 0x1::m {
     }
 }        
     """, """
-<span style="...">value parameter</span> result: <span style="...">num</span>    
+<div class='definition'><pre><span style="...">value parameter</span> result: <span style="...">num</span></pre></div>
     """)
 
     fun `test generic result type documentation`() = doTest("""
@@ -160,7 +160,7 @@ module 0x1::m {
     }
 }        
     """, """
-<span style="...">value parameter</span> result: &<span style="...">mut</span> <span style="...">T</span>
+<div class='definition'><pre><span style="...">value parameter</span> result: &<span style="...">mut</span> <span style="...">T</span></pre></div>
     """)
 
     @MoveV2
@@ -234,8 +234,11 @@ module 0x1::m {
         }
     """, """
 <div class='definition'><pre>0x1::m
-<span style="...">spec</span> <span style="...">fun</span> <span style="...">ident</span>(x: <span style="...">num</span>): <span style="...">num</span></pre></div>    """)
+<span style="...">spec</span> <span style="...">fun</span> <span style="...">ident</span>(x: <span style="...">num</span>): <span style="...">num</span></pre></div>
+<div class='content'><p>my specification function</p></div>
+""")
 
+    // todo: add context support
     fun `test inline spec fun docs`() = doTest("""
         module 0x1::m {
             spec module {
@@ -247,5 +250,22 @@ module 0x1::m {
     """, """
 <div class='definition'><pre>0x1::m
 <span style="...">fun</span> <span style="...">inline_spec_fun</span>()</pre></div>
+    """)
+
+    fun `test schema docs`() = doTest("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            /// my schema
+            spec schema CreateAccountAbortsIf<T> {
+                        //^
+                addr: address;
+                val: T;
+            }
+        }
+    """, """
+<div class='definition'><pre>0x1::m
+<span style="...">spec</span> <span style="...">schema</span> CreateAccountAbortsIf&lt;<span style="...">T</span>&gt;</pre></div>
+<div class='content'><p>my schema</p></div>
     """)
 }

@@ -325,12 +325,14 @@ SpecFunctionInner ::= Attr* spec fun IDENTIFIER TypeParameterList?
 {
     pin = 3
     elementType = SpecFunction
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 NativeSpecFunctionInner ::= Attr* spec (native fun) IDENTIFIER TypeParameterList?
                              FunctionParameterList ReturnType? ';'
 {
     pin = 3
     elementType = SpecFunction
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
 fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
@@ -351,17 +353,19 @@ fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
 //                                    | NativeSpecInlineFunctionInner
 //                                    | UninterpretedSpecInlineFunctionInner
 
-SpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
+SpecInlineFunctionInner ::= Attr* fun IDENTIFIER TypeParameterList?
                              FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
 {
-    pin = 1
+    pin = 2
     elementType = SpecInlineFunction
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
-NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
+NativeSpecInlineFunctionInner ::= Attr* (native fun) IDENTIFIER TypeParameterList?
                                   FunctionParameterList ReturnType? ';'
 {
+    pin = 2
     elementType = SpecInlineFunction
-    pin = 1
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
 SpecInlineFunctionStmt ::= SpecInlineFunctionInner

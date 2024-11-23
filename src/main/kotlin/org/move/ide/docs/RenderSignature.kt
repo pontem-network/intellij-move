@@ -19,6 +19,7 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionLike
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedFieldDecl
+import org.move.lang.core.psi.MvSchema
 import org.move.lang.core.psi.MvSpecFunction
 import org.move.lang.core.psi.MvSpecInlineFunction
 import org.move.lang.core.psi.MvStruct
@@ -35,7 +36,8 @@ fun MvDocAndAttributeOwner.header(buffer: StringBuilder) {
         is MvNamedFieldDecl -> listOfNotNull((fieldOwner as? MvDocAndAttributeOwner)?.presentableQualifiedName)
         is MvStructOrEnumItemElement,
         is MvFunctionLike,
-        is MvConst -> listOfNotNull(presentableQualifiedModName)
+        is MvConst,
+        is MvSchema -> listOfNotNull(presentableQualifiedModName)
         else -> emptyList()
     }
     rawLines.joinTo(buffer, "<br>")
@@ -54,6 +56,7 @@ fun MvDocAndAttributeOwner.signature(builder: StringBuilder) {
         is MvSpecInlineFunction -> buffer.generateSpecInlineFunction(this)
         is MvModule -> buffer.generateModule(this)
         is MvStructOrEnumItemElement -> buffer.generateStructOrEnum(this)
+        is MvSchema -> buffer.generateSchema(this)
         is MvNamedFieldDecl -> buffer.generateNamedField(this)
         is MvConst -> buffer.generateConst(this)
         is MvEnumVariant -> buffer.generateEnumVariant(this)
@@ -134,6 +137,15 @@ private fun StringBuilder.generateStructOrEnum(structOrEnum: MvStructOrEnumItemE
         this += " "
         abilities.joinToWithBuffer(this, ", ") { generateDoc(it) }
     }
+}
+
+private fun StringBuilder.generateSchema(schema: MvSchema) {
+    this.keyword("spec")
+    this += " "
+    this.keyword("schema")
+    this += " "
+    this += schema.name
+    schema.typeParameterList?.generateDoc(this)
 }
 
 private fun StringBuilder.generateEnumVariant(variant: MvEnumVariant) {

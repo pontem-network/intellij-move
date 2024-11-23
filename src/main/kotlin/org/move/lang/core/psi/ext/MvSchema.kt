@@ -15,7 +15,14 @@ import org.move.lang.core.types.ty.TyUnknown
 
 val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
-val MvSchema.module: MvModule? get() = this.parent as? MvModule
+val MvSchema.parentModule: MvModule? get() {
+    val parent = this.parent
+    if (parent is MvModule) return parent
+    if (parent is MvModuleSpecBlock) {
+        return parent.moduleSpec.moduleItem
+    }
+    return null
+}
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
@@ -46,7 +53,7 @@ abstract class MvSchemaMixin: MvStubbedNamedElementImpl<MvSchemaStub>,
     override val qualName: ItemQualName?
         get() {
             val itemName = this.name ?: return null
-            val moduleFQName = this.module?.qualName ?: return null
+            val moduleFQName = this.parentModule?.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
