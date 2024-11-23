@@ -31,12 +31,12 @@ Aborts if address does not hold a <code>T</code>.</p></div>
     fun `test show doc comment for const`() = doTest("""
     module 0x1::M {
         /// const docstring
-        const ERR_COLLECTION_IS_ALREADY_EXISTS: u64 = 1;
+        const ERR_COLLECTION_IS_ALREADY_EXISTS: u64 = 0x1;
             //^
     }    
     """, expected = """
 <div class='definition'><pre>0x1::M
-<span style="...">const</span> <span style="...">ERR_COLLECTION_IS_ALREADY_EXISTS</span>: <span style="...">u64</span> = 1</pre></div>
+<span style="...">const</span> <span style="...">ERR_COLLECTION_IS_ALREADY_EXISTS</span>: <span style="...">u64</span> = <span style="...">0x1</span></pre></div>
 <div class='content'><p>const docstring</p></div>
     """)
 

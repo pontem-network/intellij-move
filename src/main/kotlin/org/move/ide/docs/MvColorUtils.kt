@@ -32,8 +32,10 @@ object MvColorUtils {
     val asParens get() = loadKey(MvColor.PARENTHESES)
     val asComma get() = loadKey(MvColor.COMMA)
     val asSemicolon get() = loadKey(MvColor.SEMICOLON)
+    val asOperator get() = loadKey(MvColor.OPERATORS)
 
     fun StringBuilder.keyword(text: String) = colored(text, asKeyword)
+    fun StringBuilder.op(text: String) = colored(text, asOperator)
     fun StringBuilder.comma() = colored(",", asComma)
     fun StringBuilder.semicolon() = colored(";", asSemicolon)
 
