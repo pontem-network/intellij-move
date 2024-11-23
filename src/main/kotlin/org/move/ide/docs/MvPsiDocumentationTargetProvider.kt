@@ -9,6 +9,7 @@ import com.intellij.platform.backend.documentation.PsiDocumentationTargetProvide
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.createSmartPointer
+import io.ktor.http.quote
 import org.move.ide.docs.MvColorUtils.asAbility
 import org.move.ide.docs.MvColorUtils.asTypeParam
 import org.move.ide.docs.MvColorUtils.colored
@@ -90,34 +91,41 @@ class MvDocumentationTarget(
             is MvDocAndAttributeOwner -> generateDocumentationOwnerDoc(docElement, buffer)
             is MvNamedAddress -> {
                 val moveProject = docElement.moveProject ?: return null
-                val refName = docElement.referenceName
-                val named = moveProject.getNamedAddressTestAware(refName) ?: return null
+                val addressName = docElement.referenceName
+                val named = moveProject.getNamedAddressTestAware(addressName) ?: return null
                 val address =
                     named.addressLit()?.original ?: "<unassigned>".escapeForHtml()
-                return "$refName = \"$address\""
+                definition(buffer) {
+                    it += "$addressName = ${address.quote()}"
+                }
+//                return "$refName = \"$address\""
             }
             is MvPatBinding -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                buffer.keyword(presentationInfo.type)
-                buffer += " "
-                buffer += presentationInfo.name
-                val msl = docElement.isMslOnlyItem
-                val inference = docElement.inference(msl) ?: return null
-                val tyText = inference
-                    .getBindingType(docElement)
-                    .text(fq = true, colors = true)
-                buffer += ": "
-                buffer += tyText
+                definition(buffer) {
+                    it.keyword(presentationInfo.type)
+                    it += " "
+                    it += presentationInfo.name
+                    val msl = docElement.isMslOnlyItem
+                    val inference = docElement.inference(msl) ?: return null
+                    val tyText = inference
+                        .getBindingType(docElement)
+                        .text(fq = true, colors = true)
+                    it += ": "
+                    it += tyText
+                }
             }
 
             is MvTypeParameter -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                buffer += presentationInfo.type
-                buffer += " "
-                buffer.b { it += presentationInfo.name }
-                val abilities = docElement.abilityBounds
-                if (abilities.isNotEmpty()) {
-                    abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDoc(it) }
+                definition(buffer) {
+                    it.keyword(presentationInfo.type)
+                    it += " "
+                    it += presentationInfo.name
+                    val abilities = docElement.abilityBounds
+                    if (abilities.isNotEmpty()) {
+                        abilities.joinToWithBuffer(it, " + ", ": ") { generateDoc(it) }
+                    }
                 }
             }
         }
