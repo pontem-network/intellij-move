@@ -1,9 +1,7 @@
 package org.move.ide.docs
 
 import com.intellij.codeEditor.printing.HTMLTextPainter
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
-import org.intellij.plugins.markdown.lang.psi.impl.MarkdownLeafPsiElement
 import org.move.ide.docs.MvColorUtils.asConst
 import org.move.ide.docs.MvColorUtils.asEnum
 import org.move.ide.docs.MvColorUtils.asEnumVariant
@@ -12,7 +10,6 @@ import org.move.ide.docs.MvColorUtils.asFunction
 import org.move.ide.docs.MvColorUtils.asStruct
 import org.move.ide.docs.MvColorUtils.colored
 import org.move.ide.docs.MvColorUtils.keyword
-import org.move.ide.docs.MvColorUtils.op
 import org.move.ide.presentation.presentableQualifiedName
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvConst
@@ -129,8 +126,14 @@ private fun StringBuilder.generateStructOrEnum(structOrEnum: MvStructOrEnumItemE
         }
     }
     structOrEnum.typeParameterList?.generateDoc(this)
-    structOrEnum.abilitiesList?.abilityList
-        ?.joinToWithBuffer(this, ", ", " ${keyword("has")} ") { generateDoc(it) }
+
+    val abilities = structOrEnum.abilitiesList?.abilityList
+    if (abilities != null && abilities.isNotEmpty()) {
+        this += " "
+        this.keyword("has")
+        this += " "
+        abilities.joinToWithBuffer(this, ", ") { generateDoc(it) }
+    }
 }
 
 private fun StringBuilder.generateEnumVariant(variant: MvEnumVariant) {

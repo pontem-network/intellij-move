@@ -93,7 +93,7 @@ class MvDocumentationTarget(
                 val refName = docElement.referenceName
                 val named = moveProject.getNamedAddressTestAware(refName) ?: return null
                 val address =
-                    named.addressLit()?.original ?: angleWrapped("unassigned")
+                    named.addressLit()?.original ?: "<unassigned>".escapeForHtml()
                 return "$refName = \"$address\""
             }
             is MvPatBinding -> {
@@ -217,4 +217,3 @@ private inline fun StringBuilder.b(action: (StringBuilder) -> Unit) {
     append("</b>")
 }
 
-private fun angleWrapped(text: String): String = "&lt;$text&gt;"
