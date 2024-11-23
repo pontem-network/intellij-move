@@ -6,7 +6,7 @@ object SignatureUtils {
     fun joinParameters(params: List<Pair<String, String?>>): String =
         buildString {
             append("(")
-            params.joinToWithBuffer(this, separator = ", ") { sb ->
+            params.joinToWithBuffer(this, sep = ", ") { sb ->
                 val (name, type) = this
                 sb.append(name)
                 if (type != null) {

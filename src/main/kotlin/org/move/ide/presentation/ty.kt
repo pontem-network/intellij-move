@@ -1,9 +1,16 @@
 package org.move.ide.presentation
 
-import org.move.lang.core.psi.MvElement
+import com.intellij.openapi.editor.markup.TextAttributes
+import org.move.ide.docs.MvColorUtils.asBuiltinType
+import org.move.ide.docs.MvColorUtils.asKeyword
+import org.move.ide.docs.MvColorUtils.asPrimitiveType
+import org.move.ide.docs.MvColorUtils.asTypeParam
+import org.move.ide.docs.MvColorUtils.colored
+import org.move.ide.docs.escapeForHtml
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.types.ty.*
+import org.move.stdext.chainIf
 
 // null -> builtin module
 fun Ty.declaringModule(): MvModule? = when (this) {
@@ -16,35 +23,27 @@ fun Ty.nameNoArgs(): String {
     return this.name().replace(Regex("<.*>"), "")
 }
 
-fun Ty.name(): String {
-    return text(fq = false)
+fun Ty.name(colors: Boolean = false): String {
+    return text(fq = false, colors = colors)
 }
 
 fun Ty.fullnameNoArgs(): String {
     return this.fullname().replace(Regex("<.*>"), "")
 }
 
-fun Ty.fullname(): String {
-    return text(fq = true)
-}
-
-fun Ty.typeLabel(relativeTo: MvElement): String {
-    val typeModule = this.declaringModule()
-    if (typeModule != null && typeModule != relativeTo.containingModule) {
-        return this.fullname()
-    } else {
-        return this.name()
-    }
+fun Ty.fullname(colors: Boolean = false): String {
+    return text(fq = true, colors = colors)
 }
 
 fun Ty.hintText(): String =
     render(this, level = 3, unknown = "?", tyVar = { "?" })
 
-fun Ty.text(fq: Boolean = false): String =
+fun Ty.text(fq: Boolean = false, colors: Boolean = false): String =
     render(
         this,
         level = 3,
-        fq = fq
+        fq = fq,
+        toHtml = colors,
     )
 
 fun Ty.expectedTyText(): String {
@@ -71,14 +70,14 @@ fun Ty.expectedTyText(): String {
     )
 }
 
-val Ty.insertionSafeText: String
-    get() = render(
-        this,
-        level = Int.MAX_VALUE,
-        unknown = "_",
-        anonymous = "_",
-        integer = "_"
-    )
+//val Ty.insertionSafeText: String
+//    get() = render(
+//        this,
+//        level = Int.MAX_VALUE,
+//        unknown = "_",
+//        anonymous = "_",
+//        integer = "_"
+//    )
 
 fun tyToString(ty: Ty) = render(ty, Int.MAX_VALUE)
 
@@ -88,35 +87,28 @@ private fun render(
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
     integer: String = "integer",
-    typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
-    tyVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
-    fq: Boolean = false
+    fq: Boolean = false,
+    toHtml: Boolean = false,
+    typeParam: (TyTypeParameter) -> String = {
+        it.name?.chainIf(toHtml) { colored(this, asTypeParam) }
+            ?: anonymous
+//        colored(it.name, asTypeParam, toHtml) ?: anonymous
+    },
+    tyVar: (TyInfer.TyVar) -> String = {
+        val varName =
+            it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) }
+                ?: "_"
+        "?$varName"
+//        colored(it.origin?.name, asTypeParam, toHtml) ?: "_"
+    },
 ): String {
     check(level >= 0)
-    if (ty is TyUnknown) return unknown
-    if (ty is TyPrimitive) {
-        return when (ty) {
-            is TyBool -> "bool"
-            is TyAddress -> "address"
-            is TySigner -> "signer"
-            is TyUnit -> "()"
-            is TyNum -> "num"
-            is TySpecBv -> "bv"
-            is TyInteger -> {
-                if (ty.kind == TyInteger.DEFAULT_KIND) {
-                    integer
-                } else {
-                    ty.kind.toString()
-                }
-            }
-            is TyNever -> "<never>"
-            else -> error("unreachable")
-        }
-    }
+    if (ty is TyUnknown) return unknown.chainIf(toHtml) { escapeForHtml() }
+    if (ty is TyPrimitive) return renderPrimitive(ty, integer, toHtml = toHtml)
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, fq, toHtml, typeParam, tyVar) }
 
     return when (ty) {
         is TyFunction -> {
@@ -128,26 +120,42 @@ private fun render(
             s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
-        is TyVector -> "vector<${r(ty.item)}>"
-        is TyRange -> "range<${r(ty.item)}>"
+        is TyVector -> {
+            val buf = StringBuilder()
+            buf.colored("vector", asBuiltinType, noHtml = !toHtml)
+            buf += "<".escapeIf(toHtml) + r(ty.item) + ">".escapeIf(toHtml)
+            buf.toString()
+        }
+        is TyRange -> {
+            val buf = StringBuilder()
+            buf.colored("range", asBuiltinType, noHtml = !toHtml)
+            buf += "<".escapeIf(toHtml) + r(ty.item) + ">".escapeIf(toHtml)
+            buf.toString()
+        }
         is TyReference -> {
-            val prefix = if (ty.mutability.isMut) "&mut " else "&"
-            "$prefix${r(ty.referenced)}"
+            val buf = StringBuilder()
+            // todo: escape?
+            buf += "&"
+            if (ty.mutability.isMut) {
+                buf += colored("mut", asKeyword, toHtml)
+                buf += " "
+            }
+            buf += r(ty.referenced)
+            buf.toString()
         }
         is TyTypeParameter -> typeParam(ty)
-//        is TyStruct -> {
-//            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
-//            val args =
-//                if (ty.typeArguments.isEmpty()) ""
-//                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-//            name + args
-//        }
         is TyAdt -> {
-            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
-            val args =
+            val itemName = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
-                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-            name + args
+                else ty.typeArguments.joinToString(
+                    ", ",
+                    "<".escapeIf(toHtml),
+                    ">".escapeIf(toHtml),
+                    transform = r
+                )
+            itemName + typeArgs
+//            itemName + typeArgs.chainIf(toHtml) { escapeForHtml() }
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
@@ -163,11 +171,61 @@ private fun render(
         }
         is TySchema -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
-            val args =
-                if (ty.typeArguments.isEmpty()) ""
-                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-            name + args
+            val typeArgs =
+                if (ty.typeArguments.isEmpty()) {
+                    ""
+                } else {
+                    ty.typeArguments.joinToString(
+                        ", ",
+                        "<".escapeIf(toHtml),
+                        ">".escapeIf(toHtml),
+                        transform = r
+                    )
+                }
+            name + typeArgs
         }
         else -> error("unimplemented for type ${ty.javaClass.name}")
+    }
+}
+
+private fun renderPrimitive(ty: TyPrimitive, integer: String = "integer", toHtml: Boolean = false): String {
+    val tyText = when (ty) {
+        is TyBool -> "bool"
+        is TyAddress -> "address"
+        is TySigner -> "signer"
+        is TyUnit -> "()"
+        is TyNum -> "num"
+        is TySpecBv -> "bv"
+        is TyInteger -> {
+            if (ty.kind == TyInteger.DEFAULT_KIND) {
+                integer
+            } else {
+                ty.kind.toString()
+            }
+        }
+        is TyNever -> "<never>"
+        else -> error("unreachable")
+    }
+        .chainIf(toHtml) { escapeForHtml() }
+
+    return colored(tyText, asPrimitiveType, toHtml)!!
+}
+
+private fun String.escapeIf(toHtml: Boolean) = this.chainIf(toHtml) { escapeForHtml() }
+
+private fun colored(text: String, color: TextAttributes): String {
+    return colored(text, color, html = true)!!
+}
+
+private fun colored(text: String?, color: TextAttributes, html: Boolean = true): String? {
+    if (text == null) return null
+    val buf = StringBuilder()
+    buf.colored(text, color, !html)
+    return buf.toString()
+}
+
+operator fun StringBuilder.plusAssign(value: String?) {
+    if (value != null) {
+        append(value)
     }
 }

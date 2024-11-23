@@ -135,7 +135,7 @@ fun <T> Set<T>.containsAny(vararg items: T): Boolean = items.any { this.contains
 
 inline fun <T> Iterable<T>.joinToWithBuffer(
     buffer: StringBuilder,
-    separator: CharSequence = ", ",
+    sep: CharSequence = ", ",
     prefix: CharSequence = "",
     postfix: CharSequence = "",
     action: T.(StringBuilder) -> Unit,
@@ -144,7 +144,7 @@ inline fun <T> Iterable<T>.joinToWithBuffer(
     var needInsertSeparator = false
     for (element in this) {
         if (needInsertSeparator) {
-            buffer.append(separator)
+            buffer.append(sep)
         }
         element.action(buffer)
         needInsertSeparator = true
@@ -223,3 +223,24 @@ inline fun <reified T : Any> T.asMap() : Map<String, Any?> {
     return props.keys.associateWith { props[it]?.get(this) }
 }
 
+inline fun <T> T.applyIf(condition: Boolean, body: T.() -> Unit) {
+    if (!condition) {
+        this.body()
+    }
+}
+
+inline fun <T> T.chainIf(condition: Boolean, body: T.() -> T): T {
+    return if (!condition) {
+        this
+    } else {
+        this.body()
+    }
+}
+
+//inline fun <T, U> T.mapIf(condition: Boolean, fn: (T) -> T): T {
+//    if (!condition) {
+//        return this
+//    } else {
+//        return this.body()
+//    }
+//}

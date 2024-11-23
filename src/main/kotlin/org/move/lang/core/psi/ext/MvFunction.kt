@@ -35,6 +35,22 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
+val MvFunctionLike.modifiers: List<String> get() {
+    // todo: order of appearance
+    val item = this
+    return buildList {
+        if (item is MvFunction) {
+            val vis = item.visibilityModifier
+            if (vis != null) {
+                add(vis.stubVisKind.keyword)
+            }
+        }
+        if (item is MvFunction && item.isEntry) add("entry")
+        if (item.isNative) add("native")
+        if (item is MvFunction && item.isInline) add("inline")
+    }
+}
+
 fun MvFunction.functionId(): String? = qualName?.cmdText()
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
