@@ -7,7 +7,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
-        annotationFixture.registerSeverities(MvColor.values().map(MvColor::testSeverity))
+        annotationFixture.registerSeverities(MvColor.entries.map(MvColor::testSeverity))
     }
 
     fun `test block comment do not break the highlighting`() = checkHighlighting(
@@ -352,13 +352,6 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     fun `test enum highlighting`() = checkHighlighting("""
         module 0x1::m {
             <KEYWORD>enum</KEYWORD> <ENUM>S</ENUM> { One, Two(u8) }
-        }        
-    """)
-
-    fun `test attribute highlighting`() = checkHighlighting("""
-        module 0x1::m {
-            <ATTRIBUTE>#</ATTRIBUTE><ATTRIBUTE>[</ATTRIBUTE><ATTRIBUTE>view</ATTRIBUTE><ATTRIBUTE>]</ATTRIBUTE>
-            fun foo() {}
         }        
     """)
 

@@ -562,4 +562,11 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test no error for path in attr`() = checkByText("""
+        module 0x1::m {
+            #[lint::my_lint]
+            fun main() {}
+        }        
+    """)
 }

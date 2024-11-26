@@ -38,5 +38,6 @@ module 0x1::M {
         location = aptos_framework::ed25519,
         location = aptos_framework::ed25519::myfunction,
     )]
+    #[lint::allow_unsafe_randomness]
     fun abort_test_2() {}
 }

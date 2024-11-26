@@ -182,14 +182,13 @@ QualPathCodeFragmentElement ::= PathImpl
 Attr ::= '#' '[' <<comma_separated_list AttrItem>> ']' { pin = 1 }
 private Attr_first ::= '#'
 
-AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
-{
-    implements = [
-        "org.move.lang.core.resolve.ref.MvReferenceElement"
-//        "org.move.lang.core.types.infer.MvInferenceContextOwner"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
-}
+AttrItem ::= PathImpl (AttrItemList | AttrItemInitializer)?
+//{
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
+//}
 AttrItemList ::= '(' <<comma_separated_list AttrItem>>? ')' { pin = 1 }
 //AttrItemArgument ::= IDENTIFIER ('=' Expr)?
 //{
