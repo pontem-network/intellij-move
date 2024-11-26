@@ -21,7 +21,7 @@ class MvUnusedTestSignerInspection: MvLocalInspectionTool() {
                 val innerAttrItems = attrItem.attrItemList?.attrItemList.orEmpty()
                 for (innerAttrItem in innerAttrItems) {
                     val refName = innerAttrItem.unqualifiedName ?: continue
-                    if (innerAttrItem.unresolved) {
+                    if (innerAttrItem.path.unresolved) {
                         holder.registerProblem(
                             innerAttrItem,
                             "Unused test signer",

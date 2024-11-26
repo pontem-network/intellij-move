@@ -124,7 +124,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
 
         // can be anything in completion
         parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
-//        }
+
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
@@ -136,6 +136,9 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         parent is MvAddressSpecifierCallParam -> NAMES
         parent is MvFriendDecl -> MODULES
         parent is MvModuleSpec -> MODULES
+
+        // should not be used for attr items
+        parent is MvAttrItem -> NONE
 
         else -> debugErrorOrFallback(
             "Cannot build path namespaces: unhandled parent type ${parent?.elementType}",
@@ -157,7 +160,19 @@ val MvPath.qualifier: MvPath?
 
 abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 
-    override fun getReference(): MvPath2Reference? = MvPath2ReferenceImpl(this)
+    override fun getReference(): MvPath2Reference? {
+        if (referenceName == null) return null
+        return when (val parent = parent) {
+            is MvAttrItem -> {
+                val attrItemList = (parent.parent as? MvAttrItemList) ?: return null
+                val parentAttrItem = (attrItemList.parent as? MvAttrItem)?.takeIf { it.isTest } ?: return null
+                val attr = parentAttrItem.attr ?: return null
+                val ownerFunction = attr.attributeOwner as? MvFunction ?: return null
+                AttrItemReferenceImpl(this, ownerFunction)
+            }
+            else -> MvPath2ReferenceImpl(this)
+        }
+    }
 }
 
 val MvPath.hasColonColon: Boolean get() = colonColon != null

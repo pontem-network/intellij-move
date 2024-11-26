@@ -36,6 +36,8 @@ class MvHighlighter : SyntaxHighlighterBase() {
             BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> MvColor.STRING
             INTEGER_LITERAL -> MvColor.NUMBER
 
+            QUOTE_IDENTIFIER -> MvColor.LABEL
+
             in MOVE_KEYWORDS, BOOL_LITERAL -> MvColor.KEYWORD
             else -> null
         }

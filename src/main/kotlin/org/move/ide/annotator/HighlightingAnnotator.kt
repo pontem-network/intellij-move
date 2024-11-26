@@ -2,12 +2,16 @@ package org.move.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.tree.TokenSet
 import org.move.cli.settings.moveSettings
 import org.move.ide.colors.MvColor
 import org.move.lang.MvElementTypes.*
+import org.move.lang.core.CONTEXTUAL_KEYWORDS
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.tokenSetOf
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -31,6 +35,7 @@ val SPEC_BUILTIN_FUNCTIONS = setOf(
 
 class HighlightingAnnotator: MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
+        if (element.elementType == WHITE_SPACE) return
         val color = when {
             element is LeafPsiElement -> highlightLeaf(element)
             element is MvLitExpr && element.text.startsWith("@") -> MvColor.ADDRESS
@@ -51,9 +56,26 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             leafType == QUOTE_IDENTIFIER -> MvColor.LABEL
             leafType == HEX_INTEGER_LITERAL -> MvColor.NUMBER
             parent is MvAssertMacroExpr -> MvColor.MACRO
+            parent is MvCopyExpr && element.text == "copy" -> MvColor.KEYWORD
+
+            // covers `#, [, ]`, in #[test(my_signer = @0x1)]
             parent is MvAttr -> MvColor.ATTRIBUTE
-            parent is MvCopyExpr
-                    && element.text == "copy" -> MvColor.KEYWORD
+            // covers `(, )`, in #[test(my_signer = @0x1)]
+            parent is MvAttrItemList -> MvColor.ATTRIBUTE
+            // covers `=` in #[test(my_signer = @0x1)]
+            parent is MvAttrItemInitializer -> MvColor.ATTRIBUTE
+
+            leafType == COLON_COLON -> {
+                val firstParent =
+                    element.findFirstParent(true) { it is MvAttrItemInitializer || it is MvAttrItem }
+                if (firstParent == null || firstParent is MvAttrItemInitializer) {
+                    // belongs to the expression path, not highlighted
+                    return null
+                }
+                // belongs to the attr item identifier
+                return MvColor.ATTRIBUTE
+            }
+
             else -> null
         }
     }
@@ -94,7 +116,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
 
     private fun highlightBindingPat(bindingPat: MvPatBinding): MvColor {
         val bindingOwner = bindingPat.parent
-        if (bindingPat.isReceiverStyleFunctionsEnabled &&
+        if (bindingPat.isMethodsEnabled &&
             bindingOwner is MvFunctionParameter && bindingOwner.isSelfParam
         ) {
             return MvColor.SELF_PARAMETER
@@ -111,6 +133,9 @@ class HighlightingAnnotator: MvAnnotatorBase() {
     private fun highlightPathElement(path: MvPath): MvColor? {
         val identifierName = path.identifierName
         if (identifierName == "Self") return MvColor.KEYWORD
+
+        val rootPath = path.rootPath()
+        if (rootPath.parent is MvAttrItem) return MvColor.ATTRIBUTE
 
         // any qual :: access is not highlighted
         if (path.qualifier != null) return null
@@ -156,7 +181,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                     item is MvConst -> MvColor.CONSTANT
                     else -> {
                         val itemParent = item.parent
-                        if (itemParent.isReceiverStyleFunctionsEnabled
+                        if (itemParent.isMethodsEnabled
                             && itemParent is MvFunctionParameter && itemParent.isSelfParam
                         ) {
                             MvColor.SELF_PARAMETER
@@ -197,7 +222,16 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             else -> MvColor.VARIABLE
         }
 
-    private val PsiElement.isReceiverStyleFunctionsEnabled
+    private val PsiElement.isMethodsEnabled
         get() =
             project.moveSettings.enableReceiverStyleFunctions
+
+    companion object {
+        private val HIGHLIGHTED_ELEMENTS = TokenSet.orSet(
+            tokenSetOf(
+                IDENTIFIER, QUOTE_IDENTIFIER
+            ),
+            CONTEXTUAL_KEYWORDS
+        )
+    }
 }
