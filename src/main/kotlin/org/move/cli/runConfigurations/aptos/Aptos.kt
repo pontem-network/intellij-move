@@ -12,11 +12,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.MoveProject
 import org.move.cli.MvConstants
+import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
-import org.move.stdext.CollectionBuilder
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
@@ -70,7 +70,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         val commandLine =
             AptosCommandLine(
                 subCommand = "move compile",
-                arguments = compileArguments(project),
+                arguments = compilerArguments(project),
                 workingDirectory = packageRoot
             )
         return executeAptosCommandLine(commandLine, colored = true, runner = runner)
@@ -78,17 +78,28 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 
     fun checkProject(
         project: Project,
-        args: AptosCompileArgs
+        linterArgs: AptosExternalLinterArgs
     ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
-//            val useClippy = args.linter == ExternalLinter.CLIPPY
-//                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
-//            val checkCommand = if (useClippy) "clippy" else "check"
-        val extraArguments = ParametersListUtil.parse(args.extraArguments)
+        val lintCommand = linterArgs.linter.command
+        val extraArguments = ParametersListUtil.parse(linterArgs.extraArguments)
+        val arguments = when (linterArgs.linter) {
+            ExternalLinter.COMPILER -> compilerArguments(project, extraArguments)
+            ExternalLinter.LINTER -> {
+                buildList {
+                    addAll(extraArguments)
+                    if (project.moveSettings.skipFetchLatestGitDeps
+                        && "--skip-fetch-latest-git-deps" !in extraArguments
+                    ) {
+                        add("--skip-fetch-latest-git-deps")
+                    }
+                }
+            }
+        }
         val commandLine =
             AptosCommandLine(
-                "move compile",
-                arguments = compileArguments(project) { addAll(extraArguments) },
-                args.moveProjectDirectory,
+                "move $lintCommand",
+                arguments,
+                linterArgs.moveProjectDirectory,
             )
         return executeCommandLine(commandLine).ignoreExitCode()
     }
@@ -199,18 +210,17 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         return Ok(aptosProcessOutput)
     }
 
-    private fun compileArguments(
+    private fun compilerArguments(
         project: Project,
-        builder: (CollectionBuilder<String>.() -> Unit)? = null
+        extraArguments: List<String> = emptyList(),
     ): List<String> {
         val settings = project.moveSettings
-        val initialArguments = buildList { builder?.let { this.it() } }
         return buildList {
-            addAll(initialArguments)
-            if (settings.enableMove2 && "--move-2" !in initialArguments) {
+            addAll(extraArguments)
+            if (settings.enableMove2 && "--move-2" !in extraArguments) {
                 add("--move-2")
             }
-            if (settings.skipFetchLatestGitDeps && "--skip-fetch-latest-git-deps" !in initialArguments) {
+            if (settings.skipFetchLatestGitDeps && "--skip-fetch-latest-git-deps" !in extraArguments) {
                 add("--skip-fetch-latest-git-deps")
             }
         }

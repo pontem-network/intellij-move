@@ -22,7 +22,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.containers.ContainerUtil
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
-import org.move.cli.runConfigurations.aptos.AptosCompileArgs
+import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
 import org.move.cli.runConfigurations.aptos.workingDirectory
 import org.move.cli.settings.getAptosCli
 import org.move.ide.annotator.RsExternalLinterResult
@@ -124,7 +124,7 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
                 aptosCli,
                 project,
                 moveProject.workingDirectory,
-                AptosCompileArgs.forMoveProject(moveProject)
+                AptosExternalLinterArgs.forMoveProject(moveProject)
             )
         }
 

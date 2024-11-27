@@ -259,7 +259,7 @@ allprojects {
         }
         task {
             systemProperty("org.move.debug.enabled", true)
-            systemProperty("org.move.types.highlight.unknown.as.error", true)
+            systemProperty("org.move.types.highlight.unknown.as.error", false)
 //            systemProperty("org.move.external.linter.max.duration", 30)  // 30 ms
 //            systemProperty("org.move.aptos.bundled.force.unsupported", true)
 //            systemProperty("idea.log.debug.categories", "org.move.cli")

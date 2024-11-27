@@ -29,7 +29,7 @@ import org.move.cli.externalLinter.RsExternalLinterWidget
 import org.move.cli.externalLinter.externalLinterSettings
 import org.move.cli.externalLinter.parseCompilerErrors
 import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.runConfigurations.aptos.AptosCompileArgs
+import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
 import org.move.ide.annotator.RsExternalLinterFilteredMessage.Companion.filterMessage
 import org.move.ide.annotator.RsExternalLinterUtils.TEST_MESSAGE
 import org.move.ide.notifications.logOrShowBalloon
@@ -62,10 +62,13 @@ object RsExternalLinterUtils {
         aptosCli: Aptos,
         project: Project,
         workingDirectory: Path,
-        args: AptosCompileArgs
+        linterArgs: AptosExternalLinterArgs
     ): Lazy<RsExternalLinterResult?> {
         checkReadAccessAllowed()
-        return externalLinterLazyResultCache.getOrPut(project, Key(aptosCli, workingDirectory, args)) {
+        return externalLinterLazyResultCache.getOrPut(
+            project,
+            Key(aptosCli, workingDirectory, linterArgs)
+        ) {
             // We want to run external linter in background thread and *without* read action.
             // And also we want to cache result of external linter because it is cargo package-global,
             // but annotator can be invoked separately for each file.
@@ -84,7 +87,7 @@ object RsExternalLinterUtils {
             lazy {
                 // This code will be executed out of read action in background thread
                 if (!isUnitTestMode) checkReadAccessNotAllowed()
-                checkWrapped(aptosCli, project, args)
+                checkWrapped(aptosCli, project, linterArgs)
             }
         }
     }
@@ -92,7 +95,7 @@ object RsExternalLinterUtils {
     private fun checkWrapped(
         aptosCli: Aptos,
         project: Project,
-        args: AptosCompileArgs
+        linterArgs: AptosExternalLinterArgs
     ): RsExternalLinterResult? {
         val widget = WriteAction.computeAndWait<RsExternalLinterWidget?, Throwable> {
             saveAllDocumentsAsTheyAre()
@@ -102,11 +105,15 @@ object RsExternalLinterUtils {
 
         val future = CompletableFuture<RsExternalLinterResult?>()
         val task =
-            object: Task.Backgroundable(project, "Analyzing project with ${args.linter.title}...", true) {
+            object: Task.Backgroundable(
+                project,
+                "Analyzing project with ${linterArgs.linter.title}...",
+                true
+            ) {
 
                 override fun run(indicator: ProgressIndicator) {
                     widget?.inProgress = true
-                    future.complete(check(project, aptosCli, args))
+                    future.complete(check(project, aptosCli, linterArgs))
                 }
 
                 override fun onFinished() {
@@ -119,13 +126,12 @@ object RsExternalLinterUtils {
 
     private fun check(
         project: Project,
-        aptosCli: Aptos,
-        aptosCompileArgs: AptosCompileArgs
+        aptos: Aptos,
+        linterArgs: AptosExternalLinterArgs
     ): RsExternalLinterResult? {
         ProgressManager.checkCanceled()
         val started = Instant.now()
-        val output = aptosCli
-            .checkProject(project, aptosCompileArgs)
+        val output = aptos.checkProject(project, linterArgs)
             .unwrapOrElse { e ->
                 LOG.error(e)
                 return null
@@ -142,7 +148,7 @@ object RsExternalLinterUtils {
     private data class Key(
         val aptosCli: Aptos,
         val workingDirectory: Path,
-        val args: AptosCompileArgs
+        val args: AptosExternalLinterArgs
     )
 
     private val externalLinterLazyResultCache =
@@ -169,16 +175,12 @@ fun MessageBus.createDisposableOnAnyPsiChange(): CheckedDisposable {
 fun MutableList<HighlightInfo>.addHighlightsForFile(
     file: MoveFile,
     annotationResult: RsExternalLinterResult,
-//    minApplicability: Applicability
 ) {
-//    val cargoPackageOrigin = file.containing?.origin
-//    if (cargoPackageOrigin != PackageOrigin.WORKSPACE) return
-
     val doc = file.viewProvider.document
         ?: error("Can't find document for $file in external linter")
 
     val skipIdeErrors = file.project.externalLinterSettings.skipErrorsKnownToIde
-    val filteredMessages = annotationResult.messages
+    val filteredMessages = annotationResult.compilerMessages
         .mapNotNull { message -> filterMessage(file, doc, message, skipIdeErrors) }
         // Cargo can duplicate some error messages when `--all-targets` attribute is used
         .distinct()
@@ -192,18 +194,6 @@ fun MutableList<HighlightInfo>.addHighlightsForFile(
             .range(message.textRange)
             .needsUpdateOnTyping(true)
 
-//        message.quickFixes
-//            .singleOrNull { it.applicability <= minApplicability }
-//            ?.let { fix ->
-//                val element = fix.startElement ?: fix.endElement
-//                val lint = message.lint
-//                val actions =  if (element != null && lint != null) createSuppressFixes(element, lint) else emptyArray()
-//                val options = convertBatchToSuppressIntentionActions(actions).toList()
-//                val displayName = "Aptos external linter"
-//                val key = HighlightDisplayKey.findOrRegister(APTOS_EXTERNAL_LINTER_ID, displayName)
-//                highlightBuilder.registerFix(fix, options, displayName, fix.textRange, key)
-//            }
-
         highlightBuilder.create()?.let(::add)
     }
 }
@@ -216,11 +206,9 @@ private fun convertSeverity(severity: HighlightSeverity): HighlightInfoType = wh
     else -> HighlightInfoType.INFORMATION
 }
 
-private const val APTOS_EXTERNAL_LINTER_ID: String = "AptosExternalLinterOptions"
-
 class RsExternalLinterResult(commandOutput: List<String>, val executionTime: Long) {
 
-    val messages: List<AptosCompilerMessage> = parseCompilerErrors(commandOutput)
+    val compilerMessages: List<AptosCompilerMessage> = parseCompilerErrors(commandOutput)
 }
 
 private data class RsExternalLinterFilteredMessage(
@@ -228,8 +216,6 @@ private data class RsExternalLinterFilteredMessage(
     val textRange: TextRange,
     @Nls val message: String,
     @Nls val htmlTooltip: String,
-//    val lint: RsLint.ExternalLinterLint?,
-//    val quickFixes: List<ApplySuggestionFix>
 ) {
     companion object {
         private val LOG = logger<RsExternalLinterFilteredMessage>()
@@ -246,6 +232,7 @@ private data class RsExternalLinterFilteredMessage(
             val severity = when (message.severityLevel) {
                 "error" -> HighlightSeverity.ERROR
                 "warning" -> HighlightSeverity.WEAK_WARNING
+                "warning [lint]" -> HighlightSeverity.WEAK_WARNING
                 else -> HighlightSeverity.INFORMATION
             }
 
@@ -256,7 +243,7 @@ private data class RsExternalLinterFilteredMessage(
             // drop syntax errors
             val syntaxErrors = listOf("unexpected token")
 //            val syntaxErrors = listOf("expected pattern", "unexpected token")
-            if (syntaxErrors.any { it in span.label.orEmpty() || it in message.message }) {
+            if (syntaxErrors.any { it in span.label.orEmpty() || it in message.text }) {
                 return null
             }
 
@@ -270,9 +257,11 @@ private data class RsExternalLinterFilteredMessage(
                     "too many arguments", "the function takes",
                     // missing fields
                     "too few arguments", "missing fields",
+                    // unused imports
+                    "unused alias",
                 )
-                if (errorsToIgnore.any { it in message.message }) {
-                    LOG.logOrShowBalloon("ignore compiler error: ${message.toTestString()}")
+                if (errorsToIgnore.any { it in message.text }) {
+                    LOG.logOrShowBalloon("ignore external linter error", message.toTestString())
                     return null
                 }
             }
@@ -283,14 +272,14 @@ private data class RsExternalLinterFilteredMessage(
             val textRange = span.toTextRange(document) ?: return null
 
             val tooltip = buildString {
-                append(formatMessage(StringEscapeUtils.escapeHtml4(message.message)).escapeUrls())
+                append(formatMessage(StringEscapeUtils.escapeHtml4(message.text)).escapeUrls())
 //                val code = message.code.formatAsLink()
 //                if (code != null) {
 //                    append(" [$code]")
 //                }
 
                 with(mutableListOf<String>()) {
-                    if (span.label != null && !message.message.startsWith(span.label)) {
+                    if (span.label != null && !message.text.startsWith(span.label)) {
                         add(StringEscapeUtils.escapeHtml4(span.label))
                     }
 
@@ -306,7 +295,7 @@ private data class RsExternalLinterFilteredMessage(
             return RsExternalLinterFilteredMessage(
                 severity,
                 textRange,
-                message.message.capitalized(),
+                message.text.capitalized(),
                 tooltip,
 //                message.code?.code?.let { RsLint.ExternalLinterLint(it) },
 //                message.collectQuickFixes(file, document)

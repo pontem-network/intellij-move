@@ -4,38 +4,54 @@ import org.move.ide.annotator.AptosCompilerMessage
 import org.move.ide.annotator.AptosCompilerSpan
 
 fun parseCompilerErrors(outputLines: List<String>): List<AptosCompilerMessage> {
-    val errorLists = splitErrors(outputLines)
-    val messages = errorLists.map(::errorLinesToCompilerMessage)
+    val rawMessages = splitMessages(outputLines)
+    val messages = rawMessages.map(::rawMessageToCompilerMessage)
     return messages
 }
 
 private val ERROR_START_RE = Regex("^error(\\[E\\d+\\])?:\\s+(.+)")
 
-private fun splitErrors(outputLines: List<String>): List<List<String>> {
-    val errorLists = mutableListOf<List<String>>()
-    var thisErrorLines: MutableList<String>? = null
+enum class ErrorType(val severityLevel: String) {
+    ERROR("error"), WARNING("warning"), WARNING_LINT("warning [lint]");
+}
+
+data class RawMessage(val errorType: ErrorType, val lines: MutableList<String>)
+
+private fun splitMessages(outputLines: List<String>): List<RawMessage> {
+    val rawMessages = mutableListOf<RawMessage>()
+    var message: RawMessage? = null
     for (line in outputLines) {
         if (line.startsWith("{")) {
             break
         }
-        if (ERROR_START_RE.find(line) != null) {
-//        if (line.startsWith("error:")) {
-            // flush
-            thisErrorLines?.let { errorLists.add(it) }
-            thisErrorLines = mutableListOf()
+        val newErrorType = when {
+            ERROR_START_RE.find(line) != null -> ErrorType.ERROR
+            line.startsWith("warning: [lint]") -> ErrorType.WARNING_LINT
+            line.startsWith("warning:") -> ErrorType.WARNING
+            else -> null
         }
-        thisErrorLines?.add(line)
+        if (newErrorType != null) {
+            // flush
+            message?.let { rawMessages.add(it) }
+            message = RawMessage(newErrorType, mutableListOf())
+        }
+        message?.lines?.add(line)
     }
     // flush
-    thisErrorLines?.let { errorLists.add(it) }
-    return errorLists
+    message?.let { rawMessages.add(it) }
+    return rawMessages
 }
 
-private fun errorLinesToCompilerMessage(errorLines: List<String>): AptosCompilerMessage {
-    val messageLine = errorLines.first()
-    val (_, message) = ERROR_START_RE.find(messageLine)!!.destructured
-    val spans = splitSpans(errorLines)
-    return AptosCompilerMessage(message, "error", spans)
+private fun rawMessageToCompilerMessage(rawMessage: RawMessage): AptosCompilerMessage {
+    val messageLine = rawMessage.lines.first()
+    val message = when (rawMessage.errorType) {
+        ErrorType.ERROR -> ERROR_START_RE.find(messageLine)!!.destructured.component2()
+        ErrorType.WARNING -> messageLine.substringAfter("warning: ")
+        ErrorType.WARNING_LINT -> messageLine.substringAfter("warning: [lint] ")
+    }
+//    val (_, message) = ERROR_START_RE.find(messageLine)!!.destructured
+    val spans = splitSpans(rawMessage.lines)
+    return AptosCompilerMessage(message, rawMessage.errorType.severityLevel, spans)
 }
 
 private val FILE_POSITION_RE =
