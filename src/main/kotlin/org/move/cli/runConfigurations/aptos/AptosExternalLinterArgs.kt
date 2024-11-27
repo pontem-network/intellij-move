@@ -6,7 +6,7 @@ import org.move.cli.externalLinter.externalLinterSettings
 import org.move.cli.settings.moveSettings
 import java.nio.file.Path
 
-data class AptosCompileArgs(
+data class AptosExternalLinterArgs(
     val linter: ExternalLinter,
     val moveProjectDirectory: Path,
     val extraArguments: String,
@@ -15,7 +15,7 @@ data class AptosCompileArgs(
     val skipLatestGitDeps: Boolean,
 ) {
     companion object {
-        fun forMoveProject(moveProject: MoveProject): AptosCompileArgs {
+        fun forMoveProject(moveProject: MoveProject): AptosExternalLinterArgs {
             val linterSettings = moveProject.project.externalLinterSettings
             val moveSettings = moveProject.project.moveSettings
 
@@ -23,7 +23,7 @@ data class AptosCompileArgs(
             val enviroment = linterSettings.envs
             val workingDirectory = moveProject.workingDirectory
 
-            return AptosCompileArgs(
+            return AptosExternalLinterArgs(
                 linterSettings.tool,
                 workingDirectory,
                 additionalArguments,

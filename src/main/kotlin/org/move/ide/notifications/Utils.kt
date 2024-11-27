@@ -33,6 +33,21 @@ fun Logger.logOrShowBalloon(@NotificationContent content: String, productionLeve
     }
 }
 
+fun Logger.logOrShowBalloon(
+    title: String,
+    @NotificationContent content: String,
+    productionLevel: LogLevel = LogLevel.DEBUG
+) {
+    when {
+        isUnitTestMode -> this.warn("BALLOON: $title - $content")
+        isDebugModeEnabled() -> {
+            this.warn(content)
+            showBalloonWithoutProject(title, content, INFORMATION)
+        }
+        else -> this.log("$title - $content", productionLevel)
+    }
+}
+
 fun Project.showBalloon(
     @NotificationTitle title: String,
     @NotificationContent content: String,

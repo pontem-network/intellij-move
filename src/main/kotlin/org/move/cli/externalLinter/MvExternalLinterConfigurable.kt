@@ -26,6 +26,11 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
         val settings = project.externalLinterSettings
         val state = settings.state.copy()
 
+        row {
+            checkBox("Run external linter on the fly")
+                .comment("Adds code highlighting based on the external linter results. May affect the IDE performance")
+                .bindSelected(state::runOnTheFly)
+        }
         row("External tool:") {
             comboBox(EnumComboBoxModel(ExternalLinter::class.java))
                 .comment("External tool for additional code analysis")
@@ -35,7 +40,9 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
         row("Additional arguments:") {
             fullWidthCell(additionalArguments)
                 .resizableColumn()
-                .comment("Additional arguments to pass to <b>aptos move compile</b> command")
+                .comment(
+                    "Additional arguments to pass to <b>aptos move compile</b> / <b>aptos move lint</b>"
+                )
                 .bind(
                     componentGet = { it.text },
                     componentSet = { component, value -> component.text = value },
@@ -52,11 +59,6 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
                 )
         }
 
-        row {
-            checkBox("Run external linter to analyze code on the fly")
-                .comment("Adds code highlighting based on the external linter results. May affect the IDE performance")
-                .bindSelected(state::runOnTheFly)
-        }
         separator()
         row {
             checkBox("Prevent duplicate errors")

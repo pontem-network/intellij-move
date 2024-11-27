@@ -33,7 +33,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.aptos.AptosCompileArgs
+import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
 import org.move.cli.runConfigurations.aptos.workingDirectory
 import org.move.cli.settings.getAptosCli
 import org.move.ide.notifications.RsExternalLinterSlowRunNotifier
@@ -66,7 +66,7 @@ class RsExternalLinterPass(
             .also { Disposer.register(moduleOrProject, it) }
 
         val aptos = myProject.getAptosCli(parentDisposable = disposable) ?: return
-        val args = AptosCompileArgs.forMoveProject(moveProject)
+        val args = AptosExternalLinterArgs.forMoveProject(moveProject)
         annotationInfo = RsExternalLinterUtils.checkLazily(
             aptos,
             myProject,

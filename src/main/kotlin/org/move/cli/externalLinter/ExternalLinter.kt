@@ -5,9 +5,9 @@
 
 package org.move.cli.externalLinter
 
-enum class ExternalLinter(val title: String) {
-    COMPILER("Aptos Compiler");
-//    LINTER("Move Linter");
+enum class ExternalLinter(val title: String, val command: String) {
+    COMPILER("Aptos Compiler", "compile"),
+    LINTER("Aptos Linter", "lint");
 
     override fun toString(): String = title
 

@@ -5,7 +5,7 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.annotations.TestOnly
 
 data class AptosCompilerMessage(
-    val message: String,
+    val text: String,
     val severityLevel: String,
     val spans: List<AptosCompilerSpan>
 ) {
@@ -18,7 +18,7 @@ data class AptosCompilerMessage(
         }
 
     fun toTestString(): String {
-        return "$severityLevel: '$message' at ${mainSpan?.toTestString()}"
+        return "$severityLevel: '$text' at ${mainSpan?.toTestString()}"
     }
 
     companion object {
