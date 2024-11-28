@@ -63,7 +63,7 @@ enum class AptosExecType {
 class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
 
     private val innerDisposable =
-        Disposer.newCheckedDisposable("Internal checked disposable for ChooseAptosCliPanel")
+        Disposer.newCheckedDisposable("ChooseAptosCliPanel.innerDisposable")
 
     init {
         Disposer.register(this, innerDisposable)
