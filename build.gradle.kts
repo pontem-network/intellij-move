@@ -4,11 +4,10 @@ import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.ByteArrayOutputStream
 import java.util.*
 
+@Suppress("USELESS_ELVIS_RIGHT_IS_NULL")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
-val publishingChannel = System.getenv("JB_PUB_CHANNEL") ?: "default"
 
 // set by default in Github Actions
 val isCI = System.getenv("CI") != null
@@ -17,51 +16,16 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
-fun propOrNull(name: String): String? = extra.properties[name] as? String
-
-fun gitCommitHash(): String {
-    val byteOut = ByteArrayOutputStream()
-    project.exec {
-        commandLine = "git rev-parse --short HEAD".split(" ")
-//            commandLine = "git rev-parse --abbrev-ref HEAD".split(" ")
-        standardOutput = byteOut
-    }
-    return String(byteOut.toByteArray()).trim().also {
-        if (it == "HEAD")
-            logger.warn("Unable to determine current branch: Project is checked out with detached head!")
-    }
-}
-
-fun gitTimestamp(): String {
-    val byteOut = ByteArrayOutputStream()
-    project.exec {
-        commandLine = "git show --no-patch --format=%at HEAD".split(" ")
-//            commandLine = "git rev-parse --abbrev-ref HEAD".split(" ")
-        standardOutput = byteOut
-    }
-    return String(byteOut.toByteArray()).trim().also {
-        if (it == "HEAD")
-            logger.warn("Unable to determine current branch: Project is checked out with detached head!")
-    }
-}
-
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.40.0"
+val codeVersion = "1.41.0"
 
-var pluginVersion = "$codeVersion.$shortPlatformVersion"
-if (publishingChannel != "default") {
-    // timestamp of the commit with this eaps addition
-    val start = 1714498465
-    val commitTimestamp = gitTimestamp().toInt() - start
-    pluginVersion = "$pluginVersion-$publishingChannel.$commitTimestamp"
-}
-
+val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 
 val kotlinReflectVersion = "2.0.21"
-val aptosVersion = "4.4.0"
+val aptosVersion = "4.5.0"
 
 group = pluginGroup
 version = pluginVersion
@@ -158,7 +122,6 @@ allprojects {
 
         publishing {
             token.set(publishingToken)
-            channels.set(listOf(publishingChannel))
         }
 
         pluginVerification {
@@ -252,6 +215,7 @@ allprojects {
         }
     }
 
+    @Suppress("unused")
     val runIdeWithPlugins by intellijPlatformTesting.runIde.registering {
         plugins {
             plugin("com.google.ide-perf:1.3.2")
@@ -329,15 +293,4 @@ fun copyDownloadedAptosBinaries(copyTask: AbstractCopyTask) {
         include("**")
     }
 }
-
-val Project.dependencyCachePath
-    get(): String {
-        val cachePath = file("${rootProject.projectDir}/deps")
-        // If cache path doesn't exist, we need to create it manually
-        // because otherwise gradle-intellij-plugin will ignore it
-        if (!cachePath.exists()) {
-            cachePath.mkdirs()
-        }
-        return cachePath.absolutePath
-    }
 

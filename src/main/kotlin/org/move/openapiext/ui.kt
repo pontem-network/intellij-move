@@ -3,21 +3,16 @@ package org.move.openapiext
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.CheckedDisposable
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts.DialogTitle
 import com.intellij.ui.DocumentAdapter
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.util.Alarm
-import org.move.lang.core.psi.MvElement
 import javax.swing.JComponent
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -48,11 +43,11 @@ class UiDebouncer(
 
 fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
-    disposable: Disposable,
+    parentDisposable: Disposable,
     @DialogTitle dialogTitle: String,
     onTextChanged: (String) -> Unit = {}
 ): TextFieldWithBrowseButton {
-    val component = TextFieldWithBrowseButton(null, disposable)
+    val component = TextFieldWithBrowseButton(null, parentDisposable)
     component.addBrowseFolderListener(
         dialogTitle, null, null,
         fileChooserDescriptor,

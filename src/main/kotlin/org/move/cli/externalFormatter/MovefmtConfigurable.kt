@@ -17,31 +17,29 @@ import org.move.cli.settings.VersionLabel
 import org.move.openapiext.pathField
 
 class MovefmtConfigurable(val project: Project): BoundConfigurable("Movefmt") {
-    private val innerDisposable =
-        Disposer.newCheckedDisposable("Internal checked disposable for MovefmtConfigurable")
-
-    private val movefmtPathField =
-        pathField(
-            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
-            innerDisposable,
-            "Movefmt location",
-            onTextChanged = { it ->
-                val path = it.toNioPathOrNull() ?: return@pathField
-                versionLabel.update(path)
-            })
-    private val versionLabel = VersionLabel(
-        innerDisposable,
-        envs = EnvironmentVariablesData.create(mapOf("MOVEFMT_LOG" to "error"), true)
-    )
-
-    private val additionalArguments: RawCommandLineEditor = RawCommandLineEditor()
-    private val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
-
-
     override fun createPanel(): DialogPanel {
+        val innerDisposable =
+            Disposer.newCheckedDisposable("MovefmtConfigurable.innerDisposable")
         this.disposable?.let {
             Disposer.register(it, innerDisposable)
         }
+
+        val versionLabel = VersionLabel(
+            innerDisposable,
+            envs = EnvironmentVariablesData.create(mapOf("MOVEFMT_LOG" to "error"), true)
+        )
+        val movefmtPathField =
+            pathField(
+                FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
+                innerDisposable,
+                "Movefmt location",
+                onTextChanged = { it ->
+                    val path = it.toNioPathOrNull() ?: return@pathField
+                    versionLabel.update(path)
+                })
+        val additionalArguments: RawCommandLineEditor = RawCommandLineEditor()
+        val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
+
         return panel {
             val settings = project.movefmtSettings
             val state = settings.state.copy()
