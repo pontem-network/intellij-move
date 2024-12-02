@@ -11,10 +11,12 @@ jobs:
         strategy:
             matrix:
                 gradle-properties-version: [ 242, 243 ]
+                platform-type: [ RR, PC ]
 
         runs-on: ubuntu-latest
         env:
             ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
+            ORG_GRADLE_PROJECT_platformType: ${{ matrix.platform-type }}
 
         steps:
             -   uses: actions/checkout@v4
