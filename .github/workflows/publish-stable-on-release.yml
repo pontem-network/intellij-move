@@ -34,6 +34,20 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
 
+            -   name: Free disk space in the runner before build
+                uses: jlumbroso/free-disk-space@main
+                with:
+                    # this might remove tools that are actually needed,
+                    # if set to "true" but frees about 6 GB
+                    tool-cache: false
+                    # all of these default to true, but feel free to set to
+                    # "false" if necessary for your workflow
+                    android: true
+                    haskell: true
+                    large-packages: false
+                    docker-images: false
+                    swap-storage: false
+
             -   name: Set up JDK 21
                 uses: actions/setup-java@v4
                 with:
