@@ -65,6 +65,8 @@ allprojects {
         // cannot be updated further, problems with underlying library
         implementation("com.github.ajalt.clikt:clikt:3.5.4")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+")
+        // required for the StringEscapeUtils
+        implementation("org.apache.commons:commons-text:1.12.0")
 
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
