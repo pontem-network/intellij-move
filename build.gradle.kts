@@ -9,9 +9,6 @@ import java.util.*
 @Suppress("USELESS_ELVIS_RIGHT_IS_NULL")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
-// set by default in Github Actions
-val isCI = System.getenv("CI") != null
-
 fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
@@ -104,8 +101,8 @@ allprojects {
         pluginConfiguration {
             version.set(pluginVersion)
             ideaVersion {
-                sinceBuild.set(prop("pluginSinceBuild"))
-                untilBuild.set(prop("pluginUntilBuild"))
+                sinceBuild.set(shortPlatformVersion)
+                untilBuild.set("$shortPlatformVersion.*")
             }
 
             val codeVersionForUrl = codeVersion.replace('.', '-')
