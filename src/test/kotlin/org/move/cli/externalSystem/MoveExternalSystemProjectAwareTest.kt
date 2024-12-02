@@ -12,6 +12,7 @@ import com.intellij.util.PathUtil
 import org.move.cli.MoveProjectsService
 import org.move.lang.core.psi.MvPath
 import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.SkipOnProduct
 import org.move.utils.tests.TestProject
 import org.move.utils.tests.waitFinished
 import java.io.IOException
@@ -33,6 +34,9 @@ class MoveExternalSystemProjectAwareTest: MvProjectTestBase() {
         AutoImportProjectTracker.enableAutoReloadInTests(testRootDisposable)
     }
 
+    // RustRover does not work due to extra call to reloadProject() after the modification of Move.toml,
+    // but works on IC, PC just fine
+    @SkipOnProduct("RustRover")
     fun `test modifications`() {
         val testProject = testProject {
             namedMoveToml("RootPackage")
@@ -146,6 +150,7 @@ compiled_package_info:
 //        testProject.checkFileRename("liquidswap_init/MyMove.toml", "Move.toml", triggered = true)
 //    }
 
+    @SkipOnProduct("RustRover")
     fun `test reloading`() {
         val testProject = testProject {
             moveToml(

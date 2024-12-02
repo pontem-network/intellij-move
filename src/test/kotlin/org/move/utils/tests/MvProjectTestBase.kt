@@ -1,5 +1,6 @@
 package org.move.utils.tests
 
+import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.registry.Registry
@@ -12,6 +13,7 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.util.SystemProperties
+import com.intellij.util.ThrowableRunnable
 import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.TestOnly
@@ -20,13 +22,30 @@ import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
+import java.lang.annotation.Inherited
 
 @TestOnly
 fun setRegistryKey(key: String, value: Boolean) = Registry.get(key).setValue(value)
 
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class SkipOnProduct(val product: String)
+
+fun MvProjectTestBase.handleSkipOnProductAnnotations() {
+    val currentProduct = ApplicationNamesInfo.getInstance().fullProductName
+    val skipOnProducts = this.findAnnotationInstances<SkipOnProduct>()
+    for (skipOn in skipOnProducts) {
+        if (skipOn.product == currentProduct) {
+            this.skipTestWithReason = "Skip on ${skipOn.product}"
+        }
+    }
+}
+
 abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
 
 //    var isProjectInitialized: Boolean = false
+    var skipTestWithReason: String? = null
 
     override fun setUp() {
         super.setUp()
@@ -35,6 +54,16 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
         this.handleMoveV2Annotation(project)
+        this.handleSkipOnProductAnnotations()
+    }
+
+    override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {
+        val reason = this.skipTestWithReason
+        if (reason != null) {
+            System.err.println("SKIP \"$name\": $reason")
+            return
+        }
+        super.runTestRunnable(testRunnable)
     }
 
 //    override fun tearDown() {

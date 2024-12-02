@@ -20,6 +20,4 @@ object MvConstants {
     const val ADDR_PLACEHOLDER = "_"
 
     const val PSI_FACTORY_DUMMY_FILE = "DUMMY_PSI_FACTORY.move"
-
-    val PROJECT_SYSTEM_ID = ProjectSystemId("Move")
 }
