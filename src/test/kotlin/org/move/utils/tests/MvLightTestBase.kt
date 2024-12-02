@@ -3,6 +3,7 @@ package org.move.utils.tests
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 abstract class MvLightTestBase: BasePlatformTestCase() {
+
     override fun setUp() {
         super.setUp()
 
@@ -12,4 +13,5 @@ abstract class MvLightTestBase: BasePlatformTestCase() {
         this.handleMoveV2Annotation(project)
         this.handleNamedAddressAnnotations(project)
     }
+
 }
