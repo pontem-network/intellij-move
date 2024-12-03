@@ -233,15 +233,6 @@ allprojects {
             copyDownloadedAptosBinaries(this)
         }
     }
-
-    task("resolveDependencies") {
-        doLast {
-            rootProject.allprojects
-                .map { it.configurations }
-                .flatMap { it.filter { c -> c.isCanBeResolved } }
-                .forEach { it.resolve() }
-        }
-    }
 }
 
 //project(":ui-tests") {
