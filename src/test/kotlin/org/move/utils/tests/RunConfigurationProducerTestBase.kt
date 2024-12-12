@@ -6,6 +6,7 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
+import org.move.cli.runConfigurations.aptos.AptosConfigurationTypeBase
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
@@ -19,8 +20,8 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
 
     protected fun checkNoConfigurationOnFsItem(fsItem: PsiFileSystemItem) {
         val configurationContext = ConfigurationContext(fsItem)
-        val configurations = configurationContext.configurationsFromContext.orEmpty()
-        check(configurations.isEmpty()) { "Found unexpected run configurations" }
+        val configurations = configurationContext.aptosConfigurationsFromContext
+        check(configurations.isEmpty()) { "Found unexpected run configurations $configurations" }
     }
 
     protected inline fun <reified T: PsiElement> checkOnElement() {
@@ -36,7 +37,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
             ?.ancestorOrSelf<T>()
             ?: error("Failed to find element of `${T::class.simpleName}` class at caret")
         val configurationContext = ConfigurationContext(element)
-        val configurations = configurationContext.configurationsFromContext.orEmpty()
+        val configurations = configurationContext.aptosConfigurationsFromContext
         check(configurations.isEmpty()) { "Found unexpected run configurations" }
     }
 
@@ -93,4 +94,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
             }
         }
     }
+
+    protected val ConfigurationContext.aptosConfigurationsFromContext get() =
+        this.configurationsFromContext.orEmpty().filter { it.configurationType is AptosConfigurationTypeBase }
 }

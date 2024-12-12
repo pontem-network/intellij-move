@@ -155,8 +155,6 @@ inline fun <T> Iterable<T>.joinToWithBuffer(
 fun <T : Any> Iterator<T>.nextOrNull(): T? =
     if (hasNext()) next() else null
 
-fun <T> MutableList<T>.removeLast(): T = removeAt(size - 1)
-
 inline fun <reified T : Enum<T>> enumSetOf(): EnumSet<T> = EnumSet.noneOf(T::class.java)
 
 typealias LookbackValue<T> = Pair<T, T?>
