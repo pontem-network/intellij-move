@@ -172,14 +172,14 @@
     <codeInsight.parameterNameHints language="Move"
                                     implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider" />
 
-<!--    <codeInsight.inlayProvider language="Move"-->
-<!--                               implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider" />-->
+    <!--    <codeInsight.inlayProvider language="Move"-->
+    <!--                               implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider" />-->
     <codeInsight.declarativeInlayProvider group="TYPES_GROUP"
                                           implementationClass="org.move.ide.hints.type.MvTypeInlayHintsProvider2"
                                           isEnabledByDefault="true"
                                           language="Move"
                                           providerId="org.move.hints.types"
-                                          nameKey="inlay.hints.types"/>
+                                          nameKey="inlay.hints.types" />
 
     <defaultLiveTemplates file="liveTemplates/Move.xml" />
     <liveTemplateContext
@@ -368,6 +368,13 @@
         implementation="org.move.ide.notifications.InvalidAptosCliConfigurationNotification" />
     <editorNotificationProvider
         implementation="org.move.ide.notifications.NoAptosProjectDetectedNotification" />
+    <!-- tool updates -->
+    <editorNotificationProvider
+        implementation="org.move.ide.notifications.AptosUpdateAvailableNotification" />
+    <editorNotificationProvider
+        implementation="org.move.ide.notifications.RevelaUpdateAvailableNotification" />
+    <editorNotificationProvider
+        implementation="org.move.ide.notifications.MovefmtUpdateAvailableNotification" />
 
     <intentionAction>
       <language>Move</language>
@@ -428,6 +435,12 @@
         default="false"
         groupKey="advanced.setting.aptos.group"
         descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
+    />
+    <advancedSetting
+        id="org.move.aptos.update.check"
+        default="false"
+        groupKey="advanced.setting.aptos.group"
+        descriptionKey="advanced.setting.org.move.aptos.update.check.description"
     />
 
   </extensions>

@@ -12,14 +12,12 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.openapiext.pathAsPath
-import org.move.openapiext.rootPath
 import org.move.openapiext.rootPluginDisposable
 import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.relativeTo
 
 // todo: this is disabled for now, it's a process which requires ReadAction, and that's why
 //  it needs to be run in the indexing phase
@@ -33,13 +31,6 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
             val bytes = file.readBytes()
             return LoadTextUtil.getTextByBinaryPresentation(bytes, file)
         }
-//        val project =
-//            ProjectLocator.getInstance().getProjectsForFile(file).firstOrNull { it?.isAptosConfigured == true }
-//                ?: ProjectManager.getInstance().defaultProject.takeIf { it.isAptosConfigured }
-//                ?: return file.readText()
-//        val targetFileDir = getDecompilerTargetFileDirOnTemp(project, file) ?: return file.readText()
-//        val targetFile = decompileFile(project, file, targetFileDir) ?: return file.readText()
-//        return LoadTextUtil.loadText(targetFile)
     }
 
     fun decompileFileToTheSameDir(aptos: Aptos, file: VirtualFile): RsResult<VirtualFile, String> {
@@ -79,15 +70,6 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
         return RsResult.Ok(decompiledFile)
     }
 
-    fun getDecompilerTargetFileDirOnTemp(project: Project, file: VirtualFile): Path? {
-        val rootDecompilerDir = decompiledArtifactsFolder()
-        val projectDecompilerDir = rootDecompilerDir.resolve(project.name)
-        val root = project.rootPath ?: return null
-        val relativeFilePath = file.parent.pathAsPath.relativeTo(root)
-        val targetFileDir = projectDecompilerDir.toPath().resolve(relativeFilePath)
-        return targetFileDir
-    }
-
     fun sourceFileName(file: VirtualFile): String {
         val fileName = file.name
         return "$fileName.move"
@@ -97,11 +79,9 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
         val fileName = file.name
         return "$fileName#decompiled.move"
     }
-
-    companion object {
-        fun decompiledArtifactsFolder() = File(FileUtil.getTempDirectory(), "intellij-move-decompiled-artifacts")
-    }
 }
+
+val DECOMPILED_ARTIFACTS_FOLDER = File(FileUtil.getTempDirectory(), "intellij-move-decompiled-artifacts")
 
 fun Project.createDisposableOnFileChange(file: VirtualFile): Disposable {
     val filePath = file.path

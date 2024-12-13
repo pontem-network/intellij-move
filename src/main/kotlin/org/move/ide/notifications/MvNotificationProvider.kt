@@ -5,11 +5,12 @@ import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.move.bytecode.AptosBytecodeDecompiler
+import org.move.bytecode.DECOMPILED_ARTIFACTS_FOLDER
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
@@ -17,7 +18,6 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import java.util.function.Function
 import javax.swing.JComponent
-import kotlin.io.relativeToOrNull
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -83,11 +83,10 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
         // skip non-physical file
         if (nioFile == null) return null
 
-        if (!enableForDecompiledFiles) {
-            // check whether file is a decompiler artifact
-            val decompiledArtifactsFolder = AptosBytecodeDecompiler.decompiledArtifactsFolder()
-            // belongs to the decompiled artifacts directory
-            if (nioFile.relativeToOrNull(decompiledArtifactsFolder) != null) return null
+        if (!enableForDecompiledFiles
+            && FileUtil.startsWith(nioFile.canonicalPath, DECOMPILED_ARTIFACTS_FOLDER.canonicalPath)
+        ) {
+            return null
         }
 
         // explicitly disabled in file
@@ -96,4 +95,10 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
         return createAptosNotificationPanel(file, project)
     }
 
+    protected fun EditorNotificationPanel.doNotShowAgainLabel(file: VirtualFile) {
+        createActionLabel("Do not show again") {
+            disableNotification(file)
+            updateAllNotifications(project)
+        }
+    }
 }
