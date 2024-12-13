@@ -47,20 +47,16 @@ class NoAptosProjectDetectedNotification(project: Project): MvAptosEditorNotific
             // no move projects available
             return EditorNotificationPanel().apply {
                 text = "No Aptos projects found"
-                createActionLabel("Do not show again") {
-                    disableNotification(file)
-                    updateAllNotifications(project)
-                }
+
+                doNotShowAgainLabel(file)
             }
         }
 
         if (moveProjectsService.findMoveProjectForFile(file) == null) {
             return EditorNotificationPanel().apply {
                 text = "File does not belong to any known Aptos project"
-                createActionLabel("Do not show again") {
-                    disableNotification(file)
-                    updateAllNotifications(project)
-                }
+
+                doNotShowAgainLabel(file)
             }
         }
 

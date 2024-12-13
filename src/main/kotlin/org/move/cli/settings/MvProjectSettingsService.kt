@@ -1,11 +1,11 @@
 package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
-import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
@@ -13,6 +13,9 @@ import org.move.bytecode.createDisposableOnFileChange
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings
 import org.move.cli.settings.aptos.AptosExecType
+import org.move.cli.update.PeriodicCheckForUpdatesService
+import org.move.ide.notifications.updateAllNotifications
+import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import java.nio.file.Path
@@ -67,6 +70,17 @@ class MvProjectSettingsService(
             val state = MoveProjectSettings()
             state.copyFrom(this)
             return state
+        }
+    }
+
+    init {
+        // load update tool check scheduler
+        if (!isUnitTestMode) {
+            if (PeriodicCheckForUpdatesService.isEnabled) {
+                // do not load in tests
+                project.service<PeriodicCheckForUpdatesService>()
+                updateAllNotifications(project)
+            }
         }
     }
 

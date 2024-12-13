@@ -3,11 +3,13 @@ package org.move.cli.runConfigurations.aptos
 import com.fasterxml.jackson.core.JacksonException
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.process.CapturingProcessHandler
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.MoveProject
@@ -15,6 +17,9 @@ import org.move.cli.MvConstants
 import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.settings.moveSettings
+import org.move.cli.update.AptosTool
+import org.move.cli.update.UpdateCheckResult
+import org.move.cli.update.UpdateCheckResult.*
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.RsResult
@@ -79,7 +84,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     fun checkProject(
         project: Project,
         linterArgs: AptosExternalLinterArgs
-    ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
+    ): RsResult<ProcessOutput, RsProcessExecutionOrDeserializationException> {
         val lintCommand = linterArgs.linter.command
         val extraArguments = ParametersListUtil.parse(linterArgs.extraArguments)
         val arguments = when (linterArgs.linter) {
@@ -175,6 +180,62 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         return executeCommandLine(commandLine)
     }
 
+    fun checkForToolUpdate(tool: AptosTool): RsResult<UpdateCheckResult, RsProcessExecutionOrDeserializationException> {
+        val commandLine =
+            AptosCommandLine(
+                subCommand = "update",
+                arguments = buildList { add(tool.id); add("--check") },
+                workingDirectory = null
+            )
+        val processOutput = executeAptosCommandLine(commandLine)
+            .unwrapOrElse { return Err(it) }
+
+        val checkResult = when (val exitStatus = processOutput.exitStatus) {
+            is AptosExitStatus.Result -> {
+                val message = exitStatus.message
+                run {
+                    when {
+                        message.startsWith("Update is available") -> {
+                            val match = APTOS_VERSION_REGEX.find(message) ?: return@run MalformedResult(message)
+                            UpdateIsAvailable(match.value)
+                        }
+                        message.startsWith("Already up to date") -> {
+                            val match = APTOS_VERSION_REGEX.find(message) ?: return@run MalformedResult(message)
+                            UpToDate(match.value)
+                        }
+                        else -> MalformedResult(message)
+                    }
+                }
+            }
+            is AptosExitStatus.Error -> UpdateError(exitStatus.message)
+            is AptosExitStatus.Malformed -> MalformedResult(exitStatus.message)
+        }
+        return Ok(checkResult)
+    }
+
+    fun doToolUpdate(tool: AptosTool, processListener: ProcessListener): AptosProcessResult<Unit> {
+        val commandLine =
+            AptosCommandLine(
+                subCommand = "update",
+                arguments = buildList { add(tool.id) },
+                workingDirectory = null
+            )
+        val yesNoListener = object: ProcessListener {
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                if (event.text.contains("Do you want to continue? [Y/n]")) {
+                    val handler = event.processHandler
+                    handler.processInput?.use { it.write("Y".toByteArray()) }
+                }
+            }
+        }
+        val compositeListener = CompositeProcessListener(yesNoListener, processListener)
+        val output = executeAptosCommandLine(commandLine, listener = compositeListener)
+            .unwrapOrElse {
+                return Err(it)
+            }
+        return Ok(output)
+    }
+
     private fun executeCommandLine(
         commandLine: AptosCommandLine,
         colored: Boolean = false,
@@ -231,3 +292,5 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 
 
 val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath
+
+val APTOS_VERSION_REGEX = Regex("""\d+.\d+.\d""")

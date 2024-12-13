@@ -162,7 +162,8 @@ private fun GeneralCommandLine.showCommandLineBalloon(processOutput: ProcessOutp
         else -> {
             showBalloonWithoutProject(
                 "Execution successful",
-                "<code>$command</code> $atWorkDir",
+                        "<p>stdout=${processOutput.stdout}</p>" +
+                        "<p>stderr=${processOutput.stderr}</p>",
                 INFORMATION
             )
         }
