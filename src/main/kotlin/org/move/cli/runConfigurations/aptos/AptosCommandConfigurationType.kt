@@ -8,13 +8,12 @@ import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
 import org.move.ide.MoveIcons
 
 class AptosCommandConfigurationType:
-    ConfigurationTypeBase(
+    AptosConfigurationTypeBase(
         "AptosCommandConfiguration",
         "Aptos",
         "Aptos command execution",
-        NotNullLazyValue.createConstantValue(MoveIcons.APTOS_LOGO)
+        MoveIcons.APTOS_LOGO
     ) {
-
         init {
             addFactory(AptosCommandConfigurationFactory(this))
         }

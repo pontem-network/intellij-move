@@ -8,11 +8,11 @@ import org.move.cli.runConfigurations.aptos.view.ViewCommandConfigurationFactory
 import org.move.ide.MoveIcons
 
 class AptosTransactionConfigurationType :
-    ConfigurationTypeBase(
+    AptosConfigurationTypeBase(
         "AptosTransactionConfiguration",
         "Aptos Transaction",
         "Aptos transaction execution",
-        NotNullLazyValue.createConstantValue(MoveIcons.APTOS_LOGO)
+        MoveIcons.APTOS_LOGO
     ) {
 
     init {
