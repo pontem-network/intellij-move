@@ -33,6 +33,6 @@ sealed class AptosExitStatus(val message: String) {
     }
 }
 
-private val JSON_MAPPER: ObjectMapper = ObjectMapper()
+val JSON_MAPPER: ObjectMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .registerKotlinModule()

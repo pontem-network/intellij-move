@@ -1,24 +1,37 @@
-package org.move.ide.annotator
+package org.move.ide.annotator.externalLinter
 
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiFile
+import com.intellij.util.PathUtil
 import org.jetbrains.annotations.TestOnly
+import org.move.stdext.capitalized
 
-data class AptosCompilerMessage(
-    val text: String,
+data class AptosCompilerError(
+    val message: String,
     val severityLevel: String,
-    val spans: List<AptosCompilerSpan>
+    val primarySpan: CompilerSpan,
 ) {
-    val mainSpan: AptosCompilerSpan?
-        get() {
-            val validSpan = spans.filter { it.isValid() }.firstOrNull { it.isPrimary } ?: return null
-            return validSpan
-//            return generateSequence(validSpan) { it.expansion?.span }.last()
-//                .takeIf { it.isValid() && !it.file_name.startsWith("<") }
-        }
-
     fun toTestString(): String {
-        return "$severityLevel: '$text' at ${mainSpan?.toTestString()}"
+        return "$severityLevel: '$message' at ${primarySpan.toTestString()}"
+    }
+
+    fun toJsonError(file: PsiFile, document: Document): AptosJsonCompilerError? {
+        // Some error messages are global, and we *could* show then atop of the editor,
+        // but they look rather ugly, so just skip them.
+        val errorSpan = this.primarySpan
+        val spanFilePath = PathUtil.toSystemIndependentName(errorSpan.filename)
+        if (!file.virtualFile.path.endsWith(spanFilePath)) return null
+
+        val codeLabel = this.primarySpan.toCodeLabel(document) ?: return null
+        val jsonCompilerError = AptosJsonCompilerError(
+            severity = this.severityLevel.capitalized(),
+            code = null,
+            message = this.message,
+            labels = listOf(codeLabel),
+            notes = listOf()
+        )
+        return jsonCompilerError
     }
 
     companion object {
@@ -28,39 +41,43 @@ data class AptosCompilerMessage(
             severityLevel: String,
             filename: String,
             location: String,
-        ): AptosCompilerMessage {
+        ): AptosCompilerError {
             val match =
                 Regex("""\[\((?<lineStart>\d+), (?<columnStart>\d+)\), \((?<lineEnd>\d+), (?<columnEnd>\d+)\)]""")
                     .find(location) ?: error("invalid string")
             val (lineStart, colStart, lineEnd, colEnd) = match.destructured
-            val span = AptosCompilerSpan(
+            val span = CompilerSpan(
                 filename,
                 lineStart.toInt(),
                 lineEnd.toInt(),
                 colStart.toInt(),
                 colEnd.toInt(),
-                true,
                 null
             )
-            return AptosCompilerMessage(message, severityLevel, listOf(span))
+            return AptosCompilerError(message, severityLevel, span)
         }
     }
 }
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/syntax/json/struct.DiagnosticSpan.html
-data class AptosCompilerSpan(
+data class CompilerSpan(
     val filename: String,
     val lineStart: Int,
     val lineEnd: Int,
     val columnStart: Int,
     val columnEnd: Int,
-    val isPrimary: Boolean,
-//    val text: List<String>,
     val label: String?,
-//    val suggested_replacement: String?,
-//    val suggestion_applicability: Applicability?,
-//    val expansion: Expansion?
 ) {
+    fun toCodeLabel(document: Document): CodeLabel? {
+        val textRange = this.toTextRange(document) ?: return null
+        return CodeLabel(
+            "Primary",
+            filename,
+            CodeRange(textRange.startOffset, textRange.endOffset),
+            ""
+        )
+    }
+
     fun toTextRange(document: Document): TextRange? {
         val startOffset = toOffset(document, lineStart, columnStart)
         val endOffset = toOffset(document, lineEnd, columnEnd)

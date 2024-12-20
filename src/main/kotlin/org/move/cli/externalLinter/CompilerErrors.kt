@@ -1,12 +1,12 @@
 package org.move.cli.externalLinter
 
-import org.move.ide.annotator.AptosCompilerMessage
-import org.move.ide.annotator.AptosCompilerSpan
+import org.move.ide.annotator.externalLinter.AptosCompilerError
+import org.move.ide.annotator.externalLinter.CompilerSpan
 
-fun parseCompilerErrors(outputLines: List<String>): List<AptosCompilerMessage> {
+fun parseHumanCompilerErrors(outputLines: List<String>): List<AptosCompilerError> {
     val rawMessages = splitMessages(outputLines)
-    val messages = rawMessages.map(::rawMessageToCompilerMessage)
-    return messages
+    val compilerErrors = rawMessages.mapNotNull(::rawMessageToCompilerMessage)
+    return compilerErrors
 }
 
 private val ERROR_START_RE = Regex("^error(\\[E\\d+\\])?:\\s+(.+)")
@@ -42,16 +42,15 @@ private fun splitMessages(outputLines: List<String>): List<RawMessage> {
     return rawMessages
 }
 
-private fun rawMessageToCompilerMessage(rawMessage: RawMessage): AptosCompilerMessage {
+private fun rawMessageToCompilerMessage(rawMessage: RawMessage): AptosCompilerError? {
     val messageLine = rawMessage.lines.first()
     val message = when (rawMessage.errorType) {
         ErrorType.ERROR -> ERROR_START_RE.find(messageLine)!!.destructured.component2()
         ErrorType.WARNING -> messageLine.substringAfter("warning: ")
         ErrorType.WARNING_LINT -> messageLine.substringAfter("warning: [lint] ")
     }
-//    val (_, message) = ERROR_START_RE.find(messageLine)!!.destructured
-    val spans = splitSpans(rawMessage.lines)
-    return AptosCompilerMessage(message, rawMessage.errorType.severityLevel, spans)
+    val primarySpan = parsePrimarySpan(rawMessage.lines) ?: return null
+    return AptosCompilerError(message, rawMessage.errorType.severityLevel, primarySpan)
 }
 
 private val FILE_POSITION_RE =
@@ -59,23 +58,21 @@ private val FILE_POSITION_RE =
 private val ERROR_UNDERLINE_RE =
     Regex("""^\s*│[^\^]*(\^{2,})""")
 
-private fun splitSpans(errorLines: List<String>): List<AptosCompilerSpan> {
+private fun parsePrimarySpan(errorLines: List<String>): CompilerSpan? {
     val filePositionMatch =
-        errorLines.firstNotNullOfOrNull { FILE_POSITION_RE.find(it) } ?: return emptyList()
-    val (fileName, lineStart, columnStart) = filePositionMatch.destructured
+        errorLines.firstNotNullOfOrNull { FILE_POSITION_RE.find(it) } ?: return null
+    val (fpath, lineStart, columnStart) = filePositionMatch.destructured
+
     val columnSpan = errorLines
         .firstNotNullOfOrNull { ERROR_UNDERLINE_RE.find(it) }
         ?.groupValues?.get(1)
         ?.length ?: 1
-    return listOf(
-        AptosCompilerSpan(
-            fileName,
-            lineStart = lineStart.toInt(),
-            lineEnd = lineStart.toInt(),
-            columnStart = columnStart.toInt(),
-            columnEnd = columnStart.toInt() + columnSpan,
-            isPrimary = true,
-            label = null
-        )
+    return CompilerSpan(
+        fpath,
+        lineStart = lineStart.toInt(),
+        lineEnd = lineStart.toInt(),
+        columnStart = columnStart.toInt(),
+        columnEnd = columnStart.toInt() + columnSpan,
+        label = null
     )
 }

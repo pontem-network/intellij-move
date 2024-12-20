@@ -8,8 +8,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.common.runAll
 import com.intellij.util.ThrowableRunnable
 import com.intellij.util.ui.UIUtil
+import org.move.cli.settings.aptos.AptosExecType
+import org.move.cli.settings.moveSettings
+import java.nio.file.Path
 
-abstract class WithAptosCliTestBase: MvProjectTestBase() {
+abstract class WithAptosCliTestBase(val localAptosPath: Path? = null): MvProjectTestBase() {
 
     protected lateinit var rustupFixture: AptosCliTestFixture
 
@@ -53,6 +56,13 @@ abstract class WithAptosCliTestBase: MvProjectTestBase() {
 
     override fun setUp() {
         super.setUp()
+
+        if (localAptosPath != null) {
+            project.moveSettings.modifyTemporary(testRootDisposable) {
+                it.aptosExecType = AptosExecType.LOCAL
+                it.localAptosPath = localAptosPath.toString()            }
+        }
+
         rustupFixture = AptosCliTestFixture(project)
         rustupFixture.setUp()
     }

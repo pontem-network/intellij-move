@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.ide.annotator
+package org.move.ide.annotator.externalLinter
 
 import com.intellij.codeHighlighting.DirtyScopeTrackingHighlightingPassFactory
 import com.intellij.codeHighlighting.TextEditorHighlightingPass

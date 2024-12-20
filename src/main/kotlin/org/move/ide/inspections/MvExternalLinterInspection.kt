@@ -25,10 +25,10 @@ import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
 import org.move.cli.runConfigurations.aptos.workingDirectory
 import org.move.cli.settings.getAptosCli
-import org.move.ide.annotator.RsExternalLinterResult
-import org.move.ide.annotator.RsExternalLinterUtils
-import org.move.ide.annotator.addHighlightsForFile
-import org.move.ide.annotator.createDisposableOnAnyPsiChange
+import org.move.ide.annotator.externalLinter.RsExternalLinterResult
+import org.move.ide.annotator.externalLinter.RsExternalLinterUtils
+import org.move.ide.annotator.externalLinter.addHighlightsForFile
+import org.move.ide.annotator.externalLinter.createDisposableOnAnyPsiChange
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.moveProject
