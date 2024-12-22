@@ -6,12 +6,12 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.intellij.openapi.util.TextRange
 import org.move.cli.runConfigurations.aptos.JSON_MAPPER
 
-fun parseJsonCompilerErrors(outputLines: List<String>): List<AptosJsonCompilerError> {
+fun parseJsonCompilerErrors(outputLines: List<String>): List<JsonAptosCompilerError> {
     return outputLines
-        .mapNotNull { AptosJsonCompilerError.fromLine(it) }
+        .mapNotNull { JsonAptosCompilerError.fromLine(it) }
 }
 
-data class AptosJsonCompilerError(
+data class JsonAptosCompilerError(
     val severity: String,
     val code: String?,
     val message: String,
@@ -23,11 +23,11 @@ data class AptosJsonCompilerError(
                 "at ${labels.find { it.style == "Primary" }?.range?.toTextRange()}"
 
     companion object {
-        fun fromLine(line: String): AptosJsonCompilerError? {
+        fun fromLine(line: String): JsonAptosCompilerError? {
             if (!line.startsWith("{\"")) return null
             try {
                 val compilerMessage =
-                    JSON_MAPPER.readValue(line, AptosJsonCompilerError::class.java)
+                    JSON_MAPPER.readValue(line, JsonAptosCompilerError::class.java)
                 return compilerMessage
             } catch (_: JsonProcessingException) {
                 return null

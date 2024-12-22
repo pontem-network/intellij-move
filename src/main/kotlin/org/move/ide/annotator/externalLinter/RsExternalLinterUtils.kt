@@ -6,6 +6,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -26,11 +27,10 @@ import org.apache.commons.text.StringEscapeUtils
 import org.jetbrains.annotations.Nls
 import org.move.cli.externalLinter.RsExternalLinterWidget
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.externalLinter.parseHumanCompilerErrors
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
 import org.move.cli.runConfigurations.aptos.isCompilerJsonOutputEnabled
-import org.move.ide.annotator.externalLinter.RsExternalLinterFilteredMessage.Companion.filterJsonMessage
+import org.move.ide.annotator.externalLinter.RsExternalLinterFilteredMessage.Companion.filterMessage
 import org.move.ide.annotator.externalLinter.RsExternalLinterUtils.APTOS_TEST_MESSAGE
 import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.MoveFile
@@ -189,7 +189,7 @@ fun MutableList<HighlightInfo>.addHighlightsForFile(
             annotationResult.humanCompilerErrors
                 .mapNotNull { it.toJsonError(file, document) }
         }
-            .mapNotNull { filterJsonMessage(file, it, skipIdeErrors) }
+            .mapNotNull { filterMessage(file, it, skipIdeErrors) }
             .distinct()
 
     for (compilerError in compilerErrors) {
@@ -219,8 +219,8 @@ class RsExternalLinterResult(
     val outputLines: List<String>,
     val executionTime: Long
 ) {
-    val humanCompilerErrors: List<AptosCompilerError> get() = parseHumanCompilerErrors(outputLines)
-    val jsonCompilerErrors: List<AptosJsonCompilerError> get() = parseJsonCompilerErrors(outputLines)
+    val humanCompilerErrors: List<HumanAptosCompilerError> get() = parseHumanCompilerErrors(outputLines)
+    val jsonCompilerErrors: List<JsonAptosCompilerError> get() = parseJsonCompilerErrors(outputLines)
 }
 
 private data class RsExternalLinterFilteredMessage(
@@ -232,95 +232,9 @@ private data class RsExternalLinterFilteredMessage(
     companion object {
         private val LOG = logger<RsExternalLinterFilteredMessage>()
 
-//        fun filterMessage(
-//            file: PsiFile,
-//            document: Document,
-//            compilerError: AptosCompilerError,
-//            skipErrorsKnownToIde: Boolean,
-//        ): RsExternalLinterFilteredMessage? {
-//            // Some error messages are global, and we *could* show then atop of the editor,
-//            // but they look rather ugly, so just skip them.
-//            val errorSpan = compilerError.primarySpan
-//            val spanFilePath = PathUtil.toSystemIndependentName(errorSpan.filename)
-//            if (!file.virtualFile.path.endsWith(spanFilePath)) return null
-//
-////            val codeLabel = compilerError.primarySpan.toCodeLabel(document) ?: return null
-////            val jsonCompilerError = AptosJsonCompilerError(
-////                severity = compilerError.severityLevel.capitalized(),
-////                code = null,
-////                message = compilerError.message,
-////                labels = listOf(codeLabel),
-////                notes = listOf()
-////            )
-//
-//            val severity = when (compilerError.severityLevel) {
-//                "error" -> HighlightSeverity.ERROR
-//                "warning" -> HighlightSeverity.WEAK_WARNING
-//                "warning [lint]" -> HighlightSeverity.WEAK_WARNING
-//                else -> HighlightSeverity.INFORMATION
-//            }
-//            // drop syntax errors
-//            val syntaxErrors = listOf("unexpected token")
-////            val syntaxErrors = listOf("expected pattern", "unexpected token")
-//            if (syntaxErrors.any { it in errorSpan.label.orEmpty() || it in compilerError.message }) {
-//                return null
-//            }
-//
-//            if (skipErrorsKnownToIde) {
-//                val errorsToIgnore = listOf(
-//                    // name resolution errors
-//                    "unbound variable", "undeclared",
-//                    // type errors
-//                    "incompatible types", "which expects a value of type", "which expects argument of type",
-//                    // too many arguments
-//                    "too many arguments", "the function takes",
-//                    // missing fields
-//                    "too few arguments", "missing fields",
-//                    // unused imports
-//                    "unused alias",
-//                )
-//                if (errorsToIgnore.any { it in compilerError.message }) {
-//                    LOG.logOrShowBalloon("ignore external linter error", compilerError.toTestString())
-//                    return null
-//                }
-//            }
-//
-//            val textRange = errorSpan.toTextRange(document) ?: return null
-//
-//            val tooltip = buildString {
-//                append(formatMessage(StringEscapeUtils.escapeHtml4(compilerError.message)).escapeUrls())
-////                val code = message.code.formatAsLink()
-////                if (code != null) {
-////                    append(" [$code]")
-////                }
-//
-//                with(mutableListOf<String>()) {
-//                    if (errorSpan.label != null && !compilerError.message.startsWith(errorSpan.label)) {
-//                        add(StringEscapeUtils.escapeHtml4(errorSpan.label))
-//                    }
-//
-////                    message.children
-////                        .filter { it.message.isNotBlank() }
-////                        .map { "${it.level.capitalized()}: ${StringEscapeUtils.escapeHtml4(it.message)}" }
-////                        .forEach { add(it) }
-//
-//                    append(joinToString(prefix = "<br>", separator = "<br>") { formatMessage(it) }.escapeUrls())
-//                }
-//            }
-//
-//            return RsExternalLinterFilteredMessage(
-//                severity,
-//                textRange,
-//                compilerError.message.capitalized(),
-//                tooltip,
-////                message.code?.code?.let { RsLint.ExternalLinterLint(it) },
-////                message.collectQuickFixes(file, document)
-//            )
-//        }
-
-        fun filterJsonMessage(
+        fun filterMessage(
             file: PsiFile,
-            compilerError: AptosJsonCompilerError,
+            compilerError: JsonAptosCompilerError,
             skipErrorsKnownToIde: Boolean,
         ): RsExternalLinterFilteredMessage? {
             val highlightSeverity = when (compilerError.severity) {
@@ -362,11 +276,6 @@ private data class RsExternalLinterFilteredMessage(
 
             val tooltip = buildString {
                 append(formatMessage(StringEscapeUtils.escapeHtml4(compilerError.message)).escapeUrls())
-//                val code = message.code.formatAsLink()
-//                if (code != null) {
-//                    append(" [$code]")
-//                }
-
                 with(mutableListOf<String>()) {
 //                    if (span.label != null && !compilerError.text.startsWith(span.label)) {
 //                        add(StringEscapeUtils.escapeHtml4(span.label))
