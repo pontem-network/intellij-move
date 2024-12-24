@@ -305,6 +305,10 @@
                      displayName="Convert to compound expr"
                      enabledByDefault="true" level="WEAK WARNING"
                      implementationClass="org.move.ide.inspections.compilerV2.MvReplaceWithCompoundAssignmentInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Needless pair of `*` and `&amp;` operators"
+                     enabledByDefault="true" level="WEAK WARNING"
+                     implementationClass="org.move.ide.inspections.MvRedundantRefDerefInspection" />
 
     <!--  cannot be run on-the-fly, therefore enabled  -->
     <globalInspection language="Move" groupName="Move"
