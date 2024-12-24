@@ -176,6 +176,11 @@ class MvPsiFactory(val project: Project) {
             ?: error("`$text`")
     }
 
+    fun attribute(attrText: String): MvAttr {
+        return createFromText("$attrText module 0x0::_DummyModule {} ")
+            ?: error("Invalid attribute `$attrText`")
+    }
+
     fun function(text: String, moduleName: String = "_Dummy"): MvFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
@@ -199,10 +204,9 @@ class MvPsiFactory(val project: Project) {
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
 
-    fun createWhitespace(ws: String): PsiElement =
-        PsiParserFacade.getInstance(project).createWhiteSpaceFromText(ws)
+    fun createWhitespace(ws: String): PsiElement = PsiParserFacade.getInstance(project).createWhiteSpaceFromText(ws)
 
-    fun createNewline(): PsiElement = createWhitespace("\n")
+    fun newline(): PsiElement = createWhitespace("\n")
 
     inline fun <reified T: MvElement> createFromText(@Language("Move") code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)

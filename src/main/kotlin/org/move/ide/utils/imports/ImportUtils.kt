@@ -1,6 +1,5 @@
 package org.move.ide.utils.imports
 
-import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -159,7 +158,7 @@ private val <T: MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.text
 @Suppress("SameReturnValue")
 private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseStmt): Boolean {
     val psiFactory = MvPsiFactory(mod.project)
-    val newline = psiFactory.createNewline()
+    val newline = psiFactory.newline()
     val useStmts = mod.childrenOfType<MvUseStmt>().map(::UseStmtWrapper)
     if (useStmts.isEmpty()) {
         val anchor = mod.firstItem

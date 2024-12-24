@@ -4,6 +4,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.annotations.NonNls
 import org.move.lang.core.psi.MvBorrowExpr
 import org.move.lang.core.psi.MvDerefExpr
 import org.move.lang.core.psi.MvExpr
@@ -11,13 +12,16 @@ import org.move.lang.core.psi.MvParensExpr
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.unwrap
 
-class MvRedundantRefDerefInspection: MvLocalInspectionTool() {
+class MvNeedlessDerefRefInspection: MvLocalInspectionTool() {
+    override fun getID(): @NonNls String = LINT_ID
+
     override fun buildMvVisitor(
         holder: ProblemsHolder,
         isOnTheFly: Boolean
     ): MvVisitor = object: MvVisitor() {
 
         override fun visitDerefExpr(o: MvDerefExpr) {
+            val a = 1
             val innerExpr = o.innerExpr
             if (innerExpr is MvBorrowExpr) {
                 if (innerExpr.expr == null) return
@@ -40,6 +44,10 @@ class MvRedundantRefDerefInspection: MvLocalInspectionTool() {
             val itemExpr = borrowExpr.expr ?: return
             element.replace(itemExpr)
         }
+    }
+
+    companion object {
+        const val LINT_ID = "needless_deref_ref"
     }
 }
 

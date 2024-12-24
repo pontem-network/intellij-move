@@ -12,7 +12,7 @@ import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveFileType
 import org.move.lang.MoveLanguage
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MOVE_COMMENTS
+import org.move.lang.core.MV_COMMENTS
 import java.util.*
 
 private class MvPairedBraceMatcher : PairedBraceMatcher {
@@ -32,7 +32,7 @@ private class MvPairedBraceMatcher : PairedBraceMatcher {
         )
 
         private val InsertPairBraceBefore = TokenSet.orSet(
-            MOVE_COMMENTS,
+            MV_COMMENTS,
             TokenSet.create(
                 TokenType.WHITE_SPACE,
                 SEMICOLON,
@@ -144,7 +144,7 @@ class MvBraceMatcher : PairedBraceMatcherAdapter(MvPairedBraceMatcher(), MoveLan
         private val OPEN_BRACES = TokenSet.create(LT, L_PAREN, L_BRACE, L_BRACK)
 
         val TYPE_PARAMETER_TOKENS = TokenSet.orSet(
-            MOVE_COMMENTS,
+            MV_COMMENTS,
             TokenSet.create(
                 TokenType.WHITE_SPACE,
                 IDENTIFIER,
