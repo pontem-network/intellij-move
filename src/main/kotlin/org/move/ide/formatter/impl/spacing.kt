@@ -14,7 +14,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MvFmtContext
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MOVE_COMMENTS
+import org.move.lang.core.MV_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock
 import org.move.lang.core.psi.MvModule
@@ -219,7 +219,7 @@ private fun ASTNode?.isWhiteSpaceWithLineBreak(): Boolean =
     this != null && elementType == TokenType.WHITE_SPACE && textContains('\n')
 
 private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
-    if (elementType1 in MOVE_COMMENTS || elementType2 in MOVE_COMMENTS)
+    if (elementType1 in MV_COMMENTS || elementType2 in MV_COMMENTS)
         return false
 
     // Allow to keep consecutive runs of `use`, `const` or other "one line" items without blank lines

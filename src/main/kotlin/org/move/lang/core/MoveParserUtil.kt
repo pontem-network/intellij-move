@@ -163,7 +163,7 @@ object MoveParserUtil: GeneratedParserUtilBase() {
     @JvmStatic
     private fun consumeStopOnWhitespaceOrComment(b: PsiBuilder, tokens: TokenSet): Boolean {
         val nextTokenType = b.rawLookup(1)
-        if (nextTokenType in MOVE_COMMENTS || nextTokenType == WHITE_SPACE) {
+        if (nextTokenType in MV_COMMENTS || nextTokenType == WHITE_SPACE) {
             consumeToken(b, tokens)
             return false
         }

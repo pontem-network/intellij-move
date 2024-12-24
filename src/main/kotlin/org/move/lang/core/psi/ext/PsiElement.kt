@@ -171,6 +171,9 @@ inline fun <reified T: PsiElement> PsiElement.ancestorStrict(stopAt: Class<out P
 inline fun <reified T: PsiElement> PsiElement.ancestorOrSelf(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false)
 
+inline fun <reified T: PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
+    PsiTreeUtil.getParentOfType(this, T::class.java, false, stopAt)
+
 fun <T: PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
     PsiTreeUtil.getParentOfType(this, psiClass, strict)
 
@@ -179,9 +182,6 @@ inline fun <reified T: PsiElement> PsiElement.hasAncestor(): Boolean =
 
 inline fun <reified T: PsiElement> PsiElement.hasAncestorOrSelf(): Boolean =
     ancestorOrSelf<T>() != null
-
-inline fun <reified T: PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
-    PsiTreeUtil.getParentOfType(this, T::class.java, false, stopAt)
 
 inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
     PsiTreeUtil.getStubOrPsiParentOfType(this, T::class.java)

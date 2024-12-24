@@ -105,11 +105,11 @@ class MvImportOptimizer : ImportOptimizer {
             .sorted()
         for ((useWrapper, nextUseWrapper) in sortedUses.withNext()) {
             val addedUseItem = itemsOwner.addBefore(useWrapper.useStmt, firstItem)
-            itemsOwner.addAfter(psiFactory.createNewline(), addedUseItem)
+            itemsOwner.addAfter(psiFactory.newline(), addedUseItem)
             val addNewLine =
                 useWrapper.packageGroupLevel != nextUseWrapper?.packageGroupLevel
             if (addNewLine) {
-                itemsOwner.addAfter(psiFactory.createNewline(), addedUseItem)
+                itemsOwner.addAfter(psiFactory.newline(), addedUseItem)
             }
         }
         useStmts.forEach {

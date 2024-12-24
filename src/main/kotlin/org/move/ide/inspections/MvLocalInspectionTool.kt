@@ -50,7 +50,7 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
 
 abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiElement(element) {
 
-    val targetElement: T? get() = this.startElement
+    protected val targetElement: T? get() = this.startElement
 
     override fun getStartElement(): T? {
         @Suppress("UNCHECKED_CAST")

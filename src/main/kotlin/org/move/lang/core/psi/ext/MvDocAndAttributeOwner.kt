@@ -66,6 +66,9 @@ class QueryAttributes(
     fun getAttrItem(attributeName: String): MvAttrItem? =
         this.attrItems.find { it.unqualifiedName == attributeName }
 
+    fun getAttrItemsByPath(fqPath: String): Sequence<MvAttrItem> =
+        this.attrItems.filter { it.path.text == fqPath }
+
     val attrItems: Sequence<MvAttrItem> get() = this.attributes.flatMap { it.attrItemList }
 
     override fun toString(): String =
