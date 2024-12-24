@@ -42,6 +42,11 @@ annotation class MoveV2(val enabled: Boolean = true)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class NamedAddress(val name: String, val value: String)
 
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WithAdvancedSetting(val id: String, val value: Boolean)
+
 fun UsefulTestCase.handleMoveV2Annotation(project: Project) {
     val enableMoveV2 = this.findAnnotationInstance<MoveV2>()?.enabled
     if (enableMoveV2 != null) {

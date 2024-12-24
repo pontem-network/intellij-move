@@ -1,6 +1,7 @@
 package org.move.utils.tests
 
 import com.intellij.openapi.application.ApplicationNamesInfo
+import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.registry.Registry
@@ -44,7 +45,7 @@ fun MvProjectTestBase.handleSkipOnProductAnnotations() {
 
 abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
 
-//    var isProjectInitialized: Boolean = false
+    //    var isProjectInitialized: Boolean = false
     var skipTestWithReason: String? = null
 
     override fun setUp() {
@@ -53,8 +54,25 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
+        val withAdvancedSettings = this.findAnnotationInstances<WithAdvancedSetting>()
+        for (withAdvancedSetting in withAdvancedSettings) {
+            // todo: could be done in generic way to support every type
+            AdvancedSettings.setBoolean(withAdvancedSetting.id, withAdvancedSetting.value)
+        }
+
         this.handleMoveV2Annotation(project)
         this.handleSkipOnProductAnnotations()
+    }
+
+    override fun tearDown() {
+        val withAdvancedSettings = this.findAnnotationInstances<WithAdvancedSetting>()
+        for (withAdvancedSetting in withAdvancedSettings) {
+            AdvancedSettings.setBoolean(
+                withAdvancedSetting.id,
+                AdvancedSettings.getDefaultBoolean(withAdvancedSetting.id)
+            )
+        }
+        super.tearDown()
     }
 
     override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {

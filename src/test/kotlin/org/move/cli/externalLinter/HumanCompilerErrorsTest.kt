@@ -1,9 +1,10 @@
 package org.move.cli.externalLinter
 
-import org.move.ide.annotator.AptosCompilerMessage
+import org.move.ide.annotator.externalLinter.HumanAptosCompilerError
+import org.move.ide.annotator.externalLinter.parseHumanCompilerErrors
 import org.move.utils.tests.MvTestBase
 
-class CompilerErrorsTest: MvTestBase() {
+class HumanCompilerErrorsTest: MvTestBase() {
     fun `test parse compiler output no errors`() = doTest(
         """
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
@@ -40,7 +41,7 @@ error: no function named `match` found
   "Error": "Move compilation failed: exiting with checking errors"
 }        
     """, listOf(
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 message = "no function named `match` found",
                 severityLevel = "error",
                 filename = "/home/mkurnikov/main/sources/main.move",
@@ -70,7 +71,7 @@ error: missing acquires annotation for `S`
 "Error": "Move compilation failed: exiting with checking errors"
 }
     """, listOf(
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 "/home/mkurnikov/main/sources/main.move",
@@ -108,13 +109,13 @@ error: missing acquires annotation for `S`
   "Error": "Move compilation failed: exiting with checking errors"
 }        
     """, listOf(
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 filename = "/home/mkurnikov/main/sources/main.move",
                 location = "[(8, 9), (8, 13)]"
             ),
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 filename = "/home/mkurnikov/main/sources/main2.move",
@@ -140,7 +141,7 @@ error[E04007]: incompatible types
   │         Found: 'u8'. It is not compatible with the other type.
 }        
     """, listOf(
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 message = "incompatible types",
                 severityLevel = "error",
                 filename = "/home/mkurnikov/main/sources/main2.move",
@@ -164,7 +165,7 @@ error[E04007]: incompatible types
   "Error": "Move compilation failed: Compilation error"
 }
     """, listOf(
-            AptosCompilerMessage.forTest(
+            HumanAptosCompilerError.forTest(
                 message = "incompatible types",
                 severityLevel = "error",
                 filename = "/tmp/main/sources/main.move",
@@ -195,7 +196,7 @@ error[E05001]: ability constraint not satisfied
   "Error": "Move compilation failed: Compilation error"
 }
     """, listOf(
-        AptosCompilerMessage.forTest(
+        HumanAptosCompilerError.forTest(
             message = "ability constraint not satisfied",
             severityLevel = "error",
             filename = "/tmp/main/sources/main.move",
@@ -222,7 +223,7 @@ error: value of type `main2::S` does not have the `drop` ability
   "Error": "Move compilation failed: exiting with stackless-bytecode analysis errors"
 }
     """, listOf(
-        AptosCompilerMessage.forTest(
+        HumanAptosCompilerError.forTest(
             message = "value of type `main2::S` does not have the `drop` ability",
             severityLevel = "error",
             filename = "/tmp/main/sources/main2.move",
@@ -249,7 +250,7 @@ error: the function takes 0 arguments but 2 were provided
   "Error": "Move compilation failed: exiting with checking errors"
 }
     """, listOf(
-        AptosCompilerMessage.forTest(
+        HumanAptosCompilerError.forTest(
             message = "the function takes 0 arguments but 2 were provided",
             severityLevel = "error",
             filename = "/home/mkurnikov/code/move-test-location-example/sources/main2.move",
@@ -258,8 +259,8 @@ error: the function takes 0 arguments but 2 were provided
     )
     )
 
-    private fun doTest(compilerOutput: String, expectedMessages: List<AptosCompilerMessage>) {
-        val messages = parseCompilerErrors(compilerOutput.trimIndent().lines())
+    private fun doTest(compilerOutput: String, expectedMessages: List<HumanAptosCompilerError>) {
+        val messages = parseHumanCompilerErrors(compilerOutput.trimIndent().lines())
 
         val messageTestStrings = messages.map { it.toTestString() }
         val expectedTestStrings = expectedMessages.map { it.toTestString() }

@@ -6,6 +6,7 @@ import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -91,6 +92,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                         && "--skip-fetch-latest-git-deps" !in extraArguments
                     ) {
                         add("--skip-fetch-latest-git-deps")
+                    }
+                    if (project.isCompilerJsonOutputEnabled) {
+                        add("--experiments"); add("compiler-message-format-json")
                     }
                 }
             }
@@ -223,11 +227,17 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
             if (settings.skipFetchLatestGitDeps && "--skip-fetch-latest-git-deps" !in extraArguments) {
                 add("--skip-fetch-latest-git-deps")
             }
+            if (project.isCompilerJsonOutputEnabled) {
+                add("--experiments"); add("compiler-message-format-json")
+            }
         }
     }
 
     override fun dispose() {}
 }
 
+val Project.isCompilerJsonOutputEnabled
+    get() = this.moveSettings.enableMove2
+            && AdvancedSettings.getBoolean("org.move.aptos.compile.message.json")
 
 val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath

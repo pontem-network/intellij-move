@@ -8,6 +8,7 @@ package org.move.ide.annotator
 import com.intellij.codeHighlighting.TextEditorHighlightingPassFactoryRegistrar
 import com.intellij.codeHighlighting.TextEditorHighlightingPassRegistrar
 import com.intellij.openapi.project.Project
+import org.move.ide.annotator.externalLinter.RsExternalLinterPassFactory
 
 class RsHighlightingPassFactoryRegistrar : TextEditorHighlightingPassFactoryRegistrar {
     override fun registerHighlightingPassFactory(registrar: TextEditorHighlightingPassRegistrar, project: Project) {

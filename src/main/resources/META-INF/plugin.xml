@@ -429,6 +429,12 @@
         groupKey="advanced.setting.aptos.group"
         descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
     />
+    <advancedSetting
+        id="org.move.aptos.compile.message.json"
+        default="false"
+        groupKey="advanced.setting.aptos.group"
+        descriptionKey="advanced.setting.org.move.aptos.compile.message.json.description"
+    />
 
   </extensions>
 
