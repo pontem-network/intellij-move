@@ -31,7 +31,7 @@ class Movefmt(val cliLocation: Path, val parentDisposable: Disposable): Disposab
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress() }
     ): RsProcessResult<ProcessOutput> {
         val commandLine = MvCommandLine(
-            buildList {
+            arguments = buildList {
                 add("-q")
                 addAllIfNotNull("--emit", "stdout")
                 if (additionalArguments.isNotEmpty()) {

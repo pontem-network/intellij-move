@@ -50,7 +50,7 @@ class VersionLabel(
                 }
 
                 val commandLineArgs = MvCommandLine(
-                    listOf("--version"),
+                    arguments = listOf("--version"),
                     workingDirectory = null,
                     environmentVariables = envs
                 )

@@ -25,7 +25,7 @@ class AptosTestConsoleProperties(
         testFrameworkName: String,
         consoleProperties: TestConsoleProperties
     ): OutputToGeneralTestEventsConverter =
-        AptosTestEventsConverter(testFrameworkName, consoleProperties)
+        AptosJsonTestEventsConverter(testFrameworkName, consoleProperties)
 
     companion object {
         const val TEST_FRAMEWORK_NAME: String = "Aptos Test"

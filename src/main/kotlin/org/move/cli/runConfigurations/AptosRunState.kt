@@ -9,6 +9,8 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Disposer
 import org.move.cli.MoveFileHyperlinkFilter
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration
+import org.move.cli.runConfigurations.buildtool.AptosPatch
+import org.move.cli.runConfigurations.buildtool.aptosPatches
 
 abstract class AptosRunStateBase(
     environment: ExecutionEnvironment,
@@ -18,7 +20,25 @@ abstract class AptosRunStateBase(
     val project = environment.project
     val commandLine: AptosCommandLine = cleanConfiguration.cmd
 
+    protected val commandLinePatches: MutableList<AptosPatch> = mutableListOf()
+
+    init {
+        commandLinePatches.addAll(environment.aptosPatches)
+    }
+
+    fun prepareCommandLine(vararg additionalPatches: AptosPatch): AptosCommandLine {
+        var commandLine = commandLine
+        for (patch in commandLinePatches) {
+            commandLine = patch(commandLine)
+        }
+        for (patch in additionalPatches) {
+            commandLine = patch(commandLine)
+        }
+        return commandLine
+    }
+
     override fun startProcess(): ProcessHandler {
+        val commandLine = prepareCommandLine()
         // emulateTerminal=true allows for the colored output
         val generalCommandLine =
             commandLine.toGeneralCommandLine(cleanConfiguration.aptosPath, emulateTerminal = true)

@@ -90,12 +90,13 @@ abstract class CommandConfigurationBase(
         Ok(aptosPath, commandLine)
     }
 
-    protected fun showTestToolWindow(commandLine: AptosCommandLine): Boolean =
-        when {
+    protected fun showTestToolWindow(commandLine: AptosCommandLine): Boolean {
+        return when {
             !AdvancedSettings.getBoolean(TEST_TOOL_WINDOW_SETTING_KEY) -> false
             commandLine.subCommand != "move test" -> false
             else -> true
         }
+    }
 
     sealed class CleanConfiguration {
         class Ok(val aptosPath: Path, val cmd: AptosCommandLine): CleanConfiguration()
