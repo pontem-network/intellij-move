@@ -22,6 +22,7 @@ import org.move.lang.core.resolve2.processFieldLookupResolveVariants
 import org.move.lang.core.resolve2.processLabelResolveVariants
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
+import org.move.lang.core.resolve2.processStructPatFieldResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*
@@ -68,6 +69,11 @@ object CommonCompletionProvider: MvCompletionProvider() {
                     // for struct pat / lit, it filters out all the fields already existing in the body
                     val processor = skipAlreadyProvidedFields(element, processor0)
                     processPatBindingResolveVariants(element, true, processor)
+                }
+                // `let Res { my_f/*caret*/: field }`
+                is MvPatFieldFull -> {
+                    val processor = skipAlreadyProvidedFields(element, processor0)
+                    processStructPatFieldResolveVariants(element, processor)
                 }
                 // loop labels
                 is MvLabel -> processLabelResolveVariants(element, it)

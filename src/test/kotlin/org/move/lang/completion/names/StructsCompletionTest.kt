@@ -185,6 +185,15 @@ class StructsCompletionTest: CompletionTestCase() {
         }        
     """)
 
+    fun `test struct fields completion in struct pattern with existing fields`() = checkNoCompletion("""
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_/*caret*/: field, my_field: field2 } = call();
+            }
+        }        
+    """)
+
     fun `test struct fields completion in struct pattern shorthand`() = doSingleCompletion("""
         module 0x1::M {
             struct T { my_field: u8 }
