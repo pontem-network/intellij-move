@@ -2,6 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
+import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.SimpleScopeEntry
@@ -65,7 +66,8 @@ fun processSchemaLitFieldResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     val schemaLit = literalField.schemaLit ?: return false
-    val schema = schemaLit.path.maybeSchema ?: return false
+    // safeGetOriginalOrSelf() to prevent cache misses for the path cache in completion
+    val schema = schemaLit.path.safeGetOriginalOrSelf().maybeSchema ?: return false
     return schema.fieldsAsBindings
         .any { field ->
             processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))

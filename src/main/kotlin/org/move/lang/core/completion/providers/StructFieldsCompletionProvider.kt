@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve2.ref.FieldResolveVariant
@@ -41,8 +42,13 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         when (element) {
             is MvPatField -> {
                 val patStruct = element.patStruct
+                // Path resolution is cached, but sometimes path changes so much that it can't be retrieved
+                // from cache anymore. In this case we need to get the old path.
+                // "safe" here means that if tree changes too much (=any of the ancestors of path are changed),
+                // then it's a no-op and we continue working with current path.
+                val struct = patStruct.path.safeGetOriginalOrSelf().maybeStruct ?: return
                 addFieldsToCompletion(
-                    patStruct.path.maybeStruct ?: return,
+                    struct,
                     patStruct.fieldNames,
                     result,
                     completionCtx
@@ -50,8 +56,10 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
             }
             is MvStructLitField -> {
                 val structLit = element.parentStructLitExpr
+                // see MvPatField's comment above
+                val struct = structLit.path.safeGetOriginalOrSelf().maybeStruct ?: return
                 addFieldsToCompletion(
-                    structLit.path.maybeStruct ?: return,
+                    struct,
                     structLit.providedFieldNames,
                     result,
                     completionCtx
