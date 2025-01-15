@@ -203,7 +203,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
             }
 
         val json = processOutput.stdout
-            .lines().dropWhile { l -> !l.startsWith("{") }.joinToString("\n").trim()
+            .lines().dropWhile { l -> !l.startsWith("{") }.joinToString("").trim()
         val exitStatus = try {
             AptosExitStatus.fromJson(json)
         } catch (e: JacksonException) {
