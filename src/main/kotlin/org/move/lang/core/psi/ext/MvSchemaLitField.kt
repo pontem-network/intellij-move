@@ -67,8 +67,7 @@ fun processSchemaLitFieldResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     val schemaLit = literalField.schemaLit ?: return false
-    // getOriginalOrSelf() to prevent cache misses for the path cache in completion
-    val schema = schemaLit.path.getOriginalOrSelf().maybeSchema ?: return false
+    val schema = schemaLit.path.maybeSchema ?: return false
     return schema.fieldsAsBindings
         .any { field ->
             processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))

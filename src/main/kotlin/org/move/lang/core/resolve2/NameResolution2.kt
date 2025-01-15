@@ -68,7 +68,7 @@ fun processStructPatFieldResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     // used in completion
-    val fieldsOwner = patFieldFull.patStruct.path.getOriginalOrSelf().maybeFieldsOwner ?: return false
+    val fieldsOwner = patFieldFull.patStruct.path.maybeFieldsOwner ?: return false
     return processNamedFieldDeclarations(fieldsOwner, processor)
 }
 
@@ -80,7 +80,7 @@ fun processPatBindingResolveVariants(
     // field pattern shorthand
     if (binding.parent is MvPatField) {
         val parentPat = binding.parent.parent as MvPatStruct
-        val fieldsOwner = parentPat.path.getOriginalOrSelf().maybeFieldsOwner
+        val fieldsOwner = parentPat.path.maybeFieldsOwner
         // can be null if unresolved
         if (fieldsOwner != null) {
             if (processNamedFieldDeclarations(fieldsOwner, originalProcessor)) return true

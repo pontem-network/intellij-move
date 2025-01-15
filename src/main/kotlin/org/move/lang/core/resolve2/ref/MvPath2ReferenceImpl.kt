@@ -2,6 +2,7 @@ package org.move.lang.core.resolve2.ref
 
 import com.intellij.psi.ResolveResult
 import org.move.cli.MoveProject
+import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -64,7 +65,10 @@ class MvPath2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(
     }
 
     private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult<MvElement>>? {
-        return path.inference(msl)?.getResolvedPath(path)
+        // Path resolution is cached, but sometimes path changes so much that it can't be retrieved
+        // from cache anymore. In this case we need to get the old path.
+        val originalPath = path.getOriginalOrSelf()
+        return originalPath.inference(msl)?.getResolvedPath(originalPath)
             ?.map {
                 RsPathResolveResult(it.element, it.isVisible)
             }

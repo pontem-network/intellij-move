@@ -46,7 +46,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 // from cache anymore. In this case we need to get the old path.
                 // OLD: "safe" here means that if tree changes too much (=any of the ancestors of path are changed),
                 // then it's a no-op and we continue working with current path.
-                val struct = patStruct.path.getOriginalOrSelf().maybeFieldsOwner ?: return
+                val struct = patStruct.path.maybeFieldsOwner ?: return
                 addFieldsToCompletion(
                     struct,
                     patStruct.fieldNames,
@@ -57,7 +57,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
             is MvStructLitField -> {
                 val structLit = element.parentStructLitExpr
                 // see MvPatField's comment above
-                val struct = structLit.path.getOriginalOrSelf().maybeFieldsOwner ?: return
+                val struct = structLit.path.maybeFieldsOwner ?: return
                 addFieldsToCompletion(
                     struct,
                     structLit.providedFieldNames,

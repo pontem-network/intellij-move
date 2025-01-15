@@ -7,6 +7,8 @@ import com.intellij.psi.util.CachedValue
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
+import org.move.lang.core.completion.getOriginalOrSelf
+import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ScopeEntry
