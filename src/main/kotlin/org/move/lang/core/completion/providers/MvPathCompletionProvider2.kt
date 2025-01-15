@@ -226,7 +226,7 @@ fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, msl: B
             is MvPathType,
             is MvPathExpr,
             is MvDotExpr -> {
-                val inference = (ancestor as MvElement).inference(msl) ?: return TyUnknown
+                val inference = ancestor.inference(msl) ?: return TyUnknown
                 return inferExpectedTy(ancestor, inference)
             }
         }

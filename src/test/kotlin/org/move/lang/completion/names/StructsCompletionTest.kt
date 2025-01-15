@@ -173,6 +173,31 @@ class StructsCompletionTest: CompletionTestCase() {
         module 0x1::M {
             struct T { my_field: u8 }
             fun main() {
+                let T { my_/*caret*/: field } = call();
+            }
+        }        
+    """, """
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_field/*caret*/: field } = call();
+            }
+        }        
+    """)
+
+    fun `test struct fields completion in struct pattern with existing fields`() = checkNoCompletion("""
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_/*caret*/: field, my_field: field2 } = call();
+            }
+        }        
+    """)
+
+    fun `test struct fields completion in struct pattern shorthand 1`() = doSingleCompletion("""
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
                 let T { my_/*caret*/ } = call();
             }
         }        
@@ -183,6 +208,22 @@ class StructsCompletionTest: CompletionTestCase() {
                 let T { my_field/*caret*/ } = call();
             }
         }        
+    """)
+
+    fun `test struct fields completion in struct pattern shorthand 2`() = doSingleCompletion("""
+        module 0x1::modules {
+            struct Ss has key { def_val: u8, rut_def_val: u16 }
+            fun main(s: Ss) {
+                let Ss { def/*caret*/, rut_def_val } = s;
+            }
+        }
+    """, """
+        module 0x1::modules {
+            struct Ss has key { def_val: u8, rut_def_val: u16 }
+            fun main(s: Ss) {
+                let Ss { def_val/*caret*/, rut_def_val } = s;
+            }
+        }
     """)
 
     fun `test no completion in struct pattern if field already specified`() = checkNoCompletion("""

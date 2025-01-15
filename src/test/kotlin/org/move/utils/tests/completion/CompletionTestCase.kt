@@ -2,8 +2,9 @@ package org.move.utils.tests.completion
 
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvLightTestBase
+import org.move.utils.tests.MvTestBase
 
-abstract class CompletionTestCase: MvLightTestBase() {
+abstract class CompletionTestCase: MvTestBase() {
     lateinit var completionFixture: MvCompletionTestFixture
 
     override fun setUp() {

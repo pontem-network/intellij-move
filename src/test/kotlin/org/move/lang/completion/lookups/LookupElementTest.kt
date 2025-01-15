@@ -1,5 +1,6 @@
 package org.move.lang.completion.lookups
 
+import com.intellij.codeInsight.completion.CompletionContext
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionSorter
 import com.intellij.codeInsight.completion.PrefixMatcher
@@ -14,6 +15,7 @@ import org.move.lang.core.completion.providers.CommonCompletionProvider
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.SimpleScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.NAMES
@@ -236,7 +238,8 @@ class LookupElementTest: MvTestBase() {
         }
 
         if (element is MvMethodOrField) {
-            CommonCompletionProvider.addMethodOrFieldVariants(element, result)
+            val ctx = MvCompletionContext(element, element.isMsl())
+            CommonCompletionProvider.addMethodOrFieldVariants(element, result, ctx)
         }
 
         val lookup = lookups.single {

@@ -22,6 +22,7 @@ import org.move.lang.core.resolve2.processFieldLookupResolveVariants
 import org.move.lang.core.resolve2.processLabelResolveVariants
 import org.move.lang.core.resolve2.processMethodResolveVariants
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
+import org.move.lang.core.resolve2.processStructPatFieldResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*
@@ -47,7 +48,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
         // handles dot expr
         if (element is MvMethodOrField) {
-            addMethodOrFieldVariants(element, result)
+            addMethodOrFieldVariants(element, result, completionCtx)
         }
 
         addCompletionVariants(element, result, completionCtx)
@@ -69,6 +70,11 @@ object CommonCompletionProvider: MvCompletionProvider() {
                     val processor = skipAlreadyProvidedFields(element, processor0)
                     processPatBindingResolveVariants(element, true, processor)
                 }
+                // `let Res { my_f/*caret*/: field }`
+                is MvPatFieldFull -> {
+                    val processor = skipAlreadyProvidedFields(element, processor0)
+                    processStructPatFieldResolveVariants(element, processor)
+                }
                 // loop labels
                 is MvLabel -> processLabelResolveVariants(element, it)
                 // `spec ITEM {}` module items, where ITEM is a reference to the function/struct/enum
@@ -78,30 +84,26 @@ object CommonCompletionProvider: MvCompletionProvider() {
     }
 
     @VisibleForTesting
-    fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
-        val msl = element.isMsl()
-        val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
-        val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
-
-        val ctx = MvCompletionContext(element, msl, expectedTy)
+    fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet, ctx: MvCompletionContext) {
+        val receiverTy = element.inferReceiverTy(ctx.msl).knownOrNull() ?: return
 
         val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
         if (tyAdt != null) {
             collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
-                processFieldLookupResolveVariants(element, tyAdt, msl, it)
+                processFieldLookupResolveVariants(element, tyAdt, ctx.msl, it)
             }
         }
 
         processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->
             val function = e.element as? MvFunction ?: return@createProcessor
             val subst = function.tyVarsSubst
-            val declaredFuncTy = function.functionTy(msl).substitute(subst) as TyFunction
+            val declaredFuncTy = function.functionTy(ctx.msl).substitute(subst) as TyFunction
             val declaredSelfTy = declaredFuncTy.paramTypes.first()
             val autoborrowedReceiverTy =
                 TyReference.autoborrow(receiverTy, declaredSelfTy)
                     ?: error("unreachable, references always compatible")
 
-            val inferenceCtx = InferenceContext(msl)
+            val inferenceCtx = InferenceContext(ctx.msl)
             inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
 
             result.addElement(

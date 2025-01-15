@@ -2,6 +2,8 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
+import org.move.lang.core.completion.getOriginalOrSelf
+import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.SimpleScopeEntry
