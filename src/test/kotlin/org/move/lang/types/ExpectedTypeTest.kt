@@ -199,12 +199,23 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test unknown if inside other expr`() = testExpectedTyExpr(
+    fun `test use binary operation lhs integer`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         fun call() {
-            let a: u8 = 1 + my_ref;
-                           //^ <unknown>
+            1 + my_ref;
+                  //^ integer
+        }
+    }    
+    """
+    )
+
+    fun `test use binary operation lhs u8`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        fun call() {
+            1u8 + my_ref;
+                  //^ u8
         }
     }    
     """

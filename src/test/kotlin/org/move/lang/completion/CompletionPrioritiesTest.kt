@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvQualNamedElement
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.completion.CompletionTestCase
 
-class CompletionPrioritiesTest : CompletionTestCase() {
+class CompletionPrioritiesTest: CompletionTestCase() {
     fun `test local before builtin before unimported`() = checkCompletionsOrder(
         listOf("borrow_local", "borrow_global", "borrow_global_mut", "borrow"),
         """
@@ -197,6 +197,17 @@ module 0x1::Main {
                 }
             }                
         """
+    )
+
+    fun `test use binary op types for completion sorting`() = checkCompletionsOrder(
+        listOf("def_val_2", "def_val"), """
+        module std::modules {
+            struct Ss { def_val: u8, def_val_2: u16 }
+            fun main(s: Ss) {
+                1u16 + s.de/*caret*/;
+            }
+        }
+    """.trimIndent()
     )
 
     private fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {

@@ -110,8 +110,9 @@ private fun preferTrue(
     property: (P) -> Boolean,
     id: String
 ): MvCompletionWeigher = object : MvCompletionWeigher {
-    override fun weigh(element: LookupElement): Boolean =
-        if (element is MvLookupElement) !property(element.props) else true
+    override fun weigh(element: LookupElement): Boolean {
+        return if (element is MvLookupElement) !property(element.props) else true
+    }
 
     override val id: String get() = id
 }
@@ -173,8 +174,9 @@ private fun splitIntoGroups(weighersWithAnchors: List<Any>): List<AnchoredWeighe
 private class RsCompletionWeigherAsLookupElementWeigher(
     private val weigher: MvCompletionWeigher
 ) : LookupElementWeigher(weigher.id, /* negated = */ false, /* dependsOnPrefix = */ false) {
+
     override fun weigh(element: LookupElement): Comparable<*> {
-        val rsElement = element.`as`(LookupElement::class.java)
-        return weigher.weigh(rsElement ?: element)
+        val mvLookupElement = element.`as`(MvLookupElement::class.java)
+        return weigher.weigh(mvLookupElement ?: element)
     }
 }

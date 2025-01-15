@@ -898,7 +898,7 @@ class TypeInferenceWalker(
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
-            val rightTy = rightExpr.inferType()
+            val rightTy = rightExpr.inferType(leftTy)
             if (!rightTy.supportsArithmeticOp()) {
                 ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
