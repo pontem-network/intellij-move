@@ -173,6 +173,22 @@ class StructsCompletionTest: CompletionTestCase() {
         module 0x1::M {
             struct T { my_field: u8 }
             fun main() {
+                let T { my_/*caret*/: field } = call();
+            }
+        }        
+    """, """
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_field/*caret*/: field } = call();
+            }
+        }        
+    """)
+
+    fun `test struct fields completion in struct pattern shorthand`() = doSingleCompletion("""
+        module 0x1::M {
+            struct T { my_field: u8 }
+            fun main() {
                 let T { my_/*caret*/ } = call();
             }
         }        
