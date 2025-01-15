@@ -63,6 +63,8 @@ val MvPath.identifierName: String? get() = identifier?.text
 
 val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
+val MvPath.maybeFieldsOwner get() = reference?.resolveFollowingAliases() as? MvFieldsOwner
+
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
 //fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {

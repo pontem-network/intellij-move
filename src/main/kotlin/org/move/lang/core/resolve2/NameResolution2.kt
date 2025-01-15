@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve2
 
+import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -66,9 +67,9 @@ fun processStructPatFieldResolveVariants(
     patFieldFull: MvPatFieldFull,
     processor: RsResolveProcessor
 ): Boolean {
-    val resolved = patFieldFull.patStruct.path.reference?.resolveFollowingAliases()
-    val resolvedStruct = resolved as? MvFieldsOwner ?: return false
-    return processNamedFieldDeclarations(resolvedStruct, processor)
+    // used in completion
+    val fieldsOwner = patFieldFull.patStruct.path.getOriginalOrSelf().maybeFieldsOwner ?: return false
+    return processNamedFieldDeclarations(fieldsOwner, processor)
 }
 
 fun processPatBindingResolveVariants(
@@ -79,10 +80,10 @@ fun processPatBindingResolveVariants(
     // field pattern shorthand
     if (binding.parent is MvPatField) {
         val parentPat = binding.parent.parent as MvPatStruct
-        val structItem = parentPat.path.reference?.resolveFollowingAliases()
+        val fieldsOwner = parentPat.path.getOriginalOrSelf().maybeFieldsOwner
         // can be null if unresolved
-        if (structItem is MvFieldsOwner) {
-            if (processNamedFieldDeclarations(structItem, originalProcessor)) return true
+        if (fieldsOwner != null) {
+            if (processNamedFieldDeclarations(fieldsOwner, originalProcessor)) return true
             if (isCompletion) return false
         }
     }
@@ -254,14 +255,14 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun processFieldDeclarations(item: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    item.fields.any { field ->
+private fun processFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    fieldsOwner.fields.any { field ->
         val name = field.name ?: return@any false
         processor.process(name, NAMES, field)
     }
 
-private fun processNamedFieldDeclarations(struct: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    struct.namedFields.any { field ->
+private fun processNamedFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
+    fieldsOwner.namedFields.any { field ->
         val name = field.name
         processor.process(name, NAMES, field)
     }
