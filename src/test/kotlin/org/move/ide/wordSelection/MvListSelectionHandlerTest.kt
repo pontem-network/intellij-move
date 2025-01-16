@@ -104,4 +104,27 @@ class MvListSelectionHandlerTest : MvSelectionHandlerTestBase() {
             fun main(): Result<selection><u32, bo<caret>ol></selection> {}
         }
     """)
+
+    fun `test struct field list`() = doTest("""
+        module 0x1::m {
+            struct Ss has key { def_val: u8, rut_de<caret>f_val: u16 }
+        }      
+    """, """
+        module 0x1::m {
+            struct Ss has key { def_val: u8, <selection>rut_de<caret>f_val</selection>: u16 }
+        }      
+    """, """
+        module 0x1::m {
+            struct Ss has key { def_val: u8, <selection>rut_de<caret>f_val: u16</selection> }
+        }      
+    """, """
+        module 0x1::m {
+            struct Ss has key {<selection> def_val: u8, rut_de<caret>f_val: u16 </selection>}
+        }      
+    """, """
+        module 0x1::m {
+            struct Ss has key <selection>{ def_val: u8, rut_de<caret>f_val: u16 }</selection>
+        }      
+    """
+                                            )
 }
