@@ -150,6 +150,7 @@ module 0x1::main {
     """
     )
 
+    @MoveV2(false)
     fun `test unused acquires with index expr on compiler v1`() = checkWarnings(
         """
 module 0x1::main {

@@ -20,7 +20,6 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         val visitor = object: MvVisitor() {
 
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
-            override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
             override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
@@ -70,15 +69,6 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         if (specFunction.returnType == null) {
             Diagnostic
                 .SpecFunctionRequiresReturnType(specFunction)
-                .addToHolder(holder)
-        }
-    }
-
-    private fun checkCastExpr(holder: MvAnnotationHolder, castExpr: MvCastExpr) {
-        val parent = castExpr.parent
-        if (parent !is MvParensExpr) {
-            Diagnostic
-                .ParensAreRequiredForCastExpr(castExpr)
                 .addToHolder(holder)
         }
     }

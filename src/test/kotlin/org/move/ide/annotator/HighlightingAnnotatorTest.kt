@@ -335,6 +335,7 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     """
     )
 
+    @MoveV2(false)
     fun `test do not highlight methods if compiler v1`() = checkHighlighting(
         """
         module 0x1::m {
