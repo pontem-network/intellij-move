@@ -61,7 +61,7 @@ class MvProjectSettingsService(
         var dumpStateOnTestFailure: Boolean by property(false)
 
         @AffectsHighlighting
-        var enableMove2: Boolean by property(false)
+        var enableMove2: Boolean by property(true)
 
         override fun copy(): MoveProjectSettings {
             val state = MoveProjectSettings()

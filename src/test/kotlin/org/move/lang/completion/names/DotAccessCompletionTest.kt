@@ -87,7 +87,7 @@ module 0x1::M {
     """)
 
     fun `test no duplicate completions for enum variant fields`() = checkContainsCompletionExact(
-        listOf("field_x", "field_y", "field_z"),
+        listOf("field_x", "field_y", "field_z", "t9_common_field"),
         """
             module 0x1::m {
                 enum CommonFields {
