@@ -437,7 +437,7 @@
     />
     <advancedSetting
         id="org.move.aptos.compile.message.json"
-        default="false"
+        default="true"
         groupKey="advanced.setting.aptos.group"
         descriptionKey="advanced.setting.org.move.aptos.compile.message.json.description"
     />
