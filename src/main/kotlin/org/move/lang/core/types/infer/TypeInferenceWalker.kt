@@ -324,7 +324,14 @@ class TypeInferenceWalker(
                     TyUnknown
                 }
             }
-            is MvEnumVariant -> TyLowering().lowerPath(pathExpr.path, item, ctx.msl)
+            is MvEnumVariant -> {
+                // MyEnum<u8>::MyVariant
+                //   ^ we need this path to be able to handle explicit type parameters
+                val enumItemPath = pathExpr.path.qualifier ?: pathExpr.path
+                val baseTy = instantiatePath<TyAdt>(enumItemPath, item.enumItem)
+                    ?: return TyUnknown
+                baseTy
+            }
             is MvModule -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
@@ -552,11 +559,12 @@ class TypeInferenceWalker(
         @Suppress("UNCHECKED_CAST")
         val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericItem, msl) as? T
             ?: return null
+        val typeParamToVarSubst = genericItem.tyVarsSubst
 
-        val tyVarsSubst = genericItem.tyVarsSubst
-        @Suppress("UNCHECKED_CAST")
         // TyTypeParameter -> TyVar for every TypeParameter which is not explicit set
-        return explicitPathTy.substitute(tyVarsSubst) as T
+        @Suppress("UNCHECKED_CAST")
+        val explicitPathTyWithTyVars = explicitPathTy.substitute(typeParamToVarSubst) as T
+        return explicitPathTyWithTyVars
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -714,8 +722,6 @@ class TypeInferenceWalker(
         val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
         val (tyAdt, tyVarsSubst) =
             instantiateMethodOrPath<TyAdt>(path, genericItem) ?: return TyUnknown
-//        val tyAdt = instantiatePath<TyAdt>(path, genericItem) ?: return TyUnknown
-//        val tyVarsSubst = genericItem.typeParamsToTyVarsSubst
 
         expectedType?.let { expectedTy ->
             val expectedTyTypeParams = expectedTy.typeParameterValues

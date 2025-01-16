@@ -33,7 +33,6 @@ class TyTypeParameter private constructor(
     companion object {
         fun named(parameter: MvTypeParameter): TyTypeParameter {
             // Treat the same parameters from original/copy files as equals
-//            val originalParameter = parameter
             val originalParameter = CompletionUtil.getOriginalOrSelf(parameter)
             return TyTypeParameter(originalParameter)
         }

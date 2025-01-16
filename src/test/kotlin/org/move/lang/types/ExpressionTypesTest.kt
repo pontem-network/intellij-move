@@ -2190,7 +2190,7 @@ module 0x1::main {
     @MoveV2
     fun `test generic enum variant`() = testExpr("""
         module 0x1::m {
-            enum S<T> { One }
+            enum S<phantom T> { One }
             fun main() {
                 let a = S<u8>::One;
                 a;
@@ -2252,6 +2252,7 @@ module 0x1::main {
             }
          }        
     """)
+
     fun `test tuple enum variant destructuring for unknown type`() = testExpr("""
         module 0x1::m {
             enum S {}

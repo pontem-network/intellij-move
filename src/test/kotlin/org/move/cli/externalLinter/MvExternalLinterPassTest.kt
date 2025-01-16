@@ -32,7 +32,7 @@ class MvExternalLinterPassTest: WithAptosCliTestBase(
         """
         module 0x1::main {
             fun main() {
-                1 + <error descr="$APTOS_TEST_MESSAGE">/*caret*/true</error>
+                1 + <error descr="$APTOS_TEST_MESSAGE">/*caret*/true</error>;
             }
         }
     """, externalLinter = ExternalLinter.LINTER

@@ -42,7 +42,6 @@ data class TyAdt(
             val typeParameters = struct.typeParamsToTypeParamsSubst
             return TyAdt(
                 struct,
-//                CompletionUtil.getOriginalOrSelf(struct),
                 typeParameters,
                 struct.tyTypeParams
             )
