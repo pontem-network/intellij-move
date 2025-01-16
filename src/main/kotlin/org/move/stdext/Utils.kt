@@ -68,9 +68,6 @@ fun String.pluralize(): String = StringUtil.pluralize(this)
 @NlsActions.ActionText
 fun String.capitalized(): String = StringUtil.capitalize(this)
 
-fun randomLowercaseAlphabetic(length: Int): String =
-    RandomStringUtils.random(length, "0123456789abcdefghijklmnopqrstuvwxyz")
-
 fun numberSuffix(number: Int): String {
     if ((number % 100) in 11..13) {
         return "th"

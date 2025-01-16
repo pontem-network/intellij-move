@@ -5,26 +5,10 @@ on:
         types: [released]
 
 jobs:
-#    check-for-tests-success:
-#        runs-on: ubuntu-latest
-#        permissions:
-#            actions: write
-#
-#        steps:
-#            -   name: Early exit if tests wasn't successful
-#                if: ${{ github.event.workflow_run.conclusion != 'success' }}
-#                run: |
-#                    gh run cancel ${{ github.run_id }}
-#                    gh run watch ${{ github.run_id }}
-#                env:
-#                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-    publish-eap-channel:
-#        needs: [ check-for-tests-success ]
+    publish-release:
         strategy:
             matrix:
-                gradle-properties-version: [ 242, 243 ]
+                gradle-properties-version: [ 242, 243, 251 ]
 
         runs-on: ubuntu-latest
         env:

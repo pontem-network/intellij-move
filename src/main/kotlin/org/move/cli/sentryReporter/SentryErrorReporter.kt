@@ -72,7 +72,7 @@ class SentryErrorReporter: ErrorReportSubmitter() {
         val sentryEvent = SentryEvent()
         sentryEvent.level = SentryLevel.ERROR
 
-        val plugin = IdeErrorsDialog.getPlugin(event)
+        val plugin = this.pluginDescriptor
 
         val pluginInfoContext = mutableMapOf<String, Any>()
         pluginInfoContext["Platform"] = ApplicationInfo.getInstance().fullApplicationName
