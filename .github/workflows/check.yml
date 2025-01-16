@@ -12,6 +12,9 @@ jobs:
             matrix:
                 gradle-properties-version: [ 242, 243 ]
                 platform-type: [ RR, PC ]
+                include:
+                    - gradle-properties-version: 251
+                      platform-type: IC
 
         runs-on: ubuntu-latest
         env:

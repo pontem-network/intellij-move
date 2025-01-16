@@ -1,7 +1,5 @@
 package org.move.cli.sentryReporter
 
-import com.intellij.diagnostic.DiagnosticBundle
-import com.intellij.diagnostic.IdeErrorsDialog
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationInfo
@@ -72,7 +70,7 @@ class SentryErrorReporter: ErrorReportSubmitter() {
         val sentryEvent = SentryEvent()
         sentryEvent.level = SentryLevel.ERROR
 
-        val plugin = IdeErrorsDialog.getPlugin(event)
+        val plugin = this.pluginDescriptor
 
         val pluginInfoContext = mutableMapOf<String, Any>()
         pluginInfoContext["Platform"] = ApplicationInfo.getInstance().fullApplicationName
@@ -120,10 +118,8 @@ private fun onSuccess(project: Project?, callback: Consumer<in SubmittedReportIn
     val reportInfo = SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE)
     callback.consume(reportInfo)
     ApplicationManager.getApplication().invokeLater {
-        val title = DiagnosticBundle.message("error.report.submitted")
-        val content = DiagnosticBundle.message("error.report.gratitude")
         NotificationGroupManager.getInstance().getNotificationGroup("Error Report")
-            .createNotification(title, content, NotificationType.INFORMATION)
+            .createNotification("Report submitted", "Thank you for your feedback!", NotificationType.INFORMATION)
             .setImportant(false)
             .notify(project)
     }
