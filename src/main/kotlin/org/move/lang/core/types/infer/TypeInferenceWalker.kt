@@ -465,7 +465,7 @@ class TypeInferenceWalker(
 
         val field =
             resolveSingleResolveVariant(fieldLookup.referenceName) {
-                processFieldLookupResolveVariants(fieldLookup, tyAdt, msl, it)
+                processFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl, it)
             } as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 

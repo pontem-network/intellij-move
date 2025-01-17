@@ -85,12 +85,14 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
     @VisibleForTesting
     fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet, ctx: MvCompletionContext) {
-        val receiverTy = element.inferReceiverTy(ctx.msl).knownOrNull() ?: return
+        val receiverTy = element.inferReceiverTy(ctx.msl)
+        // unknown, &unknown, &mut unknown
+        if (receiverTy.derefIfNeeded() is TyUnknown) return
 
         val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
         if (tyAdt != null) {
             collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
-                processFieldLookupResolveVariants(element, tyAdt, ctx.msl, it)
+                processFieldLookupResolveVariants(element, tyAdt.item, ctx.msl, it)
             }
         }
 
