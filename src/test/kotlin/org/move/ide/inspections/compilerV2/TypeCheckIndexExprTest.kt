@@ -85,4 +85,26 @@ class TypeCheckIndexExprTest: InspectionTestBase(MvTypeCheckInspection::class) {
         }        
     """
     )
+
+    fun `test no error for vector reference that is result of function call`() = checkByText(
+        """
+        module 0x1::m {
+            fun call(): &vector<u8> { &vector[1] }
+            enum BigOrderedMap<K: store, V: store> has store { BPlusTreeMap }
+            public native fun borrow<K: drop + copy + store, V: store>(self: &BigOrderedMap<K, V>, key: &K): &V;
+            fun main() {
+                let map = BigOrderedMap<vector<u8>, vector<u8>>::BPlusTreeMap;
+                borrow(&map, &vector[1])[0];
+            }
+        }        
+    """
+    )
+
+    fun `test no error for resource indexing expr of unknown type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                &mut PermissionStorage[addr];
+            }
+        }        
+    """)
 }

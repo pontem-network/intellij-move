@@ -355,12 +355,12 @@ module 0x1::main {
 }        
     """)
 
-    fun `test error for field of reference of unknown type`() = checkByText("""
+    fun `test no error for field of reference of unknown type`() = checkByText("""
 module 0x1::main {
     fun call<T>(t: T): &T { &t }
     fun main() {
         let var = &(1 + false);
-        var.<error descr="Unresolved field: `key`">key</error>;
+        var.key;
     }
 }        
     """)
@@ -519,25 +519,14 @@ module 0x1::m {
         }        
     """)
 
-    @MoveV2()
-    fun `test unresolved method error if receiver is unresolved`() = checkByText("""
-        module 0x1::m {
-            struct S { field: u8 }
-            fun receiver(self: S): u8 { self.field }
-            fun main() {
-                (&<error descr="Unresolved reference: `t`">t</error>).<error descr="Unresolved reference: `receiver`">receiver</error>();
-            }
-        }        
-    """)
-
-    @MoveV2()
-    fun `test unresolved method error if receiver is type unknown`() = checkByText("""
+    @MoveV2
+    fun `test no error if receiver is type unknown`() = checkByText("""
         module 0x1::m {
             struct S { field: u8 }
             fun receiver(self: S): u8 { self.field }
             fun main() {
                 let t = &(1 + false);
-                t.<error descr="Unresolved reference: `receiver`">receiver</error>();
+                t.receiver();
             }
         }        
     """)
@@ -567,6 +556,24 @@ module 0x1::m {
         module 0x1::m {
             #[lint::my_lint]
             fun main() {}
+        }        
+    """)
+
+    fun `test no error for unknown receiver method of result of unknown resource borrow`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let perm_storage = &<error descr="Unresolved reference: `PermissionStorage`">PermissionStorage</error>[@0x1];
+                perm_storage.contains();
+            }
+        }        
+    """)
+
+    fun `test no error for unknown receiver method of result of unknown mut resource borrow`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let perm_storage = &mut <error descr="Unresolved reference: `PermissionStorage`">PermissionStorage</error>[@0x1];
+                perm_storage.contains();
+            }
         }        
     """)
 }

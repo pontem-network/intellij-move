@@ -1,5 +1,6 @@
 package org.move.ide.inspections
 
+import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {
@@ -1558,9 +1559,40 @@ module 0x1::pool {
         }
     """)
 
+    @MoveV2
     fun `test circular type for enum`() = checkByText("""
         module 0x1::m {
             enum S { One { s: <error descr="Circular reference of type 'S'">S</error> }, Two }
+        }        
+    """)
+
+    @MoveV2
+    fun `test return enum value from function`() = checkByText("""
+        module 0x1::m {
+            enum Iterator { Empty, Some { item: u8 } }
+            fun create_iterator(): Iterator {
+                Iterator::Empty
+            }            
+        }        
+    """)
+
+    @MoveV2
+    fun `test return struct empty enum value from function`() = checkByText("""
+        module 0x1::m {
+            struct Iterator<phantom T> { val: u8 }
+            fun create_iterator<FunT>(): Iterator<FunT> {
+                Iterator { val: 1 }
+            }            
+        }        
+    """)
+
+    @MoveV2
+    fun `test return generic empty enum value from function`() = checkByText("""
+        module 0x1::m {
+            enum Iterator<IterT> { Empty, Some { item: IterT } }
+            fun create_iterator<FunT>(): Iterator<FunT> {
+                Iterator::Empty
+            }            
         }        
     """)
 }

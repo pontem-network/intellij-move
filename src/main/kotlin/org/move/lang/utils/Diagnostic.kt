@@ -12,8 +12,6 @@ import com.intellij.openapi.util.text.StringUtil.pluralize
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
-import org.move.ide.annotator.fixes.WrapWithParensExprFix
-import org.move.ide.annotator.pluralise
 import org.move.ide.inspections.fixes.EnableMoveV2Fix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -143,26 +141,6 @@ sealed class Diagnostic(
             )
         }
     }
-
-    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr): Diagnostic(castExpr) {
-        override fun prepare(): PreparedAnnotation {
-            val castExpr = element as MvCastExpr
-            return PreparedAnnotation(
-                ERROR,
-                "Parentheses are required for the cast expr",
-                fixes = listOf(WrapWithParensExprFix(castExpr))
-            )
-        }
-    }
-
-//    class NativeStructNotSupported(struct: MvStruct, errorRange: TextRange): Diagnostic(struct, errorRange) {
-//        override fun prepare(): PreparedAnnotation {
-//            return PreparedAnnotation(
-//                ERROR,
-//                "Native structs aren't supported by the Move VM anymore"
-//            )
-//        }
-//    }
 
     class SpecFunctionRequiresReturnType(specFunction: MvSpecFunction):
         Diagnostic(

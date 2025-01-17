@@ -316,7 +316,7 @@ class TypeInferenceWalker(
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
-            is MvStruct -> {
+            is MvStruct, is MvEnum -> {
                 if (project.moveSettings.enableIndexExpr && pathExpr.parent is MvIndexExpr) {
                     TyLowering().lowerPath(pathExpr.path, item, ctx.msl)
                 } else {
@@ -324,7 +324,14 @@ class TypeInferenceWalker(
                     TyUnknown
                 }
             }
-            is MvEnumVariant -> TyLowering().lowerPath(pathExpr.path, item, ctx.msl)
+            is MvEnumVariant -> {
+                // MyEnum<u8>::MyVariant
+                //   ^ we need this path to be able to handle explicit type parameters
+                val enumItemPath = pathExpr.path.qualifier ?: pathExpr.path
+                val baseTy = instantiatePath<TyAdt>(enumItemPath, item.enumItem)
+                    ?: return TyUnknown
+                baseTy
+            }
             is MvModule -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
@@ -458,7 +465,7 @@ class TypeInferenceWalker(
 
         val field =
             resolveSingleResolveVariant(fieldLookup.referenceName) {
-                processFieldLookupResolveVariants(fieldLookup, tyAdt, msl, it)
+                processFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl, it)
             } as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 
@@ -552,11 +559,12 @@ class TypeInferenceWalker(
         @Suppress("UNCHECKED_CAST")
         val explicitPathTy = TyLowering().lowerPath(methodOrPath, genericItem, msl) as? T
             ?: return null
+        val typeParamToVarSubst = genericItem.tyVarsSubst
 
-        val tyVarsSubst = genericItem.tyVarsSubst
-        @Suppress("UNCHECKED_CAST")
         // TyTypeParameter -> TyVar for every TypeParameter which is not explicit set
-        return explicitPathTy.substitute(tyVarsSubst) as T
+        @Suppress("UNCHECKED_CAST")
+        val explicitPathTyWithTyVars = explicitPathTy.substitute(typeParamToVarSubst) as T
+        return explicitPathTyWithTyVars
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -714,8 +722,6 @@ class TypeInferenceWalker(
         val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
         val (tyAdt, tyVarsSubst) =
             instantiateMethodOrPath<TyAdt>(path, genericItem) ?: return TyUnknown
-//        val tyAdt = instantiatePath<TyAdt>(path, genericItem) ?: return TyUnknown
-//        val tyVarsSubst = genericItem.typeParamsToTyVarsSubst
 
         expectedType?.let { expectedTy ->
             val expectedTyTypeParams = expectedTy.typeParameterValues
@@ -811,7 +817,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val derefTy = receiverTy.derefIfNeeded()
+        val derefTy = this.resolveTypeVarsIfPossible(receiverTy).derefIfNeeded()
         return when {
             derefTy is TyVector -> {
                 // argExpr can be either TyInteger or TyRange
@@ -829,7 +835,10 @@ class TypeInferenceWalker(
                 receiverTy
             }
             else -> {
-                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                if (receiverTy !is TyUnknown) {
+                    // unresolved item
+                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                }
                 TyUnknown
             }
         }

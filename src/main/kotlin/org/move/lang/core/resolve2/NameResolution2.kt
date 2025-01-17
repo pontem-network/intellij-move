@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve2
 
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -15,11 +14,10 @@ import org.move.lang.index.MvModuleIndex
 
 fun processFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
-    receiverTy: TyAdt,
+    receiverItem: MvStructOrEnumItemElement,
     msl: Boolean,
     originalProcessor: RsResolveProcessorBase<FieldResolveVariant>
 ): Boolean {
-    val receiverItem = receiverTy.item
     if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
 
     val processor = originalProcessor

@@ -9,9 +9,9 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
 import org.move.lang.core.resolve.ref.ENUMS
+import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Namespace.NAME
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve2.ref.ResolutionContext
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
@@ -29,18 +29,15 @@ fun processItemsInScope(
     for (namespace in ns) {
         val elementNs = setOf(namespace)
         val stop = when (namespace) {
-            NAME -> {
+            Namespace.NAME -> {
                 val found = when (scope) {
                     is MvModule -> {
                         // try enum variants first
-                        if (processor.processAll(elementNs, scope.enumVariants())) return true
-                        processor.processAllItems(
-                            elementNs,
-                            scope.structs(),
-                            scope.consts()
-                        )
+                        if (processor.processAll(elementNs, scope.enumVariants())) {
+                            return true
+                        }
+                        processor.processAllItems(elementNs, scope.constList)
                     }
-                    is MvModuleSpecBlock -> processor.processAllItems(elementNs, scope.schemaList)
                     is MvScript -> processor.processAllItems(elementNs, scope.constList)
                     is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
                     is MvLambdaExpr -> processor.processAll(elementNs, scope.parametersAsBindings)

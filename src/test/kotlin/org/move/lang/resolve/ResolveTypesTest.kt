@@ -933,4 +933,28 @@ module 0x1::m {
             }
         }        
     """)
+
+    @MoveV2
+    fun `test resolve enum item of resource index expr`() = checkByCode("""
+        module 0x1::m {
+            enum Ss has key { Empty }
+               //X
+            fun main() {
+                &mut Ss[@0x1];
+                   //^
+            }
+        }        
+    """)
+
+    @MoveV2
+    fun `test resolve struct item of resource index expr`() = checkByCode("""
+        module 0x1::m {
+            struct Ss has key { val: u8 }
+                  //X
+            fun main() {
+                &mut Ss[@0x1];
+                   //^
+            }
+        }        
+    """)
 }

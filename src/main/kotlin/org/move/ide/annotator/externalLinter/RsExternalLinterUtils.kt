@@ -48,7 +48,7 @@ import java.util.concurrent.CompletableFuture
 
 object RsExternalLinterUtils {
     private val LOG: Logger = logger<RsExternalLinterUtils>()
-    const val APTOS_TEST_MESSAGE: String = "RsExternalLint"
+    const val APTOS_TEST_MESSAGE: String = "MvExternalLint"
 
     /**
      * Returns (and caches if absent) lazily computed messages from external linter.
