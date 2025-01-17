@@ -817,7 +817,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val derefTy = receiverTy.derefIfNeeded()
+        val derefTy = this.resolveTypeVarsIfPossible(receiverTy).derefIfNeeded()
         return when {
             derefTy is TyVector -> {
                 // argExpr can be either TyInteger or TyRange
@@ -835,7 +835,10 @@ class TypeInferenceWalker(
                 receiverTy
             }
             else -> {
-                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                if (receiverTy !is TyUnknown) {
+                    // unresolved item
+                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                }
                 TyUnknown
             }
         }
