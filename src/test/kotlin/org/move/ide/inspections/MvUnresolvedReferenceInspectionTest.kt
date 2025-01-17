@@ -570,6 +570,15 @@ module 0x1::m {
         }        
     """)
 
+    fun `test no error for unknown receiver method of result of unknown resource borrow`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let perm_storage = &<error descr="Unresolved reference: `PermissionStorage`">PermissionStorage</error>[@0x1];
+                perm_storage.contains();
+            }
+        }        
+    """)
+
     fun `test no error for unknown receiver method of result of unknown mut resource borrow`() = checkByText("""
         module 0x1::m {
             fun main() {

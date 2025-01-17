@@ -118,7 +118,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             if (msl && !isDebugModeEnabled()) return
 
             // no error if receiver item is unknown (won't proc if unknown is nested)
-            if (methodOrField.inferReceiverTy(msl) is TyUnknown) return
+            if (methodOrField.inferReceiverTy(msl).derefIfNeeded() is TyUnknown) return
 
             tryMultiResolveOrRegisterError(methodOrField, holder)
         }
