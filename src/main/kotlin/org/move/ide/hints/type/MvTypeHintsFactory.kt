@@ -7,6 +7,7 @@ import com.intellij.psi.createSmartPointer
 import org.move.ide.presentation.hintText
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
+import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyTuple
 import org.move.lang.core.types.ty.TyVector
 
@@ -23,6 +24,7 @@ object MvTypeHintsFactory {
             is TyTuple -> tupleTypeHint(level, type)
             is TyAdt -> adtTypeHint(level, type)
             is TyVector -> vectorTypeHint(level, type)
+            is TyReference -> referenceTypeHint(level, type)
             else -> {
                 text(type.hintText())
             }
@@ -88,6 +90,11 @@ object MvTypeHintsFactory {
             collapsedState = {
                 toggleButton { text("[...]") }
             })
+    }
+
+    private fun PresentationTreeBuilder.referenceTypeHint(level: Int, tyRef: TyReference) {
+        text(if (tyRef.isMut) "&mut " else "&")
+        typeHint(level, tyRef.referenced)
     }
 
     private fun <T> PresentationTreeBuilder.join(

@@ -168,6 +168,27 @@ class InlayTypeHintsProvider2Test: DeclarativeInlayHintsProviderTestCase() {
         }        
     """)
 
+    fun `test inlay type hint for complex field of enum type of resource index expr`() = checkByText(
+        """
+        module 0x1::m {
+            struct BigOrderedMap<K: store, V: store> has store { }
+            struct Any has drop, store, copy { }
+            struct StoredPermission has store, copy, drop { }
+            enum PermissionStorage has key {
+                V1 {
+                    perms: BigOrderedMap<Any, StoredPermission>
+                }
+            }
+            fun main() {
+                let storage1/*<# : |&mut |PermissionStorage #>*/ = borrow_global_mut<PermissionStorage>(@0x1);
+                let s/*<# : |&mut |BigOrderedMap|<...> #>*/ = &mut storage1.perms;
+                
+                let storage2/*<# : |&mut |PermissionStorage #>*/ = &mut PermissionStorage[@0x1];
+            }
+        }    
+    """
+    )
+
     private fun checkByText(@Language("Move") code: String) {
         doTestProvider("main.move", code, MvTypeInlayHintsProvider2())
     }
