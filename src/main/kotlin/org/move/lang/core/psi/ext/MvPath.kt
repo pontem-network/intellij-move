@@ -123,6 +123,9 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         parent is MvCallExpr -> FUNCTIONS
         parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
+        // TYPES for resource indexing, NAMES for vector indexing
+        parent is MvPathExpr
+                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
 
         // can be anything in completion
         parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
