@@ -21,6 +21,12 @@ sealed class PathKind {
         override val ns: Set<Namespace> get() = NONE
     }
 
+    // aptos_std:: where aptos_std is a existing named address in a project
+    data class NamedAddressOrUnqualifiedPath(
+        val address: Address.Named,
+        override val ns: Set<Namespace>
+    ): PathKind()
+
     // 0x1::
     data class ValueAddress(val address: Address.Value): PathKind() {
         override val ns: Set<Namespace> get() = NONE
@@ -35,8 +41,12 @@ sealed class PathKind {
         val qualifier: MvPath,
         override val ns: Set<Namespace>
     ): PathKind() {
-        // `0x1:foo` or `aptos_framework::foo` (where aptos_framework is known named address)
+        // `0x1:foo`
         class Module(path: MvPath, qualifier: MvPath, ns: Set<Namespace>, val address: Address):
+            QualifiedPath(path, qualifier, ns)
+
+        // `aptos_framework::foo` (where aptos_framework is known named address, but it can still be a module)
+        class ModuleOrItem(path: MvPath, qualifier: MvPath, ns: Set<Namespace>, val address: Address):
             QualifiedPath(path, qualifier, ns)
 
         // bar in foo::bar, where foo is not a named address
@@ -96,7 +106,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             if (this.isColonColonNext) {
                 val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
                 if (namedAddress != null) {
-                    return PathKind.NamedAddress(namedAddress)
+                    return PathKind.NamedAddressOrUnqualifiedPath(namedAddress, MODULES)
                 }
             }
         }
@@ -107,6 +117,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     }
 
     val qualifierOfQualifier = qualifier.path
+    val ns = this.allowedNamespaces(isCompletion)
 
     // two-element paths
     if (qualifierOfQualifier == null) {
@@ -123,26 +134,24 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             //                  ^
             moveProject != null && qualifierItemName != null -> {
                 val namedAddress = moveProject.getNamedAddressTestAware(qualifierItemName)
-                if (namedAddress != null) {
-                    // known named address, can be module path
-                    return PathKind.QualifiedPath.Module(this, qualifier, MODULES, namedAddress)
+                if (this.isUseSpeck) {
+                    val address =
+                        namedAddress ?: Address.Named(qualifierItemName, null)
+                    return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
                 // `use std::main`
                 //            ^
-                // , where std is the unknown named address
-                if (this.isUseSpeck) {
-                    val address = Address.Named(qualifierItemName, null)
-                    return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
+                if (namedAddress != null) {
+                    // known named address, can be module path, or module item path too
+                    return PathKind.QualifiedPath.ModuleOrItem(this, qualifier, MODULES + ns, namedAddress)
                 }
             }
         }
         // module::name
         //         ^
-        val ns = this.allowedNamespaces(isCompletion)
         return PathKind.QualifiedPath.ModuleItem(this, qualifier, ns)
     }
 
     // three-element path
-    val ns = this.allowedNamespaces(isCompletion)
     return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns)
 }

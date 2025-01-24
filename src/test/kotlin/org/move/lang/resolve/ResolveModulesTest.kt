@@ -342,7 +342,7 @@ class ResolveModulesTest : ResolveTestCase() {
     fun `test resolve friend module with named address`() = checkByCode("""
     module aptos_std::myfriend {}
                       //X
-    module 0x1::main {
+    module aptos_std::main {
         friend aptos_std::myfriend;
                            //^ 
     }    

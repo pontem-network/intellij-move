@@ -543,4 +543,114 @@ module 0x1::main {
             """)
         }
     }
+
+    fun `test resolve module that has the same name as address`() = checkByFileTree {
+        moveToml("""
+        [package]
+        name = "Main"
+        
+        [dependencies]
+        UQ64x64 = { local = "./uq64x64" }
+            """)
+        sources {
+            main("""
+        module 0x1::m {
+            use uq64x64::uq64x64;
+                        //^            
+        }
+            """)
+        }
+        dir("uq64x64") {
+            moveToml("""
+        [package]
+        name = "UQ64x64"
+        
+        [addresses]
+        uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
+            """)
+            sources {
+                move("uq64x64.move", """
+            module uq64x64::uq64x64 {
+                            //X
+            }
+                """)
+            }
+        }
+    }
+
+    fun `test resolve module in path from module that has the same name as address`() = checkByFileTree {
+        moveToml("""
+        [package]
+        name = "Main"
+        
+        [dependencies]
+        UQ64x64 = { local = "./uq64x64" }
+            """)
+        sources {
+            main("""
+        module 0x1::m {
+            use uq64x64::uq64x64;
+            fun main() {
+                uq64x64::call();
+                 //^
+            }
+        }
+            """)
+        }
+        dir("uq64x64") {
+            moveToml("""
+        [package]
+        name = "UQ64x64"
+        
+        [addresses]
+        uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
+            """)
+            sources {
+                move("uq64x64.move", """
+            module uq64x64::uq64x64 {
+                           //X
+                public fun call() {}
+            }
+                """)
+            }
+        }
+    }
+
+    fun `test resolve function from module that has the same name as address`() = checkByFileTree {
+        moveToml("""
+        [package]
+        name = "Main"
+        
+        [dependencies]
+        UQ64x64 = { local = "./uq64x64" }
+            """)
+        sources {
+            main("""
+        module 0x1::m {
+            use uq64x64::uq64x64;
+            fun main() {
+                uq64x64::call();
+                        //^     
+            }
+        }
+            """)
+        }
+        dir("uq64x64") {
+            moveToml("""
+        [package]
+        name = "UQ64x64"
+        
+        [addresses]
+        uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
+            """)
+            sources {
+                move("uq64x64.move", """
+            module uq64x64::uq64x64 {
+                public fun call() {}
+                           //X
+            }
+                """)
+            }
+        }
+    }
 }

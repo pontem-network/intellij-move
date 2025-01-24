@@ -31,16 +31,20 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             // attribute values are special case
             if (path.hasAncestor<MvAttrItem>()) return
 
-//            val pathReference = path.reference ?: return
             val pathKind = path.pathKind()
             when (pathKind) {
-                is NamedAddress, is ValueAddress -> return
+                is NamedAddressOrUnqualifiedPath, is NamedAddress, is ValueAddress -> return
                 is UnqualifiedPath -> tryMultiResolveOrRegisterError(path, holder)
                 is QualifiedPath -> {
-                    if (pathKind !is QualifiedPath.Module) {
-                        val qualifier = pathKind.qualifier
-                        // qualifier is unresolved, no need to resolve current path
-                        if (qualifier.reference?.resolve() == null) return
+                    when (pathKind) {
+                        is QualifiedPath.ModuleItem,
+                        is QualifiedPath.FQModuleItem,
+                        is QualifiedPath.UseGroupItem -> {
+                            val qualifier = pathKind.qualifier
+                            // qualifier is unresolved, no need to resolve current path
+                            if (qualifier.reference?.resolve() == null) return
+                        }
+                        else -> Unit
                     }
                     tryMultiResolveOrRegisterError(path, holder)
                 }
