@@ -39,7 +39,8 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                     when (pathKind) {
                         is QualifiedPath.ModuleItem,
                         is QualifiedPath.FQModuleItem,
-                        is QualifiedPath.UseGroupItem -> {
+                        is QualifiedPath.UseGroupItem,
+                        is QualifiedPath.ModuleOrItem -> {
                             val qualifier = pathKind.qualifier
                             // qualifier is unresolved, no need to resolve current path
                             if (qualifier.reference?.resolve() == null) return
