@@ -1,5 +1,6 @@
 package org.move.toml
 
+import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceProvider
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.FileReference
@@ -9,7 +10,7 @@ import org.toml.lang.psi.TomlLiteral
 import org.toml.lang.psi.ext.TomlLiteralKind
 import org.toml.lang.psi.ext.kind
 
-class MoveTomlLocalPathReferenceProvider : PsiReferenceProvider() {
+class MoveTomlLocalPathReferenceProvider: PsiReferenceProvider() {
     override fun getReferencesByElement(
         element: PsiElement,
         context: ProcessingContext
@@ -17,6 +18,14 @@ class MoveTomlLocalPathReferenceProvider : PsiReferenceProvider() {
         val kind = (element as? TomlLiteral)?.kind ?: return emptyArray()
         if (kind !is TomlLiteralKind.String) return emptyArray()
 
-        return FileReferenceSet(element).allReferences
+        val valueRange = ElementManipulators.getValueTextRange(element)
+        return FileReferenceSet(
+            valueRange.substring(element.text),
+            element,
+            valueRange.startOffset,
+            this,
+            false,
+            false
+        ).allReferences
     }
 }

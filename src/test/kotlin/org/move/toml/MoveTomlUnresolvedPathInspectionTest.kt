@@ -29,4 +29,18 @@ class MoveTomlUnresolvedPathInspectionTest:
         """)
         sources {}
     })
+
+    fun `test no error with extra slash at the end`() = checkByFileTree(code = {
+        namedMoveToml("Root", """
+            [dependencies]
+            local = "./child/"
+            
+            <caret>
+        """)
+        sources {}
+        dir("child") {
+            namedMoveToml("Child")
+            sources {  }
+        }
+    })
 }
