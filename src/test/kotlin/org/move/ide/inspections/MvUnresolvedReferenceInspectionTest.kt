@@ -576,4 +576,25 @@ module 0x1::m {
             }
         }        
     """)
+
+    @NamedAddress("uq64x64", "0x1")
+    fun `test no error on module for unresolved module if the same name as address`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                uq64x64::call();
+            }
+        }
+    """)
+
+    @NamedAddress("uq64x64", "0x2")
+    fun `test error on known item of module with the same name as address`() = checkByText("""
+        module uq64x64::uq64x64 {
+        }
+        module 0x1::m {
+            use uq64x64::uq64x64;
+            fun main() {
+                uq64x64::<error descr="Unresolved function: `call`">call</error>();
+            }
+        }
+    """)
 }

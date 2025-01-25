@@ -33,15 +33,7 @@ val MvModule.friendModules: Sequence<MvModule>
     get() {
         return this.friendDeclList
             .asSequence()
-            .mapNotNull { it.path?.reference?.resolveFollowingAliases() as? MvModule }
-//        return sequence {
-//        }
-//        val friends = mutableSetOf<MvModule>()
-//        for (modulePath in friendModulePaths) {
-//            val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
-//            friends.add(module)
-//        }
-//        return friends
+            .mapNotNull { it.path.reference?.resolveFollowingAliases() as? MvModule }
     }
 
 fun MvModule.allFunctions(): List<MvFunction> {

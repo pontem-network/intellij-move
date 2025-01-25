@@ -9,7 +9,6 @@ import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve2.*
-import org.move.lang.core.resolve2.PathKind.NamedAddress
 import org.move.lang.core.resolve2.PathKind.ValueAddress
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -151,8 +150,8 @@ fun processPathResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     return when (pathKind) {
-        is NamedAddress, is ValueAddress -> false
-        is PathKind.UnqualifiedPath -> {
+        is PathKind.NamedAddress, is ValueAddress -> false
+        is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
             if (MODULE in pathKind.ns) {
                 // Self::
                 if (processor.lazy("Self", MODULES) { ctx.containingModule }) return true
