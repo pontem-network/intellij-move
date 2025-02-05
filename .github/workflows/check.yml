@@ -10,7 +10,7 @@ jobs:
     tests:
         strategy:
             matrix:
-                gradle-properties-version: [ 242, 243 ]
+                gradle-properties-version: [ 243 ]
                 platform-type: [ RR, PC ]
                 include:
                     - gradle-properties-version: 251

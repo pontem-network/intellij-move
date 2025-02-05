@@ -14,6 +14,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.createSmartPointer
 import com.intellij.util.IncorrectOperationException
 import com.jetbrains.rd.util.firstOrNull
+import fleet.util.logging.logger
 import org.apache.velocity.runtime.parser.ParseException
 import org.move.ide.MoveIcons
 import org.move.lang.moveProject
@@ -68,7 +69,7 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         } catch (e: IncorrectOperationException) {
             throw e
         } catch (e: java.lang.Exception) {
-            LOG.error(e)
+            logger<CreateMoveFileAction>().error(e)
         }
 
         return null

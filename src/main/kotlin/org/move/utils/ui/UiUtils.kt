@@ -20,6 +20,7 @@ import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.layout.ValidationInfoBuilder
 import com.intellij.util.PsiErrorElementUtil
 import com.intellij.util.text.nullize
+import org.move.openapiext.project
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JLabel
@@ -113,7 +114,7 @@ class WorkingDirectoryField : LabeledComponent<TextFieldWithBrowseButton>() {
             val fileChooser = FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
                 title = ExecutionBundle.message("select.working.directory.message")
             }
-            addBrowseFolderListener(null, null, null, fileChooser)
+            addBrowseFolderListener(null, fileChooser)
         }
         text = ExecutionBundle.message("run.configuration.working.directory.label")
     }
