@@ -346,7 +346,17 @@ class TypeInferenceWalker(
         path: MvPath,
         expectedType: Ty?
     ): MvNamedElement? {
-        val resolvedItems = resolvePathRaw(path, expectedType).map { ResolvedItem.from(it, path) }
+        val entries = resolvePathRaw(path, expectedType)
+            .filter {
+                if (it.element is MvPatBinding) {
+                    // filter out bindings which are resolvable to enum variants
+                    if (ctx.resolvedBindings[it.element] is MvEnumVariant) {
+                        return@filter false
+                    }
+                }
+                true
+            }
+        val resolvedItems = entries.map { ResolvedItem.from(it, path) }
         ctx.writePath(path, resolvedItems)
         // resolve aliases
         return resolvedItems.singleOrNull { it.isVisible }
@@ -736,7 +746,6 @@ class TypeInferenceWalker(
                         as? MvNamedFieldDecl
             val rawFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
-//            val fieldTy = field.type(msl)?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)

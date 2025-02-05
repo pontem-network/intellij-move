@@ -2,7 +2,10 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.types.infer.inference
 
 abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
 
@@ -71,8 +74,11 @@ class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
             // violations allowed in msl
             if (o.isMsl()) return
 
-            // match expr
-            if (parent is MvMatchArm) return
+            val matchArm = o.ancestorStrict<MvMatchArm>()
+            if (matchArm != null && matchArm.pat.contains(o)) {
+                // match arm lhs
+                return
+            }
 
             val ident = o.identifier
             val name = ident.text

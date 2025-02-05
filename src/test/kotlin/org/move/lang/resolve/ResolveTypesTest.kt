@@ -746,8 +746,23 @@ module 0x1::m {
             
             public fun non_exhaustive(o: &Outer) {
                 match (o) {
-                    One { inner: Inner1 } => field
+                    One { inner: Inner1 } => Inner1
                                  //^
+                }
+            }
+        }        
+    """)
+
+    fun `test enum variant cannot be resolved on the right side of match arm`() = checkByCode("""
+        module 0x1::m {
+            enum Inner { Inner1, Inner2 }
+                        //X
+            enum Outer { One { inner: Inner } }
+            
+            public fun non_exhaustive(o: &Outer) {
+                match (o) {
+                    One { inner: Inner1 } => Inner1
+                                             //^ unresolved
                 }
             }
         }        
@@ -767,10 +782,9 @@ module 0x1::m {
     fun `test resolve expr with enum variant no expected type`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
-                   //X
             fun main() {
                 let a = One;
-                       //^
+                       //^ unresolved
             }
         }        
     """)
@@ -786,7 +800,7 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve expr with enum variant ambiguous`() = checkByCode("""
+    fun `test resolve expr with enum variant with explicit type but ambiguous`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
                    //X
@@ -911,7 +925,7 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve enum variant in let expr`() = checkByCode("""
+    fun `test resolve enum variant in let expr if explicit type is provided`() = checkByCode("""
         module 0x1::m {
             enum S1 { One, Two }
                      //X  
@@ -934,7 +948,6 @@ module 0x1::m {
         }        
     """)
 
-    @MoveV2
     fun `test resolve enum item of resource index expr`() = checkByCode("""
         module 0x1::m {
             enum Ss has key { Empty }
@@ -946,7 +959,6 @@ module 0x1::m {
         }        
     """)
 
-    @MoveV2
     fun `test resolve struct item of resource index expr`() = checkByCode("""
         module 0x1::m {
             struct Ss has key { val: u8 }
@@ -954,6 +966,25 @@ module 0x1::m {
             fun main() {
                 &mut Ss[@0x1];
                    //^
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum value by itself with no type guidance in expr`() = checkByCode("""
+        module 0x1::m {
+            enum Ss { One }
+            fun main() {
+                One;
+              //^ unresolved  
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum value by itself with no type guidance in type`() = checkByCode("""
+        module 0x1::m {
+            enum Ss { One }
+            fun main(s: One) {
+                        //^ unresolved  
             }
         }        
     """)

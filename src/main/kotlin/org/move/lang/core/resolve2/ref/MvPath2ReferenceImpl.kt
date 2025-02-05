@@ -96,6 +96,14 @@ fun processPathResolveVariantsWithExpectedType(
     expectedType: Ty?,
     processor: RsResolveProcessor
 ): Boolean {
+    // if path qualifier is enum, then the expected type is that enum
+    var expectedType = expectedType
+    if (pathKind is PathKind.QualifiedPath) {
+        val qualifierItem = pathKind.qualifier.reference?.resolveFollowingAliases()
+        if (qualifierItem is MvEnum) {
+            expectedType = TyAdt.valueOf(qualifierItem)
+        }
+    }
     val expectedTypeFilterer = filterEnumVariantsByExpectedType(expectedType, processor)
     return processPathResolveVariants(
         ctx,
@@ -105,15 +113,21 @@ fun processPathResolveVariantsWithExpectedType(
 }
 
 fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: RsResolveProcessor): RsResolveProcessor {
-    if (expectedType == null) return processor
 
-    val enumItem = (expectedType as? TyAdt)?.item as? MvEnum
-    if (enumItem == null) return processor
+    val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum
+    // if expected type is unknown, or not a enum, then we cannot infer enum variants
+    if (expectedEnumItem == null) {
+        return processor.wrapWithFilter {
+            val element = it.element
+            if (element is MvEnumVariant) return@wrapWithFilter false
+            true
+        }
+    }
 
-    val allowedVariants = enumItem.variants
+    val expectedEnumVariants = expectedEnumItem.variants
     return processor.wrapWithFilter {
         val element = it.element
-        element !is MvEnumVariant || element in allowedVariants
+        element !is MvEnumVariant || element in expectedEnumVariants
     }
 }
 
@@ -219,8 +233,6 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
 
     val methodOrPath: MvMethodOrPath? get() = element as? MvMethodOrPath
     val path: MvPath? get() = element as? MvPath
-
-    val isSpecOnlyExpr: Boolean get() = element.hasAncestor<MvSpecOnlyExpr>()
 }
 
 fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
@@ -243,13 +255,7 @@ private fun resolvePath(
         collectMethodOrPathResolveVariants(path, ctx) {
             // actually emits resolve variants
             processPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null, it)
-//            processPathResolveVariants(ctx, pathKind, it)
         }
     return result
-//    return when (result.size) {
-//        0 -> emptyList()
-//        1 -> listOf(result.single())
-//        else -> result
-//    }
 }
 

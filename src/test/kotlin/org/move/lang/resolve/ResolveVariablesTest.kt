@@ -483,6 +483,20 @@ module 0x1::string_tests {
         }        
     """)
 
+    fun `test enum variant with fields`() = checkByCode("""
+        module 0x1::m {
+            enum S { One { field: u8 }, Two }
+                    //X
+            fun main() {
+                let m = 1;
+                match (m) {
+                    S::One { field: f } => f
+                      //^
+                }
+            }
+        }        
+    """)
+
     fun `test resolve fields for enum variant in match arm`() = checkByCode("""
         module 0x1::m {
             enum S { One { field: u8 }, Two }

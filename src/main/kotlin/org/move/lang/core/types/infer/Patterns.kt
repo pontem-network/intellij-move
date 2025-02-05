@@ -53,11 +53,12 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 }
             }
 
-            val structFields = item?.namedFields?.associateBy { it.name } ?: emptyMap()
+            val namedFields = item?.namedFields?.associateBy { it.name } ?: emptyMap()
             for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
                 // wil have TyUnknown on unresolved item
-                val fieldType = structFields[kind.fieldName]
+                val namedField = namedFields[kind.fieldName]
+                val fieldType = namedField
                     ?.type
                     ?.loweredType(fcx.msl)
                     ?.substituteOrUnknown(ty.typeParameterValues)
@@ -69,6 +70,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                         fcx.ctx.writeFieldPatTy(fieldPat, fieldType)
                     }
                     is PatFieldKind.Shorthand -> {
+                        fcx.ctx.resolvedBindings[kind.binding] = namedField
                         fcx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm, msl))
                     }
                 }
