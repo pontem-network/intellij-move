@@ -2,11 +2,14 @@ package org.move.lang.core.resolve2.ref
 
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve.collectResolveVariantsAsScopeEntries
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.processPatBindingResolveVariants
+import org.move.lang.core.types.infer.InferenceResult
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.stdext.wrapWithList
@@ -17,22 +20,23 @@ class MvBindingPatReferenceImpl(
 
     override fun multiResolve(): List<MvNamedElement> =
         rawMultiResolveUsingInferenceCache() ?: rawCachedMultiResolve()
-//        resolvePatBindingRaw(element, expectedType = null).map { it.element }
-
-//    override fun multiResolveInner(): List<MvNamedElement> =
-//        resolvePatBindingRaw(element, expectedType = null).map { it.element }
-//        collectResolveVariants(element.referenceName) {
-//            processPatBindingResolveVariants(element, false, it)
-//        }
 
     private fun rawMultiResolveUsingInferenceCache(): List<MvNamedElement>? {
-        val parent = element.parent as? MvElement ?: return null
-        if (parent is MvMatchArm || parent is MvPat) {
-            val msl = parent.isMsl()
-            return parent.inference(msl)?.getResolvedPatBinding(element).wrapWithList()
-        } else {
-            return null
+        var inference: InferenceResult? = null
+        // determine that binding is inside the left side of the match arm
+        val matchArm = element.ancestorStrict<MvMatchArm>()
+        if (matchArm != null && matchArm.pat.contains(element)) {
+            // inside the lhs of match arm
+            inference = matchArm.pat.inference(matchArm.pat.isMsl())
         }
+        if (inference == null) {
+            val letStmtPat = element.ancestorStrict<MvLetStmt>()?.pat
+            if (letStmtPat != null && letStmtPat.contains(element)) {
+                inference = letStmtPat.inference(letStmtPat.isMsl());
+            }
+        }
+        if (inference == null) return null
+        return inference.getResolvedPatBinding(element).wrapWithList()
     }
 
     private fun rawCachedMultiResolve(): List<MvNamedElement> =
@@ -54,6 +58,6 @@ fun resolvePatBindingRaw(binding: MvPatBinding, expectedType: Ty? = null): List<
                 false,
                 filteringProcessor
             )
-            }
+        }
     return resolveVariants
 }

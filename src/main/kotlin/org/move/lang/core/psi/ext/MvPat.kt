@@ -5,4 +5,4 @@ import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPat
 
-val MvPat.bindings: List<MvNamedElement> get() = this.descendantsOfType<MvPatBinding>().toList()
+val MvPat.bindings: List<MvPatBinding> get() = this.descendantsOfType<MvPatBinding>().toList()

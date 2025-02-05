@@ -202,17 +202,6 @@ inline fun processWithShadowingAndUpdateScope(
     }
 }
 
-//inline fun processWithShadowing(
-//    prevScope: Map<String, Set<Namespace>>,
-//    ns: Set<Namespace>,
-//    processor: RsResolveProcessor,
-//    f: (RsResolveProcessor) -> Boolean
-//): Boolean {
-//    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, ns)
-//    return f(shadowingProcessor)
-//}
-
-
 fun walkUpThroughScopes(
     start: MvElement,
     stopAfter: (MvElement) -> Boolean,
