@@ -36,7 +36,7 @@ sealed class TomlDependency {
     data class Git(
         override val name: String,
         private val repo: String,
-        private val rev: String,
+        val rev: String,
         private val subdir: String,
     ): TomlDependency() {
 

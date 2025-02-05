@@ -16,7 +16,7 @@ class MoveLangLibrary(
     private val excludedRoots: Set<VirtualFile>,
     private val icon: Icon,
     private val version: String?
-) : SyntheticLibrary(), ItemPresentation {
+): SyntheticLibrary(), ItemPresentation {
     override fun getSourceRoots(): Collection<VirtualFile> = sourceRoots
     override fun getExcludedRoots(): Set<VirtualFile> = excludedRoots
 
@@ -30,7 +30,7 @@ class MoveLangLibrary(
     override fun getPresentableText(): String = if (version != null) "$name $version" else name
 }
 
-class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
+class BuildLibraryRootsProvider: AdditionalLibraryRootsProvider() {
     override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
         return project.moveProjectsService
             .allProjects
@@ -62,9 +62,9 @@ private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
             }
             .map {
                 val sourceRoots = it.layoutPaths().mapNotNull { p -> p.toVirtualFile() }.toMutableSet()
-//                val tomlFile = it.manifestFile
                 sourceRoots.add(it.manifestFile)
-                MoveLangLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
+                val depName = it.packageName + if (it.gitRev != null) " (${it.gitRev})" else ""
+                MoveLangLibrary(depName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
             }
 
     }

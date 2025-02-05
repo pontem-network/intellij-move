@@ -33,6 +33,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
+import org.move.cli.manifest.TomlDependency
 import org.move.cli.manifest.TomlDependency.Git.Companion.moveHome
 import org.move.cli.runConfigurations.aptos.AptosExitStatus
 import org.move.cli.settings.getAptosCli
@@ -144,7 +145,7 @@ class MoveProjectsSyncTask(
             runReadAction {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
                 val rootMoveToml = MoveToml.fromTomlFile(tomlFile)
-                val rootPackage = MovePackage.fromMoveToml(rootMoveToml)
+                val rootPackage = MovePackage.fromMoveToml(rootMoveToml, null)
                 val rootProject = MoveProject(project, rootPackage, emptyList())
                 rootProject to rootMoveToml
             }
@@ -194,7 +195,8 @@ class MoveProjectsSyncTask(
                         deps,
                         visitedDepIds,
                         true,
-                        childContext
+                        childContext,
+                        null,
                     )
                     TaskResult.Ok(deps)
                 }
@@ -360,6 +362,7 @@ class MoveProjectsSyncTask(
             visitedIds: MutableSet<DepId>,
             isRoot: Boolean,
             syncContext: SyncContext,
+            gitRev: String?
         ) {
             // checks for the cancel() of the whole SyncTask
             syncContext.checkCanceled()
@@ -388,11 +391,12 @@ class MoveProjectsSyncTask(
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
 
                 // first try to parse MovePackage from dependency, no need for nested if parent is invalid
-                val depPackage = MovePackage.fromMoveToml(depMoveToml)
+                val gitRev = (dep as? TomlDependency.Git)?.rev ?: gitRev
+                val depPackage = MovePackage.fromMoveToml(depMoveToml, gitRev)
 
                 // parse all nested dependencies with their address maps
                 visitedIds.add(depId)
-                loadDependencies(project, depMoveToml, deps, visitedIds, false, syncContext)
+                loadDependencies(project, depMoveToml, deps, visitedIds, false, syncContext, gitRev)
                 deps.add(Pair(depPackage, addressMap))
 
                 syncContext.syncProgress.output(
