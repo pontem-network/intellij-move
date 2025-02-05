@@ -1,6 +1,7 @@
 package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionConfidence
+import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.ThreeState
@@ -12,7 +13,12 @@ import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.bindingOwner
 
 class MvCompletionConfidence : CompletionConfidence() {
-    override fun shouldSkipAutopopup(contextElement: PsiElement, psiFile: PsiFile, offset: Int): ThreeState {
+    override fun shouldSkipAutopopup(
+        editor: Editor,
+        contextElement: PsiElement,
+        psiFile: PsiFile,
+        offset: Int
+    ): ThreeState {
         // Don't show completion popup when typing a `let binding` identifier starting with a lowercase letter.
         // If the identifier is uppercase, the user probably wants to type a destructuring pattern
         // (`let Foo { ... }`), so we show the completion popup in this case

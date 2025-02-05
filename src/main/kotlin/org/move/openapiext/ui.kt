@@ -49,7 +49,7 @@ fun pathField(
 ): TextFieldWithBrowseButton {
     val component = TextFieldWithBrowseButton(null, parentDisposable)
     component.addBrowseFolderListener(
-        dialogTitle, null, null,
+        null,
         fileChooserDescriptor,
         TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
     )
@@ -62,7 +62,7 @@ fun pathField(
 
 fun JTextField.addTextChangeListener(listener: (DocumentEvent) -> Unit) {
     document.addDocumentListener(
-        object : DocumentAdapter() {
+        object: DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
                 listener(e)
             }
@@ -70,6 +70,6 @@ fun JTextField.addTextChangeListener(listener: (DocumentEvent) -> Unit) {
     )
 }
 
-fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
+fun <T: JComponent> Row.fullWidthCell(component: T): Cell<T> {
     return cell(component).align(AlignX.FILL)
 }
