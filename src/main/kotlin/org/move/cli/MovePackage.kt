@@ -20,6 +20,7 @@ data class MovePackage(
     val contentRoot: VirtualFile,
     val packageName: String,
     val tomlMainAddresses: PackageAddresses,
+    val gitRev: String? = null,
 ) {
     val manifestFile: VirtualFile get() = contentRoot.findChild(MvConstants.MANIFEST_FILE)!!
 
@@ -84,12 +85,14 @@ data class MovePackage(
     }
 
     companion object {
-        fun fromMoveToml(moveToml: MoveToml): MovePackage {
+        fun fromMoveToml(moveToml: MoveToml, gitRev: String?): MovePackage {
             val contentRoot = moveToml.tomlFile.virtualFile.parent
             return MovePackage(
-                moveToml.project, contentRoot,
+                moveToml.project,
+                contentRoot,
                 packageName = moveToml.packageName ?: "",
-                tomlMainAddresses = moveToml.declaredAddresses()
+                tomlMainAddresses = moveToml.declaredAddresses(),
+                gitRev = gitRev,
             )
         }
     }
