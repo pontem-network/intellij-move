@@ -7,24 +7,28 @@ import com.intellij.util.execution.ParametersListUtil
 import java.nio.file.Path
 
 open class MvCommandLine(
+    val subCommand: String? = null,
     val arguments: List<String> = emptyList(),
     val workingDirectory: Path? = null,
     val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
-    val commandLineString: String get() = ParametersListUtil.join(arguments)
+    private val subCommandWithArguments get() = subCommand?.split(" ").orEmpty() + arguments
+
+    val commandLineString: String get() = ParametersListUtil.join(subCommandWithArguments)
 
     fun toGeneralCommandLine(cliExePath: Path, emulateTerminal: Boolean = false): GeneralCommandLine {
-        var commandLine = GeneralCommandLine()
+        val commandLine = if (emulateTerminal) {
+            PtyCommandLine()
+        } else {
+            GeneralCommandLine()
+        }
             .withExePath(cliExePath.toString())
-            .withParameters(this.arguments)
+            .withParameters(this.subCommandWithArguments)
             .withWorkingDirectory(this.workingDirectory)
             .withCharset(Charsets.UTF_8)
             // disables default coloring for stderr
             .withRedirectErrorStream(true)
         this.environmentVariables.configureCommandLine(commandLine, true)
-        if (emulateTerminal) {
-            commandLine = PtyCommandLine(commandLine)
-        }
         return commandLine
     }
 }

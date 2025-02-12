@@ -5,7 +5,16 @@ import com.intellij.execution.ExecutionManager
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.util.Key
+import org.move.cli.runConfigurations.AptosCommandLine
 
+typealias AptosPatch = (AptosCommandLine) -> AptosCommandLine
+
+var ExecutionEnvironment.aptosPatches: List<AptosPatch>
+    get() = putUserDataIfAbsent(APTOS_PATCHES, emptyList())
+    set(value) = putUserData(APTOS_PATCHES, value)
+
+private val APTOS_PATCHES: Key<List<AptosPatch>> = Key.create("APTOS.PATCHES")
 
 private val ExecutionEnvironment.executionListener: ExecutionListener
     get() = project.messageBus.syncPublisher(ExecutionManager.EXECUTION_TOPIC)

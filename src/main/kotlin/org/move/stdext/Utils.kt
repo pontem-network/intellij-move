@@ -84,3 +84,11 @@ fun Long.isPowerOfTwo(): Boolean {
     return this > 0 && (this.and(this - 1)) == 0L
 }
 
+fun String.partitionLast(delimiter: String): Pair<String, String> {
+    val head = substringBeforeLast(delimiter)
+    val tail = substringAfterLast(delimiter)
+    return when {
+        head == tail -> head to ""
+        else -> head to tail
+    }
+}

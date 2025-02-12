@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvModule
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 
@@ -28,9 +29,11 @@ object AptosTestLocator : SMTestLocator {
         return buildList {
             val name = qualifiedName.substringAfterLast(NAME_SEPARATOR)
             for (element in MvNamedElementIndex.getElementsByName(project, name, scope)) {
-                if (element is MvFunction) {
-                    if (element.qualName?.cmdText() == qualifiedName) {
-                        add(PsiLocation.fromPsiElement(element))
+                when (element) {
+                    is MvFunction, is MvModule -> {
+                        if (element.qualName?.cmdText() == qualifiedName) {
+                            add(PsiLocation.fromPsiElement(element))
+                        }
                     }
                 }
             }
