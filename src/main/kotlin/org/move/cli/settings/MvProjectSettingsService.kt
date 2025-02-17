@@ -5,7 +5,6 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
-import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
@@ -38,6 +37,7 @@ class MvProjectSettingsService(
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
     val enableMove2: Boolean get() = state.enableMove2
+    val disabledMove2: Boolean get() = !state.enableMove2
 
     val enableReceiverStyleFunctions: Boolean get() = enableMove2
     val enableIndexExpr: Boolean get() = enableMove2

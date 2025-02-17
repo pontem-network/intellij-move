@@ -268,4 +268,30 @@ module 0x1::m {
 <span style="...">spec</span> <span style="...">schema</span> CreateAccountAbortsIf&lt;<span style="...">T</span>&gt;</pre></div>
 <div class='content'><p>my schema</p></div>
     """)
+
+    fun `test lambda parameter`() = doTest("""
+        module 0x1::m {
+            fun main() {
+                let f = |m: u8| {
+                    m;
+                  //^  
+                };
+            }
+        }
+    """, """
+<div class='definition'><pre><span style="...">lambda parameter</span> m: <span style="...">u8</span></pre></div>
+    """)
+
+    fun `test lambda parameter uninferred`() = doTest("""
+        module 0x1::m {
+            fun main() {
+                let f = |m| {
+                    m;
+                  //^  
+                };
+            }
+        }
+    """, """
+<div class='definition'><pre><span style="...">lambda parameter</span> m</pre></div>
+    """)
 }

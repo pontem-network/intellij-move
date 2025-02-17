@@ -829,7 +829,7 @@ class TypeInferenceWalker(
         val argTy = indexExpr.argExpr.inferType()
 
         // compiler v2 only in non-msl
-        if (!ctx.msl && !project.moveSettings.enableIndexExpr) {
+        if (project.moveSettings.disabledMove2 && !ctx.msl) {
             return TyUnknown
         }
 
@@ -842,7 +842,7 @@ class TypeInferenceWalker(
                     is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
                     else -> {
                         coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
-                        TyUnknown
+                        derefTy.item
                     }
                 }
             }
