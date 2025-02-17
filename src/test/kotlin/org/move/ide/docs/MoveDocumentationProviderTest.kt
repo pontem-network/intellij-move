@@ -292,6 +292,7 @@ module 0x1::m {
             }
         }
     """, """
-<div class='definition'><pre><span style="...">lambda parameter</span> m</pre></div>
+<div class='definition'><pre><span style="...">lambda parameter</span> m: &lt;unknown&gt;</pre></div>
+
     """)
 }

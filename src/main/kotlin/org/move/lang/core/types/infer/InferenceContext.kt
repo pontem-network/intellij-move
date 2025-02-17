@@ -55,8 +55,6 @@ typealias CoerceResult = RsResult<CoerceOk, CombineTypeError>
 
 class CoerceOk()
 
-data class DelayedCoercion(val tys: List<Ty>, val coercion: (List<Ty>) -> Unit)
-
 fun RelateResult.into(): CoerceResult = map { CoerceOk() }
 
 sealed class CombineTypeError {
@@ -96,6 +94,7 @@ data class InferenceResult(
     private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
 
     val callableTypes: Map<MvCallable, Ty>,
+    val lambdaExprTypes: Map<MvLambdaExpr, Ty>,
     val typeErrors: List<TypeError>
 ): InferenceData {
     fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: inferenceErrorOrFallback(expr, TyUnknown)
@@ -193,6 +192,9 @@ class InferenceContext(
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val callableTypes = mutableMapOf<MvCallable, Ty>()
 
+    val lambdaExprTypes = mutableMapOf<MvLambdaExpr, Ty>()
+    val lambdaExprs = mutableListOf<MvLambdaExpr>()
+
     val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
     val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
@@ -200,7 +202,6 @@ class InferenceContext(
 
     val resolvedLitFields: MutableMap<MvStructLitField, List<MvNamedElement>> = hashMapOf()
 
-    private val delayedCoercions = mutableListOf<DelayedCoercion>()
     private val typeErrors = mutableListOf<TypeError>()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
@@ -246,6 +247,27 @@ class InferenceContext(
             is MvSchema -> owner.specBlock?.let { inference.inferSpecBlock(it) }
         }
 
+        //  1. collect lambda expr bodies while inferring the context
+        //  2. for every lambda expr body:
+        //     1. infer lambda expr body, adding items to outer inference result
+        //     2. resolve all vars again in the InferenceContext
+        //  3. resolve vars replacing unresolved vars with tyunknown
+
+        while (lambdaExprs.isNotEmpty()) {
+            val lambdaExpr = lambdaExprs.removeFirst()
+
+            resolveAllTypeVarsIfPossible()
+
+            val retTy = (lambdaExprTypes[lambdaExpr] as? TyLambda)?.returnType
+            lambdaExpr.expr?.let {
+                if (retTy != null) {
+                    inference.inferExprTypeCoercableTo(it, retTy)
+                } else {
+                    inference.inferExprType(it)
+                }
+            }
+        }
+
         fallbackUnresolvedTypeVarsIfPossible()
 
         exprTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
@@ -258,12 +280,7 @@ class InferenceContext(
         resolvedPaths.values.asSequence().flatten()
             .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
-
-        // can possibly create new type errors
-        this.delayedCoercions.forEach {
-            val resolvedTys = it.tys.map { fullyResolveTypeVarsWithOrigins(it) }
-            it.coercion(resolvedTys)
-        }
+        lambdaExprTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
 
@@ -278,8 +295,28 @@ class InferenceContext(
             resolvedBindings,
             resolvedLitFields,
             callableTypes,
+            lambdaExprTypes,
             typeErrors
         )
+    }
+
+    private fun resolveAllTypeVarsIfPossible() {
+        patTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        exprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        patFieldTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+
+        callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        resolvedPaths.values.asSequence().flatten()
+            .forEach {
+                it.subst = it.subst.foldValues(object: TypeFolder() {
+                    override fun fold(ty: Ty): Ty {
+                        return resolveTypeVarsIfPossible(ty)
+                    }
+
+                })
+            }
+        exprExpectedTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
     }
 
     private fun fallbackUnresolvedTypeVarsIfPossible() {
@@ -287,7 +324,6 @@ class InferenceContext(
         for (ty in allTypes) {
             ty.visitInferTys { tyInfer ->
                 val rty = resolveTyInfer(tyInfer)
-//                val rty = resolveIfTyInfer(tyInfer)
                 if (rty is TyInfer) {
                     fallbackIfPossible(rty)
                 }
@@ -534,10 +570,6 @@ class InferenceContext(
                 else -> resTy.innerFoldWith(this)
             }
         }
-    }
-
-    fun addDelayedCoercion(coercion: DelayedCoercion) {
-        delayedCoercions.add(coercion)
     }
 
     // Awful hack: check that inner expressions did not annotated as an error

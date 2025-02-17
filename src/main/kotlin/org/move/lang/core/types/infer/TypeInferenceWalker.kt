@@ -403,9 +403,11 @@ class TypeInferenceWalker(
             ctx.writePatTy(it.patBinding, paramTy)
             paramTy
         }
-        val lambdaRetTy = lambdaExpr.expr?.inferType() ?: TyUnit
 
-        val lambdaTy = TyLambda(paramTys, lambdaRetTy)
+        val lambdaTy = TyLambda(paramTys, TyInfer.TyVar())
+
+        this.ctx.lambdaExprs.add(lambdaExpr)
+        this.ctx.lambdaExprTypes[lambdaExpr] = lambdaTy
 
         val expectedTy = expected.onlyHasTy(this.ctx)
         if (expectedTy != null) {
@@ -688,8 +690,8 @@ class TypeInferenceWalker(
     }
 
     @JvmName("inferType_")
-    fun inferType(expr: MvExpr): Ty =
-        expr.inferType()
+    fun inferExprType(expr: MvExpr): Ty = expr.inferType()
+    fun inferExprTypeCoercableTo(expr: MvExpr, expected: Ty): Ty = expr.inferTypeCoercableTo(expected)
 
     // combineTypes with errors
     fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
@@ -1053,19 +1055,8 @@ class TypeInferenceWalker(
         val innerExpr = derefExpr.expr ?: return TyUnknown
 
         val innerExprTy = innerExpr.inferType()
-        ctx.addDelayedCoercion(DelayedCoercion(listOf(innerExprTy), { tys ->
-            val innerExprTy = tys.first()
-            if (innerExprTy !is TyReference) {
-                ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))
-            }
-        }))
-
-        // todo: needs to have `DerefTy(TyVar)` variable type to return correct type here
-        if (innerExprTy is TyInfer.TyVar) {
-            return TyUnknown
-        }
-
         if (innerExprTy !is TyReference) {
+            ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))
             return TyUnknown
         }
         return innerExprTy.referenced

@@ -34,9 +34,5 @@ data class TyLambda(
         fun unknown(numParams: Int): TyLambda {
             return TyLambda(generateSequence { TyUnknown }.take(numParams).toList(), TyUnknown)
         }
-
-        fun uninferred(numParams: Int): TyLambda {
-            return TyLambda(generateSequence { TyInfer.TyVar() }.take(numParams).toList(), TyUnknown)
-        }
     }
 }
