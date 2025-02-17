@@ -676,7 +676,7 @@ PathType ::= PathImpl
 
 TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
 
-LambdaType ::= '|' !',' <<comma_separated_list LambdaTypeParam>>? '|' Type? WithAbilities?
+LambdaType ::= '|' !',' <<comma_separated_list LambdaTypeParam>>? '|' Type?
 LambdaTypeParam ::= Type
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
@@ -1098,19 +1098,10 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
     elementType = TupleLitExpr
 }
 
-LambdaExpr ::= LambdaParameterList Expr? WithAbilities?
+LambdaExpr ::= LambdaParameterList Expr?
 {
     pin = 1
 }
-WithAbilities ::= with WithAbility_items
-{
-    pin = 1
-}
-private WithAbility_items ::= Ability ( '+' Ability )*
-{
-    recoverWhile = WithAbility_items_recover
-}
-private WithAbility_items_recover ::= !(';' | Expr_first | ')')
 
 LambdaParameterList ::= '|' !',' <<comma_separated_list LambdaParameter>>? '|'
 LambdaParameter ::= PatBinding TypeAscription?
