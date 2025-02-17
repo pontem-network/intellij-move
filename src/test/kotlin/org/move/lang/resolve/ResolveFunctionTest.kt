@@ -812,6 +812,19 @@ module 0x1::mod {
     """
     )
 
+    fun `test resolve lambda function call expr ignored non lambda variable with the same name`() = checkByCode(
+        """
+module 0x1::mod {
+    public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
+                                                               //X
+        let func = 1;                                                               
+        func(elem);
+        //^
+    }
+}        
+    """
+    )
+
     fun `test cannot resolve function to parameter`() = checkByCode(
         """
 module 0x1::mod {
@@ -1227,4 +1240,16 @@ module 0x1::m2 {
         //^ unresolved
     }
 }    """)
+
+    // todo: function values PR
+//    fun `test resolve lambda from let stmt`() = checkByCode("""
+//        module 0x1::m {
+//            fun main() {
+//                let select_f = |s|;
+//                      //X
+//                select_f(1);
+//                //^
+//            }
+//        }
+//    """)
 }

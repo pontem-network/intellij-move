@@ -954,7 +954,6 @@ private AtomExpr ::= AnnotatedExpr
                     | PathExpr
                     | CallExpr
                     | AssertMacroExpr
-//                    | (CallExpr | AssertExpr)
                     | LambdaExpr
                     | LitExpr
                     | SpecBlockExpr
@@ -1099,7 +1098,10 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
     elementType = TupleLitExpr
 }
 
-LambdaExpr ::= LambdaParameterList Expr? { pin = 1 }
+LambdaExpr ::= LambdaParameterList Expr?
+{
+    pin = 1
+}
 
 LambdaParameterList ::= '|' !',' <<comma_separated_list LambdaParameter>>? '|'
 LambdaParameter ::= PatBinding TypeAscription?

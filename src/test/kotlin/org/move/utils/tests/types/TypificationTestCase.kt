@@ -3,6 +3,7 @@ package org.move.utils.tests.types
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.MvUnresolvedReferenceInspection
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvPatBinding
@@ -10,6 +11,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvPathExpr
 import org.move.lang.core.psi.MvType
+import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.MvInferenceContextOwner
 import org.move.lang.core.types.infer.inferExpectedTy
@@ -138,7 +140,8 @@ abstract class TypificationTestCase : MvTestBase() {
         val notTypifiedExprs = myFixture.file
             .descendantsOfType<MvExpr>().toList()
             .filter { expr ->
-                expr.inference(false)?.hasExprType(expr) == false
+                val inference = expr.inference(false)
+                inference?.hasExprType(expr) == false
             }
         if (notTypifiedExprs.isNotEmpty()) {
             error(
@@ -146,7 +149,7 @@ abstract class TypificationTestCase : MvTestBase() {
                     "\n",
                     "Some expressions are not typified during type inference: \n",
                     "\nNote: All `MvExpr`s must be typified during type inference"
-                ) { "\tAt `${it.text}` (line ${it.lineNumber})" }
+                ) { "\tAt `${it.text}` (${it.elementType} at line ${it.lineNumber})" }
             )
         }
     }

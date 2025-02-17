@@ -32,7 +32,7 @@ enum class Namespace {
 
 val NONE = Namespace.none()
 val NAMES = setOf(Namespace.NAME)
-//val NAMES_N_FUNCTIONS = setOf(Namespace.NAME, Namespace.FUNCTION)
+val NAMES_N_FUNCTIONS = setOf(Namespace.NAME, Namespace.FUNCTION)
 
 val MODULES = setOf(Namespace.MODULE)
 val FUNCTIONS = setOf(Namespace.FUNCTION)

@@ -97,7 +97,7 @@ private fun render(
     tyVar: (TyInfer.TyVar) -> String = {
         val varName =
             it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) }
-                ?: "_"
+                ?: "_${it.hashCode()}"
         "?$varName"
 //        colored(it.origin?.name, asTypeParam, toHtml) ?: "_"
     },

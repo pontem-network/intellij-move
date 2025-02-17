@@ -2291,4 +2291,143 @@ module 0x1::main {
         }        
     """
     )
+
+    fun `test infer lambda identity type`() = testExpr("""
+        module 0x1::vector {
+            /// Apply the function to each element in the vector, consuming it.
+            public inline fun for_each<Element>(self: vector<Element>, _f: |Element| Element) {
+            }
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |m| m;
+                vector[1u8].for_each(f);
+                f;
+              //^ |u8| -> u8                
+            }
+        }        
+    """)
+
+    fun `test infer lambda noop type`() = testExpr("""
+        module 0x1::vector {
+            /// Apply the function to each element in the vector, consuming it.
+            public inline fun for_each<Element>(self: vector<Element>, _f: |Element|) {
+            }
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |m|;
+                vector[1u8].for_each(f);
+                f;
+              //^ |u8| -> ()                
+            }
+        }        
+    """)
+
+    fun `test deref address in lambda`() = testExpr("""
+        module 0x1::vector {
+            public fun enumerate_ref<Element>(self: vector<Element>, _f: |&Element| Element) {}
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |to| (*to);
+                              //^ &address
+                vector[@0x1].enumerate_ref(f);
+            }
+        }     
+    """)
+
+    fun `test outer vector inside lambda expr`() = testExpr("""
+        module 0x1::m {
+            fun main(amounts: vector<u8>) {
+                let f = |i| {
+                    let amount = amounts[i];
+                    amount;
+                    //^ u8
+                };
+                
+            }
+        }        
+    """)
+
+    fun `test outer variable in nested lambda`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let ind = 1;
+                || {
+                    || {
+                        ind;
+                       //^ integer     
+                    };
+                }
+            }
+        }        
+    """)
+
+    fun `test lambda variable vector`() = testExpr(
+        """
+        module 0x1::m {
+            fun call<Element>(i: Element, f: |vector<Element>|) {}
+            fun main() {
+                let f = |amounts| {
+                    let amount = amounts[0];
+                    amount;
+                    //^ u8
+                };
+                call(1u8, f);
+                
+            }
+        }        
+    """
+    )
+
+    fun `test lambda variable struct`() = testExpr(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+            fun call_on<Element>(i: Element, f: |Element|) {}
+            fun main() {
+                let select_val = |s| {
+                    s.val;
+                     //^ u8
+                };
+                let s = S { val: 1 };
+                call_on(s, select_val);
+            }
+        }        
+    """
+    )
+
+    fun `test nested lambda expr`() = testExpr("""
+        module 0x1::m {
+            fun call<Element>(g: || |Element| Element) {}
+            fun main() {
+                let g = || { let f = |m| m; f };
+                call(|| { |m: u8| m });
+                                //^ u8  
+            }
+        }        
+    """)
+
+    fun `test infer outer type variable with lambda body`() = testExpr("""
+        module 0x1::vector {
+            public native fun for_each_ref<Element>(self: &vector<Element>, f: |&Element|);
+            public native fun contains<Element>(self: &vector<Element>, e: &Element): bool;
+        }
+        module 0x1::account {
+            use 0x1::vector;
+            struct Account { account_address: address }
+            fun create_accounts(accounts: vector<Account>) {
+                let unique_accounts = vector[];
+                accounts.for_each_ref(|account| {
+                    assert!(
+                        !vector::contains(&unique_accounts, &account.account_address),
+                        1,
+                    );
+                });
+                unique_accounts;
+                //^ vector<address>
+            }
+        }        
+    """)
 }

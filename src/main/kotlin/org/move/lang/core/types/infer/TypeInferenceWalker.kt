@@ -397,16 +397,25 @@ class TypeInferenceWalker(
     }
 
     private fun inferLambdaExprTy(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
-        val bindings = lambdaExpr.parametersAsBindings
-        val lambdaTy =
-            (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
 
-        for ((i, binding) in lambdaExpr.parametersAsBindings.withIndex()) {
-            val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
-            ctx.writePatTy(binding, ty)
+        val paramTys = lambdaExpr.lambdaParameters.map {
+            val paramTy = it.type?.loweredType(ctx.msl) ?: TyInfer.TyVar()
+            ctx.writePatTy(it.patBinding, paramTy)
+            paramTy
         }
-        lambdaExpr.expr?.inferTypeCoercableTo(lambdaTy.returnType)
-        return TyUnknown
+
+        val lambdaTy = TyLambda(paramTys, TyInfer.TyVar())
+
+        this.ctx.lambdaExprs.add(lambdaExpr)
+        this.ctx.lambdaExprTypes[lambdaExpr] = lambdaTy
+
+        val expectedTy = expected.onlyHasTy(this.ctx)
+        if (expectedTy != null) {
+            // error if not TyLambda
+            coerce(lambdaExpr, lambdaTy, expectedTy)
+        }
+
+        return lambdaTy
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
@@ -681,8 +690,8 @@ class TypeInferenceWalker(
     }
 
     @JvmName("inferType_")
-    fun inferType(expr: MvExpr): Ty =
-        expr.inferType()
+    fun inferExprType(expr: MvExpr): Ty = expr.inferType()
+    fun inferExprTypeCoercableTo(expr: MvExpr, expected: Ty): Ty = expr.inferTypeCoercableTo(expected)
 
     // combineTypes with errors
     fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
@@ -822,7 +831,7 @@ class TypeInferenceWalker(
         val argTy = indexExpr.argExpr.inferType()
 
         // compiler v2 only in non-msl
-        if (!ctx.msl && !project.moveSettings.enableIndexExpr) {
+        if (project.moveSettings.disabledMove2 && !ctx.msl) {
             return TyUnknown
         }
 
@@ -835,7 +844,7 @@ class TypeInferenceWalker(
                     is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
                     else -> {
                         coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
-                        TyUnknown
+                        derefTy.item
                     }
                 }
             }
@@ -1044,6 +1053,7 @@ class TypeInferenceWalker(
 
     private fun inferDerefExprTy(derefExpr: MvDerefExpr): Ty {
         val innerExpr = derefExpr.expr ?: return TyUnknown
+
         val innerExprTy = innerExpr.inferType()
         if (innerExprTy !is TyReference) {
             ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))

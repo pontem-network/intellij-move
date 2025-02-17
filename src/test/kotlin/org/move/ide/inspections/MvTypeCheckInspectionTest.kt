@@ -1595,4 +1595,26 @@ module 0x1::pool {
             }            
         }        
     """)
+
+    fun `test no invalid dereference inside lambda`() = checkByText("""
+        module 0x1::vector {
+            public fun enumerate_ref<Element>(self: vector<Element>, _f: |&Element|) {}
+        }
+        module 0x1::m {
+            fun main() {
+                vector[@0x1].enumerate_ref(|to| { *to; });
+            }
+        }        
+    """)
+
+    fun `test invalid dereference inside lambda`() = checkByText("""
+        module 0x1::vector {
+            public fun enumerate_ref<Element>(self: vector<Element>, _f: |Element|) {}
+        }
+        module 0x1::m {
+            fun main() {
+                vector[@0x1].enumerate_ref(|to| { *<error descr="Invalid dereference. Expected '&_' but found 'address'">to</error>; });
+            }
+        }        
+    """)
 }
