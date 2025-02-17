@@ -898,21 +898,22 @@ class TypeInferenceWalker(
     private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {
         return when (binaryExpr.binaryOp.op) {
             "<", ">", "<=", ">=" -> inferOrderingBinaryExprTy(binaryExpr)
-            "+", "-", "*", "/", "%" -> inferArithmeticBinaryExprTy(binaryExpr)
             "==", "!=" -> inferEqualityBinaryExprTy(binaryExpr)
             "||", "&&", "==>", "<==>" -> inferLogicBinaryExprTy(binaryExpr)
-            "^", "|", "&" -> inferBitOpsExprTy(binaryExpr)
-            "<<", ">>" -> inferBitShiftsExprTy(binaryExpr)
 
-            "+=", "-=", "*=", "/=", "%=" -> inferArithmeticBinaryExprTy(binaryExpr)
-            "|=", "^=", "&=" -> inferBitOpsExprTy(binaryExpr)
-            ">>=", "<<=" -> inferBitShiftsExprTy(binaryExpr)
+            "+", "-", "*", "/", "%" -> inferArithmeticBinaryExprTy(binaryExpr, false)
+            "^", "|", "&" -> inferBitOpsExprTy(binaryExpr, false)
+            "<<", ">>" -> inferBitShiftsExprTy(binaryExpr, false)
+
+            "+=", "-=", "*=", "/=", "%=" -> inferArithmeticBinaryExprTy(binaryExpr, true)
+            "|=", "^=", "&=" -> inferBitOpsExprTy(binaryExpr, true)
+            ">>=", "<<=" -> inferBitShiftsExprTy(binaryExpr, true)
 
             else -> TyUnknown
         }
     }
 
-    private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {
+    private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, compoundAssigment: Boolean): Ty {
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
         val op = binaryExpr.binaryOp.op
@@ -943,7 +944,7 @@ class TypeInferenceWalker(
                 typeErrorEncountered = true
             }
         }
-        return if (typeErrorEncountered) TyUnknown else leftTy
+        return if (typeErrorEncountered) TyUnknown else (if (compoundAssigment) TyUnit else leftTy)
     }
 
     private fun inferEqualityBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {
@@ -1009,7 +1010,7 @@ class TypeInferenceWalker(
         return TyBool
     }
 
-    private fun inferBitOpsExprTy(binaryExpr: MvBinaryExpr): Ty {
+    private fun inferBitOpsExprTy(binaryExpr: MvBinaryExpr, compoundAssigment: Boolean): Ty {
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
 
@@ -1017,10 +1018,10 @@ class TypeInferenceWalker(
         if (rightExpr != null) {
             rightExpr.inferTypeCoercableTo(leftTy)
         }
-        return leftTy
+        return if (compoundAssigment) TyUnit else leftTy
     }
 
-    private fun inferBitShiftsExprTy(binaryExpr: MvBinaryExpr): Ty {
+    private fun inferBitShiftsExprTy(binaryExpr: MvBinaryExpr, compoundAssigment: Boolean): Ty {
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
 
@@ -1028,7 +1029,7 @@ class TypeInferenceWalker(
         if (rightExpr != null) {
             rightExpr.inferTypeCoercableTo(TyInteger.U8)
         }
-        return leftTy
+        return if (compoundAssigment) TyUnit else leftTy
     }
 
     private fun Ty.supportsArithmeticOp(): Boolean {
