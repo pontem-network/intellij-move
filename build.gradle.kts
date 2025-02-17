@@ -15,14 +15,14 @@ fun prop(name: String): String =
 
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.42.0"
+val codeVersion = "1.43.0"
 
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 
 val kotlinReflectVersion = "2.0.21"
-val aptosVersion = "6.0.0"
+val aptosVersion = "6.1.1"
 
 group = pluginGroup
 version = pluginVersion
