@@ -10,7 +10,7 @@ sealed class TyInfer : Ty(HAS_TY_INFER_MASK) {
     // Note these classes must NOT be `data` classes and must provide equality by identity
     class TyVar(
         val origin: TyTypeParameter? = null,
-        override var parent: NodeOrValue = VarValue(null, 0)
+        override var parent: NodeOrValue = VarValue(null, 0),
     ) : TyInfer(), Node {
 
         override fun abilities(): Set<Ability> = origin?.abilities() ?: Ability.none()

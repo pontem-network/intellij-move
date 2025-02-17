@@ -397,16 +397,23 @@ class TypeInferenceWalker(
     }
 
     private fun inferLambdaExprTy(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
-        val bindings = lambdaExpr.parametersAsBindings
-        val lambdaTy =
-            (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
 
-        for ((i, binding) in lambdaExpr.parametersAsBindings.withIndex()) {
-            val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
-            ctx.writePatTy(binding, ty)
+        val paramTys = lambdaExpr.lambdaParameters.map {
+            val paramTy = it.type?.loweredType(ctx.msl) ?: TyInfer.TyVar()
+            ctx.writePatTy(it.patBinding, paramTy)
+            paramTy
         }
-        lambdaExpr.expr?.inferTypeCoercableTo(lambdaTy.returnType)
-        return TyUnknown
+        val lambdaRetTy = lambdaExpr.expr?.inferType() ?: TyUnit
+
+        val lambdaTy = TyLambda(paramTys, lambdaRetTy)
+
+        val expectedTy = expected.onlyHasTy(this.ctx)
+        if (expectedTy != null) {
+            // error if not TyLambda
+            coerce(lambdaExpr, lambdaTy, expectedTy)
+        }
+
+        return lambdaTy
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
@@ -1044,9 +1051,21 @@ class TypeInferenceWalker(
 
     private fun inferDerefExprTy(derefExpr: MvDerefExpr): Ty {
         val innerExpr = derefExpr.expr ?: return TyUnknown
+
         val innerExprTy = innerExpr.inferType()
+        ctx.addDelayedCoercion(DelayedCoercion(listOf(innerExprTy), { tys ->
+            val innerExprTy = tys.first()
+            if (innerExprTy !is TyReference) {
+                ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))
+            }
+        }))
+
+        // todo: needs to have `DerefTy(TyVar)` variable type to return correct type here
+        if (innerExprTy is TyInfer.TyVar) {
+            return TyUnknown
+        }
+
         if (innerExprTy !is TyReference) {
-            ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))
             return TyUnknown
         }
         return innerExprTy.referenced

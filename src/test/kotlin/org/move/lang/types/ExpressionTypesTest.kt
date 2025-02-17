@@ -2291,4 +2291,75 @@ module 0x1::main {
         }        
     """
     )
+
+    fun `test infer lambda identity type`() = testExpr("""
+        module 0x1::vector {
+            /// Apply the function to each element in the vector, consuming it.
+            public inline fun for_each<Element>(self: vector<Element>, _f: |Element| Element) {
+            }
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |m| m;
+                vector[1u8].for_each(f);
+                f;
+              //^ |u8| -> u8                
+            }
+        }        
+    """)
+
+    fun `test infer lambda noop type`() = testExpr("""
+        module 0x1::vector {
+            /// Apply the function to each element in the vector, consuming it.
+            public inline fun for_each<Element>(self: vector<Element>, _f: |Element|) {
+            }
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |m|;
+                vector[1u8].for_each(f);
+                f;
+              //^ |u8| -> ()                
+            }
+        }        
+    """)
+
+    fun `test deref address in lambda`() = testExpr("""
+        module 0x1::vector {
+            public fun enumerate_ref<Element>(self: vector<Element>, _f: |&Element| Element) {}
+        }
+        module 0x1::m {
+            fun main() {
+                let f = |to| (*to);
+                              //^ &address
+                vector[@0x1].enumerate_ref(f);
+            }
+        }     
+    """)
+
+    // todo: function values PR
+//    fun `test select field in lambda param type`() = testExpr("""
+//        module 0x1::m {
+//            struct S { val: u8 }
+//            fun main() {
+//                let select_f = |s| s.val;
+//                                 //^ 0x1::m::S
+//                select_f(S { val: u8 });
+//                select_f;
+//            }
+//        }
+//    """)
+
+    // todo: function values PR
+//    fun `test select field in lambda fun type`() = testExpr("""
+//        module 0x1::m {
+//            struct S { val: u8 }
+//            fun main() {
+//                let select_f = |s| s.val;
+//                select_f(S { val: u8 });
+//                select_f;
+//                //^ |0x1::m::S| -> <unknown>
+//            }
+//        }
+//    """)
 }

@@ -7,8 +7,6 @@ import com.intellij.psi.util.CachedValue
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
-import org.move.lang.core.completion.getOriginalOrSelf
-import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ScopeEntry
@@ -56,6 +54,8 @@ private inline fun RelateResult.and(rhs: () -> RelateResult): RelateResult = if 
 typealias CoerceResult = RsResult<CoerceOk, CombineTypeError>
 
 class CoerceOk()
+
+data class DelayedCoercion(val tys: List<Ty>, val coercion: (List<Ty>) -> Unit)
 
 fun RelateResult.into(): CoerceResult = map { CoerceOk() }
 
@@ -200,6 +200,7 @@ class InferenceContext(
 
     val resolvedLitFields: MutableMap<MvStructLitField, List<MvNamedElement>> = hashMapOf()
 
+    private val delayedCoercions = mutableListOf<DelayedCoercion>()
     private val typeErrors = mutableListOf<TypeError>()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
@@ -254,12 +255,17 @@ class InferenceContext(
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
         callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
-
-        exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
-        typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
-
         resolvedPaths.values.asSequence().flatten()
             .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
+        exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
+
+        // can possibly create new type errors
+        this.delayedCoercions.forEach {
+            val resolvedTys = it.tys.map { fullyResolveTypeVarsWithOrigins(it) }
+            it.coercion(resolvedTys)
+        }
+
+        typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
 
         return InferenceResult(
             patTypes,
@@ -448,8 +454,22 @@ class InferenceContext(
                     && ty1.types.size == ty2.types.size ->
                 combineTypePairs(ty1.types.zip(ty2.types))
 
+            ty1 is TyLambda && ty2 is TyLambda -> combineTyLambdas(ty1, ty2)
+
             else -> Err(CombineTypeError.TypeMismatch(ty1, ty2))
         }
+    }
+
+    fun combineTyLambdas(ty1: TyLambda, ty2: TyLambda): RelateResult {
+        // todo: error if lambdas has different number of parameters
+        for ((ty1param, ty2param) in ty1.paramTypes.zip(ty2.paramTypes)) {
+            val res = combineTypes(ty1param, ty2param)
+            if (res.isErr) {
+                return res
+            }
+        }
+        // todo: resolve variables
+        return combineTypes(ty1.returnType, ty2.returnType)
     }
 
     fun tryCoerce(inferred: Ty, expected: Ty): CoerceResult {
@@ -514,6 +534,10 @@ class InferenceContext(
                 else -> resTy.innerFoldWith(this)
             }
         }
+    }
+
+    fun addDelayedCoercion(coercion: DelayedCoercion) {
+        delayedCoercions.add(coercion)
     }
 
     // Awful hack: check that inner expressions did not annotated as an error

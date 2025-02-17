@@ -9,7 +9,6 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
 import org.move.lang.core.resolve.ref.ENUMS
-import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.TYPES
@@ -40,7 +39,7 @@ fun processItemsInScope(
                     }
                     is MvScript -> processor.processAllItems(elementNs, scope.constList)
                     is MvFunctionLike -> processor.processAll(elementNs, scope.parametersAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.parametersAsBindings)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.lambdaParametersAsBindings)
                     is MvForExpr -> {
                         val iterBinding = scope.forIterCondition?.patBinding
                         if (iterBinding != null) {
@@ -74,49 +73,21 @@ fun processItemsInScope(
                     }
                     is MvSchema -> processor.processAll(elementNs, scope.fieldsAsBindings)
                     is MvQuantBindingsOwner -> processor.processAll(elementNs, scope.bindings)
-                    is MvCodeBlock,
-                    is MvSpecCodeBlock -> {
-                        val visibleLetStmts = when (scope) {
-                            is MvCodeBlock -> {
-                                scope.letStmts
-                                    // drops all let-statements after the current position
-                                    .filter { it.cameBefore(cameFrom) }
-                                    // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                                    .filter {
-                                        cameFrom != it
-                                                && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                                    }
+                    is MvCodeBlock -> {
+                        val letBindings = getVisibleLetBindings(scope, cameFrom, ctx)
+                        // skip shadowed (already visited) elements
+                        val visited = mutableSetOf<String>()
+                        val variablesProcessor = processor.wrapWithFilter {
+                            val isVisited = it.name in visited
+                            if (!isVisited) {
+                                visited += it.name
                             }
-                            is MvSpecCodeBlock -> {
-                                val letStmtScope = ctx.element.letStmtScope
-                                when (letStmtScope) {
-                                    EXPR_STMT -> scope.allLetStmts
-                                    LET_STMT, LET_POST_STMT -> {
-                                        val letDecls =
-                                            if (letStmtScope == LET_POST_STMT) {
-                                                scope.allLetStmts
-                                            } else {
-                                                scope.letStmts(false)
-                                            }
-                                        letDecls
-                                            // drops all let-statements after the current position
-                                            .filter { it.cameBefore(cameFrom) }
-                                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                                            .filter {
-                                                cameFrom != it
-                                                        && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                                            }
-                                    }
-                                    NOT_MSL -> emptyList()
-                                }
-                            }
-                            else -> error("unreachable")
+                            !isVisited
                         }
-                        // shadowing support (look at latest first)
-                        val letBindings = visibleLetStmts
-                            .asReversed()
-                            .flatMap { it.pat?.bindings.orEmpty() }
-
+                        variablesProcessor.processAll(elementNs, letBindings)
+                    }
+                    is MvSpecCodeBlock -> {
+                        val letBindings = getVisibleLetBindings(scope, cameFrom, ctx)
                         // skip shadowed (already visited) elements
                         val visited = mutableSetOf<String>()
                         val variablesProcessor = processor.wrapWithFilter {
@@ -127,7 +98,7 @@ fun processItemsInScope(
                             !isVisited
                         }
                         var found = variablesProcessor.processAll(elementNs, letBindings)
-                        if (!found && scope is MvSpecCodeBlock) {
+                        if (!found) {
                             // if inside SpecCodeBlock, process also with builtin spec consts and global variables
                             found = variablesProcessor.processAllItems(
                                 ns,
@@ -166,7 +137,7 @@ fun processItemsInScope(
                         )
                     }
                     is MvFunctionLike -> processor.processAll(elementNs, scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.processAll(elementNs, scope.parametersAsBindings)
+                    is MvLambdaExpr -> processor.processAll(elementNs, scope.lambdaParametersAsBindings)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
@@ -233,6 +204,54 @@ fun processItemsInScope(
     }
 
     return false
+}
+
+private fun getVisibleLetBindings(
+    scope: MvElement,
+    cameFrom: MvElement,
+    ctx: ResolutionContext,
+): List<MvPatBinding> {
+    val visibleLetStmts = when (scope) {
+        is MvCodeBlock -> {
+            scope.letStmts
+                // drops all let-statements after the current position
+                .filter { it.cameBefore(cameFrom) }
+                // drops let-statement that is ancestors of ref (on the same statement, at most one)
+                .filter {
+                    cameFrom != it
+                            && !PsiTreeUtil.isAncestor(cameFrom, it, true)
+                }
+        }
+        is MvSpecCodeBlock -> {
+            val letStmtScope = ctx.element.letStmtScope
+            when (letStmtScope) {
+                EXPR_STMT -> scope.allLetStmts
+                LET_STMT, LET_POST_STMT -> {
+                    val letDecls =
+                        if (letStmtScope == LET_POST_STMT) {
+                            scope.allLetStmts
+                        } else {
+                            scope.letStmts(false)
+                        }
+                    letDecls
+                        // drops all let-statements after the current position
+                        .filter { it.cameBefore(cameFrom) }
+                        // drops let-statement that is ancestors of ref (on the same statement, at most one)
+                        .filter {
+                            cameFrom != it
+                                    && !PsiTreeUtil.isAncestor(cameFrom, it, true)
+                        }
+                }
+                NOT_MSL -> emptyList()
+            }
+        }
+        else -> error("unreachable")
+    }
+    // shadowing support (look at latest first)
+    val letBindings = visibleLetStmts
+        .asReversed()
+        .flatMap { it.pat?.bindings.orEmpty() }
+    return letBindings
 }
 
 private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
