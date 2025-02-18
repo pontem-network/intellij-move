@@ -21,6 +21,7 @@ import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import org.move.utils.cache
 import org.move.utils.cacheManager
+import org.move.utils.globalPsiDependentCache
 import org.move.utils.psiCacheResult
 import javax.swing.Icon
 
@@ -48,10 +49,16 @@ val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.addres
 val MvModule.isSpecBuiltins: Boolean
     get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
 
+// this is extremely fast, no need to optimize anymore
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
-        val builtinModule = it.project.psiFactory.module(
-            """
+        createBuiltinFunctions(it.project)
+    }
+}
+
+private fun createBuiltinFunctions(project: Project): List<MvFunction> {
+    val builtinModule = project.psiFactory.module(
+        """
             module 0x0::builtins {
                 /// Removes `T` from address and returns it. 
                 /// Aborts if address does not hold a `T`.
@@ -71,11 +78,10 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
                 native fun freeze<S>(mut_ref: &mut S): &S;
             }            
         """.trimIndent()
-        )
-        val builtinFunctions = builtinModule.functionList
-        builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
-        builtinFunctions
-    }
+    )
+    val builtinFunctions = builtinModule.functionList
+    builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
+    return builtinFunctions
 }
 
 fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { it.isEntry }

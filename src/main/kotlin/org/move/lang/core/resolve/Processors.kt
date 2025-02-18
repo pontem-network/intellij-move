@@ -56,26 +56,6 @@ interface RsResolveProcessorBase<in T: ScopeEntry> {
     }
 }
 
-//interface RsResolveProcessor {
-//    /**
-//     * Return `true` to stop further processing,
-//     * return `false` to continue search
-//     */
-//    fun process(entry: SimpleScopeEntry): Boolean
-//
-//    /**
-//     * Indicates that processor is interested only in [SimpleScopeEntry]s with specified [names].
-//     * Improves performance for Resolve2.
-//     * `null` in completion
-//     */
-//    val names: Set<String>?
-//
-//    fun acceptsName(name: String): Boolean {
-//        val names = names
-//        return names == null || name in names
-//    }
-//}
-
 typealias RsResolveProcessor = RsResolveProcessorBase<ScopeEntry>
 
 fun createStoppableProcessor(processor: (ScopeEntry) -> Boolean): RsResolveProcessor {
@@ -289,9 +269,7 @@ private class ResolveVariantsCollector(
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
             val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
             result += element
-//            }
         }
         return false
     }
@@ -315,10 +293,7 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
 
     override fun process(entry: T): Boolean {
         if (entry.name == referenceName) {
-//            val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
             result += entry
-//            }
         }
         return false
     }
@@ -380,11 +355,8 @@ private class PickFirstScopeEntryCollector(
 
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
-//            val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
             result = entry
             return true
-//            }
         }
         return false
     }
@@ -434,7 +406,6 @@ private class CompletionVariantsCollector(
     override val names: Set<String>? get() = null
 
     override fun process(entry: ScopeEntry): Boolean {
-//        addEnumVariantsIfNeeded(entry)
         result.addElement(
             createLookupElement(
                 scopeEntry = entry,
@@ -445,47 +416,7 @@ private class CompletionVariantsCollector(
         )
         return false
     }
-
-//    private fun addEnumVariantsIfNeeded(entry: ScopeEntry) {
-//        val element = entry.element as? RsEnumItem ?: return
-//
-//        val expectedType = (context.expectedTy?.ty?.stripReferences() as? TyAdt)?.item
-//        val actualType = (element.declaredType as? TyAdt)?.item
-//
-//        val parent = context.context
-//        val contextPat = if (parent is RsPath) parent.context else parent
-//        val contextIsPat = contextPat is RsPatBinding || contextPat is RsPatStruct || contextPat is RsPatTupleStruct
-//
-//        if (expectedType == actualType || contextIsPat) {
-//            val variants = collectVariantsForEnumCompletion(element, context, entry.subst)
-//            val filtered = when (contextPat) {
-//                is RsPatStruct -> variants.filter { (it.psiElement as? RsEnumVariant)?.blockFields != null }
-//                is RsPatTupleStruct -> variants.filter { (it.psiElement as? RsEnumVariant)?.tupleFields != null }
-//                else -> variants
-//            }
-//            result.addAllElements(filtered)
-//        }
-//    }
 }
-
-//fun collectNames(f: (RsResolveProcessor) -> Unit): Set<String> {
-//    val processor = NamesCollector()
-//    f(processor)
-//    return processor.result
-//}
-
-//private class NamesCollector(
-//    val result: MutableSet<String> = mutableSetOf(),
-//): RsResolveProcessor {
-//    override val names: Set<String>? get() = null
-//
-//    override fun process(entry: SimpleScopeEntry): Boolean {
-//        if (entry.name != "_") {
-//            result += entry.name
-//        }
-//        return false
-//    }
-//}
 
 data class SimpleScopeEntry(
     override val name: String,
@@ -493,25 +424,6 @@ data class SimpleScopeEntry(
     override val namespaces: Set<Namespace>,
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
-}
-
-data class ModInfo(
-//    val movePackage: MovePackage?,
-    val module: MvModule?,
-//    val isScript: Boolean,
-) {
-}
-
-fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
-    return if (names.isNullOrEmpty()) {
-        this
-    } else if (names.size == 1) {
-        val single = names.single()
-        val value = this[single] ?: return emptyMap()
-        mapOf(single to value)
-    } else {
-        names.mapNotNull { name -> this[name]?.let { name to it } }.toMap()
-    }
 }
 
 fun interface VisibilityFilter {

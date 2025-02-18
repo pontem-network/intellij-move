@@ -24,7 +24,6 @@ fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityIn
     return ItemVisibilityInfo(this, adjustScope, visibility)
 }
 
-/** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
 fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
     val (item, itemScopeAdjustment, visibility) = this
     return VisibilityFilter { context, itemNs ->
@@ -104,7 +103,6 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
                         val pathPackage =
                             context.containingMovePackage ?: return@VisibilityFilter Invisible
                         val itemPackage = item.containingMovePackage ?: return@VisibilityFilter Invisible
-//                        val originPackage = visibility.originPackage.value ?: return@VisibilityFilter Invisible
                         if (pathPackage == itemPackage) Visible else Invisible
                     }
                 }

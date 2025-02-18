@@ -40,7 +40,7 @@ fun processItemsInScope(
                 scope.builtinFunctions(),
                 scope.allNonTestFunctions(),
                 specFunctions,
-                specInlineFunctions
+                specInlineFunctions,
             )
             if (stop) {
                 return true

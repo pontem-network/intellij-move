@@ -6,7 +6,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
 import com.intellij.psi.util.*
-import com.intellij.psi.util.CachedValueProvider.Result
+import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 
@@ -18,7 +18,7 @@ fun <T> Project.globalPsiDependentCache(
 ): T {
     val cacheManager = this.cacheManager
     return cacheManager.getCachedValue(this, key, {
-        Result.create(provider(this), PsiModificationTracker.MODIFICATION_COUNT)
+        CachedValueProvider.Result.create(provider(this), PsiModificationTracker.MODIFICATION_COUNT)
     }, false)
 }
 
@@ -31,7 +31,10 @@ fun <T> CachedValuesManager.cache(
 }
 
 fun <T> MvElement.psiCacheResult(value: T): CachedValueProvider.Result<T> =
-    this.cacheResult(value, listOf(PsiModificationTracker.MODIFICATION_COUNT))
+    CachedValueProvider.Result.create(
+        value,
+        PsiModificationTracker.MODIFICATION_COUNT
+    )
 
 fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValueProvider.Result<T> {
     return when {

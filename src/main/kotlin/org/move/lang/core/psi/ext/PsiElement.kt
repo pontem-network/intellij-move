@@ -192,7 +192,6 @@ inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
 val PsiElement.elementType: IElementType
     // XXX: be careful not to switch to AST
     get() = if (this is MoveFile) MvFileStub.Type else PsiUtilCore.getElementType(this)
-//    get() = PsiUtilCore.getElementType(this)
 
 /**
  * Checks whether this node contains [descendant] one
