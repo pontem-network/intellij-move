@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.ResolveCacheDependency
-import org.move.lang.core.resolve2.resolveLabelReference
+import org.move.lang.core.resolve.resolveLabelReference
 
 class MvLabelReferenceImpl(
     element: MvLabel

@@ -1,9 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import org.move.cli.containingMovePackage
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
-import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.VisKind.*
 import org.move.lang.core.resolve.ref.Visibility2
 

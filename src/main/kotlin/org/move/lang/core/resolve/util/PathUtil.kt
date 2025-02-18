@@ -1,4 +1,4 @@
-package org.move.lang.core.resolve2.util
+package org.move.lang.core.resolve.util
 
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseAlias

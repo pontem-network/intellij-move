@@ -1,4 +1,4 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
@@ -6,14 +6,13 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
 import org.move.lang.core.resolve.ref.ENUMS
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.TYPES
-import org.move.lang.core.resolve2.ref.ResolutionContext
-import org.move.lang.core.resolve2.util.forEachLeafSpeck
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.util.forEachLeafSpeck
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.psiCacheResult

@@ -1,8 +1,7 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Namespace
@@ -13,7 +12,6 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
-import java.util.*
 
 val MvNamedElement.namespace
     get() = when (this) {

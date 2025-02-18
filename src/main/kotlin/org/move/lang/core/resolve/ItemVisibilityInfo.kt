@@ -1,4 +1,4 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import org.move.cli.containingMovePackage
 import org.move.cli.settings.moveSettings
@@ -6,8 +6,6 @@ import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ModInfo
-import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Invisible
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace.*

@@ -1,15 +1,18 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.ref.FieldResolveVariant
-import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.FieldResolveVariant
+import org.move.lang.core.resolve.ref.MODULES
+import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
+import org.move.lang.core.resolve.ref.NAMES
+import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_MODULES
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
-import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.index.MvModuleIndex
 
 fun processFieldLookupResolveVariants(

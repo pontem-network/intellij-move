@@ -18,11 +18,11 @@ import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
 import org.move.lang.core.resolve.wrapWithFilter
-import org.move.lang.core.resolve2.processFieldLookupResolveVariants
-import org.move.lang.core.resolve2.processLabelResolveVariants
-import org.move.lang.core.resolve2.processMethodResolveVariants
-import org.move.lang.core.resolve2.processPatBindingResolveVariants
-import org.move.lang.core.resolve2.processStructPatFieldResolveVariants
+import org.move.lang.core.resolve.processFieldLookupResolveVariants
+import org.move.lang.core.resolve.processLabelResolveVariants
+import org.move.lang.core.resolve.processMethodResolveVariants
+import org.move.lang.core.resolve.processPatBindingResolveVariants
+import org.move.lang.core.resolve.processStructPatFieldResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*

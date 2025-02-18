@@ -9,7 +9,7 @@ import org.move.lang.MvElementTypes.LAMBDA_EXPR
 import org.move.lang.MvElementTypes.MODULE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
+import org.move.lang.core.resolve.ref.InferenceCachedPathElement
 import org.move.lang.core.types.infer.MvInferenceContextOwner
 import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inference

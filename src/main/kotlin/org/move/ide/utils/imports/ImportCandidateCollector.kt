@@ -6,9 +6,9 @@ import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve2.createFilter
-import org.move.lang.core.resolve2.namespace
-import org.move.lang.core.resolve2.visInfo
+import org.move.lang.core.resolve.createFilter
+import org.move.lang.core.resolve.namespace
+import org.move.lang.core.resolve.visInfo
 import org.move.lang.index.MvNamedElementIndex
 
 object ImportCandidateCollector {

@@ -1,15 +1,13 @@
-package org.move.lang.core.resolve2.ref
+package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.ResolveResult
 import org.move.cli.MoveProject
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve2.*
-import org.move.lang.core.resolve2.PathKind.ValueAddress
+import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.PathKind.ValueAddress
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt

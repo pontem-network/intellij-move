@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.processItemDeclarations
+import org.move.lang.core.resolve.processItemDeclarations
 import org.move.lang.core.withParent
 
 object StructPatCompletionProvider: MvCompletionProvider() {

@@ -1,6 +1,5 @@
 package org.move.lang.completion.lookups
 
-import com.intellij.codeInsight.completion.CompletionContext
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionSorter
 import com.intellij.codeInsight.completion.PrefixMatcher

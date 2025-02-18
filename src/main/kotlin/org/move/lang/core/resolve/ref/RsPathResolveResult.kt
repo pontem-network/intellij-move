@@ -1,4 +1,4 @@
-package org.move.lang.core.resolve2.ref
+package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveResult

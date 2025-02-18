@@ -3,9 +3,6 @@ package org.move.lang.core.resolve.ref
 import com.intellij.psi.PsiPolyVariantReference
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvUseAlias
-import org.move.lang.core.psi.ext.parentUseSpeck
-import org.move.lang.core.resolve2.ref.resolveAliases
 
 interface MvPolyVariantReference : PsiPolyVariantReference {
 

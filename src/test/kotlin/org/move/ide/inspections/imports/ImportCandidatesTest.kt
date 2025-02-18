@@ -5,7 +5,6 @@ import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
-import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
 class ImportCandidatesTest : MvProjectTestBase() {

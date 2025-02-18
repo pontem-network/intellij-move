@@ -1,15 +1,11 @@
-package org.move.lang.core.resolve2.ref
+package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
-import org.move.lang.core.resolve.ref.NAMES
-import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inference
 import org.move.stdext.wrapWithList
 

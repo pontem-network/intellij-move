@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.types.ty.Ty
 
 const val KEYWORD_PRIORITY = 80.0

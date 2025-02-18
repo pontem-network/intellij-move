@@ -1,11 +1,9 @@
-package org.move.lang.core.resolve2.ref
+package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.resolve.collectResolveVariants
-import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
-import org.move.lang.core.resolve.ref.ResolveCacheDependency
-import org.move.lang.core.resolve2.processStructLitFieldResolveVariants
+import org.move.lang.core.resolve.processStructLitFieldResolveVariants
 
 class MvStructLitFieldReferenceImpl(
     field: MvStructLitField

@@ -9,8 +9,8 @@ import org.move.ide.utils.getSignature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve2.PathKind
-import org.move.lang.core.resolve2.pathKind
+import org.move.lang.core.resolve.PathKind
+import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fullname
 import org.move.lang.core.types.infer.descendantHasTypeError

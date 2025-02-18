@@ -9,7 +9,7 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve2.ref.MvBindingPatReferenceImpl
+import org.move.lang.core.resolve.ref.MvBindingPatReferenceImpl
 import org.move.lang.core.types.ty.Mutability
 import javax.swing.Icon
 

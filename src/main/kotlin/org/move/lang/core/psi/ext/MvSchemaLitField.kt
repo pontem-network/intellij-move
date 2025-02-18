@@ -2,8 +2,6 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
-import org.move.lang.core.completion.getOriginalOrSelf
-import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.SimpleScopeEntry
@@ -11,7 +9,7 @@ import org.move.lang.core.resolve.collectResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.resolveBindingForFieldShorthand
+import org.move.lang.core.resolve.resolveBindingForFieldShorthand
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 

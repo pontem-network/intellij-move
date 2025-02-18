@@ -7,8 +7,21 @@ import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.ref.MvPath2ReferenceImpl
+import org.move.lang.core.resolve.ref.ALL_NAMESPACES
+import org.move.lang.core.resolve.ref.ENUMS
+import org.move.lang.core.resolve.ref.ENUMS_N_MODULES
+import org.move.lang.core.resolve.ref.FUNCTIONS
+import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
+import org.move.lang.core.resolve.ref.MODULES
+import org.move.lang.core.resolve.ref.MvPath2Reference
+import org.move.lang.core.resolve.ref.MvPath2ReferenceImpl
+import org.move.lang.core.resolve.ref.NAMES
+import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.SCHEMAS
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_MODULES
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_NAMES
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
 tailrec fun <T: MvPath> T.basePath(): T {

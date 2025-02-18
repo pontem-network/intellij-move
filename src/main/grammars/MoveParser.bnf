@@ -772,11 +772,11 @@ PatTuple ::= '(' PatParenListElem_with_recover* ')'
 
 PatStruct ::= PathImpl '{' PatField_with_recover* PatRest? '}'
 {
-    implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+    implements = [ "org.move.lang.core.resolve.ref.InferenceCachedPathElement" ]
 }
 PatTupleStruct ::= PathImpl '(' PatParenListElem_with_recover* ')'
 {
-    implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+    implements = [ "org.move.lang.core.resolve.ref.InferenceCachedPathElement" ]
 }
 
 private PatParenListElem_with_recover ::= !')' Pat (',' | &')') {
@@ -1060,7 +1060,7 @@ VectorLitItems ::= '[' <<comma_separated_list Expr>>? ']'
 
 StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
 {
-    implements = ["org.move.lang.core.resolve2.ref.InferenceCachedPathElement"]
+    implements = ["org.move.lang.core.resolve.ref.InferenceCachedPathElement"]
 }
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
@@ -1134,7 +1134,7 @@ CallExpr ::= PathImpl !'!' ValueArgumentList {
     implements = [
         "org.move.lang.core.psi.ext.MvCallable"
         "org.move.lang.core.psi.MvAcquireTypesOwner"
-        "org.move.lang.core.resolve2.ref.InferenceCachedPathElement"
+        "org.move.lang.core.resolve.ref.InferenceCachedPathElement"
     ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
@@ -1263,7 +1263,7 @@ private IndexArg ::= '[' Expr ']'
 
 PathExpr ::= PathImpl !('(' | '!')
 {
-    implements = [ "org.move.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+    implements = [ "org.move.lang.core.resolve.ref.InferenceCachedPathElement" ]
 }
 
 fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?

@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve2.ref.InferenceCachedPathElement
+import org.move.lang.core.resolve.ref.InferenceCachedPathElement
 
 val MvExpr.isAtomExpr: Boolean get() =
     this is MvAnnotatedExpr

@@ -10,10 +10,8 @@ import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.createFilter
-import org.move.lang.core.resolve2.ref.ResolutionContext
-import org.move.lang.core.resolve2.ref.RsPathResolveResult
-import org.move.lang.core.resolve2.visInfo
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution
 import org.move.stdext.intersects

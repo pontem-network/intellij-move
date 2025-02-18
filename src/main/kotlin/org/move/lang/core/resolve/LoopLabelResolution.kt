@@ -1,12 +1,9 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.contexts
 import org.move.lang.core.psi.ext.label.MvLabeledExpression
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.collectResolveVariants
-import org.move.lang.core.resolve.process
 import org.move.lang.core.resolve.ref.LABELS
 import org.move.lang.core.resolve.ref.Namespace
 
