@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.LetStmtScope.*
 import org.move.lang.core.resolve.ref.ENUMS
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
@@ -73,7 +72,7 @@ fun processItemsInScope(
                     is MvSchema -> processor.processAll(elementNs, scope.fieldsAsBindings)
                     is MvQuantBindingsOwner -> processor.processAll(elementNs, scope.bindings)
                     is MvCodeBlock -> {
-                        val letBindings = getVisibleLetBindings(scope, cameFrom, ctx)
+                        val letBindings = getVisibleLetPatBindings(scope, cameFrom, ctx)
                         // skip shadowed (already visited) elements
                         val visited = mutableSetOf<String>()
                         val variablesProcessor = processor.wrapWithFilter {
@@ -86,7 +85,7 @@ fun processItemsInScope(
                         variablesProcessor.processAll(elementNs, letBindings)
                     }
                     is MvSpecCodeBlock -> {
-                        val letBindings = getVisibleLetBindings(scope, cameFrom, ctx)
+                        val letBindings = getVisibleLetPatBindings(scope, cameFrom, ctx)
                         // skip shadowed (already visited) elements
                         val visited = mutableSetOf<String>()
                         val variablesProcessor = processor.wrapWithFilter {
@@ -205,7 +204,7 @@ fun processItemsInScope(
     return false
 }
 
-private fun getVisibleLetBindings(
+private fun getVisibleLetPatBindings(
     scope: MvElement,
     cameFrom: MvElement,
     ctx: ResolutionContext,
@@ -222,17 +221,16 @@ private fun getVisibleLetBindings(
                 }
         }
         is MvSpecCodeBlock -> {
-            val letStmtScope = ctx.element.letStmtScope
-            when (letStmtScope) {
-                EXPR_STMT -> scope.allLetStmts
-                LET_STMT, LET_POST_STMT -> {
-                    val letDecls =
-                        if (letStmtScope == LET_POST_STMT) {
-                            scope.allLetStmts
-                        } else {
-                            scope.letStmts(false)
-                        }
-                    letDecls
+            val currentLetStmt = ctx.element.ancestorOrSelf<MvLetStmt>(stopAt = MvSpecCodeBlock::class.java)
+            when {
+                currentLetStmt != null -> {
+                    // if post = true, then both pre and post are accessible, else only pre
+                    val letStmts = if (currentLetStmt.post) {
+                        scope.allLetStmts
+                    } else {
+                        scope.allLetStmts.filter { !it.post }
+                    }
+                    letStmts
                         // drops all let-statements after the current position
                         .filter { it.cameBefore(cameFrom) }
                         // drops let-statement that is ancestors of ref (on the same statement, at most one)
@@ -240,17 +238,18 @@ private fun getVisibleLetBindings(
                             cameFrom != it
                                     && !PsiTreeUtil.isAncestor(cameFrom, it, true)
                         }
+
                 }
-                NOT_MSL -> emptyList()
+                else -> scope.allLetStmts
             }
         }
         else -> error("unreachable")
     }
     // shadowing support (look at latest first)
-    val letBindings = visibleLetStmts
+    val letPatBindings = visibleLetStmts
         .asReversed()
         .flatMap { it.pat?.bindings.orEmpty() }
-    return letBindings
+    return letPatBindings
 }
 
 private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
