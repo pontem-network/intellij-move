@@ -9,9 +9,7 @@ import org.move.lang.core.psi.MvElement
  */
 data class RsPathResolveResult<T: MvElement>(
     val element: T,
-//    val resolvedSubst: Substitution = emptySubstitution,
     val isVisible: Boolean,
-//    val namespaces: Set<Namespace> = emptySet(),
 ): ResolveResult {
     override fun getElement(): PsiElement = element
 

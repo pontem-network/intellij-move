@@ -15,18 +15,4 @@ interface MvPolyVariantReference : PsiPolyVariantReference {
     fun resolveFollowingAliases(): MvNamedElement? = this.resolve()?.let { resolveAliases(it) }
 }
 
-//interface MvPathReference : MvPolyVariantReference {
-
-//    fun multiResolveIfVisible(): List<MvElement> = multiResolve()
-//
-//    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
-//        multiResolve().map { RsPathResolveResult(it, isVisible = true) }
-//}
-
-interface MvPath2Reference: MvPolyVariantReference {
-//    fun multiResolveIfVisible(): List<MvElement> = multiResolve()
-
-//    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>>
-//        multiResolve().map { RsPathResolveResult(it, isVisible = true) }
-    
-}
+interface MvPathReference: MvPolyVariantReference

@@ -16,12 +16,12 @@ import org.move.lang.moveProject
 val MvNamedElement.namespace
     get() = when (this) {
         is MvFunctionLike -> FUNCTION
-        is MvStruct -> Namespace.TYPE
-        is MvEnum -> Namespace.ENUM
-        is MvConst -> Namespace.NAME
-        is MvSchema -> Namespace.SCHEMA
-        is MvModule -> Namespace.MODULE
-        is MvGlobalVariableStmt -> Namespace.NAME
+        is MvStruct -> TYPE
+        is MvEnum -> ENUM
+        is MvConst -> NAME
+        is MvSchema -> SCHEMA
+        is MvModule -> MODULE
+        is MvGlobalVariableStmt -> NAME
         else -> error("when should be exhaustive, $this is not covered")
     }
 
@@ -106,7 +106,7 @@ fun processItemsFromModuleSpecs(
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions(),
                     )
-                Namespace.SCHEMA -> processor.processAll(thisNs, moduleSpec.schemas())
+                SCHEMA -> processor.processAll(thisNs, moduleSpec.schemas())
                 else -> false
             }
             if (matched) return true

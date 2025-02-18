@@ -38,7 +38,4 @@ interface DotExprResolveVariant : ScopeEntry {
 data class FieldResolveVariant(
     override val name: String,
     override val element: MvNamedElement,
-//    override val selfTy: Ty,
-//    val derefSteps: List<Autoderef.AutoderefStep>,
-//    val obligations: List<Obligation>,
 ): DotExprResolveVariant

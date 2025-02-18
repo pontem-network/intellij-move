@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
-import org.move.lang.core.resolve.ref.MvPath2Reference
+import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
@@ -26,7 +26,7 @@ val MvAttrItem.isTest: Boolean get() = this.unqualifiedIdent?.textMatches("test"
 class AttrItemReferenceImpl(
     element: MvPath,
     val ownerFunction: MvFunction
-) : MvPolyVariantReferenceBase<MvPath>(element), MvPath2Reference {
+) : MvPolyVariantReferenceBase<MvPath>(element), MvPathReference {
 
     override fun multiResolve(): List<MvNamedElement> {
         return ownerFunction.parameters

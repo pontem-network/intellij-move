@@ -12,11 +12,6 @@ abstract class MvPolyVariantReferenceBase<T: MvReferenceElement>(element: T):
     PsiPolyVariantReferenceBase<T>(element),
     MvPolyVariantReference {
 
-    /// if incompleteCode = true, return all results, not just valid ones
-//    override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
-//        multiResolve().map { PsiElementResolveResult(it) }.toTypedArray()
-
-
     override fun getRangeInElement(): TextRange = super.getRangeInElement()
 
     final override fun calculateDefaultRangeInElement(): TextRange {

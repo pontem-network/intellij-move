@@ -13,8 +13,8 @@ import org.move.lang.core.resolve.ref.ENUMS_N_MODULES
 import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
 import org.move.lang.core.resolve.ref.MODULES
-import org.move.lang.core.resolve.ref.MvPath2Reference
-import org.move.lang.core.resolve.ref.MvPath2ReferenceImpl
+import org.move.lang.core.resolve.ref.MvPathReference
+import org.move.lang.core.resolve.ref.MvPathReferenceImpl
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
@@ -178,7 +178,7 @@ val MvPath.qualifier: MvPath?
 
 abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 
-    override fun getReference(): MvPath2Reference? {
+    override fun getReference(): MvPathReference? {
         if (referenceName == null) return null
         return when (val parent = parent) {
             is MvAttrItem -> {
@@ -188,7 +188,7 @@ abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
                 val ownerFunction = attr.attributeOwner as? MvFunction ?: return null
                 AttrItemReferenceImpl(this, ownerFunction)
             }
-            else -> MvPath2ReferenceImpl(this)
+            else -> MvPathReferenceImpl(this)
         }
     }
 }
