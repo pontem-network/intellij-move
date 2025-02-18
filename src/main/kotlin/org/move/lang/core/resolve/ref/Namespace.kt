@@ -34,16 +34,17 @@ val NONE = Namespace.none()
 val NAMES = setOf(Namespace.NAME)
 
 val MODULES = setOf(Namespace.MODULE)
-val FUNCTIONS = setOf(Namespace.FUNCTION)
 val SCHEMAS = setOf(Namespace.SCHEMA)
 val TYPES = setOf(Namespace.TYPE)
 val ENUMS = setOf(Namespace.ENUM)
 val LABELS = setOf(Namespace.LABEL)
-val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
 
+val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
+val TYPES_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME)
 val TYPES_N_ENUMS_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME, Namespace.ENUM)
 val ENUMS_N_MODULES = setOf(Namespace.ENUM, Namespace.MODULE)
 val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MODULE)
+val FUNCTIONS_N_NAMES = setOf(Namespace.FUNCTION, Namespace.NAME)
 
 val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =

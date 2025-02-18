@@ -333,6 +333,8 @@ class TypeInferenceWalker(
                 baseTy
             }
             is MvModule -> TyUnknown
+            // todo: when function values are landed, this thing should return TyFunction
+            is MvFunctionLike -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${pathExpr.text}` at ${pathExpr.location} cannot be inferred into type",

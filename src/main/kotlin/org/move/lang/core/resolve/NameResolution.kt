@@ -14,6 +14,7 @@ import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleIndex
+import org.move.stdext.intersects
 
 fun processFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
@@ -35,7 +36,7 @@ fun processFieldLookupResolveVariants(
                 for (field in variant.fields) {
                     val fieldName = field.name ?: continue
                     if (fieldName in visitedFields) continue
-                    if (processor.process(NONE, field)) return true
+                    if (processor.process(fieldName, NONE, field)) return true
                     // collect all names for the variant
                     visitedVariantFields.add(fieldName)
                 }
@@ -133,8 +134,13 @@ fun processNestedScopesUpwards(
     ) { cameFrom, scope ->
         // state between shadowing processors passed through prevScope
         processWithShadowingAndUpdateScope(prevScope, ns, processor) { shadowingProcessor ->
+            val filterNs = shadowingProcessor.wrapWithFilter { scopeEntry ->
+                val entryNamespaces = scopeEntry.namespaces
+                // entry is available in any of the `ns`
+                entryNamespaces.intersects(ns)
+            }
             processItemsInScope(
-                scope, cameFrom, ns, ctx, shadowingProcessor
+                scope, cameFrom, ns, ctx, filterNs
             )
         }
     }
@@ -183,7 +189,7 @@ fun processModulePathResolveVariants(
     for (targetModuleName in targetNames) {
         val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
         for (module in modules) {
-            if (addressMatcher.process(targetModuleName, module, MODULES)) return true
+            if (addressMatcher.processWithVisibility(targetModuleName, module, MODULES)) return true
         }
     }
 

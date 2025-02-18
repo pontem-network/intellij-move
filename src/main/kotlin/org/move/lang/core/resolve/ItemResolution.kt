@@ -2,7 +2,6 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.FUNCTIONS
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
@@ -42,7 +41,7 @@ fun processMethodResolveVariants(
                 selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
         }
-        .processAllItems(setOf(FUNCTION), itemModule.allNonTestFunctions())
+        .processItemsWithVisibility(NAMES, itemModule.allNonTestFunctions())
 }
 
 fun processEnumVariantDeclarations(
@@ -54,7 +53,7 @@ fun processEnumVariantDeclarations(
         val stop = when (namespace) {
             NAME -> processor.processAll(NAMES, enum.variants)
             TYPE -> processor.processAll(TYPES, enum.variants)
-            FUNCTION -> processor.processAll(FUNCTIONS, enum.tupleVariants)
+//            FUNCTION -> processor.processAll(FUNCTIONS, enum.tupleVariants)
             else -> continue
         }
         if (stop) return true
@@ -67,19 +66,18 @@ fun processItemDeclarations(
     ns: Set<Namespace>,
     processor: RsResolveProcessor
 ): Boolean {
-
     // 1. loop over all items in module (item is anything accessible with MODULE:: )
     // 2. for every item, use it's .visibility to create VisibilityFilter, even it's just a { false }
     val items = itemsOwner.itemElements +
             (itemsOwner as? MvModule)?.innerSpecItems.orEmpty() +
             (itemsOwner as? MvModule)?.let { getItemsFromModuleSpecs(it, ns) }.orEmpty()
-    for (item in items) {
-        val name = item.name ?: continue
+    for (itemElement in items) {
+        val name = itemElement.name ?: continue
 
-        val namespace = item.namespace
-        if (namespace !in ns) continue
+        val itemNamespace = itemElement.namespace
+        if (itemNamespace !in ns) continue
 
-        if (processor.process(name, item, setOf(namespace))) return true
+        if (processor.processWithVisibility(name, itemElement, setOf(itemNamespace))) return true
     }
 
     return false

@@ -880,12 +880,13 @@ module 0x1::m {
         }        
     """)
 
-    fun `test cannot resolve enum variant non tuple struct in call position`() = checkByCode("""
+    fun `test resolve enum variant in call position even it is not a tuple struct`() = checkByCode("""
         module 0x1::m {
             enum S { One(u8), Two }
+                             //X
             fun main() {
                 S::Two(1);
-                  //^ unresolved 
+                  //^
             }
         }        
     """)

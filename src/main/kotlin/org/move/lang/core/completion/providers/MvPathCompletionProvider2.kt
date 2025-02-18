@@ -26,7 +26,7 @@ import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.createProcessor
 import org.move.lang.core.resolve.isVisibleFrom
 import org.move.lang.core.resolve.pathKind
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.processAllEntries
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.processPathResolveVariantsWithExpectedType
 import org.move.lang.core.resolve.wrapWithFilter
@@ -149,7 +149,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         candidatesCollector =
             applySharedCompletionFilters(ns, completionContext.resolutionCtx!!, candidatesCollector)
 
-        candidatesCollector.processAll(
+        candidatesCollector.processAllEntries(
             candidates.map { CandidateScopeEntry(it.qualName.itemName, it.element, ns, it) }
         )
     }

@@ -10,7 +10,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.ALL_NAMESPACES
 import org.move.lang.core.resolve.ref.ENUMS
 import org.move.lang.core.resolve.ref.ENUMS_N_MODULES
-import org.move.lang.core.resolve.ref.FUNCTIONS
+import org.move.lang.core.resolve.ref.FUNCTIONS_N_NAMES
 import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
 import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.MvPathReference
@@ -80,39 +80,6 @@ val MvPath.maybeFieldsOwner get() = reference?.resolveFollowingAliases() as? MvF
 
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
-//fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
-////    val qualifierPath = this.path
-////    val parentElement = this.parent
-//
-////    val qualNamespaces = when {
-////        // m::S, S::One
-////        // ^     ^
-////        parentElement is MvPath && qualifierPath == null -> setOf(MODULE, TYPE)
-////        // m::S::One
-////        // ^
-////        parentElement is MvPath && parentElement.parent is MvPath -> setOf(MODULE)
-////        // m::S::One
-////        //    ^
-////        parentElement is MvPath/* && qualifierPath != null*/ -> setOf(TYPE)
-////        else -> NONE
-////    }
-////    // m::S, S::One
-////    // ^     ^
-////    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
-////
-////    // m::S::One
-////    // ^
-////    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
-////
-////    // m::S::One
-////    //    ^
-////    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
-//
-////    val rootPath = this.rootPath()
-////    return qualNamespaces + rootPathNamespaces(rootPath, isCompletion)
-//    return this.itemPathNamespaces(isCompletion)
-//}
-
 fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
     val qualifier = this.path
     val parent = this.parent
@@ -133,7 +100,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
-        parent is MvCallExpr -> FUNCTIONS
+        parent is MvCallExpr -> FUNCTIONS_N_NAMES
         parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
         // TYPES for resource indexing, NAMES for vector indexing
@@ -150,7 +117,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
                 || parent is MvPatConst
                 || parent is MvPatTupleStruct -> TYPES_N_ENUMS
         parent is MvAccessSpecifier -> TYPES_N_ENUMS
-        parent is MvAddressSpecifierArg -> FUNCTIONS
+        parent is MvAddressSpecifierArg -> NAMES
         parent is MvAddressSpecifierCallParam -> NAMES
         parent is MvFriendDecl -> MODULES
         parent is MvModuleSpec -> MODULES

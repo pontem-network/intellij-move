@@ -812,12 +812,12 @@ module 0x1::mod {
     """
     )
 
-    fun `test resolve lambda function call expr ignored non lambda variable with the same name`() = checkByCode(
+    fun `test variable shadows lambda parameter with the same name even if not callable`() = checkByCode(
         """
 module 0x1::mod {
     public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
-                                                               //X
-        let func = 1;                                                               
+        let func = 1;
+           //X                                                                       
         func(elem);
         //^
     }
@@ -825,24 +825,25 @@ module 0x1::mod {
     """
     )
 
-    fun `test cannot resolve function to parameter`() = checkByCode(
+    fun `test call should resolve to parameter then warn not callable`() = checkByCode(
         """
 module 0x1::mod {
     public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
+                                                  //X
         elem(1);
-        //^ unresolved
+        //^
     }
 }        
     """
     )
 
-    fun `test functions have separate namespace from variables`() = checkByCode(
+    fun `test variable shadows function with the same name even if not callable`() = checkByCode(
         """
 module 0x1::mod {
     fun name() {}
-       //X
     fun main() {
         let name = 1;
+           //X
         name();
          //^       
     }

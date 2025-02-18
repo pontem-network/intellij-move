@@ -19,8 +19,9 @@ fun processLabelResolveVariants(label: MvLabel, processor: RsResolveProcessor): 
         if (isLabelBarrier(scope)) return false
         if (scope is MvLabeledExpression) {
             val labelDecl = scope.labelDecl ?: continue
+            val labelName = labelDecl.name ?: continue
             val stop = processWithShadowingAndUpdateScope(prevScope, LABELS, processor) {
-                it.process(LABELS, labelDecl)
+                it.process(labelName, LABELS, labelDecl)
             }
             if (stop) return true
         }

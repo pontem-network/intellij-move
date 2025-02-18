@@ -9,7 +9,7 @@ import org.move.lang.core.psi.ext.structs
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.SimpleScopeEntry
 import org.move.lang.core.resolve.collectResolveVariants
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.processAllEntries
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 
@@ -30,7 +30,7 @@ fun processItemSpecRefResolveVariants(
             module.structs(),
             module.enumList,
         ).flatten()
-    return processor.processAll(
+    return processor.processAllEntries(
         mslEnabledItems.mapNotNull {
             it.name?.let { name -> SimpleScopeEntry(name, it, ALL_NAMESPACES) }
         }

@@ -27,6 +27,7 @@ interface ScopeEntry {
     val name: String
     val element: MvNamedElement
     val namespaces: Set<Namespace>
+
     fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry
 }
 
@@ -137,6 +138,9 @@ private class NonNullMappingProcessor<in T: ScopeEntry, in U: ScopeEntry>(
     override fun toString(): String = "MappingProcessor($originalProcessor, mapper = $mapper)"
 }
 
+/**
+ * Only items matching the predicate will be processed.
+ */
 fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithFilter(
     filter: (T) -> Boolean
 ): RsResolveProcessorBase<T> {
@@ -487,7 +491,6 @@ data class SimpleScopeEntry(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
-//    override val subst: Substitution = emptySubstitution
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
@@ -537,8 +540,8 @@ data class ScopeEntryWithVisibility(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
-
-    val adjustedItemScope: NamedItemScope = MAIN,
+    // when item is imported, import can have different item scope
+    val adjustedItemScope: NamedItemScope,
 
     /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
 //    val visibilityFilter: VisibilityFilter? = null,
@@ -547,21 +550,27 @@ data class ScopeEntryWithVisibility(
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
 
-fun RsResolveProcessor.process(
+fun RsResolveProcessor.processWithVisibility(
     name: String,
     e: MvNamedElement,
     ns: Set<Namespace>,
     adjustedItemScope: NamedItemScope = MAIN,
 ): Boolean = process(ScopeEntryWithVisibility(name, e, ns, adjustedItemScope))
 
-fun RsResolveProcessor.processAllItems(
+fun RsResolveProcessor.processItemsWithVisibility(
     namespaces: Set<Namespace>,
     vararg collections: Iterable<MvItemElement>,
 ): Boolean {
-    return sequenceOf(*collections).flatten().any { itemElement ->
-        val name = itemElement.name ?: return false
-        process(ScopeEntryWithVisibility(name, itemElement, namespaces))
-    }
+    return sequenceOf(*collections).flatten()
+        .any { itemElement ->
+            val name = itemElement.name ?: return false
+            process(ScopeEntryWithVisibility(
+                name,
+                itemElement,
+                namespaces,
+                adjustedItemScope = MAIN
+            ))
+        }
 }
 
 fun RsResolveProcessor.process(
@@ -581,29 +590,19 @@ inline fun RsResolveProcessor.lazy(
     return process(name, namespaces, element)
 }
 
-fun RsResolveProcessor.process(
-    ns: Set<Namespace>,
-    e: MvNamedElement,
-): Boolean {
-    val name = e.name ?: return false
-    return process(name, ns, e)
-}
-
 fun RsResolveProcessor.processAll(
     ns: Set<Namespace>,
-    elements: List<MvNamedElement>,
+    vararg lists: Iterable<MvNamedElement>,
 ): Boolean {
-    return elements.any { process(ns, it) }
+    return sequenceOf(*lists).flatten()
+        .any {
+            val name = it.name ?: return@any false
+            process(name, ns, it)
+        }
 }
 
-fun RsResolveProcessor.processAll(elements: List<ScopeEntry>): Boolean = elements.any { process(it) }
-
-fun RsResolveProcessor.processAll(
-    ns: Set<Namespace>,
-    vararg collections: Iterable<MvNamedElement>,
-): Boolean {
-    return sequenceOf(*collections).flatten().any { process(ns, it) }
-}
+fun RsResolveProcessor.processAllEntries(entries: List<ScopeEntry>): Boolean =
+    entries.any { process(it) }
 
 
 
