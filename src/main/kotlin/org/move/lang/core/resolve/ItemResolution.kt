@@ -12,9 +12,9 @@ import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
 
-val MvNamedElement.namespace
+val MvNamedElement.moduleItemNamespace
     get() = when (this) {
-        is MvFunctionLike -> FUNCTION
+        is MvFunctionLike -> NAME
         is MvStruct -> TYPE
         is MvEnum -> ENUM
         is MvConst -> NAME
@@ -74,7 +74,7 @@ fun processItemDeclarations(
     for (itemElement in items) {
         val name = itemElement.name ?: continue
 
-        val itemNamespace = itemElement.namespace
+        val itemNamespace = itemElement.moduleItemNamespace
         if (itemNamespace !in ns) continue
 
         if (processor.processWithVisibility(name, itemElement, setOf(itemNamespace))) return true
@@ -98,7 +98,7 @@ fun processItemsFromModuleSpecs(
         val thisNs = setOf(namespace)
         for (moduleSpec in module.allModuleSpecs()) {
             val matched = when (namespace) {
-                FUNCTION ->
+                NAME ->
                     processor.processAll(
                         thisNs,
                         moduleSpec.specFunctions(),

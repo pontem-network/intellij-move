@@ -232,7 +232,7 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
         }
 
         val element = alias ?: resolvedItem
-        val namespace = resolvedItem.namespace
+        val namespace = resolvedItem.moduleItemNamespace
         if (namespace in ns) {
             val speckItemName = useSpeckItem.aliasOrSpeckName ?: continue
             if (processor.processWithVisibility(

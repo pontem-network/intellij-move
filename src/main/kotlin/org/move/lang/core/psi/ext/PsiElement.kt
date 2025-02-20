@@ -141,11 +141,6 @@ inline fun <reified T: PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
     return this.ancestors.filterIsInstance<T>()
 }
 
-inline fun <reified T: PsiElement> PsiElement.ancestorsOfTypeWithSelf(): Sequence<T> {
-    return (sequenceOf(this) + this.ancestors).filterIsInstance<T>()
-//    return this.ancestors.filterIsInstance<T>()
-}
-
 /**
  * Returns the element which should be used as the parent of this element in a tree up
  * walk during a resolve operation. For most elements, this returns {@code getParent()},

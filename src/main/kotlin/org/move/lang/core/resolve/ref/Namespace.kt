@@ -23,7 +23,7 @@ enum class Namespace {
 
     companion object {
         fun all(): Set<Namespace> {
-            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA, MODULE, LABEL)
+            return EnumSet.of(NAME, TYPE, ENUM, SCHEMA, MODULE, LABEL)
         }
 
         fun none(): Set<Namespace> = setOf()
@@ -44,8 +44,7 @@ val TYPES_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME)
 val TYPES_N_ENUMS_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME, Namespace.ENUM)
 val ENUMS_N_MODULES = setOf(Namespace.ENUM, Namespace.MODULE)
 val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MODULE)
-val FUNCTIONS_N_NAMES = setOf(Namespace.FUNCTION, Namespace.NAME)
 
 val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =
-    setOf(Namespace.NAME, Namespace.FUNCTION, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)
+    setOf(Namespace.NAME, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)

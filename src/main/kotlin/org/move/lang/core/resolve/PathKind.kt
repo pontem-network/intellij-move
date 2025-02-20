@@ -122,7 +122,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     // two-element paths
     if (qualifierOfQualifier == null) {
         val qualifierPathAddress = qualifier.pathAddress
-        val qualifierItemName = qualifier.referenceName
+        val qualifierReferenceName = qualifier.referenceName
         when {
             // 0x1::bar
             //       ^
@@ -132,11 +132,11 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             }
             // aptos_framework::bar
             //                  ^
-            moveProject != null && qualifierItemName != null -> {
-                val namedAddress = moveProject.getNamedAddressTestAware(qualifierItemName)
+            moveProject != null && qualifierReferenceName != null -> {
+                val namedAddress = moveProject.getNamedAddressTestAware(qualifierReferenceName)
                 if (this.isUseSpeck) {
                     val address =
-                        namedAddress ?: Address.Named(qualifierItemName, null)
+                        namedAddress ?: Address.Named(qualifierReferenceName, null)
                     return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
                 // `use std::main`

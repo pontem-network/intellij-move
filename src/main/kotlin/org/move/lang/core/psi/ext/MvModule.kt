@@ -141,8 +141,6 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = specFunctionList.orEmpty()
 
-fun MvModule.consts(): List<MvConst> = this.constList
-
 fun MvModule.enumVariants(): List<MvEnumVariant> = this.enumList.flatMap { it.variants }
 
 //fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList

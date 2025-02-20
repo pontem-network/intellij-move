@@ -10,7 +10,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.ALL_NAMESPACES
 import org.move.lang.core.resolve.ref.ENUMS
 import org.move.lang.core.resolve.ref.ENUMS_N_MODULES
-import org.move.lang.core.resolve.ref.FUNCTIONS_N_NAMES
 import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
 import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.MvPathReference
@@ -100,7 +99,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
-        parent is MvCallExpr -> FUNCTIONS_N_NAMES
+        parent is MvCallExpr -> NAMES
         parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
         // TYPES for resource indexing, NAMES for vector indexing

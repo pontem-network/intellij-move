@@ -7,7 +7,7 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.createFilter
-import org.move.lang.core.resolve.namespace
+import org.move.lang.core.resolve.moduleItemNamespace
 import org.move.lang.core.resolve.visInfo
 import org.move.lang.index.MvNamedElementIndex
 
@@ -25,7 +25,7 @@ object ImportCandidateCollector {
             if (i % 100 == 0) ProgressManager.checkCanceled()
 
             if (elementFromIndex !is MvQualNamedElement) continue
-            if (elementFromIndex.namespace !in ns) continue
+            if (elementFromIndex.moduleItemNamespace !in ns) continue
 
             val visFilter = elementFromIndex.visInfo().createFilter()
             val visibilityStatus = visFilter.filter(path, ns)
