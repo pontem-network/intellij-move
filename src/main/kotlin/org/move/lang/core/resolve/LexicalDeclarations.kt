@@ -9,157 +9,124 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.util.forEachLeafSpeck
 import org.move.lang.core.resolve2.itemScopeEntries
+import org.move.stdext.chain
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.psiCacheResult
 
-fun processItemsInScope(
+fun getEntriesInScope(
     scope: MvElement,
     cameFrom: MvElement,
-    ns: Set<Namespace>,
     ctx: ResolutionContext,
-    processor: RsResolveProcessor,
-): Boolean {
-    if (scope is MvGenericDeclaration) {
-        if (processor.processAll(scope.typeParameters.mapNotNull { it.asEntry() })) return true
-    }
-    when (scope) {
-        is MvModule -> {
-            if (processor.processAll(scope.itemScopeEntries)) return true
+): List<ScopeEntry> {
+    return buildList {
+        if (scope is MvGenericDeclaration) {
+            addAll(scope.typeParameters.mapNotNull { it.asEntry() })
+        }
+        when (scope) {
+            is MvModule -> {
+                addAll(scope.itemScopeEntries)
 
-            if (processor.processAll(scope.enumVariants().mapNotNull { it.asEntry() })) return true
-            if (processor.processAll(
-                    scope.builtinFunctions().mapNotNull { it.asEntry() },
-                    scope.builtinSpecFunctions().mapNotNull { it.asEntry() },
-                )
-            ) return true
-        }
-        is MvScript -> {
-            if (processor.processAll(scope.constList.mapNotNull { it.asEntry() })) return true
-        }
-        is MvFunctionLike -> {
-            if (processor.processAll(scope.parametersAsBindings.map { it.asEntry() })) return true
-        }
-        is MvLambdaExpr -> {
-            if (processor.processAll(scope.lambdaParametersAsBindings.map { it.asEntry() })) return true
-        }
-        is MvItemSpec -> {
-            val refItem = scope.item
-            when (refItem) {
-                is MvFunction -> {
-                    if (processor.processAll(refItem.typeParameters.mapNotNull { it.asEntry() })) return true
+                addAll(scope.enumVariants().mapNotNull { it.asEntry() })
+                addAll(scope.builtinFunctions().mapNotNull { it.asEntry() })
+                addAll(scope.builtinSpecFunctions().mapNotNull { it.asEntry() })
+            }
+            is MvScript -> {
+                addAll(scope.constList.mapNotNull { it.asEntry() })
+            }
+            is MvFunctionLike -> {
+                addAll(scope.parametersAsBindings.map { it.asEntry() })
+            }
+            is MvLambdaExpr -> {
+                addAll(scope.lambdaParametersAsBindings.map { it.asEntry() })
+            }
+            is MvItemSpec -> {
+                val refItem = scope.item
+                when (refItem) {
+                    is MvFunction -> {
+                        addAll(refItem.typeParameters.mapNotNull { it.asEntry() })
 
-                    if (processor.processAll(
-                            refItem.parametersAsBindings.map { it.asEntry() },
-                            refItem.specFunctionResultParameters.map { it.patBinding }.map { it.asEntry() }
-                        )
-                    ) {
-                        return true
+                        addAll(refItem.parametersAsBindings.map { it.asEntry() })
+                        addAll(refItem.specFunctionResultParameters.map { it.patBinding }.map { it.asEntry() })
+                    }
+                    is MvStruct -> {
+                        addAll(refItem.namedFields.mapNotNull { it.asEntry() })
                     }
                 }
-                is MvStruct -> {
-                    if (processor.processAll(refItem.namedFields.mapNotNull { it.asEntry() })) return true
+            }
+
+            is MvSchema -> {
+                addAll(scope.fieldsAsBindings.map { it.asEntry() })
+            }
+
+            is MvModuleSpecBlock -> {
+                val specFuns = scope.specFunctionList
+                addAll(specFuns.mapNotNull { it.asEntry() })
+
+                val specInlineFuns = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+                addAll(specInlineFuns.mapNotNull { it.asEntry() })
+
+                addAll(scope.schemaList.mapNotNull { it.asEntry() })
+                addAll(specFuns.mapNotNull { it.asEntry()?.copyWithNs(SCHEMAS) })
+            }
+
+            is MvCodeBlock -> {
+                val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom, ctx)
+                addAll(letBindings.map { it.asEntry() })
+            }
+
+            is MvSpecCodeBlock -> {
+                val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom, ctx)
+                addAll(letBindings.map { it.asEntry() })
+
+                val globalEntries = scope.builtinSpecConsts().mapNotNull { it.asEntry() }
+                    .chain(scope.globalVariables().mapNotNull { it.asEntry() })
+                for (scopeEntry in globalEntries) {
+                    if (scopeEntry.name in visited) continue
+                    visited += scopeEntry.name
+                    add(scopeEntry)
+                }
+
+                val inlineFunctions = scope.specInlineFunctions().asReversed().mapNotNull { it.asEntry() }
+                addAll(inlineFunctions)
+            }
+
+            is MvQuantBindingsOwner -> {
+                addAll(scope.bindings.map { it.asEntry() })
+            }
+
+            is MvForExpr -> {
+                val iterBinding = scope.forIterCondition?.patBinding
+                if (iterBinding != null) {
+                    add(iterBinding.asEntry())
                 }
             }
-        }
-
-        is MvSchema -> {
-            if (processor.processAll(scope.fieldsAsBindings.map { it.asEntry() })) return true
-        }
-
-        is MvModuleSpecBlock -> {
-            val specFuns = scope.specFunctionList
-            val specInlineFuns = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-            if (processor.processAll(
-                    specFuns.mapNotNull { it.asEntry() },
-                    specInlineFuns.mapNotNull { it.asEntry() })
-            ) return true
-
-            if (processor.processAll(
-                    scope.schemaList.mapNotNull { it.asEntry() },
-                    specFuns.mapNotNull { it.asEntry()?.copyWithNs(SCHEMAS) }
-                )
-            ) return true
-        }
-
-        is MvCodeBlock -> {
-            val letBindings = getVisibleLetPatBindings(scope, cameFrom, ctx)
-            // skip shadowed (already visited) elements
-            val visited = mutableSetOf<String>()
-            val variablesProcessor = processor.wrapWithFilter {
-                val isVisited = it.name in visited
-                if (!isVisited) {
-                    visited += it.name
+            is MvMatchArm -> {
+                if (cameFrom !is MvPat) {
+                    // coming from rhs, use pat bindings from lhs
+                    addAll(scope.pat.bindings.map { it.asEntry() })
                 }
-                !isVisited
             }
-            if (variablesProcessor.processAll(letBindings.map { it.asEntry() })) return true
-        }
 
-        is MvSpecCodeBlock -> {
-            val letBindings = getVisibleLetPatBindings(scope, cameFrom, ctx)
-            // skip shadowed (already visited) elements
-            val visited = mutableSetOf<String>()
-            val variablesProcessor = processor.wrapWithFilter {
-                val isVisited = it.name in visited
-                if (!isVisited) {
-                    visited += it.name
-                }
-                !isVisited
-            }
-            if (variablesProcessor.processAll(letBindings.map { it.asEntry() })) return true
-
-            // if inside SpecCodeBlock, process also with builtin spec consts and global variables
-            if (variablesProcessor.processAll(
-                    scope.builtinSpecConsts().mapNotNull { it.asEntry() },
-                    scope.globalVariables().mapNotNull { it.asEntry() }
-                )
-            ) return true
-
-            val inlineFunctions = scope.specInlineFunctions().asReversed().mapNotNull { it.asEntry() }
-            if (processor.processAll(inlineFunctions)) return true
-        }
-
-        is MvQuantBindingsOwner -> {
-            if (processor.processAll(scope.bindings.map { it.asEntry() })) return true
-        }
-
-        is MvForExpr -> {
-            val iterBinding = scope.forIterCondition?.patBinding
-            val stop = if (iterBinding != null) {
-                processor.process(iterBinding.asEntry())
-            } else {
-                false
-            }
-            if (stop) return true
-        }
-        is MvMatchArm -> {
-            if (cameFrom !is MvPat) {
-                // coming from rhs, use pat bindings from lhs
-                if (processor.processAll(scope.pat.bindings.map { it.asEntry() })) return true
+            is MvApplySchemaStmt -> {
+                val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
+                val patternTypeParams =
+                    toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
+                addAll(patternTypeParams.mapNotNull { it.asEntry() })
             }
         }
 
-        is MvApplySchemaStmt -> {
-            val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
-            val patternTypeParams =
-                toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
-            if (processor.processAll(patternTypeParams.mapNotNull { it.asEntry() })) return true
+        if (scope is MvItemsOwner) {
+            addAll(scope.getUseSpeckElements())
         }
     }
-
-    if (scope is MvItemsOwner) {
-        if (scope.processUseSpeckElements(ns, processor)) return true
-    }
-
-    return false
 }
 
-private fun getVisibleLetPatBindings(
+private fun getVisibleLetPatBindingsWithShadowing(
     scope: MvElement,
     cameFrom: MvElement,
     ctx: ResolutionContext,
-): List<MvPatBinding> {
+): Pair<List<MvPatBinding>, MutableSet<String>> {
     val visibleLetStmts = when (scope) {
         is MvCodeBlock -> {
             scope.letStmts
@@ -200,46 +167,58 @@ private fun getVisibleLetPatBindings(
     val letPatBindings = visibleLetStmts
         .asReversed()
         .flatMap { it.pat?.bindings.orEmpty() }
-    return letPatBindings
-}
 
-private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: RsResolveProcessor): Boolean {
-    val useSpeckItems = getUseSpeckItems()
-    for (useSpeckItem in useSpeckItems) {
-        val speckPath = useSpeckItem.speckPath
-        val alias = useSpeckItem.alias
-
-        val resolvedItem = speckPath.reference?.resolve()
-        if (resolvedItem == null) {
-            // aliased element cannot be resolved, but alias itself is valid, resolve to it
-            if (alias != null) {
-                val referenceName = useSpeckItem.aliasOrSpeckName ?: continue
-                if (processor.process(SimpleScopeEntry(
-                        referenceName,
-                        alias,
-                        ALL_NAMESPACES
-                    ))) return true
-//                if (processor.processNamedElement(referenceName, ALL_NAMESPACES, alias)) return true
-            }
-            continue
-        }
-
-        val element = alias ?: resolvedItem
-        val namespace = resolvedItem.moduleItemNamespace
-        if (namespace in ns) {
-            val speckItemName = useSpeckItem.aliasOrSpeckName ?: continue
-            if (processor.process(
-                    ScopeEntryWithVisibility(
-                        speckItemName,
-                        element,
-                        ns,
-                        adjustedItemScope = useSpeckItem.stmtUsageScope
-                    )
-                )
-            ) return true
+    val visited = mutableSetOf<String>()
+    val bindings = buildList {
+        for (binding in letPatBindings) {
+            val name = binding.name
+            if (name in visited) continue
+            visited += name
+            add(binding)
         }
     }
-    return false
+    return bindings to visited
+}
+
+private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
+    val useSpeckItems = getUseSpeckItems()
+
+    return buildList {
+        for (useSpeckItem in useSpeckItems) {
+            val speckPath = useSpeckItem.speckPath
+            val alias = useSpeckItem.alias
+
+            val resolvedItem = speckPath.reference?.resolve()
+            if (resolvedItem == null) {
+                // aliased element cannot be resolved, but alias itself is valid, resolve to it
+                if (alias != null) {
+                    val referenceName = useSpeckItem.aliasOrSpeckName ?: continue
+                    add(
+                        SimpleScopeEntry(
+                            referenceName,
+                            alias,
+                            ALL_NAMESPACES
+                        )
+                    )
+                }
+                continue
+            }
+
+            val element = alias ?: resolvedItem
+            val itemNs = resolvedItem.itemNs
+            val speckItemName = useSpeckItem.aliasOrSpeckName ?: continue
+            add(
+                ScopeEntryWithVisibility(
+                    speckItemName,
+                    element,
+                    itemNs,
+                    adjustedItemScope = useSpeckItem.stmtUsageScope
+                )
+            )
+//            if (namespace in ns) {
+//            }
+        }
+    }
 }
 
 private val USE_SPECK_ITEMS_KEY: Key<CachedValue<List<UseSpeckItem>>> = Key.create("USE_SPECK_ITEMS_KEY")

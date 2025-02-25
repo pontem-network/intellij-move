@@ -9,7 +9,6 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.completionPriority
-import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
@@ -66,25 +65,6 @@ fun createProcessor(processor: (ScopeEntry) -> Unit): RsResolveProcessor {
 
         override val names: Set<String>? get() = null
     }
-}
-
-fun <T: ScopeEntry, U: ScopeEntry> RsResolveProcessorBase<T>.wrapWithMapper(
-    mapper: (U) -> T
-): RsResolveProcessorBase<U> {
-    return MappingProcessor(this, mapper)
-}
-
-private class MappingProcessor<in T: ScopeEntry, in U: ScopeEntry>(
-    private val originalProcessor: RsResolveProcessorBase<T>,
-    private val mapper: (U) -> T,
-): RsResolveProcessorBase<U> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: U): Boolean {
-        val mapped = mapper(entry)
-        return originalProcessor.process(mapped)
-    }
-
-    override fun toString(): String = "MappingProcessor($originalProcessor, mapper = $mapper)"
 }
 
 /**
@@ -196,6 +176,17 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
         if (entry.name == referenceName) {
             result += entry
         }
+        return false
+    }
+}
+
+class ScopeEntriesCollector: RsResolveProcessor {
+    val result = mutableListOf<ScopeEntry>()
+
+    override val names get() = null
+
+    override fun process(entry: ScopeEntry): Boolean {
+        result += entry
         return false
     }
 }

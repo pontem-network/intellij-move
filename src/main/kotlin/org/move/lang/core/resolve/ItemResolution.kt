@@ -2,11 +2,14 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.SCHEMAS
 import org.move.lang.core.resolve.ref.TYPES
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_NAMES
+import org.move.lang.core.resolve.ref.TYPES_N_NAMES
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
@@ -22,6 +25,18 @@ val MvNamedElement.moduleItemNamespace
         is MvSchema -> SCHEMA
         is MvModule -> MODULE
         is MvGlobalVariableStmt -> NAME
+        else -> error("when should be exhaustive, $this is not covered")
+    }
+
+val MvNamedElement.itemNs
+    get() = when (this) {
+        is MvFunctionLike -> NAMES
+        is MvStruct -> TYPES_N_NAMES
+        is MvEnum -> TYPES_N_ENUMS_N_NAMES
+        is MvConst -> NAMES
+        is MvModule -> MODULES
+        is MvSchema -> SCHEMAS
+        is MvGlobalVariableStmt -> NAMES
         else -> error("when should be exhaustive, $this is not covered")
     }
 

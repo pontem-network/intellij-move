@@ -150,7 +150,7 @@ fun processPathResolveVariants(
                 }
             }
             // local
-            processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, processor)
+            processor.processAll(getEntriesFromOuterScopes(ctx.element, pathKind.ns, ctx))
         }
         is PathKind.QualifiedPath.Module -> {
             processModulePathResolveVariants(ctx, pathKind.address, processor)

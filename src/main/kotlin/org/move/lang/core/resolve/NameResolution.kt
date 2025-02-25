@@ -2,14 +2,7 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.ALL_NAMESPACES
-import org.move.lang.core.resolve.ref.MODULES
-import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
-import org.move.lang.core.resolve.ref.NAMES
-import org.move.lang.core.resolve.ref.NONE
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.ResolutionContext
-import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_MODULES
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
@@ -20,23 +13,16 @@ fun processFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
     receiverItem: MvStructOrEnumItemElement,
     msl: Boolean,
-    originalProcessor: RsResolveProcessor
+    processor: RsResolveProcessor
 ): Boolean {
     if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
-
-    val processor = originalProcessor
-        .wrapWithMapper { it: ScopeEntry ->
-            it.copyWithNs(ALL_NAMESPACES)
-        }
-
     return when (receiverItem) {
-        is MvStruct -> processFieldDeclarations(receiverItem, processor)
+        is MvStruct -> processor.processAll(getFieldEntries(receiverItem))
         is MvEnum -> {
             val visitedFields = mutableSetOf<String>()
             for (variant in receiverItem.variants) {
                 val visitedVariantFields = mutableSetOf<String>()
-                for (field in variant.fields) {
-                    val fieldEntry = field.asEntry() ?: continue
+                for (fieldEntry in getFieldEntries(variant)) {
                     if (fieldEntry.name in visitedFields) continue
 
                     if (processor.process(fieldEntry)) return true
@@ -58,12 +44,16 @@ fun processStructLitFieldResolveVariants(
     processor: RsResolveProcessor,
 ): Boolean {
     val fieldsOwner = litField.parentStructLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-    if (fieldsOwner != null && processNamedFieldDeclarations(fieldsOwner, processor)) return true
+    if (fieldsOwner != null) {
+        if (processor.processAll(getNamedFieldEntries(fieldsOwner))) return true
+    }
     // if it's a shorthand, try to resolve to the underlying binding pat
     if (!isCompletion && litField.expr == null) {
         val ctx = ResolutionContext(litField, false)
-        // return is ignored as struct lit field cannot be marked as resolved through binding pat
-        processNestedScopesUpwards(litField, NAMES, ctx, processor)
+        // search through available NAME items
+        val availableBindings = getEntriesFromOuterScopes(litField, NAMES, ctx)
+        // todo: what if constant or functions hits here?
+        processor.processAll(availableBindings)
     }
     return false
 }
@@ -73,8 +63,9 @@ fun processStructPatFieldResolveVariants(
     processor: RsResolveProcessor
 ): Boolean {
     // used in completion
-    val fieldsOwner = patFieldFull.patStruct.path.maybeFieldsOwner ?: return false
-    return processNamedFieldDeclarations(fieldsOwner, processor)
+    val fieldsOwner =
+        patFieldFull.patStruct.path.maybeFieldsOwner ?: return false
+    return processor.processAll(getNamedFieldEntries(fieldsOwner))
 }
 
 fun processPatBindingResolveVariants(
@@ -88,7 +79,7 @@ fun processPatBindingResolveVariants(
         val fieldsOwner = parentPat.path.maybeFieldsOwner
         // can be null if unresolved
         if (fieldsOwner != null) {
-            if (processNamedFieldDeclarations(fieldsOwner, originalProcessor)) return true
+            if (originalProcessor.processAll(getNamedFieldEntries(fieldsOwner))) return true
             if (isCompletion) return false
         }
     }
@@ -101,52 +92,38 @@ fun processPatBindingResolveVariants(
             else -> false
         }
         isConstantLike || (isCompletion && isPathOrDestructable)
-//        if (originalProcessor.acceptsName(entry.name)) {
-//        } else {
-//            false
-//        }
     }
     val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
     val ctx = ResolutionContext(binding, isCompletion)
-    return processNestedScopesUpwards(binding, ns, ctx, processor)
+    return processor.processAll(getEntriesFromOuterScopes(binding, ns, ctx))
 }
 
 fun resolveBindingForFieldShorthand(
     element: MvMandatoryReferenceElement,
 ): List<MvNamedElement> {
     return collectResolveVariants(element.referenceName) {
-        processNestedScopesUpwards(
-            element,
-            setOf(Namespace.NAME),
-            ResolutionContext(element, isCompletion = false),
-            it
-        )
+        val ctx = ResolutionContext(element, isCompletion = false)
+        it.processAll(getEntriesFromOuterScopes(element, NAMES, ctx))
     }
 }
 
-fun processNestedScopesUpwards(
+fun getEntriesFromOuterScopes(
     scopeStart: MvElement,
     ns: Set<Namespace>,
     ctx: ResolutionContext,
-    processor: RsResolveProcessor
-): Boolean {
+): List<ScopeEntry> {
     val prevScope = hashMapOf<String, Set<Namespace>>()
-    return walkUpThroughScopes(
-        scopeStart,
-        stopAfter = { it is MvModule }
-    ) { cameFrom, scope ->
+
+    val collector = ScopeEntriesCollector()
+    walkUpThroughScopes(scopeStart) { cameFrom, scope ->
         // state between shadowing processors passed through prevScope
-        processWithShadowingAndUpdateScope(prevScope, ns, processor) { shadowingProcessor ->
-            val filterNs = shadowingProcessor.wrapWithFilter { scopeEntry ->
-                val entryNamespaces = scopeEntry.namespaces
-                // entry is available in any of the `ns`
-                entryNamespaces.intersects(ns)
-            }
-            processItemsInScope(
-                scope, cameFrom, ns, ctx, filterNs
-            )
+        processWithShadowingBetweenScopes(prevScope, ns, collector) { shadowingProcessor ->
+            val scopeEntries =
+                getEntriesInScope(scope, cameFrom, ctx).filter { it.namespaces.intersects(ns) }
+            shadowingProcessor.processAll(scopeEntries)
         }
     }
+    return collector.result
 }
 
 fun processModulePathResolveVariants(
@@ -196,7 +173,7 @@ fun processModulePathResolveVariants(
     return false
 }
 
-inline fun processWithShadowingAndUpdateScope(
+inline fun processWithShadowingBetweenScopes(
     prevScope: MutableMap<String, Set<Namespace>>,
     ns: Set<Namespace>,
     processor: RsResolveProcessor,
@@ -213,7 +190,7 @@ inline fun processWithShadowingAndUpdateScope(
 
 fun walkUpThroughScopes(
     start: MvElement,
-    stopAfter: (MvElement) -> Boolean,
+    stopAfter: (MvElement) -> Boolean = { false },
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
     var cameFrom = start
@@ -251,17 +228,19 @@ fun walkUpThroughScopes(
     return false
 }
 
+private fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+    return fieldsOwner.fields.mapNotNull { it.asEntry() }
+}
+
 private fun processFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
     fieldsOwner.fields.any { field ->
         val fieldEntry = field.asEntry() ?: return@any false
         processor.process(fieldEntry)
     }
 
-private fun processNamedFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    fieldsOwner.namedFields.any { field ->
-        val fieldEntry = field.asEntry() ?: return@any false
-        processor.process(fieldEntry)
-    }
+private fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+    return fieldsOwner.namedFields.mapNotNull { it.asEntry() }
+}
 
 private fun handleModuleItemSpecsInItemsOwner(
     cameFrom: MvElement,

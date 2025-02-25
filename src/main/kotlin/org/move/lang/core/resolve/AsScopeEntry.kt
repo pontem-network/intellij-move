@@ -89,5 +89,5 @@ fun MvEnum.asEntry(): ScopeEntryWithVisibility? {
 
 fun MvLabelDecl.asEntry(): SimpleScopeEntry? {
     val name = this.name ?: return null
-    return SimpleScopeEntry(name, this, LABELS)
+    return SimpleScopeEntry(name, this, NONE)
 }
