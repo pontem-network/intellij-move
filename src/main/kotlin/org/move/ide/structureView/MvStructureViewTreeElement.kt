@@ -58,7 +58,7 @@ class MvStructureViewTreeElement(val psi: NavigatablePsiElement): StructureViewT
                         psi.structs(),
                         psi.enumList,
                         psi.allFunctions(),
-                        psi.specFunctions(),
+                        psi.specFunctionList,
                     ).flatten()
                 }
                 is MvFieldsOwner -> psi.namedFields

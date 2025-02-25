@@ -2,7 +2,7 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.FieldResolveVariant
+import org.move.lang.core.resolve.ref.ALL_NAMESPACES
 import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 import org.move.lang.core.resolve.ref.NAMES
@@ -20,12 +20,14 @@ fun processFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
     receiverItem: MvStructOrEnumItemElement,
     msl: Boolean,
-    originalProcessor: RsResolveProcessorBase<FieldResolveVariant>
+    originalProcessor: RsResolveProcessor
 ): Boolean {
     if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
 
     val processor = originalProcessor
-        .wrapWithMapper { it: ScopeEntry -> FieldResolveVariant(it.name, it.element) }
+        .wrapWithMapper { it: ScopeEntry ->
+            it.copyWithNs(ALL_NAMESPACES)
+        }
 
     return when (receiverItem) {
         is MvStruct -> processFieldDeclarations(receiverItem, processor)
@@ -34,11 +36,12 @@ fun processFieldLookupResolveVariants(
             for (variant in receiverItem.variants) {
                 val visitedVariantFields = mutableSetOf<String>()
                 for (field in variant.fields) {
-                    val fieldName = field.name ?: continue
-                    if (fieldName in visitedFields) continue
-                    if (processor.process(fieldName, NONE, field)) return true
+                    val fieldEntry = field.asEntry() ?: continue
+                    if (fieldEntry.name in visitedFields) continue
+
+                    if (processor.process(fieldEntry)) return true
                     // collect all names for the variant
-                    visitedVariantFields.add(fieldName)
+                    visitedVariantFields.add(fieldEntry.name)
                 }
                 // add variant fields to the global fields list to skip them in the next variants
                 visitedFields.addAll(visitedVariantFields)
@@ -91,17 +94,17 @@ fun processPatBindingResolveVariants(
     }
     // copied as is from the intellij-rust, handles all items that can be matched in match arms
     val processor = originalProcessor.wrapWithFilter { entry ->
-        if (originalProcessor.acceptsName(entry.name)) {
-            val element = entry.element
-            val isConstantLike = element.isConstantLike
-            val isPathOrDestructable = when (element) {
-                /*is MvModule, */is MvEnum, is MvEnumVariant, is MvStruct -> true
-                else -> false
-            }
-            isConstantLike || (isCompletion && isPathOrDestructable)
-        } else {
-            false
+        val element = entry.element
+        val isConstantLike = element.isConstantLike
+        val isPathOrDestructable = when (element) {
+            /*is MvModule, */is MvEnum, is MvEnumVariant, is MvStruct -> true
+            else -> false
         }
+        isConstantLike || (isCompletion && isPathOrDestructable)
+//        if (originalProcessor.acceptsName(entry.name)) {
+//        } else {
+//            false
+//        }
     }
     val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
     val ctx = ResolutionContext(binding, isCompletion)
@@ -178,14 +181,11 @@ fun processModulePathResolveVariants(
         val moduleNames = MvModuleIndex.getAllModuleNames(project)
         moduleNames.forEach { moduleName ->
             val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
-            for (module in modules) {
-                if (addressMatcher.process(moduleName, MODULES, module)) return true
-            }
+            if (addressMatcher.processAll(modules.mapNotNull { it.asEntry() })) return true
         }
         return false
     }
 
-//    var stop = false
     for (targetModuleName in targetNames) {
         val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
         for (module in modules) {
@@ -253,14 +253,14 @@ fun walkUpThroughScopes(
 
 private fun processFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
     fieldsOwner.fields.any { field ->
-        val name = field.name ?: return@any false
-        processor.process(name, NAMES, field)
+        val fieldEntry = field.asEntry() ?: return@any false
+        processor.process(fieldEntry)
     }
 
 private fun processNamedFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
     fieldsOwner.namedFields.any { field ->
-        val name = field.name
-        processor.process(name, NAMES, field)
+        val fieldEntry = field.asEntry() ?: return@any false
+        processor.process(fieldEntry)
     }
 
 private fun handleModuleItemSpecsInItemsOwner(

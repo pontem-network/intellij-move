@@ -22,11 +22,3 @@ class MvMethodCallReferenceImpl(
     override fun isReferenceTo(element: PsiElement): Boolean =
         element is MvFunction && super.isReferenceTo(element)
 }
-
-data class FieldResolveVariant(
-    override val name: String,
-    override val element: MvNamedElement,
-    override val namespaces: Set<Namespace> = NAMES // Namespace does not matter in the case of dot expression
-): ScopeEntry {
-    override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = this
-}

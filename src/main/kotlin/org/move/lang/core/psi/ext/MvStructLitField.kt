@@ -41,46 +41,4 @@ abstract class MvStructLitFieldMixin(node: ASTNode): MvElementImpl(node),
 }
 
 
-//class MvFieldReferenceImpl(
-//    element: MvFieldReferenceElement,
-//    var shorthand: Boolean,
-//): MvPolyVariantReferenceCached<MvFieldReferenceElement>(element) {
-//
-//    override fun multiResolveInner(): List<MvNamedElement> {
-//        val referenceName = element.referenceName
-//        var variants = collectResolveVariants(referenceName) {
-//            processStructRefFieldResolveVariants(element, it)
-//        }
-//        if (shorthand) {
-//            variants += resolveBindingForFieldShorthand(element)
-//        }
-//        return variants
-//    }
-//}
-
-//fun processStructRefFieldResolveVariants(
-//    fieldRef: MvFieldReferenceElement,
-//    processor: RsResolveProcessor
-//): Boolean {
-//    val fieldsOwnerItem = fieldRef.fieldOwner ?: return false
-//    return fieldsOwnerItem.fields
-//        .any { field ->
-//            processor.process(SimpleScopeEntry(field.name, field, setOf(Namespace.NAME)))
-//        }
-//}
-
-//private val MvFieldReferenceElement.fieldOwner: MvFieldsOwner?
-//    get() {
-//        return when (this) {
-//            is MvPatField -> {
-//                this.patStruct.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-//            }
-//            is MvStructLitField -> {
-//                this.structLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-//            }
-//            else -> null
-//        }
-//    }
-
-
 

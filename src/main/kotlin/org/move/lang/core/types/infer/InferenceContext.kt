@@ -166,20 +166,6 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
     return contextOwner.inference(msl)
 }
 
-
-//data class ResolvedPath(val element: MvElement, val isVisible: Boolean) {
-//    companion object {
-//        fun from(entry: ScopeEntry, context: MvElement): ResolvedPath {
-////            return if (entry is AssocItemScopeEntry) {
-////                AssocItem(entry.element, entry.source)
-////            } else {
-////            val isVisible = entry.isVisibleFrom(context.containingModule)
-//            return ResolvedPath(entry.element, true)
-////            }
-//        }
-//    }
-//}
-
 class InferenceContext(
     var msl: Boolean,
     private val skipUnification: Boolean = false
@@ -277,8 +263,6 @@ class InferenceContext(
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
         callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
-        resolvedPaths.values.asSequence().flatten()
-            .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
         lambdaExprTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
@@ -304,17 +288,7 @@ class InferenceContext(
         patTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
         exprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
         patFieldTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
-
         callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
-        resolvedPaths.values.asSequence().flatten()
-            .forEach {
-                it.subst = it.subst.foldValues(object: TypeFolder() {
-                    override fun fold(ty: Ty): Ty {
-                        return resolveTypeVarsIfPossible(ty)
-                    }
-
-                })
-            }
         exprExpectedTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
         lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
     }
@@ -355,10 +329,6 @@ class InferenceContext(
         resolvedPaths[path] = resolved
     }
 
-    fun writePathSubst(path: MvPath, subst: Substitution) {
-        resolvedPaths[path]?.singleOrNull()?.subst = subst
-    }
-
     fun writeFieldPatTy(psi: MvPatField, ty: Ty) {
         patFieldTypes[psi] = ty
     }
@@ -370,10 +340,6 @@ class InferenceContext(
     fun writeCallableType(callable: MvCallable, ty: Ty) {
         this.callableTypes[callable] = ty
     }
-
-//    fun writePath(path: MvPath, resolved: List<ResolvedPath>) {
-//        resolvedPaths[path] = resolved
-//    }
 
     override fun getPatFieldType(patField: MvPatField): Ty =
         patFieldTypes[patField] ?: inferenceErrorOrFallback(patField, TyUnknown)
@@ -576,26 +542,13 @@ class InferenceContext(
     // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
         typeErrors.add(typeError)
-//        val element = typeError.element
-//        if (!element.descendantHasTypeError(this.typeErrors)
-//            && typeError.element.containingFile.isPhysical
-//        ) {
-//            typeErrors.add(typeError)
-//        }
     }
 }
 
 data class ResolvedItem(
     val element: MvNamedElement,
     val isVisible: Boolean,
-    var subst: Substitution = emptySubstitution,
-) {
-    companion object {
-        fun from(entry: ScopeEntry, context: MvMethodOrPath): ResolvedItem {
-            return ResolvedItem(entry.element, entry.isVisibleFrom(context))
-        }
-    }
-}
+)
 
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }

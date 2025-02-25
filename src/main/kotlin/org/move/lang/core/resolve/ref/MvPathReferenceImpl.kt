@@ -144,7 +144,10 @@ fun processPathResolveVariants(
         is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
             if (MODULE in pathKind.ns) {
                 // Self::
-                if (processor.lazy("Self", MODULES) { ctx.containingModule }) return true
+                ctx.containingModule?.let {
+                    val moduleEntry = SimpleScopeEntry("Self", it, MODULES)
+                    if (processor.process(moduleEntry)) return true
+                }
             }
             // local
             processNestedScopesUpwards(ctx.element, pathKind.ns, ctx, processor)
@@ -181,7 +184,7 @@ fun processQualifiedPathResolveVariants(
         return false
     }
     if (resolvedQualifier is MvModule) {
-        if (processor.process("Self", MODULES, resolvedQualifier)) return true
+        if (processor.process(SimpleScopeEntry("Self", resolvedQualifier, MODULES))) return true
 
         val module = resolvedQualifier
         if (processItemDeclarations(module, ns, processor)) return true

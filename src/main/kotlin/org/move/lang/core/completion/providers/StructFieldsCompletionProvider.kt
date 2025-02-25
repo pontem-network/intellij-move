@@ -9,9 +9,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvPatBinding
+import org.move.lang.core.psi.MvPatField
+import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.FieldResolveVariant
+import org.move.lang.core.resolve.SimpleScopeEntry
+import org.move.lang.core.resolve.ref.ALL_NAMESPACES
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider: MvCompletionProvider() {
@@ -23,8 +27,6 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
             PlatformPatterns
                 .psiElement()
                 .withParent<MvPatField>(),
-//            bindingPat()
-//                .withSuperParent<MvPatField>(2),
         )
 
     override fun addCompletions(
@@ -75,7 +77,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         completionContext: MvCompletionContext,
     ) {
         for (field in fieldsOwner.namedFields.filter { it.name !in providedFieldNames }) {
-            val scopeEntry = FieldResolveVariant(field.name, field)
+            val scopeEntry = SimpleScopeEntry(field.name, field, ALL_NAMESPACES)
             createLookupElement(scopeEntry, completionContext)
             result.addElement(
                 createLookupElement(scopeEntry, completionContext)

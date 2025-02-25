@@ -4,8 +4,11 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.SmartList
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.NamedItemScope.MAIN
+import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.psi.ext.MvItemElement
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
@@ -16,19 +19,12 @@ import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution
 import org.move.stdext.intersects
 
-/**
- * ScopeEntry is some PsiElement visible in some code scope.
- *
- * [SimpleScopeEntry] handles the two cases:
- *   * aliases (that's why we need a [name] property)
- *   * lazy resolving of actual elements (that's why [element] can return `null`) - unused for now
- */
 interface ScopeEntry {
     val name: String
     val element: MvNamedElement
     val namespaces: Set<Namespace>
 
-    fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry
+    fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry
 }
 
 interface RsResolveProcessorBase<in T: ScopeEntry> {
@@ -38,6 +34,13 @@ interface RsResolveProcessorBase<in T: ScopeEntry> {
      */
     fun process(entry: T): Boolean
 
+    fun processAll(vararg entries: List<T>): Boolean {
+        for (entriesList in entries) {
+            if (entriesList.any { process(it) }) return true
+        }
+        return false
+    }
+
     /**
      * Indicates that processor is interested only in [ScopeEntry]s with specified [names].
      * Improves performance for Resolve2.
@@ -46,19 +49,13 @@ interface RsResolveProcessorBase<in T: ScopeEntry> {
     val names: Set<String>?
 
     fun acceptsName(name: String): Boolean {
-        val names = names
-        return names == null || name in names
+        return true
+//        val names = names
+//        return names == null || name in names
     }
 }
 
 typealias RsResolveProcessor = RsResolveProcessorBase<ScopeEntry>
-
-fun createStoppableProcessor(processor: (ScopeEntry) -> Boolean): RsResolveProcessor {
-    return object: RsResolveProcessorBase<ScopeEntry> {
-        override fun process(entry: ScopeEntry): Boolean = processor(entry)
-        override val names: Set<String>? get() = null
-    }
-}
 
 fun createProcessor(processor: (ScopeEntry) -> Unit): RsResolveProcessor {
     return object: RsResolveProcessorBase<ScopeEntry> {
@@ -142,7 +139,7 @@ private class ShadowingProcessor<in T: ScopeEntry>(
                 val restNs = newNs.minus(prevNs)
                 if (ns.intersects(restNs)) {
                     @Suppress("UNCHECKED_CAST")
-                    entry.doCopyWithNs(restNs) as T
+                    entry.copyWithNs(restNs) as T
                 } else {
                     return false
                 }
@@ -155,32 +152,6 @@ private class ShadowingProcessor<in T: ScopeEntry>(
     }
 
     override fun toString(): String = "ShadowingProcessor($originalProcessor, ns = $ns)"
-}
-
-fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessorAndImmediatelyUpdateScope(
-    prevScope: MutableMap<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-): RsResolveProcessorBase<T> {
-    return ShadowingAndImmediatelyUpdateScopeProcessor(this, prevScope, ns)
-}
-
-private class ShadowingAndImmediatelyUpdateScopeProcessor<in T: ScopeEntry>(
-    private val originalProcessor: RsResolveProcessorBase<T>,
-    private val prevScope: MutableMap<String, Set<Namespace>>,
-    private val ns: Set<Namespace>,
-): RsResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
-        if (entry.name in prevScope) return false
-        val result = originalProcessor.process(entry)
-        if (originalProcessor.acceptsName(entry.name)) {
-            prevScope[entry.name] = ns
-        }
-        return result
-    }
-
-    override fun toString(): String =
-        "ShadowingAndImmediatelyUpdateScopeProcessor($originalProcessor, ns = $ns)"
 }
 
 fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvNamedElement> {
@@ -267,40 +238,14 @@ private fun collectMethodOrPathScopeEntry(
     result += RsPathResolveResult(element, isVisible)
 }
 
-fun pickFirstResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
-    pickFirstResolveEntry(referenceName, f)?.element
+fun resolveSingle(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
+    resolveSingleEntry(referenceName, f)?.element
 
-fun pickFirstResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
+fun resolveSingleEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
     if (referenceName == null) return null
-    val processor = PickFirstScopeEntryCollector(referenceName)
-    f(processor)
-    return processor.result
-}
-
-private class PickFirstScopeEntryCollector(
-    private val referenceName: String,
-    var result: ScopeEntry? = null,
-): RsResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-            result = entry
-            return true
-        }
-        return false
-    }
-}
-
-
-fun resolveSingleResolveVariant(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
-    resolveSingleResolveEntry(referenceName, f).singleOrNull()?.element
-
-fun resolveSingleResolveEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<ScopeEntry> {
-    if (referenceName == null) return emptyList()
     val processor = ResolveSingleScopeEntryCollector(referenceName)
     f(processor)
-    return processor.result
+    return processor.result.singleOrNull()
 }
 
 private class ResolveSingleScopeEntryCollector(
@@ -353,7 +298,7 @@ data class SimpleScopeEntry(
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
 ): ScopeEntry {
-    override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
+    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
 
 fun interface VisibilityFilter {
@@ -384,12 +329,8 @@ data class ScopeEntryWithVisibility(
     override val namespaces: Set<Namespace>,
     // when item is imported, import can have different item scope
     val adjustedItemScope: NamedItemScope,
-
-    /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
-//    val visibilityFilter: VisibilityFilter? = null,
-//    override val subst: Substitution = emptySubstitution,
 ): ScopeEntry {
-    override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
+    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntryWithVisibility = copy(namespaces = namespaces)
 }
 
 fun RsResolveProcessor.processWithVisibility(
@@ -399,52 +340,23 @@ fun RsResolveProcessor.processWithVisibility(
     adjustedItemScope: NamedItemScope = MAIN,
 ): Boolean = process(ScopeEntryWithVisibility(name, e, ns, adjustedItemScope))
 
-fun RsResolveProcessor.processItemsWithVisibility(
-    namespaces: Set<Namespace>,
-    vararg collections: Iterable<MvItemElement>,
-): Boolean {
-    return sequenceOf(*collections).flatten()
-        .any { itemElement ->
-            val name = itemElement.name ?: return false
-            process(ScopeEntryWithVisibility(
-                name,
-                itemElement,
-                namespaces,
-                adjustedItemScope = MAIN
-            ))
-        }
-}
-
-fun RsResolveProcessor.process(
+fun RsResolveProcessor.processNamedElement(
     name: String,
     namespaces: Set<Namespace>,
     e: MvNamedElement,
 ): Boolean =
     process(SimpleScopeEntry(name, e, namespaces))
 
-inline fun RsResolveProcessor.lazy(
-    name: String,
-    namespaces: Set<Namespace>,
-    e: () -> MvNamedElement?
-): Boolean {
-    if (!acceptsName(name)) return false
-    val element = e() ?: return false
-    return process(name, namespaces, element)
-}
-
-fun RsResolveProcessor.processAll(
+fun RsResolveProcessor.processAllNamedElements(
     ns: Set<Namespace>,
     vararg lists: Iterable<MvNamedElement>,
 ): Boolean {
     return sequenceOf(*lists).flatten()
         .any {
             val name = it.name ?: return@any false
-            process(name, ns, it)
+            processNamedElement(name, ns, it)
         }
 }
-
-fun RsResolveProcessor.processAllEntries(entries: List<ScopeEntry>): Boolean =
-    entries.any { process(it) }
 
 
 

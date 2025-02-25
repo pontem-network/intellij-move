@@ -1,9 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.PsiComment
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ScopeEntryWithVisibility
-import org.move.lang.core.resolve.SimpleScopeEntry
 import org.move.stdext.buildList
 
 interface MvItemsOwner: MvElement {
@@ -16,9 +13,7 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
         is MvScript -> this.lBrace
         else -> this.firstChild
     }
-    return generateSequence(startChild) { it.nextSibling }
-        .filterIsInstance<MvElement>()
-//        .filter { it !is MvAttr }
+    return generateSequence(startChild) { it.nextSibling }.filterIsInstance<MvElement>()
 }
 
 val MvItemsOwner.itemElements: List<MvItemElement>
@@ -30,7 +25,8 @@ val MvModule.innerSpecItems: List<MvItemElement>
     get() {
         val module = this
         return buildList {
-            addAll(module.allModuleSpecs()
+            addAll(
+                module.allModuleSpecs()
                        .map {
                            it.moduleItemSpecs()
                                .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }

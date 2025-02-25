@@ -16,20 +16,8 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
-import org.move.lang.core.resolve.PathKind
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.collectCompletionVariants
-import org.move.lang.core.resolve.createProcessor
-import org.move.lang.core.resolve.isVisibleFrom
-import org.move.lang.core.resolve.pathKind
-import org.move.lang.core.resolve.processAllEntries
-import org.move.lang.core.resolve.ref.ResolutionContext
-import org.move.lang.core.resolve.ref.processPathResolveVariantsWithExpectedType
-import org.move.lang.core.resolve.wrapWithFilter
+import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -137,7 +125,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
 
         var candidatesCollector = createProcessor { e ->
-            e as CandidateScopeEntry
+            e as ImportCandidateScopeEntry
             val lookupElement = createLookupElement(
                 e,
                 completionContext,
@@ -149,19 +137,26 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         candidatesCollector =
             applySharedCompletionFilters(ns, completionContext.resolutionCtx!!, candidatesCollector)
 
-        candidatesCollector.processAllEntries(
-            candidates.map { CandidateScopeEntry(it.qualName.itemName, it.element, ns, it) }
+        candidatesCollector.processAll(
+            candidates.map {
+                ImportCandidateScopeEntry(
+                    it.qualName.itemName,
+                    it.element,
+                    ns,
+                    it
+                )
+            }
         )
     }
 }
 
-data class CandidateScopeEntry(
+data class ImportCandidateScopeEntry(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
     val candidate: ImportCandidate,
 ): ScopeEntry {
-    override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry =
+    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry =
         this.copy(namespaces = namespaces)
 }
 

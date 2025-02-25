@@ -16,7 +16,7 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
     override fun visitModule(o: MvModule) {
         processNamedElement(o)
         o.allFunctions().forEach { it.accept(this) }
-        o.specFunctions().forEach { it.accept(this) }
+        o.specFunctionList.forEach { it.accept(this) }
         o.structs().forEach { it.accept(this) }
         o.constList.forEach { it.accept(this) }
     }

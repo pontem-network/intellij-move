@@ -5,6 +5,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve.ref.SCHEMAS
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
@@ -41,7 +42,7 @@ fun processMethodResolveVariants(
                 selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
         }
-        .processItemsWithVisibility(NAMES, itemModule.allNonTestFunctions())
+        .processAll(itemModule.allNonTestFunctions().mapNotNull { it.asEntry() })
 }
 
 fun processEnumVariantDeclarations(
@@ -51,8 +52,8 @@ fun processEnumVariantDeclarations(
 ): Boolean {
     for (namespace in ns) {
         val stop = when (namespace) {
-            NAME -> processor.processAll(NAMES, enum.variants)
-            TYPE -> processor.processAll(TYPES, enum.variants)
+            NAME -> processor.processAll(enum.variants.mapNotNull { it.asEntry()?.copyWithNs(NAMES) })
+            TYPE -> processor.processAll(enum.variants.mapNotNull { it.asEntry()?.copyWithNs(TYPES) })
             else -> continue
         }
         if (stop) return true
@@ -61,7 +62,7 @@ fun processEnumVariantDeclarations(
 }
 
 fun processItemDeclarations(
-    itemsOwner: MvItemsOwner,
+    itemsOwner: MvModule,
     ns: Set<Namespace>,
     processor: RsResolveProcessor
 ): Boolean {
@@ -76,7 +77,12 @@ fun processItemDeclarations(
         val itemNamespace = itemElement.moduleItemNamespace
         if (itemNamespace !in ns) continue
 
-        if (processor.processWithVisibility(name, itemElement, setOf(itemNamespace))) return true
+        if (processor.process(ScopeEntryWithVisibility(
+                name,
+                itemElement,
+                setOf(itemNamespace),
+                adjustedItemScope = NamedItemScope.MAIN
+            ))) return true
     }
 
     return false
@@ -94,16 +100,15 @@ fun processItemsFromModuleSpecs(
     processor: RsResolveProcessor,
 ): Boolean {
     for (namespace in namespaces) {
-        val thisNs = setOf(namespace)
         for (moduleSpec in module.allModuleSpecs()) {
             val matched = when (namespace) {
                 NAME ->
-                    processor.processAll(
-                        thisNs,
+                    processor.processAllNamedElements(
+                        NAMES,
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions(),
                     )
-                SCHEMA -> processor.processAll(thisNs, moduleSpec.schemas())
+                SCHEMA -> processor.processAllNamedElements(SCHEMAS, moduleSpec.schemas())
                 else -> false
             }
             if (matched) return true

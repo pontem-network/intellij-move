@@ -9,16 +9,11 @@ import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.collectMethodOrPathResolveVariants
-import org.move.lang.core.resolve.processAll
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.NONE
-import org.move.lang.core.resolve.resolveSingleResolveVariant
-import org.move.lang.core.resolve.processFieldLookupResolveVariants
-import org.move.lang.core.resolve.processMethodResolveVariants
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePathRaw
-import org.move.lang.core.resolve.resolveBindingForFieldShorthand
 import org.move.lang.core.types.infer.Expectation.NoExpectation
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
@@ -358,7 +353,9 @@ class TypeInferenceWalker(
                 }
                 true
             }
-        val resolvedItems = entries.map { ResolvedItem.from(it, path) }
+        val resolvedItems = entries.map {
+            ResolvedItem(it.element, it.isVisibleFrom(path))
+        }
         ctx.writePath(path, resolvedItems)
         // resolve aliases
         return resolvedItems.singleOrNull { it.isVisible }
@@ -485,7 +482,7 @@ class TypeInferenceWalker(
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
 
         val field =
-            resolveSingleResolveVariant(fieldLookup.referenceName) {
+            resolveSingle(fieldLookup.referenceName) {
                 processFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl, it)
             } as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
@@ -752,9 +749,11 @@ class TypeInferenceWalker(
 
         litExpr.fields.forEach { field ->
             // todo: can be cached, change field reference impl
+            val fieldName = field.referenceName
             val namedField =
-                resolveSingleResolveVariant(field.referenceName) { it.processAll(NONE, item.namedFields) }
-                        as? MvNamedFieldDecl
+                resolveSingle(fieldName) {
+                    it.processAll(item.namedFields.mapNotNull { it.asEntry() })
+                } as? MvNamedFieldDecl
             val rawFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
@@ -764,7 +763,6 @@ class TypeInferenceWalker(
                 val bindingTy = (resolveBindingForFieldShorthand(field).singleOrNull() as? MvPatBinding)
                     ?.let { ctx.getBindingType(it) }
                     ?: TyUnknown
-//                val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }
@@ -782,11 +780,6 @@ class TypeInferenceWalker(
         }
 
         val schemaTy = instantiatePath<TySchema>(path, schemaItem) ?: return TyUnknown
-//        val (schemaTy, _) = instantiateMethodOrPath<TySchema>(path, schemaItem) ?: return TyUnknown
-//        expected.onlyHasTy(ctx)?.let { expectedTy ->
-//            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
-//        }
-
         schemaLit.fields.forEach { field ->
             val fieldTy = field.type(msl)?.substitute(schemaTy.substitution) ?: TyUnknown
             val expr = field.expr
@@ -803,9 +796,6 @@ class TypeInferenceWalker(
 
     private fun MvSchemaLitField.type(msl: Boolean) =
         this.resolveToDeclaration()?.type?.loweredType(msl)
-
-//    private fun MvStructLitField.type(msl: Boolean) =
-//        this.resolveToDeclaration()?.type?.loweredType(msl)
 
     fun inferVectorLitExpr(litExpr: MvVectorLitExpr, expected: Expectation): Ty {
         val tyVar = TyInfer.TyVar()
