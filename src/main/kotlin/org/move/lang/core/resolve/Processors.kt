@@ -26,62 +26,44 @@ interface ScopeEntry {
     fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry
 }
 
-interface RsResolveProcessorBase<in T: ScopeEntry> {
+interface RsResolveProcessor {
     /**
      * Return `true` to stop further processing,
      * return `false` to continue search
      */
-    fun process(entry: T): Boolean
+    fun process(entry: ScopeEntry): Boolean
 
-    fun processAll(vararg entries: List<T>): Boolean {
+    fun processAll(vararg entries: List<ScopeEntry>): Boolean {
         for (entriesList in entries) {
             if (entriesList.any { process(it) }) return true
         }
         return false
     }
-
-    /**
-     * Indicates that processor is interested only in [ScopeEntry]s with specified [names].
-     * Improves performance for Resolve2.
-     * `null` in completion
-     */
-    val names: Set<String>?
-
-    fun acceptsName(name: String): Boolean {
-        return true
-//        val names = names
-//        return names == null || name in names
-    }
 }
 
-typealias RsResolveProcessor = RsResolveProcessorBase<ScopeEntry>
-
 fun createProcessor(processor: (ScopeEntry) -> Unit): RsResolveProcessor {
-    return object: RsResolveProcessorBase<ScopeEntry> {
+    return object: RsResolveProcessor {
         override fun process(entry: ScopeEntry): Boolean {
             processor(entry)
             return false
         }
-
-        override val names: Set<String>? get() = null
     }
 }
 
 /**
  * Only items matching the predicate will be processed.
  */
-fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithFilter(
-    filter: (T) -> Boolean
-): RsResolveProcessorBase<T> {
+fun RsResolveProcessor.wrapWithFilter(
+    filter: (ScopeEntry) -> Boolean
+): RsResolveProcessor {
     return FilteringProcessor(this, filter)
 }
 
-private class FilteringProcessor<in T: ScopeEntry>(
-    private val originalProcessor: RsResolveProcessorBase<T>,
-    private val filter: (T) -> Boolean,
-): RsResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
+private class FilteringProcessor(
+    private val originalProcessor: RsResolveProcessor,
+    private val filter: (ScopeEntry) -> Boolean,
+): RsResolveProcessor {
+    override fun process(entry: ScopeEntry): Boolean {
         return if (filter(entry)) {
             originalProcessor.process(entry)
         } else {
@@ -92,25 +74,21 @@ private class FilteringProcessor<in T: ScopeEntry>(
     override fun toString(): String = "FilteringProcessor($originalProcessor, filter = $filter)"
 }
 
-fun <T: ScopeEntry> RsResolveProcessorBase<T>.wrapWithShadowingProcessor(
+fun RsResolveProcessor.wrapWithShadowingProcessor(
     prevScope: Map<String, Set<Namespace>>,
     currScope: MutableMap<String, Set<Namespace>>,
     ns: Set<Namespace>,
-): RsResolveProcessorBase<T> {
+): RsResolveProcessor {
     return ShadowingProcessor(this, prevScope, currScope, ns)
 }
 
-private class ShadowingProcessor<in T: ScopeEntry>(
-    private val originalProcessor: RsResolveProcessorBase<T>,
+private class ShadowingProcessor(
+    private val originalProcessor: RsResolveProcessor,
     private val prevScope: Map<String, Set<Namespace>>,
     private val currScope: MutableMap<String, Set<Namespace>>,
     private val ns: Set<Namespace>,
-): RsResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
-        if (!originalProcessor.acceptsName(entry.name) || entry.name == "_") {
-            return originalProcessor.process(entry)
-        }
+): RsResolveProcessor {
+    override fun process(entry: ScopeEntry): Boolean {
         val prevNs = prevScope[entry.name]
         val newNs = entry.namespaces
         // drop entries from namespaces that were encountered before
@@ -118,8 +96,7 @@ private class ShadowingProcessor<in T: ScopeEntry>(
             if (prevNs != null) {
                 val restNs = newNs.minus(prevNs)
                 if (ns.intersects(restNs)) {
-                    @Suppress("UNCHECKED_CAST")
-                    entry.copyWithNs(restNs) as T
+                    entry.copyWithNs(restNs)
                 } else {
                     return false
                 }
@@ -144,9 +121,7 @@ fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Un
 private class ResolveVariantsCollector(
     private val referenceName: String,
     val result: MutableList<MvNamedElement> = SmartList(),
-): RsResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
+): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
             val element = entry.element
@@ -156,23 +131,21 @@ private class ResolveVariantsCollector(
     }
 }
 
-fun <T: ScopeEntry> collectResolveVariantsAsScopeEntries(
+fun collectResolveVariantsAsScopeEntries(
     referenceName: String?,
-    f: (RsResolveProcessorBase<T>) -> Unit
-): List<T> {
+    f: (RsResolveProcessor) -> Unit
+): List<ScopeEntry> {
     if (referenceName == null) return emptyList()
-    val processor = ResolveVariantsAsScopeEntriesCollector<T>(referenceName)
+    val processor = ResolveVariantsAsScopeEntriesCollector(referenceName)
     f(processor)
     return processor.result
 }
 
-private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
+private class ResolveVariantsAsScopeEntriesCollector(
     private val referenceName: String,
-    val result: MutableList<T> = mutableListOf(),
-): RsResolveProcessorBase<T> {
-    override val names: Set<String> = setOf(referenceName)
-
-    override fun process(entry: T): Boolean {
+    val result: MutableList<ScopeEntry> = mutableListOf(),
+): RsResolveProcessor {
+    override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
             result += entry
         }
@@ -182,8 +155,6 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
 
 class ScopeEntriesCollector: RsResolveProcessor {
     val result = mutableListOf<ScopeEntry>()
-
-    override val names get() = null
 
     override fun process(entry: ScopeEntry): Boolean {
         result += entry
@@ -207,9 +178,7 @@ private class SinglePathResolveVariantsCollector(
     private val ctx: ResolutionContext,
     private val referenceName: String,
     val result: MutableList<RsPathResolveResult<MvElement>> = SmartList(),
-): RsResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
+): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
             collectMethodOrPathScopeEntry(ctx, result, entry)
@@ -242,9 +211,7 @@ fun resolveSingleEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit):
 private class ResolveSingleScopeEntryCollector(
     private val referenceName: String,
     val result: MutableList<ScopeEntry> = SmartList(),
-): RsResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
+): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
             result += entry
@@ -268,9 +235,7 @@ private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
     private val subst: Substitution,
     private val context: MvCompletionContext,
-): RsResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String>? get() = null
-
+): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
         result.addElement(
             createLookupElement(

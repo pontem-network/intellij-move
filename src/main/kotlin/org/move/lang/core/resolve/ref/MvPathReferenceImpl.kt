@@ -150,7 +150,7 @@ fun processPathResolveVariants(
                 }
             }
             // local
-            processor.processAll(getEntriesFromOuterScopes(ctx.element, pathKind.ns, ctx))
+            processor.processAll(getEntriesFromWalkingScopes(ctx.element, pathKind.ns, ctx))
         }
         is PathKind.QualifiedPath.Module -> {
             processModulePathResolveVariants(ctx, pathKind.address, processor)

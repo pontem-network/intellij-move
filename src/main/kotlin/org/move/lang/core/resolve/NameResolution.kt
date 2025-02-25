@@ -51,7 +51,7 @@ fun processStructLitFieldResolveVariants(
     if (!isCompletion && litField.expr == null) {
         val ctx = ResolutionContext(litField, false)
         // search through available NAME items
-        val availableBindings = getEntriesFromOuterScopes(litField, NAMES, ctx)
+        val availableBindings = getEntriesFromWalkingScopes(litField, NAMES, ctx)
         // todo: what if constant or functions hits here?
         processor.processAll(availableBindings)
     }
@@ -95,7 +95,7 @@ fun processPatBindingResolveVariants(
     }
     val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
     val ctx = ResolutionContext(binding, isCompletion)
-    return processor.processAll(getEntriesFromOuterScopes(binding, ns, ctx))
+    return processor.processAll(getEntriesFromWalkingScopes(binding, ns, ctx))
 }
 
 fun resolveBindingForFieldShorthand(
@@ -103,11 +103,11 @@ fun resolveBindingForFieldShorthand(
 ): List<MvNamedElement> {
     return collectResolveVariants(element.referenceName) {
         val ctx = ResolutionContext(element, isCompletion = false)
-        it.processAll(getEntriesFromOuterScopes(element, NAMES, ctx))
+        it.processAll(getEntriesFromWalkingScopes(element, NAMES, ctx))
     }
 }
 
-fun getEntriesFromOuterScopes(
+fun getEntriesFromWalkingScopes(
     scopeStart: MvElement,
     ns: Set<Namespace>,
     ctx: ResolutionContext,
@@ -117,7 +117,7 @@ fun getEntriesFromOuterScopes(
     val collector = ScopeEntriesCollector()
     walkUpThroughScopes(scopeStart) { cameFrom, scope ->
         // state between shadowing processors passed through prevScope
-        processWithShadowingBetweenScopes(prevScope, ns, collector) { shadowingProcessor ->
+        processWithShadowingAcrossScopes(prevScope, ns, collector) { shadowingProcessor ->
             val scopeEntries =
                 getEntriesInScope(scope, cameFrom, ctx).filter { it.namespaces.intersects(ns) }
             shadowingProcessor.processAll(scopeEntries)
@@ -152,9 +152,7 @@ fun processModulePathResolveVariants(
         sameValues
     }
 
-    val targetNames = addressMatcher.names
-    // completion
-    if (targetNames == null) {
+    if (ctx.isCompletion) {
         val moduleNames = MvModuleIndex.getAllModuleNames(project)
         moduleNames.forEach { moduleName ->
             val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
@@ -163,17 +161,17 @@ fun processModulePathResolveVariants(
         return false
     }
 
-    for (targetModuleName in targetNames) {
-        val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
-        for (module in modules) {
-            if (addressMatcher.processWithVisibility(targetModuleName, module, MODULES)) return true
-        }
+    val targetModuleName = ctx.path?.referenceName ?: return false
+
+    val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
+    for (module in modules) {
+        if (addressMatcher.processWithVisibility(targetModuleName, module, MODULES)) return true
     }
 
     return false
 }
 
-inline fun processWithShadowingBetweenScopes(
+inline fun processWithShadowingAcrossScopes(
     prevScope: MutableMap<String, Set<Namespace>>,
     ns: Set<Namespace>,
     processor: RsResolveProcessor,
