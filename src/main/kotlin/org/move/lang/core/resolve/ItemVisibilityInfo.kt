@@ -77,8 +77,8 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
 
         // item is type, check whether it's allowed in the context
         if (itemNs.containsAny(TYPE, ENUM)) {
-            val rootPath = path?.rootPath()
-            when (rootPath?.parent) {
+            val pathParent = path?.rootPath()?.parent
+            when (pathParent) {
                 // todo: when structs and enums can be public, conditions for struct lit/pat should be added here
                 is MvPathType -> return@VisibilityFilter Visible
             }

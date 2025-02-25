@@ -53,7 +53,6 @@ fun processEnumVariantDeclarations(
         val stop = when (namespace) {
             NAME -> processor.processAll(NAMES, enum.variants)
             TYPE -> processor.processAll(TYPES, enum.variants)
-//            FUNCTION -> processor.processAll(FUNCTIONS, enum.tupleVariants)
             else -> continue
         }
         if (stop) return true

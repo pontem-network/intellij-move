@@ -203,7 +203,7 @@ inline fun processWithShadowingAndUpdateScope(
     f: (RsResolveProcessor) -> Boolean
 ): Boolean {
     val currScope = mutableMapOf<String, Set<Namespace>>()
-    val shadowingProcessor = processor.wrapWithShadowingProcessorAndUpdateScope(prevScope, currScope, ns)
+    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, currScope, ns)
     return try {
         f(shadowingProcessor)
     } finally {

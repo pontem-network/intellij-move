@@ -2,6 +2,8 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.psi.PsiComment
 import org.move.lang.core.psi.*
+import org.move.lang.core.resolve.ScopeEntryWithVisibility
+import org.move.lang.core.resolve.SimpleScopeEntry
 import org.move.stdext.buildList
 
 interface MvItemsOwner: MvElement {

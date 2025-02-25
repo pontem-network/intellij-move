@@ -85,10 +85,18 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
     return when {
         // mod::foo::bar
         //      ^
-        parent is MvPath && qualifier != null -> ENUMS
+        parent is MvPath && qualifier != null -> TYPES_N_ENUMS
         // foo::bar
         //  ^
-        parent is MvPath -> ENUMS_N_MODULES
+        parent is MvPath -> {
+            // if we're inside PathType, then ENUM::ENUM_VARIANT cannot be used, so foo cannot be type / enum
+            ENUMS_N_MODULES
+//            if (parent.parent is MvPathType) {
+//                MODULES
+//            } else {
+//                TYPES_N_ENUMS_N_MODULES
+//            }
+        }
         // use 0x1::foo::bar; | use 0x1::foo::{bar, baz}
         //               ^                     ^
         parent is MvUseSpeck -> ITEM_NAMESPACES

@@ -152,6 +152,6 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         return PathKind.QualifiedPath.ModuleItem(this, qualifier, ns)
     }
 
-    // three-element path
+    // three or four element path
     return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns)
 }
