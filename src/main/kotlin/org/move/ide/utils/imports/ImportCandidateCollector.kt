@@ -5,12 +5,10 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.createFilter
-import org.move.lang.core.resolve.itemNs
-import org.move.lang.core.resolve.visInfo
+import org.move.lang.core.resolve.asEntries
+import org.move.lang.core.resolve.isVisibleInContext
+import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.index.MvNamedElementIndex
-import org.move.stdext.intersects
 
 object ImportCandidateCollector {
 
@@ -21,27 +19,23 @@ object ImportCandidateCollector {
         val candidates = mutableListOf<ImportCandidate>()
         val elementsFromIndex = MvNamedElementIndex.getElementsByName(project, targetName, indexSearchScope)
 
-        for ((i, elementFromIndex) in elementsFromIndex.withIndex()) {
+        val importableEntries = elementsFromIndex.toList().asEntries().filterByNs(ns)
+        for ((i, scopeEntry) in importableEntries.withIndex()) {
             // check for cancellation sometimes
-            if (i % 100 == 0) ProgressManager.checkCanceled()
+            if (i % 50 == 0) ProgressManager.checkCanceled()
 
-            if (elementFromIndex !is MvQualNamedElement) continue
+            val element = scopeEntry.element
+            if (element !is MvQualNamedElement) continue
 
-            if (elementFromIndex.itemNs.intersects(ns)) {
-                val visibilityStatus = elementFromIndex.visInfo().createFilter().filter(path, ns)
-                if (visibilityStatus != Visible) continue
+            if (!isVisibleInContext(scopeEntry, path)) continue
 
-                // double check in case of match
-                if (elementFromIndex.name == targetName) {
-                    val itemQualName = elementFromIndex.qualName
-                    if (itemQualName != null) {
-                        candidates.add(ImportCandidate(elementFromIndex, itemQualName))
-                    }
+            // double check in case of match
+            if (scopeEntry.name == targetName) {
+                val itemQualName = element.qualName
+                if (itemQualName != null) {
+                    candidates.add(ImportCandidate(element, itemQualName))
                 }
             }
-//            if (!elementFromIndex.itemNs.intersects(ns)) continue
-//            if (elementFromIndex.moduleItemNamespace !in ns) continue
-
         }
 
         return candidates

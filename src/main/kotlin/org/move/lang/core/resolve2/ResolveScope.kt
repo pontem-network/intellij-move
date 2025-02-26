@@ -2,30 +2,29 @@ package org.move.lang.core.resolve2
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.ext.item
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.ScopeEntryWithVisibility
+import org.move.lang.core.resolve.asEntries
 import org.move.lang.core.resolve.asEntry
 import org.move.lang.core.resolve.ref.NAMES
 
-val MvModule.itemEntries: List<ScopeEntryWithVisibility>
+val MvModule.itemEntries: List<ScopeEntry>
     get() {
         return listOf(
             // consts
-            this.constList.mapNotNull { it.asEntry() },
+            this.constList.asEntries(),
 
             // types
-            this.enumList.mapNotNull { it.asEntry() },
-            this.schemaList.mapNotNull { it.asEntry() },
-            this.structs().mapNotNull { it.asEntry() },
+            this.enumList.asEntries(),
+            this.schemaList.asEntries(),
+            this.structs().asEntries(),
 
             // callables
-            this.allNonTestFunctions().mapNotNull { it.asEntry() },
+            this.allNonTestFunctions().asEntries(),
             this.tupleStructs().mapNotNull { it.asEntry()?.copyWithNs(NAMES) },
 
             // spec callables
-            this.specFunctionList.mapNotNull { it.asEntry() },
-            this.moduleItemSpecList.flatMap { it.specInlineFunctions() }.mapNotNull { it.asEntry() },
+            this.specFunctionList.asEntries(),
+            this.moduleItemSpecList.flatMap { it.specInlineFunctions() }.asEntries(),
         ).flatten()
     }
 
@@ -35,24 +34,24 @@ object ResolveScopeUtil {
         val entries = listOf(
             itemEntries,
             // variants
-            module.enumVariants().mapNotNull { it.asEntry() },
+            module.enumVariants().asEntries(),
             // builtins
-            module.builtinFunctions().mapNotNull { it.asEntry() },
-            module.builtinSpecFunctions().mapNotNull { it.asEntry() },
+            module.builtinFunctions().asEntries(),
+            module.builtinSpecFunctions().asEntries(),
         ).flatten()
         return entries
     }
 
     fun scopeEntries(script: MvScript): List<ScopeEntry> {
-        return script.constList.mapNotNull { it.asEntry() }
+        return script.constList.asEntries()
     }
 
     fun scopeEntries(functionLike: MvFunctionLike): List<ScopeEntry> {
-        return functionLike.parametersAsBindings.map { it.asEntry() }
+        return functionLike.parametersAsBindings.asEntries()
     }
 
     fun scopeEntries(lambda: MvLambdaExpr): List<ScopeEntry> {
-        return lambda.lambdaParametersAsBindings.map { it.asEntry() }
+        return lambda.lambdaParametersAsBindings.asEntries()
     }
 
     fun scopeEntries(itemSpec: MvItemSpec): List<ScopeEntry> {
@@ -60,24 +59,14 @@ object ResolveScopeUtil {
         return when (referencedItem) {
             is MvFunction -> {
                 listOf(
-                    referencedItem.typeParameters.mapNotNull { it.asEntry() },
-                    referencedItem.parametersAsBindings.map { it.asEntry() },
-                    referencedItem.specFunctionResultParameters.map { it.patBinding }.map { it.asEntry() },
+                    referencedItem.typeParameters.asEntries(),
+                    referencedItem.parametersAsBindings.asEntries(),
+                    referencedItem.specFunctionResultParameters.map { it.patBinding }.asEntries(),
                 )
                     .flatten()
-//                if (processor.processAll(referencedItem.typeParameters.mapNotNull { it.asEntry() })) return true
-//
-//                if (processor.processAll(
-//                        referencedItem.parametersAsBindings.map { it.asEntry() },
-//                        referencedItem.specFunctionResultParameters.map { it.patBinding }.map { it.asEntry() }
-//                    )
-//                ) {
-//                    return true
-//                }
             }
             is MvStruct -> {
-                referencedItem.namedFields.mapNotNull { it.asEntry() }
-//                if (processor.processAll(referencedItem.namedFields.mapNotNull { it.asEntry() })) return true
+                referencedItem.namedFields.asEntries()
             }
             else -> emptyList()
         }

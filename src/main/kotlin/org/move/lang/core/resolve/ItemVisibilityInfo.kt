@@ -6,109 +6,100 @@ import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.VisibilityStatus.Invisible
-import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace.*
-import org.move.lang.core.resolve.ref.Visibility2
-import org.move.lang.core.resolve.ref.Visibility2.*
+import org.move.lang.core.resolve.ref.Visibility.*
 import org.move.stdext.containsAny
 
-data class ItemVisibilityInfo(
-    val item: MvNamedElement,
-    val itemScopeAdjustment: NamedItemScope,
-    val vis: Visibility2,
-)
+fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boolean {
+//    if (scopeEntry !is ScopeEntryWithVisibility) return true
 
-fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityInfo {
-    val visibility = (this as? MvVisibilityOwner)?.visibility2 ?: Public
-    return ItemVisibilityInfo(this, adjustScope, visibility)
-}
+    // inside msl everything is visible
+    if (contextElement.isMsl()) return true
 
-fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
-    val (item, itemScopeAdjustment, visibility) = this
-    return VisibilityFilter { context, itemNs ->
+    // if inside MvAttrItem like abort_code=
+    val attrItem = contextElement.ancestorStrict<MvAttrItem>()
+    if (attrItem != null) return true
 
-        // inside msl everything is visible
-        if (context.isMsl()) return@VisibilityFilter Visible
+    val item = scopeEntry.element
+    val itemNs = scopeEntry.namespaces
 
-        // if inside MvAttrItem like abort_code=
-        val attrItem = context.ancestorStrict<MvAttrItem>()
-        if (attrItem != null) return@VisibilityFilter Visible
+    val contextUsageScope = contextElement.usageScope
+    val path = contextElement as? MvPath
+    if (path != null) {
+        val useSpeck = path.useSpeck
+        if (useSpeck != null) {
+            // for use specks, items needs to be public to be visible, no other rules apply
+            if (item is MvModule || (item is MvItemElement && item.isPublic)) return true
 
-        val pathUsageScope = context.usageScope
+            // msl-only items are available from imports
+            if (item.isMslOnlyItem) return true
 
-        val path = context as? MvPath
-        if (path != null) {
-            val useSpeck = path.useSpeck
-            if (useSpeck != null) {
-                // for use specks, items needs to be public to be visible, no other rules apply
-                if (item is MvItemElement && item.isPublic) return@VisibilityFilter Visible
-
-                // if item does not support visibility, then it is always private
-
-                // msl-only items are available from imports
-                if (item.isMslOnlyItem) return@VisibilityFilter Visible
-
-                // consts are importable in tests
-                if (pathUsageScope.isTest && itemNs.contains(NAME)) return@VisibilityFilter Visible
-            }
+            // consts are importable in tests
+            if (contextUsageScope.isTest && itemNs.contains(NAME)) return true
         }
+    }
 
-        // #[test] functions cannot be used from non-imports
-        if (item is MvFunction && item.hasTestAttr) return@VisibilityFilter Invisible
+    // #[test] functions cannot be used from non-imports
+    if (item is MvFunction && item.hasTestAttr) return false
 
-        val itemModule = item.containingModule
-        // 0x0::builtins module items are always visible
-        if (itemModule != null && itemModule.isBuiltins) return@VisibilityFilter Visible
+    val itemModule = item.containingModule
+    // 0x0::builtins module items are always visible
+    if (itemModule != null && itemModule.isBuiltins) return true
 
-        val itemUsageScope = item.usageScope.shrinkScope(itemScopeAdjustment)
-        // #[test_only] items in non-test-only scope
-        if (itemUsageScope != MAIN) {
-            // cannot be used everywhere, need to check for scope compatibility
-            if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
+    val itemUsageScope = if (scopeEntry is ScopeEntryWithVisibility) {
+        item.usageScope.shrinkScope(scopeEntry.itemScopeAdjustment)
+    } else {
+        item.usageScope
+    }
+//    val itemUsageScope = item.usageScope.shrinkScope(scopeEntry.itemScopeAdjustment)
+
+    // #[test_only] items in non-test-only scope
+    if (itemUsageScope != MAIN) {
+        // cannot be used everywhere, need to check for scope compatibility
+        if (itemUsageScope != contextUsageScope) return false
+    }
+
+    // we're in non-msl scope at this point, msl only items aren't available
+    if (item is MslOnlyElement) return false
+
+    val pathModule = contextElement.containingModule
+    // local methods, Self::method - everything is visible
+    if (itemModule == pathModule) return true
+
+    // item is type, check whether it's allowed in the context
+    if (itemNs.containsAny(TYPE, ENUM)) {
+        val pathParent = path?.rootPath()?.parent
+        when (pathParent) {
+            // todo: when structs and enums can be public, conditions for struct lit/pat should be added here
+            is MvPathType -> return true
         }
+    }
 
-        // we're in non-msl scope at this point, msl only items aren't available
-        if (item is MslOnlyElement) return@VisibilityFilter Invisible
-
-        val pathModule = context.containingModule
-        // local methods, Self::method - everything is visible
-        if (itemModule == pathModule) return@VisibilityFilter Visible
-
-        // item is type, check whether it's allowed in the context
-        if (itemNs.containsAny(TYPE, ENUM)) {
-            val pathParent = path?.rootPath()?.parent
-            when (pathParent) {
-                // todo: when structs and enums can be public, conditions for struct lit/pat should be added here
-                is MvPathType -> return@VisibilityFilter Visible
-            }
-        }
-
-        when (visibility) {
-            is Restricted -> {
-                when (visibility) {
-                    is Restricted.Friend -> {
-                        if (pathModule != null && itemModule != null) {
-                            val friendModules = itemModule.friendModules
-                            if (friendModules.any { isModulesEqual(it, pathModule) }) {
-                                return@VisibilityFilter Visible
-                            }
+    val visibility = (item as? MvVisibilityOwner)?.visibility ?: Public
+    return when (visibility) {
+        is Restricted -> {
+            when (visibility) {
+                is Restricted.Friend -> {
+                    if (pathModule != null && itemModule != null) {
+                        val friendModules = itemModule.friendModules
+                        if (friendModules.any { isModulesEqual(it, pathModule) }) {
+                            return true
                         }
-                        Invisible
                     }
-                    is Restricted.Package -> {
-                        if (!item.project.moveSettings.enablePublicPackage) {
-                            return@VisibilityFilter Invisible
-                        }
-                        val pathPackage =
-                            context.containingMovePackage ?: return@VisibilityFilter Invisible
-                        val itemPackage = item.containingMovePackage ?: return@VisibilityFilter Invisible
-                        if (pathPackage == itemPackage) Visible else Invisible
+                    false
+                }
+                is Restricted.Package -> {
+                    if (!item.project.moveSettings.enablePublicPackage) {
+                        return false
                     }
+                    val pathPackage =
+                        contextElement.containingMovePackage ?: return false
+                    val itemPackage = item.containingMovePackage ?: return false
+                    pathPackage == itemPackage
                 }
             }
-            is Public -> Visible
-            is Private -> Invisible
         }
+        is Public -> true
+        is Private -> false
     }
 }

@@ -9,7 +9,6 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.psi.ext.MvMethodOrPath
-import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
@@ -194,12 +193,15 @@ private class SinglePathResolveVariantsCollector(
 private fun collectMethodOrPathScopeEntry(
     ctx: ResolutionContext,
     result: MutableList<RsPathResolveResult<MvElement>>,
-    e: ScopeEntry
+    scopeEntry: ScopeEntry
 ) {
-    val element = e.element
-    val visibilityStatus = ctx.methodOrPath?.let { e.getVisibilityInContext(it) } ?: Visible
-    val isVisible = visibilityStatus == Visible
-    result += RsPathResolveResult(element, isVisible)
+    val element = scopeEntry.element
+    val methodOrPath = ctx.methodOrPath
+    if (methodOrPath != null) {
+        result += RsPathResolveResult(element, isVisibleInContext(scopeEntry, methodOrPath))
+    } else {
+        result += RsPathResolveResult(element, true)
+    }
 }
 
 fun resolveSingle(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
@@ -261,35 +263,12 @@ data class SimpleScopeEntry(
     override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
 
-fun interface VisibilityFilter {
-    fun filter(context: MvElement, ns: Set<Namespace>): VisibilityStatus
-}
-
-fun ScopeEntry.getVisibilityInContext(contextElement: MvElement): VisibilityStatus =
-    when (this) {
-        is ScopeEntryWithVisibility -> {
-            this.element
-                .visInfo(adjustScope = this.itemScope)
-                .createFilter()
-                .filter(contextElement, this.namespaces)
-        }
-        else -> Visible
-    }
-
-
-fun ScopeEntry.isVisibleInContext(context: MvElement): Boolean = getVisibilityInContext(context) == Visible
-
-enum class VisibilityStatus {
-    Visible,
-    Invisible,
-}
-
 data class ScopeEntryWithVisibility(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
     // when item is imported, import can have different item scope
-    val itemScope: NamedItemScope,
+    val itemScopeAdjustment: NamedItemScope,
 ): ScopeEntry {
     override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntryWithVisibility = copy(namespaces = namespaces)
 }

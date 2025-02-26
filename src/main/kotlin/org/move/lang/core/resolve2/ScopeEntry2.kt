@@ -49,7 +49,7 @@ fun ScopeEntryWithVisibility.asEntry2(): ScopeEntry2 {
         this.name,
         this.element,
         this.namespaces,
-        kind = ScopeEntryKind.WithVisibility(itemScope = this.itemScope)
+        kind = ScopeEntryKind.WithVisibility(itemScope = this.itemScopeAdjustment)
     )
 }
 

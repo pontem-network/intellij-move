@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
 import org.move.lang.core.psi.ext.VisKind.*
-import org.move.lang.core.resolve.ref.Visibility2
+import org.move.lang.core.resolve.ref.Visibility
 
 interface MvVisibilityOwner: MvElement {
     val visibilityModifier: MvVisibilityModifier? get() = childOfType<MvVisibilityModifier>()
@@ -29,17 +29,17 @@ val MvVisibilityModifier.stubVisKind: VisKind
         else -> error("exhaustive")
     }
 
-val MvVisibilityOwner.visibility2: Visibility2
+val MvVisibilityOwner.visibility: Visibility
     get() {
-        val kind = this.visibilityModifier?.stubVisKind ?: return Visibility2.Private
+        val kind = this.visibilityModifier?.stubVisKind ?: return Visibility.Private
         return when (kind) {
-            PACKAGE -> Visibility2.Restricted.Package()
+            PACKAGE -> Visibility.Restricted.Package()
             FRIEND -> {
-                Visibility2.Restricted.Friend(/*lazy { module.friendModules }*/)
+                Visibility.Restricted.Friend(/*lazy { module.friendModules }*/)
             }
             // public(script) == public entry
-            SCRIPT -> Visibility2.Public
-            PUBLIC -> Visibility2.Public
+            SCRIPT -> Visibility.Public
+            PUBLIC -> Visibility.Public
         }
     }
 

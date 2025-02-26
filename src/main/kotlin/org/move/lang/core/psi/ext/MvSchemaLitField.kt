@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.asEntries
 import org.move.lang.core.resolve.asEntry
 import org.move.lang.core.resolve.filterByName
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
@@ -44,6 +45,6 @@ class MvSchemaLitFieldReferenceImpl(
 fun getSchemaLitFieldResolveVariants(literalField: MvSchemaLitField): List<ScopeEntry> {
     val schema = literalField.schemaLit?.path?.maybeSchema
         ?: return emptyList()
-    return schema.fieldsAsBindings.map { it.asEntry() }
+    return schema.fieldsAsBindings.asEntries()
 }
 

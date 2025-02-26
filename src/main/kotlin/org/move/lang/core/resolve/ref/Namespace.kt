@@ -4,12 +4,12 @@ import org.move.lang.core.resolve.ScopeEntry
 import org.move.stdext.intersects
 import java.util.*
 
-sealed class Visibility2 {
-    data object Public: Visibility2()
-    data object Private: Visibility2()
-    sealed class Restricted: Visibility2() {
-        class Friend(/*val friendModules: Lazy<Set<MvModule>>*/): Restricted()
-        class Package(/*val contextElement: MvVisibilityOwner*/): Restricted()
+sealed class Visibility {
+    data object Public: Visibility()
+    data object Private: Visibility()
+    sealed class Restricted: Visibility() {
+        class Friend(): Restricted()
+        class Package(): Restricted()
     }
 
 }

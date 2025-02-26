@@ -46,17 +46,17 @@ fun processMethodResolveVariants(
         .processAll(itemModule.allNonTestFunctions().mapNotNull { it.asEntry() })
 }
 
-fun getImportableItemsAsEntries(module: MvModule): List<ScopeEntryWithVisibility> {
+fun getImportableItemsAsEntries(module: MvModule): List<ScopeEntry> {
     return module.itemEntries + module.itemEntriesFromModuleSpecs + module.globalVariableEntries
 }
 
-val MvModule.itemEntriesFromModuleSpecs: List<ScopeEntryWithVisibility> get() {
+val MvModule.itemEntriesFromModuleSpecs: List<ScopeEntry> get() {
     val module = this
     return buildList {
         for (moduleSpec in module.allModuleSpecs()) {
-            addAll(moduleSpec.specFunctions().mapNotNull { it.asEntry() })
-            addAll(moduleSpec.specInlineFunctionsFromModuleItemSpecs().mapNotNull { it.asEntry() })
-            addAll(moduleSpec.schemas().mapNotNull { it.asEntry() })
+            addAll(moduleSpec.specFunctions().asEntries())
+            addAll(moduleSpec.specInlineFunctionsFromModuleItemSpecs().asEntries())
+            addAll(moduleSpec.schemas().asEntries())
         }
     }
 }

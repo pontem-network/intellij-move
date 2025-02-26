@@ -173,14 +173,12 @@ fun applySharedCompletionFilters(
 }
 
 fun filterCompletionVariantsByVisibility(
-    context: MvElement,
+    contextElement: MvElement,
     processor: RsResolveProcessor
 ): RsResolveProcessor {
-    return processor.wrapWithFilter { e ->
+    return processor.wrapWithFilter { scopeEntry ->
         // drop invisible items
-        if (!e.isVisibleInContext(context)) return@wrapWithFilter false
-
-        true
+        isVisibleInContext(scopeEntry, contextElement)
     }
 }
 

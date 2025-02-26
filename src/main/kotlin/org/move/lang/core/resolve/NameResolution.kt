@@ -189,7 +189,7 @@ fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEnt
                     targetModuleName,
                     it,
                     MODULES,
-                    itemScope = NamedItemScope.MAIN
+                    itemScopeAdjustment = NamedItemScope.MAIN
                 )
             }
         addAll(moduleEntries.filterByAddress(moveProject, address, isCompletion = false))

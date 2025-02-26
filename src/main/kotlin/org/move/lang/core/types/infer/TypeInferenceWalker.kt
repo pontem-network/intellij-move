@@ -353,7 +353,10 @@ class TypeInferenceWalker(
                 true
             }
         val resolvedItems = entries.map {
-            ResolvedItem(it.element, it.isVisibleInContext(path))
+            ResolvedItem(
+                it.element,
+                isVisibleInContext(it, path)
+            )
         }
         ctx.writePath(path, resolvedItems)
         // resolve aliases
