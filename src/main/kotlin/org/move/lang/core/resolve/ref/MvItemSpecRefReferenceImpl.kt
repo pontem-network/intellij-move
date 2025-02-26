@@ -7,8 +7,7 @@ import org.move.lang.core.psi.ext.itemSpec
 import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.structs
 import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.SimpleScopeEntry
-import org.move.lang.core.resolve.asEntry
+import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve.collectResolveVariants
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
@@ -32,7 +31,7 @@ fun processItemSpecRefResolveVariants(
         ).flatten()
     return processor.processAll(
         mslEnabledItems.mapNotNull {
-            it.name?.let { name -> SimpleScopeEntry(name, it, ALL_NAMESPACES) }
+            it.name?.let { name -> ScopeEntry(name, it, ALL_NAMESPACES) }
         }
     )
 }

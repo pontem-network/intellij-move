@@ -7,10 +7,10 @@ import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.functionTy
 
-fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
-    MvLookupElement(this, properties)
+fun LookupElement.toCompletionItem(properties: LookupElementProperties): CompletionItem =
+    CompletionItem(this, properties)
 
-class MvLookupElement(
+class CompletionItem(
     delegate: LookupElement,
     val props: LookupElementProperties
 ):
@@ -21,7 +21,7 @@ class MvLookupElement(
         if (javaClass != other?.javaClass) return false
         if (!super.equals(other)) return false
 
-        other as MvLookupElement
+        other as CompletionItem
 
         return props == other.props
     }

@@ -2,29 +2,12 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.itemEntries
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
-
-val MvNamedElement.itemNs
-    get() = when (this) {
-        is MvModule -> MODULES
-        is MvFunctionLike -> NAMES
-        is MvTypeParameter -> TYPES
-        is MvStruct -> TYPES_N_NAMES
-        is MvEnum -> TYPES_N_ENUMS_N_NAMES
-        is MvEnumVariant -> TYPES_N_NAMES
-        is MvPatBinding -> NAMES
-        is MvFieldDecl -> NAMES
-        is MvConst -> NAMES
-        is MvSchema -> SCHEMAS
-        is MvGlobalVariableStmt -> NAMES
-        else -> error("when should be exhaustive, $this is not covered")
-    }
 
 fun processMethodResolveVariants(
     methodOrField: MvMethodOrField,

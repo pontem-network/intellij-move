@@ -7,12 +7,11 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
-import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -66,9 +65,10 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
     ) {
         val resolutionCtx = completionContext.resolutionCtx ?: error("always non-null in path completion")
         val processedNames = mutableSetOf<String>()
+
         collectCompletionVariants(result, completionContext) {
             var processor = it
-            processor = applySharedCompletionFilters(ns, resolutionCtx, processor)
+            processor = filterPathVariantsByUseGroupContext(resolutionCtx, processor)
             processor = processor.wrapWithFilter { e ->
                 // drop already visited items
                 if (processedNames.contains(e.name)) return@wrapWithFilter false
@@ -77,11 +77,13 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             processor = filterCompletionVariantsByVisibility(pathElement, processor)
 
             val pathKind = pathElement.pathKind(true)
-            processor.processAll(getPathResolveVariantsWithExpectedType(
-                resolutionCtx,
-                pathKind,
-                expectedType = completionContext.expectedTy
-            ))
+            processor.processAll(
+                getPathResolveVariantsWithExpectedType(
+                    resolutionCtx,
+                    pathKind,
+                    expectedType = completionContext.expectedTy
+                )
+            )
         }
 
         ProgressManager.checkCanceled()
@@ -124,52 +126,37 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             )
 
         var candidatesCollector = createProcessor { e ->
-            e as ImportCandidateScopeEntry
-            val lookupElement = createLookupElement(
+            e.entryKind as ScopeEntryKind.Candidate
+            val lookupElement = createCompletionItem(
                 e,
                 completionContext,
                 priority = UNIMPORTED_ITEM_PRIORITY,
-                insertHandler = ImportInsertHandler(parameters, e.candidate)
+                insertHandler = ImportInsertHandler(parameters, e.entryKind.candidate)
             )
             result.addElement(lookupElement)
         }
         candidatesCollector =
-            applySharedCompletionFilters(ns, completionContext.resolutionCtx!!, candidatesCollector)
-
+            filterPathVariantsByUseGroupContext(
+                completionContext.resolutionCtx!!,
+                candidatesCollector
+            )
         candidatesCollector.processAll(
             candidates.map {
-                ImportCandidateScopeEntry(
+                ScopeEntry(
                     it.qualName.itemName,
                     it.element,
                     ns,
-                    it
+                    entryKind = ScopeEntryKind.Candidate(it)
                 )
             }
         )
     }
 }
 
-data class ImportCandidateScopeEntry(
-    override val name: String,
-    override val element: MvNamedElement,
-    override val namespaces: Set<Namespace>,
-    val candidate: ImportCandidate,
-): ScopeEntry {
-    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry =
-        this.copy(namespaces = namespaces)
-}
-
-fun applySharedCompletionFilters(
-    ns: Set<Namespace>,
-    resolutionCtx: ResolutionContext,
-    processor0: RsResolveProcessor
-): RsResolveProcessor {
-    var processor = processor0
-    processor = filterPathVariantsByUseGroupContext(resolutionCtx, processor)
-//    if (MODULE in ns) {
-//        processor = removeCurrentModuleItem(resolutionCtx, processor)
-//    }
-    return processor
+fun List<ScopeEntry>.filterEntriesByVisibilityInContext(contextElement: MvElement): List<ScopeEntry> {
+    return this.filter {
+        isVisibleInContext(it, contextElement)
+    }
 }
 
 fun filterCompletionVariantsByVisibility(

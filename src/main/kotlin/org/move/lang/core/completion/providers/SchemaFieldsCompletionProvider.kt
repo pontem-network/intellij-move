@@ -13,8 +13,7 @@ import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.ext.getSchemaLitFieldResolveVariants
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.schemaLit
-import org.move.lang.core.resolve.collectCompletionVariants
-import org.move.lang.core.resolve.wrapWithFilter
+import org.move.lang.core.resolve.toCompletionItems
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
@@ -36,9 +35,10 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
             .map { it.referenceName }
 
         val completionCtx = MvCompletionContext(literalField, literalField.isMsl())
-        collectCompletionVariants(result, completionCtx) {
-            val processor = it.wrapWithFilter { e -> e.name !in existingFieldNames }
-            processor.processAll(getSchemaLitFieldResolveVariants(literalField))
-        }
+
+        val completionItems = getSchemaLitFieldResolveVariants(literalField)
+            .filter { e -> e.name !in existingFieldNames }
+            .toCompletionItems(completionCtx)
+        result.addAllElements(completionItems)
     }
 }

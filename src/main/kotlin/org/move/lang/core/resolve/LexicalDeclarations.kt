@@ -7,7 +7,9 @@ import com.intellij.util.containers.addIfNotNull
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.ALL_NAMESPACES
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.itemNs
 import org.move.lang.core.resolve.util.forEachLeafSpeck
 import org.move.lang.core.resolve2.itemEntries
 import org.move.stdext.chain
@@ -194,7 +196,7 @@ private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
                 if (alias != null) {
                     val referenceName = useSpeckItem.aliasOrSpeckName ?: continue
                     add(
-                        SimpleScopeEntry(
+                        ScopeEntry(
                             referenceName,
                             alias,
                             ALL_NAMESPACES
@@ -208,11 +210,11 @@ private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
             val itemNs = resolvedItem.itemNs
             val speckItemName = useSpeckItem.aliasOrSpeckName ?: continue
             add(
-                ScopeEntryWithVisibility(
+                ScopeEntry(
                     speckItemName,
                     element,
                     itemNs,
-                    itemScopeAdjustment = useSpeckItem.stmtUsageScope
+                    entryKind = ScopeEntryKind.CustomItemScope(useSpeckItem.stmtUsageScope)
                 )
             )
         }

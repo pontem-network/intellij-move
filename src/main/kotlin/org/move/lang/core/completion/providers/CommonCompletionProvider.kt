@@ -8,21 +8,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psiElement
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.collectCompletionVariants
-import org.move.lang.core.resolve.createProcessor
-import org.move.lang.core.resolve.getPatBindingsResolveVariants
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
-import org.move.lang.core.resolve.wrapWithFilter
-import org.move.lang.core.resolve.processFieldLookupResolveVariants
-import org.move.lang.core.resolve.processLabelResolveVariants
-import org.move.lang.core.resolve.processMethodResolveVariants
-import org.move.lang.core.resolve.processStructPatFieldResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*
@@ -68,13 +60,12 @@ object CommonCompletionProvider: MvCompletionProvider() {
                 is MvPatBinding -> {
                     // for struct pat / lit, it filters out all the fields already existing in the body
                     val processor = skipAlreadyProvidedFields(element, processor0)
-//                    processPatBindingResolveVariants(element, true, processor)
                     processor.processAll(getPatBindingsResolveVariants(element, true))
                 }
                 // `let Res { my_f/*caret*/: field }`
                 is MvPatFieldFull -> {
                     val processor = skipAlreadyProvidedFields(element, processor0)
-                    processStructPatFieldResolveVariants(element, processor)
+                    processor.processAll(getStructPatFieldResolveVariants(element))
                 }
                 // loop labels
                 is MvLabel -> processLabelResolveVariants(element, it)
@@ -110,7 +101,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
             inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
 
             result.addElement(
-                createLookupElement(
+                createCompletionItem(
                     e,
                     ctx,
                     subst = inferenceCtx.resolveTypeVarsIfPossible(subst)

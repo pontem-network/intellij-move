@@ -59,14 +59,11 @@ fun processStructLitFieldResolveVariants(
     return false
 }
 
-fun processStructPatFieldResolveVariants(
-    patFieldFull: MvPatFieldFull,
-    processor: RsResolveProcessor
-): Boolean {
+fun getStructPatFieldResolveVariants(patFieldFull: MvPatFieldFull): List<ScopeEntry> {
     // used in completion
     val fieldsOwner =
-        patFieldFull.patStruct.path.maybeFieldsOwner ?: return false
-    return processor.processAll(getNamedFieldEntries(fieldsOwner))
+        patFieldFull.patStruct.path.maybeFieldsOwner ?: return emptyList()
+    return getNamedFieldEntries(fieldsOwner)
 }
 
 fun getPatBindingsResolveVariants(
@@ -155,11 +152,11 @@ fun <T: ScopeEntry> T.matchesByAddress(moveProject: MoveProject, address: Addres
     return sameValues
 }
 
-fun <T: ScopeEntry> List<T>.filterByAddress(
+fun List<ScopeEntry>.filterByAddress(
     moveProject: MoveProject,
     address: Address,
     isCompletion: Boolean
-): List<T> {
+): List<ScopeEntry> {
     // if no Aptos project, then cannot match by address
     return this.filter { it.matchesByAddress(moveProject, address, isCompletion) }
 }
@@ -185,11 +182,10 @@ fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEnt
 
         val moduleEntries = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
             .map {
-                ScopeEntryWithVisibility(
+                ScopeEntry(
                     targetModuleName,
                     it,
                     MODULES,
-                    itemScopeAdjustment = NamedItemScope.MAIN
                 )
             }
         addAll(moduleEntries.filterByAddress(moveProject, address, isCompletion = false))

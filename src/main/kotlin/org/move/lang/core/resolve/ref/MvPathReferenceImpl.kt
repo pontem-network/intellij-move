@@ -100,7 +100,7 @@ fun getPathResolveVariantsWithExpectedType(
         .filterEntriesByExpectedType(correctedExpectedType)
 }
 
-fun <T: ScopeEntry> List<T>.filterEntriesByExpectedType(expectedType: Ty?): List<T> {
+fun List<ScopeEntry>.filterEntriesByExpectedType(expectedType: Ty?): List<ScopeEntry> {
     return this.filter {
         val entryElement = it.element
         if (entryElement !is MvEnumVariant) return@filter true
@@ -131,9 +131,9 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
             is PathKind.NamedAddress, is ValueAddress -> false
             is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
                 if (MODULE in pathKind.ns) {
-                    // Self::
+                    // Self::call() as an expression
                     ctx.containingModule?.let {
-                        add(SimpleScopeEntry("Self", it, MODULES))
+                        add(ScopeEntry("Self", it, MODULES))
                     }
                 }
                 // local
@@ -180,7 +180,7 @@ fun getQualifiedPathEntries(
                 addAll(moduleEntries)
             }
             is MvModule -> {
-                add(SimpleScopeEntry("Self", qualifierItem, MODULES))
+                add(ScopeEntry("Self", qualifierItem, MODULES))
 
                 val moduleItems = getImportableItemsAsEntries(qualifierItem)
                 addAll(moduleItems)

@@ -1,5 +1,18 @@
 package org.move.lang.core.resolve.ref
 
+import org.move.lang.core.psi.MvConst
+import org.move.lang.core.psi.MvEnum
+import org.move.lang.core.psi.MvEnumVariant
+import org.move.lang.core.psi.MvFunctionLike
+import org.move.lang.core.psi.MvGlobalVariableStmt
+import org.move.lang.core.psi.MvLabelDecl
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvPatBinding
+import org.move.lang.core.psi.MvSchema
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.MvTypeParameter
+import org.move.lang.core.psi.ext.MvFieldDecl
 import org.move.lang.core.resolve.ScopeEntry
 import org.move.stdext.intersects
 import java.util.*
@@ -49,7 +62,24 @@ val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =
     setOf(Namespace.NAME, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)
 
-fun <T: ScopeEntry> List<T>.filterByNs(ns: Set<Namespace>): List<T> {
+val MvNamedElement.itemNs
+    get() = when (this) {
+        is MvModule -> MODULES
+        is MvFunctionLike -> NAMES
+        is MvTypeParameter -> TYPES
+        is MvStruct -> TYPES
+        is MvEnum -> ENUMS
+        is MvEnumVariant -> TYPES_N_NAMES
+        is MvPatBinding -> NAMES
+        is MvFieldDecl -> NAMES
+        is MvConst -> NAMES
+        is MvSchema -> SCHEMAS
+        is MvGlobalVariableStmt -> NAMES
+        is MvLabelDecl -> NONE
+        else -> error("when should be exhaustive, $this is not covered")
+    }
+
+fun List<ScopeEntry>.filterByNs(ns: Set<Namespace>): List<ScopeEntry> {
     return this.filter {
         it.namespaces.intersects(ns)
     }

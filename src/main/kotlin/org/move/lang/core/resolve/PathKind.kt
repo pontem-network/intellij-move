@@ -5,8 +5,8 @@ import org.move.lang.core.psi.MvUseGroup
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
+import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
@@ -75,8 +75,12 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         // use 0x1::m::{item}
         //                ^
         val useSpeckQualifier = (useGroup.parent as MvUseSpeck).path
-        // MODULES for the `Self`
-        return PathKind.QualifiedPath.UseGroupItem(this, useSpeckQualifier, ITEM_NAMESPACES + MODULES)
+        return PathKind.QualifiedPath.UseGroupItem(
+            this,
+            useSpeckQualifier,
+            // MODULES for `Self`
+            ITEM_NAMESPACES + MODULES
+        )
     }
 
     // one-element path
@@ -156,7 +160,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     // three or four element path
 
     if (this.isUseSpeck) {
-        // for use 0x1::m::Self;
+        // MODULES are for use 0x1::m::Self;
         return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns + MODULES)
     }
 

@@ -11,8 +11,6 @@ import org.move.lang.core.resolve.ref.Visibility.*
 import org.move.stdext.containsAny
 
 fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boolean {
-//    if (scopeEntry !is ScopeEntryWithVisibility) return true
-
     // inside msl everything is visible
     if (contextElement.isMsl()) return true
 
@@ -46,11 +44,12 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     // 0x0::builtins module items are always visible
     if (itemModule != null && itemModule.isBuiltins) return true
 
-    val itemUsageScope = if (scopeEntry is ScopeEntryWithVisibility) {
-        item.usageScope.shrinkScope(scopeEntry.itemScopeAdjustment)
-    } else {
-        item.usageScope
-    }
+    val itemUsageScope =
+        if (scopeEntry.entryKind is ScopeEntryKind.CustomItemScope) {
+            item.usageScope.shrinkScope(scopeEntry.entryKind.itemScope)
+        } else {
+            item.usageScope
+        }
 //    val itemUsageScope = item.usageScope.shrinkScope(scopeEntry.itemScopeAdjustment)
 
     // #[test_only] items in non-test-only scope

@@ -2,8 +2,10 @@ package org.move.lang.core.resolve
 
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.SmartList
+import org.move.ide.utils.imports.ImportCandidate
+import org.move.lang.core.completion.CompletionItem
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
@@ -14,14 +16,6 @@ import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution
-
-interface ScopeEntry {
-    val name: String
-    val element: MvNamedElement
-    val namespaces: Set<Namespace>
-
-    fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry
-}
 
 interface RsResolveProcessor {
     /**
@@ -130,7 +124,7 @@ private class ResolveVariantsCollector(
     }
 }
 
-fun <T: ScopeEntry> List<T>.filterByName(name: String): List<T> {
+fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {
     return this.filter { it.name == name }
 }
 
@@ -226,6 +220,19 @@ private class ResolveSingleScopeEntryCollector(
     }
 }
 
+fun List<ScopeEntry>.toCompletionItems(
+    ctx: MvCompletionContext,
+    applySubst: Substitution = emptySubstitution
+): List<CompletionItem> {
+    return this.map {
+        createCompletionItem(
+            scopeEntry = it,
+            completionContext = ctx,
+            priority = it.element.completionPriority,
+            subst = applySubst,
+        )
+    }
+}
 
 fun collectCompletionVariants(
     result: CompletionResultSet,
@@ -244,7 +251,7 @@ private class CompletionVariantsCollector(
 ): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
         result.addElement(
-            createLookupElement(
+            createCompletionItem(
                 scopeEntry = entry,
                 completionContext = context,
                 priority = entry.element.completionPriority,
@@ -255,24 +262,19 @@ private class CompletionVariantsCollector(
     }
 }
 
-data class SimpleScopeEntry(
-    override val name: String,
-    override val element: MvNamedElement,
-    override val namespaces: Set<Namespace>,
-): ScopeEntry {
-    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
+sealed class ScopeEntryKind {
+    class Simple: ScopeEntryKind()
+    class CustomItemScope(val itemScope: NamedItemScope): ScopeEntryKind()
+    class Candidate(val candidate: ImportCandidate): ScopeEntryKind()
 }
 
-data class ScopeEntryWithVisibility(
-    override val name: String,
-    override val element: MvNamedElement,
-    override val namespaces: Set<Namespace>,
-    // when item is imported, import can have different item scope
-    val itemScopeAdjustment: NamedItemScope,
-): ScopeEntry {
-    override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntryWithVisibility = copy(namespaces = namespaces)
+data class ScopeEntry(
+    val name: String,
+    val element: MvNamedElement,
+    val namespaces: Set<Namespace>,
+    val entryKind: ScopeEntryKind = ScopeEntryKind.Simple(),
+) {
+    fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
-
-
 
 
