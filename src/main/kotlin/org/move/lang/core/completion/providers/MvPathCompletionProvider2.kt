@@ -77,12 +77,11 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             processor = filterCompletionVariantsByVisibility(pathElement, processor)
 
             val pathKind = pathElement.pathKind(true)
-            processPathResolveVariantsWithExpectedType(
+            processor.processAll(getPathResolveVariantsWithExpectedType(
                 resolutionCtx,
                 pathKind,
-                expectedType = completionContext.expectedTy,
-                processor
-            )
+                expectedType = completionContext.expectedTy
+            ))
         }
 
         ProgressManager.checkCanceled()
@@ -179,7 +178,7 @@ fun filterCompletionVariantsByVisibility(
 ): RsResolveProcessor {
     return processor.wrapWithFilter { e ->
         // drop invisible items
-        if (!e.isVisibleFrom(context)) return@wrapWithFilter false
+        if (!e.isVisibleInContext(context)) return@wrapWithFilter false
 
         true
     }

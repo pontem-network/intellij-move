@@ -7,7 +7,6 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
-import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.resolve.VisibilityStatus.Visible
@@ -16,7 +15,6 @@ import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution
-import org.move.stdext.intersects
 
 interface ScopeEntry {
     val name: String
@@ -74,41 +72,43 @@ private class FilteringProcessor(
     override fun toString(): String = "FilteringProcessor($originalProcessor, filter = $filter)"
 }
 
-fun RsResolveProcessor.wrapWithShadowingProcessor(
-    prevScope: Map<String, Set<Namespace>>,
-    currScope: MutableMap<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-): RsResolveProcessor {
-    return ShadowingProcessor(this, prevScope, currScope, ns)
+fun processWithShadowingAcrossScopes(
+    prevScope: MutableMap<String, Set<Namespace>>,
+    processor: RsResolveProcessor,
+    f: (RsResolveProcessor) -> Boolean
+): Boolean {
+    val currScope = mutableMapOf<String, Set<Namespace>>()
+    val shadowingProcessor = ShadowingProcessor(processor, prevScope, currScope)
+    val stop = f(shadowingProcessor)
+    prevScope.putAll(currScope)
+    return stop
 }
 
 private class ShadowingProcessor(
     private val originalProcessor: RsResolveProcessor,
     private val prevScope: Map<String, Set<Namespace>>,
     private val currScope: MutableMap<String, Set<Namespace>>,
-    private val ns: Set<Namespace>,
 ): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
-        val prevNs = prevScope[entry.name]
-        val newNs = entry.namespaces
+        val visitedNs = prevScope[entry.name]
+        val entryNs = entry.namespaces
         // drop entries from namespaces that were encountered before
-        val entryWithIntersectedNs =
-            if (prevNs != null) {
-                val restNs = newNs.minus(prevNs)
-                if (ns.intersects(restNs)) {
-                    entry.copyWithNs(restNs)
-                } else {
+        val entryWithRestNs =
+            if (visitedNs != null) {
+                val restNs = entryNs.minus(visitedNs)
+                if (restNs.isEmpty()) {
                     return false
                 }
+                entry.copyWithNs(restNs)
             } else {
                 entry
             }
         // save encountered namespaces to the currScope
-        currScope[entry.name] = prevNs?.let { it + newNs } ?: newNs
-        return originalProcessor.process(entryWithIntersectedNs)
+        currScope[entry.name] = visitedNs?.let { it + entryNs } ?: entryNs
+        return originalProcessor.process(entryWithRestNs)
     }
 
-    override fun toString(): String = "ShadowingProcessor($originalProcessor, ns = $ns)"
+    override fun toString(): String = "ShadowingProcessor($originalProcessor)"
 }
 
 fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvNamedElement> {
@@ -129,6 +129,10 @@ private class ResolveVariantsCollector(
         }
         return false
     }
+}
+
+fun <T: ScopeEntry> List<T>.filterByName(name: String): List<T> {
+    return this.filter { it.name == name }
 }
 
 fun collectResolveVariantsAsScopeEntries(
@@ -193,7 +197,7 @@ private fun collectMethodOrPathScopeEntry(
     e: ScopeEntry
 ) {
     val element = e.element
-    val visibilityStatus = ctx.methodOrPath?.let { e.getVisibilityStatusFrom(it) } ?: Visible
+    val visibilityStatus = ctx.methodOrPath?.let { e.getVisibilityInContext(it) } ?: Visible
     val isVisible = visibilityStatus == Visible
     result += RsPathResolveResult(element, isVisible)
 }
@@ -261,18 +265,19 @@ fun interface VisibilityFilter {
     fun filter(context: MvElement, ns: Set<Namespace>): VisibilityStatus
 }
 
-fun ScopeEntry.getVisibilityStatusFrom(contextElement: MvElement): VisibilityStatus =
-    if (this is ScopeEntryWithVisibility) {
-        val visFilter = this.element
-            .visInfo(adjustScope = this.adjustedItemScope)
-            .createFilter()
-        visFilter.filter(contextElement, this.namespaces)
-    } else {
-        Visible
+fun ScopeEntry.getVisibilityInContext(contextElement: MvElement): VisibilityStatus =
+    when (this) {
+        is ScopeEntryWithVisibility -> {
+            this.element
+                .visInfo(adjustScope = this.itemScope)
+                .createFilter()
+                .filter(contextElement, this.namespaces)
+        }
+        else -> Visible
     }
 
 
-fun ScopeEntry.isVisibleFrom(context: MvElement): Boolean = getVisibilityStatusFrom(context) == Visible
+fun ScopeEntry.isVisibleInContext(context: MvElement): Boolean = getVisibilityInContext(context) == Visible
 
 enum class VisibilityStatus {
     Visible,
@@ -284,34 +289,9 @@ data class ScopeEntryWithVisibility(
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
     // when item is imported, import can have different item scope
-    val adjustedItemScope: NamedItemScope,
+    val itemScope: NamedItemScope,
 ): ScopeEntry {
     override fun copyWithNs(namespaces: Set<Namespace>): ScopeEntryWithVisibility = copy(namespaces = namespaces)
-}
-
-fun RsResolveProcessor.processWithVisibility(
-    name: String,
-    e: MvNamedElement,
-    ns: Set<Namespace>,
-    adjustedItemScope: NamedItemScope = MAIN,
-): Boolean = process(ScopeEntryWithVisibility(name, e, ns, adjustedItemScope))
-
-fun RsResolveProcessor.processNamedElement(
-    name: String,
-    namespaces: Set<Namespace>,
-    e: MvNamedElement,
-): Boolean =
-    process(SimpleScopeEntry(name, e, namespaces))
-
-fun RsResolveProcessor.processAllNamedElements(
-    ns: Set<Namespace>,
-    vararg lists: Iterable<MvNamedElement>,
-): Boolean {
-    return sequenceOf(*lists).flatten()
-        .any {
-            val name = it.name ?: return@any false
-            processNamedElement(name, ns, it)
-        }
 }
 
 

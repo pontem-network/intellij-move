@@ -9,8 +9,6 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.isVisibleFrom
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull

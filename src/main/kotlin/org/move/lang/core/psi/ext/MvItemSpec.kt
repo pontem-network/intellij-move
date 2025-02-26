@@ -21,11 +21,15 @@ val MvItemSpec.module: MvModule?
         }
     }
 
-fun MvModuleItemSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
-    this.itemSpecBlock?.stmtList
+/**
+ * `spec module {}` item
+ */
+fun MvModuleItemSpec.specInlineFunctions(): List<MvSpecInlineFunction> {
+    return this.itemSpecBlock?.stmtList
         ?.filterIsInstance<MvSpecInlineFunctionStmt>()
         ?.map { it.specInlineFunction }
         .orEmpty()
+}
 
 val MvItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
 val MvSpecBlockExpr.specBlock: MvSpecCodeBlock? get() = this.childOfType()

@@ -34,10 +34,12 @@ import org.toml.lang.TomlLanguage
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
 
+data class MovePackageWithAddrSubst(val package_: MovePackage, val addrSubst: RawAddressMap)
+
 data class MoveProject(
     val project: Project,
     val currentPackage: MovePackage,
-    val dependencies: List<Pair<MovePackage, RawAddressMap>>,
+    val dependencies: List<MovePackageWithAddrSubst>,
     // updates
     val fetchDepsStatus: UpdateStatus = UpdateStatus.NeedsUpdate,
 ): UserDataHolderBase() {
@@ -46,12 +48,12 @@ data class MoveProject(
     val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
 
     fun movePackages(): Sequence<MovePackage> = currentPackage.wrapWithList().chain(depPackages())
-    fun depPackages(): List<MovePackage> = dependencies.map { it.first }.reversed()
+    fun depPackages(): List<MovePackage> = dependencies.map { it.package_ }.reversed()
 
     fun allAccessibleMoveFolders(): List<VirtualFile> {
         val folders = currentPackage.moveFolders().toMutableList()
 
-        val depFolders = dependencies.asReversed().flatMap { it.first.moveFolders() }
+        val depFolders = dependencies.asReversed().flatMap { it.package_.moveFolders() }
         folders.addAll(depFolders)
 
         return folders
@@ -62,9 +64,9 @@ data class MoveProject(
             val packageName = this.currentPackage.packageName
 
             val cumulativeAddresses = PackageAddresses(mutableAddressMap(), placeholderMap())
-            for ((depPackage, subst) in this.dependencies) {
+            for ((depPackage, addrSubst) in this.dependencies) {
                 cumulativeAddresses.extendWith(depPackage.addresses())
-                cumulativeAddresses.applySubstitution(subst, packageName)
+                cumulativeAddresses.applySubstitution(addrSubst, packageName)
             }
             cumulativeAddresses.extendWith(this.currentPackage.addresses())
 
@@ -161,7 +163,7 @@ data class MoveProject(
             override fun toString(): String = reason
         }
 
-        fun merge(status: UpdateStatus): UpdateStatus = if (priority >= status.priority) this else status
+//        fun merge(status: UpdateStatus): UpdateStatus = if (priority >= status.priority) this else status
     }
 
     val mergedStatus: UpdateStatus get() = fetchDepsStatus

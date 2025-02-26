@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve
 
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.*
@@ -7,7 +8,6 @@ import org.move.lang.core.types.Address
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleIndex
-import org.move.stdext.intersects
 
 fun processFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
@@ -51,7 +51,8 @@ fun processStructLitFieldResolveVariants(
     if (!isCompletion && litField.expr == null) {
         val ctx = ResolutionContext(litField, false)
         // search through available NAME items
-        val availableBindings = getEntriesFromWalkingScopes(litField, NAMES, ctx)
+        val availableBindings = getEntriesFromWalkingScopes(litField, ctx)
+            .filterByNs(NAMES)
         // todo: what if constant or functions hits here?
         processor.processAll(availableBindings)
     }
@@ -68,127 +69,135 @@ fun processStructPatFieldResolveVariants(
     return processor.processAll(getNamedFieldEntries(fieldsOwner))
 }
 
-fun processPatBindingResolveVariants(
+fun getPatBindingsResolveVariants(
     binding: MvPatBinding,
     isCompletion: Boolean,
-    originalProcessor: RsResolveProcessor
-): Boolean {
-    // field pattern shorthand
-    if (binding.parent is MvPatField) {
-        val parentPat = binding.parent.parent as MvPatStruct
-        val fieldsOwner = parentPat.path.maybeFieldsOwner
-        // can be null if unresolved
-        if (fieldsOwner != null) {
-            if (originalProcessor.processAll(getNamedFieldEntries(fieldsOwner))) return true
-            if (isCompletion) return false
+): List<ScopeEntry> {
+    return buildList {
+        // field pattern shorthand
+        if (binding.parent is MvPatField) {
+            val parentPat = binding.parent.parent as MvPatStruct
+            val fieldsOwner = parentPat.path.maybeFieldsOwner
+            // can be null if unresolved
+            if (fieldsOwner != null) {
+                addAll(getNamedFieldEntries(fieldsOwner))
+                if (isCompletion) {
+                    return@buildList
+                }
+            }
+        }
+
+        val ctx = ResolutionContext(binding, isCompletion)
+        val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
+
+        val bindingEntries = getEntriesFromWalkingScopes(binding, ctx)
+            .filterByNs(ns)
+
+        for (bindingEntry in bindingEntries) {
+            val element = bindingEntry.element
+
+            // copied as is from the intellij-rust, handles all items that can be matched in match arms
+            val isConstantLike = element.isConstantLike
+            val isPathOrDestructable = when (element) {
+                is MvEnum, is MvEnumVariant, is MvStruct -> true
+                else -> false
+            }
+            if (isConstantLike || (isCompletion && isPathOrDestructable)) {
+                add(bindingEntry)
+            }
         }
     }
-    // copied as is from the intellij-rust, handles all items that can be matched in match arms
-    val processor = originalProcessor.wrapWithFilter { entry ->
-        val element = entry.element
-        val isConstantLike = element.isConstantLike
-        val isPathOrDestructable = when (element) {
-            /*is MvModule, */is MvEnum, is MvEnumVariant, is MvStruct -> true
-            else -> false
-        }
-        isConstantLike || (isCompletion && isPathOrDestructable)
-    }
-    val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
-    val ctx = ResolutionContext(binding, isCompletion)
-    return processor.processAll(getEntriesFromWalkingScopes(binding, ns, ctx))
 }
 
-fun resolveBindingForFieldShorthand(
-    element: MvMandatoryReferenceElement,
-): List<MvNamedElement> {
-    return collectResolveVariants(element.referenceName) {
-        val ctx = ResolutionContext(element, isCompletion = false)
-        it.processAll(getEntriesFromWalkingScopes(element, NAMES, ctx))
-    }
+fun resolveBindingForFieldShorthand(element: MvMandatoryReferenceElement): List<ScopeEntry> {
+    val ctx = ResolutionContext(element, isCompletion = false)
+    val entries = getEntriesFromWalkingScopes(element, ctx)
+        .filterByNs(NAMES)
+    return entries.filterByName(element.referenceName)
+}
+
+private fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+    return fieldsOwner.fields.mapNotNull { it.asEntry() }
+}
+
+private fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+    return fieldsOwner.namedFields.mapNotNull { it.asEntry() }
 }
 
 fun getEntriesFromWalkingScopes(
     scopeStart: MvElement,
-    ns: Set<Namespace>,
     ctx: ResolutionContext,
 ): List<ScopeEntry> {
-    val prevScope = hashMapOf<String, Set<Namespace>>()
-
     val collector = ScopeEntriesCollector()
+
+    val prevScope = hashMapOf<String, Set<Namespace>>()
     walkUpThroughScopes(scopeStart) { cameFrom, scope ->
         // state between shadowing processors passed through prevScope
-        processWithShadowingAcrossScopes(prevScope, ns, collector) { shadowingProcessor ->
-            val scopeEntries =
-                getEntriesInScope(scope, cameFrom, ctx).filter { it.namespaces.intersects(ns) }
-            shadowingProcessor.processAll(scopeEntries)
+        processWithShadowingAcrossScopes(prevScope, collector) { shadowingProcessor ->
+            shadowingProcessor.processAll(getEntriesInScope(scope, cameFrom, ctx))
         }
     }
+
     return collector.result
 }
 
-fun processModulePathResolveVariants(
-    ctx: ResolutionContext,
-    address: Address,
-    processor: RsResolveProcessor,
-): Boolean {
-    // if no project, cannot use the index
-    val moveProject = ctx.moveProject
-    if (moveProject == null) return false
+fun <T: ScopeEntry> T.matchesByAddress(moveProject: MoveProject, address: Address, isCompletion: Boolean): Boolean {
+    val module = this.element as? MvModule ?: return false
+    val moduleAddress = module.address(moveProject)
+    val sameValues = Address.equals(moduleAddress, address)
 
-    val project = ctx.element.project
-    val searchScope = moveProject.searchScope()
-
-    val addressMatcher = processor.wrapWithFilter { e ->
-        val candidate = e.element as? MvModule ?: return@wrapWithFilter false
-        val candidateAddress = candidate.address(moveProject)
-        val sameValues = Address.equals(address, candidateAddress)
-
-        if (ctx.isCompletion && sameValues) {
-            // compare named addresses by name in case of the same values for the completion
-            if (address is Named && candidateAddress is Named && address.name != candidateAddress.name)
-                return@wrapWithFilter false
-        }
-
-        sameValues
+    if (sameValues && isCompletion) {
+        // compare named addresses by name in case of the same values for the completion
+        if (address is Named && moduleAddress is Named && address.name != moduleAddress.name)
+            return false
     }
 
-    if (ctx.isCompletion) {
-        val moduleNames = MvModuleIndex.getAllModuleNames(project)
-        moduleNames.forEach { moduleName ->
-            val modules = MvModuleIndex.getModulesByName(project, moduleName, searchScope)
-            if (addressMatcher.processAll(modules.mapNotNull { it.asEntry() })) return true
-        }
-        return false
-    }
-
-    val targetModuleName = ctx.path?.referenceName ?: return false
-
-    val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
-    for (module in modules) {
-        if (addressMatcher.processWithVisibility(targetModuleName, module, MODULES)) return true
-    }
-
-    return false
+    return sameValues
 }
 
-inline fun processWithShadowingAcrossScopes(
-    prevScope: MutableMap<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-    processor: RsResolveProcessor,
-    f: (RsResolveProcessor) -> Boolean
-): Boolean {
-    val currScope = mutableMapOf<String, Set<Namespace>>()
-    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, currScope, ns)
-    return try {
-        f(shadowingProcessor)
-    } finally {
-        prevScope.putAll(currScope)
+fun <T: ScopeEntry> List<T>.filterByAddress(
+    moveProject: MoveProject,
+    address: Address,
+    isCompletion: Boolean
+): List<T> {
+    // if no Aptos project, then cannot match by address
+    return this.filter { it.matchesByAddress(moveProject, address, isCompletion) }
+}
+
+fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEntry> {
+    // no Aptos project, cannot resolve modules
+    val moveProject = ctx.moveProject ?: return emptyList()
+    return buildList {
+        val project = moveProject.project
+        val searchScope = moveProject.searchScope()
+
+        if (ctx.isCompletion) {
+            // todo: somehow get all modules from the index (or pre-filter with address)?
+            val allModules = MvModuleIndex.getAllModuleNames(project).flatMap {
+                MvModuleIndex.getModulesByName(project, it, searchScope).mapNotNull { it.asEntry() }
+            }
+                .filterByAddress(moveProject, address, isCompletion = true)
+            addAll(allModules)
+            return@buildList
+        }
+
+        val targetModuleName = ctx.path?.referenceName ?: return@buildList
+
+        val moduleEntries = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
+            .map {
+                ScopeEntryWithVisibility(
+                    targetModuleName,
+                    it,
+                    MODULES,
+                    itemScope = NamedItemScope.MAIN
+                )
+            }
+        addAll(moduleEntries.filterByAddress(moveProject, address, isCompletion = false))
     }
 }
 
 fun walkUpThroughScopes(
     start: MvElement,
-    stopAfter: (MvElement) -> Boolean = { false },
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
     var cameFrom = start
@@ -198,13 +207,20 @@ fun walkUpThroughScopes(
 
         // walk all items in original module block
         if (scope is MvModule) {
-            // handle spec module {}
-            if (handleModuleItemSpecsInItemsOwner(cameFrom, scope, handleScope)) return true
+            // handle `spec module {}` in the current module
+            for (moduleSpecBlock in getModuleItemSpecsInItemsOwner(cameFrom, scope)) {
+                if (handleScope(cameFrom, moduleSpecBlock)) return true
+            }
+
             // walk over all spec modules
             for (moduleSpec in scope.allModuleSpecs()) {
                 val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
+
                 if (handleScope(cameFrom, moduleSpecBlock)) return true
-                if (handleModuleItemSpecsInItemsOwner(cameFrom, moduleSpecBlock, handleScope)) return true
+                // handle `spec module {}` in all spec blocks
+                for (childModuleSpecBlock in getModuleItemSpecsInItemsOwner(cameFrom, moduleSpecBlock)) {
+                    if (handleScope(cameFrom, childModuleSpecBlock)) return true
+                }
             }
         }
 
@@ -217,8 +233,6 @@ fun walkUpThroughScopes(
             }
         }
 
-        if (stopAfter(scope)) break
-
         cameFrom = scope
         scope = scope.context as? MvElement
     }
@@ -226,33 +240,14 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.fields.mapNotNull { it.asEntry() }
-}
-
-private fun processFieldDeclarations(fieldsOwner: MvFieldsOwner, processor: RsResolveProcessor): Boolean =
-    fieldsOwner.fields.any { field ->
-        val fieldEntry = field.asEntry() ?: return@any false
-        processor.process(fieldEntry)
-    }
-
-private fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.namedFields.mapNotNull { it.asEntry() }
-}
-
-private fun handleModuleItemSpecsInItemsOwner(
+private fun getModuleItemSpecsInItemsOwner(
     cameFrom: MvElement,
     itemsOwner: MvItemsOwner,
-    handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
-): Boolean {
+): List<MvSpecCodeBlock> {
     val moduleItemSpecs = when (itemsOwner) {
         is MvModule -> itemsOwner.moduleItemSpecList
         is MvModuleSpecBlock -> itemsOwner.moduleItemSpecList
         else -> emptyList()
     }
-    for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {
-        val itemSpecBlock = moduleItemSpec.itemSpecBlock ?: continue
-        if (handleScope(cameFrom, itemSpecBlock)) return true
-    }
-    return false
+    return moduleItemSpecs.filter { it != cameFrom }.mapNotNull { it.itemSpecBlock }
 }

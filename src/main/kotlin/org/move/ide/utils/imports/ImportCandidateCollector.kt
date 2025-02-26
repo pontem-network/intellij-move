@@ -7,9 +7,10 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.createFilter
-import org.move.lang.core.resolve.moduleItemNamespace
+import org.move.lang.core.resolve.itemNs
 import org.move.lang.core.resolve.visInfo
 import org.move.lang.index.MvNamedElementIndex
+import org.move.stdext.intersects
 
 object ImportCandidateCollector {
 
@@ -25,19 +26,22 @@ object ImportCandidateCollector {
             if (i % 100 == 0) ProgressManager.checkCanceled()
 
             if (elementFromIndex !is MvQualNamedElement) continue
-            if (elementFromIndex.moduleItemNamespace !in ns) continue
 
-            val visFilter = elementFromIndex.visInfo().createFilter()
-            val visibilityStatus = visFilter.filter(path, ns)
-            if (visibilityStatus != Visible) continue
+            if (elementFromIndex.itemNs.intersects(ns)) {
+                val visibilityStatus = elementFromIndex.visInfo().createFilter().filter(path, ns)
+                if (visibilityStatus != Visible) continue
 
-            // double check in case of match
-            if (elementFromIndex.name == targetName) {
-                val itemQualName = elementFromIndex.qualName
-                if (itemQualName != null) {
-                    candidates.add(ImportCandidate(elementFromIndex, itemQualName))
+                // double check in case of match
+                if (elementFromIndex.name == targetName) {
+                    val itemQualName = elementFromIndex.qualName
+                    if (itemQualName != null) {
+                        candidates.add(ImportCandidate(elementFromIndex, itemQualName))
+                    }
                 }
             }
+//            if (!elementFromIndex.itemNs.intersects(ns)) continue
+//            if (elementFromIndex.moduleItemNamespace !in ns) continue
+
         }
 
         return candidates

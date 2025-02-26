@@ -21,7 +21,6 @@ import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import org.move.utils.cache
 import org.move.utils.cacheManager
-import org.move.utils.globalPsiDependentCache
 import org.move.utils.psiCacheResult
 import javax.swing.Icon
 
@@ -88,8 +87,8 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { i
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
-fun MvModule.specInlineFunctions(): List<MvSpecInlineFunction> =
-    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+//fun MvModule.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
+//    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
 
 fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
@@ -158,7 +157,7 @@ fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.or
 
 fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
 
-fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
+fun MvModuleSpec.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
     this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 private val MODULE_SPECS_KEY: Key<CachedValue<List<MvModuleSpec>>> =

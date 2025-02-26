@@ -53,7 +53,7 @@ private fun <U, V> Collection<U>.smartFlatMap(transform: (U) -> Collection<V>): 
 private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
     get() {
         return this.dependencies
-            .map { it.first }
+            .map { it.package_ }
             // dependency is not a child of any content root
             .filter { pkg ->
                 this.project.contentRoots.all { ideRoot ->

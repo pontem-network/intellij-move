@@ -1206,21 +1206,10 @@ module 0x1::main {
 }          
     """)
 
-    fun `test test function can be imported`() = checkByCode("""
+    fun `test public test function still cannot be imported`() = checkByCode("""
 module 0x1::m1 {
     #[test]
     public fun test_a() {}
-                //X
-}  
-module 0x1::m2 {
-    use 0x1::m1::test_a;
-               //^
-}    """)
-
-    fun `test private test function cannot be imported`() = checkByCode("""
-module 0x1::m1 {
-    #[test]
-    fun test_a() {}
 }  
 module 0x1::m2 {
     use 0x1::m1::test_a;

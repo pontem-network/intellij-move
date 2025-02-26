@@ -1,5 +1,7 @@
 package org.move.lang.core.resolve.ref
 
+import org.move.lang.core.resolve.ScopeEntry
+import org.move.stdext.intersects
 import java.util.*
 
 sealed class Visibility2 {
@@ -46,3 +48,9 @@ val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MO
 val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =
     setOf(Namespace.NAME, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)
+
+fun <T: ScopeEntry> List<T>.filterByNs(ns: Set<Namespace>): List<T> {
+    return this.filter {
+        it.namespaces.intersects(ns)
+    }
+}

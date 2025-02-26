@@ -13,8 +13,9 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.collectCompletionVariants
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.processItemDeclarations
+import org.move.lang.core.resolve.getImportableItemsAsEntries
+import org.move.lang.core.resolve.ref.TYPES
+import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.withParent
 
 object StructPatCompletionProvider: MvCompletionProvider() {
@@ -34,7 +35,9 @@ object StructPatCompletionProvider: MvCompletionProvider() {
         val completionCtx = MvCompletionContext(bindingPat, bindingPat.isMsl())
 
         collectCompletionVariants(result, completionCtx) {
-            processItemDeclarations(module, setOf(Namespace.TYPE), it)
+            val typeItems =
+                getImportableItemsAsEntries(module).filterByNs(TYPES)
+            it.processAll(typeItems)
         }
     }
 }

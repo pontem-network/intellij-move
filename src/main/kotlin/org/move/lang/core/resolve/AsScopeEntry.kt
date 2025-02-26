@@ -5,11 +5,11 @@ import org.move.lang.core.psi.ext.MvFieldDecl
 import org.move.lang.core.resolve.ref.*
 
 fun MvPatBinding.asEntry(): SimpleScopeEntry =
-    SimpleScopeEntry(this.name, this, NAMES)
+    SimpleScopeEntry(this.name, this, this.itemNs)
 
 fun MvModule.asEntry(): SimpleScopeEntry? {
     val name = this.name ?: return null
-    return SimpleScopeEntry(name, this, MODULES)
+    return SimpleScopeEntry(name, this, this.itemNs)
 }
 
 fun MvFunctionLike.asEntry(): ScopeEntryWithVisibility? {
@@ -17,14 +17,14 @@ fun MvFunctionLike.asEntry(): ScopeEntryWithVisibility? {
     return ScopeEntryWithVisibility(
         name,
         this,
-        NAMES,
-        adjustedItemScope = NamedItemScope.MAIN
+        this.itemNs,
+        itemScope = NamedItemScope.MAIN
     )
 }
 
 fun MvTypeParameter.asEntry(): SimpleScopeEntry? {
     val name = this.name ?: return null
-    return SimpleScopeEntry(name, this, TYPES)
+    return SimpleScopeEntry(name, this, this.itemNs)
 }
 
 fun MvSchema.asEntry(): ScopeEntryWithVisibility? {
@@ -32,8 +32,8 @@ fun MvSchema.asEntry(): ScopeEntryWithVisibility? {
     return ScopeEntryWithVisibility(
         name,
         this,
-        SCHEMAS,
-        adjustedItemScope = NamedItemScope.MAIN
+        this.itemNs,
+        itemScope = NamedItemScope.MAIN
     )
 }
 
@@ -42,8 +42,8 @@ fun MvConst.asEntry(): ScopeEntryWithVisibility? {
     return ScopeEntryWithVisibility(
         name,
         this,
-        NAMES,
-        adjustedItemScope = NamedItemScope.MAIN
+        this.itemNs,
+        itemScope = NamedItemScope.MAIN
     )
 }
 
@@ -52,19 +52,19 @@ fun MvGlobalVariableStmt.asEntry(): ScopeEntryWithVisibility? {
     return ScopeEntryWithVisibility(
         name,
         this,
-        NAMES,
-        adjustedItemScope = NamedItemScope.MAIN
+        this.itemNs,
+        itemScope = NamedItemScope.MAIN
     )
 }
 
 fun MvFieldDecl.asEntry(): SimpleScopeEntry? {
     val name = this.name ?: return null
-    return SimpleScopeEntry(name, this, NAMES)
+    return SimpleScopeEntry(name, this, this.itemNs)
 }
 
 fun MvEnumVariant.asEntry(): SimpleScopeEntry? {
     val name = this.name ?: return null
-    return SimpleScopeEntry(name, this, TYPES_N_NAMES)
+    return SimpleScopeEntry(name, this, this.itemNs)
 }
 
 fun MvStruct.asEntry(): ScopeEntryWithVisibility? {
@@ -73,7 +73,7 @@ fun MvStruct.asEntry(): ScopeEntryWithVisibility? {
         name,
         this,
         TYPES,
-        adjustedItemScope = NamedItemScope.MAIN
+        itemScope = NamedItemScope.MAIN
     )
 }
 
@@ -83,7 +83,7 @@ fun MvEnum.asEntry(): ScopeEntryWithVisibility? {
         name,
         this,
         ENUMS,
-        adjustedItemScope = NamedItemScope.MAIN
+        itemScope = NamedItemScope.MAIN
     )
 }
 

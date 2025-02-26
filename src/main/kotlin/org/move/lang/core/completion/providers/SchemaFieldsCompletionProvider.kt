@@ -10,8 +10,8 @@ import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.MvSchemaLitField
 import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.getSchemaLitFieldResolveVariants
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.processSchemaLitFieldResolveVariants
 import org.move.lang.core.psi.ext.schemaLit
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.wrapWithFilter
@@ -38,7 +38,7 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
         val completionCtx = MvCompletionContext(literalField, literalField.isMsl())
         collectCompletionVariants(result, completionCtx) {
             val processor = it.wrapWithFilter { e -> e.name !in existingFieldNames }
-            processSchemaLitFieldResolveVariants(literalField, processor)
+            processor.processAll(getSchemaLitFieldResolveVariants(literalField))
         }
     }
 }

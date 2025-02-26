@@ -5,9 +5,9 @@ import org.move.cli.MoveProject
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
+import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -82,45 +82,36 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
     }
 }
 
-fun processPathResolveVariantsWithExpectedType(
+fun getPathResolveVariantsWithExpectedType(
     ctx: ResolutionContext,
     pathKind: PathKind,
     expectedType: Ty?,
-    processor: RsResolveProcessor
-): Boolean {
+): List<ScopeEntry> {
     // if path qualifier is enum, then the expected type is that enum
-    var expectedType = expectedType
+    var correctedExpectedType = expectedType
     if (pathKind is PathKind.QualifiedPath) {
         val qualifierItem = pathKind.qualifier.reference?.resolveFollowingAliases()
         if (qualifierItem is MvEnum) {
-            expectedType = TyAdt.valueOf(qualifierItem)
+            correctedExpectedType = TyAdt.valueOf(qualifierItem)
         }
     }
-    val expectedTypeFilterer = filterEnumVariantsByExpectedType(expectedType, processor)
-    return processPathResolveVariants(
-        ctx,
-        pathKind,
-        processor = expectedTypeFilterer
-    )
+    val pathEntries = getPathResolveVariants(ctx, pathKind)
+    return pathEntries
+        .filterEntriesByExpectedType(correctedExpectedType)
 }
 
-fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: RsResolveProcessor): RsResolveProcessor {
+fun <T: ScopeEntry> List<T>.filterEntriesByExpectedType(expectedType: Ty?): List<T> {
+    return this.filter {
+        val entryElement = it.element
+        if (entryElement !is MvEnumVariant) return@filter true
 
-    val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum
-    // if expected type is unknown, or not a enum, then we cannot infer enum variants
-    if (expectedEnumItem == null) {
-        return processor.wrapWithFilter {
-            val element = it.element
-            if (element is MvEnumVariant) return@wrapWithFilter false
-            true
-        }
+        val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum
+        // if expected type is unknown, or not a enum, then we cannot infer enum variants
+            ?: return@filter false
+
+        entryElement in expectedEnumItem.variants
     }
 
-    val expectedEnumVariants = expectedEnumItem.variants
-    return processor.wrapWithFilter {
-        val element = it.element
-        element !is MvEnumVariant || element in expectedEnumVariants
-    }
 }
 
 fun resolveAliases(element: MvNamedElement): MvNamedElement {
@@ -134,29 +125,32 @@ fun resolveAliases(element: MvNamedElement): MvNamedElement {
     return element
 }
 
-fun processPathResolveVariants(
-    ctx: ResolutionContext,
-    pathKind: PathKind,
-    processor: RsResolveProcessor
-): Boolean {
-    return when (pathKind) {
-        is PathKind.NamedAddress, is ValueAddress -> false
-        is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
-            if (MODULE in pathKind.ns) {
-                // Self::
-                ctx.containingModule?.let {
-                    val moduleEntry = SimpleScopeEntry("Self", it, MODULES)
-                    if (processor.process(moduleEntry)) return true
+fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<ScopeEntry> {
+    return buildList {
+        when (pathKind) {
+            is PathKind.NamedAddress, is ValueAddress -> false
+            is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
+                if (MODULE in pathKind.ns) {
+                    // Self::
+                    ctx.containingModule?.let {
+                        add(SimpleScopeEntry("Self", it, MODULES))
+                    }
                 }
+                // local
+                addAll(
+                    getEntriesFromWalkingScopes(ctx.element, ctx)
+                        .filterByNs(pathKind.ns)
+                )
             }
-            // local
-            processor.processAll(getEntriesFromWalkingScopes(ctx.element, pathKind.ns, ctx))
-        }
-        is PathKind.QualifiedPath.Module -> {
-            processModulePathResolveVariants(ctx, pathKind.address, processor)
-        }
-        is PathKind.QualifiedPath -> {
-            processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.qualifier, processor)
+            is PathKind.QualifiedPath.Module -> {
+                val moduleEntries = getModulesAsEntries(ctx, pathKind.address)
+                addAll(moduleEntries)
+            }
+            is PathKind.QualifiedPath -> {
+                val qualifiedPathEntries = getQualifiedPathEntries(ctx, pathKind.qualifier)
+                    .filterByNs(pathKind.ns)
+                addAll(qualifiedPathEntries)
+            }
         }
     }
 }
@@ -164,35 +158,38 @@ fun processPathResolveVariants(
 /**
  * foo::bar
  * |    |
- * |    [path]
+ * |    [ctx.path]
  * [qualifier]
  */
-fun processQualifiedPathResolveVariants(
+fun getQualifiedPathEntries(
     ctx: ResolutionContext,
-    ns: Set<Namespace>,
     qualifier: MvPath,
-    processor: RsResolveProcessor
-): Boolean {
-    val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
-    if (resolvedQualifier == null) {
-        if (MODULE in ns) {
-            // can be module, try for named address as a qualifier
-            val addressName = qualifier.referenceName ?: return false
-            val address = ctx.moveProject?.getNamedAddressTestAware(addressName) ?: return false
-            if (processModulePathResolveVariants(ctx, address, processor)) return true
-        }
-        return false
-    }
-    if (resolvedQualifier is MvModule) {
-        if (processor.process(SimpleScopeEntry("Self", resolvedQualifier, MODULES))) return true
+): List<ScopeEntry> {
+    val qualifierItem = qualifier.reference?.resolveFollowingAliases()
+    return buildList {
+        when (qualifierItem) {
+            null -> {
+                // can be a module, try for named address as a qualifier
+                val addressName = qualifier.referenceName ?: return@buildList
+                // no Aptos project, cannot resolve by address
+                val moveProject = ctx.moveProject ?: return@buildList
+                // no such named address
+                val address = moveProject.getNamedAddressTestAware(addressName) ?: return@buildList
 
-        val module = resolvedQualifier
-        if (processItemDeclarations(module, ns, processor)) return true
+                val moduleEntries = getModulesAsEntries(ctx, address)
+                addAll(moduleEntries)
+            }
+            is MvModule -> {
+                add(SimpleScopeEntry("Self", qualifierItem, MODULES))
+
+                val moduleItems = getImportableItemsAsEntries(qualifierItem)
+                addAll(moduleItems)
+            }
+            is MvEnum -> {
+                addAll(qualifierItem.variants.mapNotNull { it.asEntry() })
+            }
+        }
     }
-    if (resolvedQualifier is MvEnum) {
-        if (processEnumVariantDeclarations(resolvedQualifier, ns, processor)) return true
-    }
-    return false
 }
 
 class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
@@ -219,7 +216,10 @@ fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
     val kind = path.pathKind()
     val resolveVariants =
         collectResolveVariantsAsScopeEntries(path.referenceName) {
-            processPathResolveVariantsWithExpectedType(ctx, kind, expectedType, it)
+            it.processAll(
+                getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
+            )
+//            processPathResolveVariantsWithExpectedType(ctx, kind, expectedType, it)
         }
     return resolveVariants
 }
@@ -233,7 +233,9 @@ private fun resolvePath(
         // matches resolve variants against referenceName from path
         collectMethodOrPathResolveVariants(path, ctx) {
             // actually emits resolve variants
-            processPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null, it)
+            it.processAll(
+                getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
+            )
         }
     return result
 }

@@ -15,13 +15,13 @@ import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.collectCompletionVariants
 import org.move.lang.core.resolve.createProcessor
+import org.move.lang.core.resolve.getPatBindingsResolveVariants
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
 import org.move.lang.core.resolve.wrapWithFilter
 import org.move.lang.core.resolve.processFieldLookupResolveVariants
 import org.move.lang.core.resolve.processLabelResolveVariants
 import org.move.lang.core.resolve.processMethodResolveVariants
-import org.move.lang.core.resolve.processPatBindingResolveVariants
 import org.move.lang.core.resolve.processStructPatFieldResolveVariants
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
@@ -68,7 +68,8 @@ object CommonCompletionProvider: MvCompletionProvider() {
                 is MvPatBinding -> {
                     // for struct pat / lit, it filters out all the fields already existing in the body
                     val processor = skipAlreadyProvidedFields(element, processor0)
-                    processPatBindingResolveVariants(element, true, processor)
+//                    processPatBindingResolveVariants(element, true, processor)
+                    processor.processAll(getPatBindingsResolveVariants(element, true))
                 }
                 // `let Res { my_f/*caret*/: field }`
                 is MvPatFieldFull -> {

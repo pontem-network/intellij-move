@@ -10,7 +10,6 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePathRaw
@@ -354,7 +353,7 @@ class TypeInferenceWalker(
                 true
             }
         val resolvedItems = entries.map {
-            ResolvedItem(it.element, it.isVisibleFrom(path))
+            ResolvedItem(it.element, it.isVisibleInContext(path))
         }
         ctx.writePath(path, resolvedItems)
         // resolve aliases
@@ -760,9 +759,9 @@ class TypeInferenceWalker(
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val bindingTy = (resolveBindingForFieldShorthand(field).singleOrNull() as? MvPatBinding)
-                    ?.let { ctx.getBindingType(it) }
-                    ?: TyUnknown
+                val binding = resolveBindingForFieldShorthand(field).singleOrNull()?.element
+                val bindingTy = (binding as? MvPatBinding)
+                    ?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)
             }
         }

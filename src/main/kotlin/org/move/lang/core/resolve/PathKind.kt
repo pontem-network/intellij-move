@@ -75,7 +75,8 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         // use 0x1::m::{item}
         //                ^
         val useSpeckQualifier = (useGroup.parent as MvUseSpeck).path
-        return PathKind.QualifiedPath.UseGroupItem(this, useSpeckQualifier, ITEM_NAMESPACES)
+        // MODULES for the `Self`
+        return PathKind.QualifiedPath.UseGroupItem(this, useSpeckQualifier, ITEM_NAMESPACES + MODULES)
     }
 
     // one-element path
@@ -153,5 +154,11 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     }
 
     // three or four element path
+
+    if (this.isUseSpeck) {
+        // for use 0x1::m::Self;
+        return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns + MODULES)
+    }
+
     return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns)
 }

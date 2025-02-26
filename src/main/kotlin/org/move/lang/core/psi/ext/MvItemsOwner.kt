@@ -1,6 +1,8 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.resolve.ScopeEntryWithVisibility
+import org.move.lang.core.resolve.asEntry
 import org.move.stdext.buildList
 
 interface MvItemsOwner: MvElement {
@@ -16,12 +18,7 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
     return generateSequence(startChild) { it.nextSibling }.filterIsInstance<MvElement>()
 }
 
-val MvItemsOwner.itemElements: List<MvItemElement>
-    get() {
-        return this.items().filterIsInstance<MvItemElement>().toList()
-    }
-
-val MvModule.innerSpecItems: List<MvItemElement>
+val MvModule.globalVariableEntries: List<ScopeEntryWithVisibility>
     get() {
         val module = this
         return buildList {
@@ -29,10 +26,9 @@ val MvModule.innerSpecItems: List<MvItemElement>
                 module.allModuleSpecs()
                        .map {
                            it.moduleItemSpecs()
-                               .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }
+                               .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty().mapNotNull { it.asEntry() } }
                        }
                        .flatten())
-            addAll(module.specInlineFunctions())
         }
     }
 

@@ -8,11 +8,7 @@ import org.move.lang.core.resolve.ScopeEntryWithVisibility
 import org.move.lang.core.resolve.asEntry
 import org.move.lang.core.resolve.ref.NAMES
 
-interface ResolveScope {
-    fun scopeEntries(): List<ScopeEntry>
-}
-
-val MvModule.itemScopeEntries: List<ScopeEntryWithVisibility>
+val MvModule.itemEntries: List<ScopeEntryWithVisibility>
     get() {
         return listOf(
             // consts
@@ -35,7 +31,7 @@ val MvModule.itemScopeEntries: List<ScopeEntryWithVisibility>
 
 object ResolveScopeUtil {
     fun scopeEntries(module: MvModule): List<ScopeEntry> {
-        val itemEntries = module.itemScopeEntries
+        val itemEntries = module.itemEntries
         val entries = listOf(
             itemEntries,
             // variants

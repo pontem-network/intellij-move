@@ -8,7 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.util.forEachLeafSpeck
-import org.move.lang.core.resolve2.itemScopeEntries
+import org.move.lang.core.resolve2.itemEntries
 import org.move.stdext.chain
 import org.move.utils.cache
 import org.move.utils.cacheManager
@@ -25,7 +25,7 @@ fun getEntriesInScope(
         }
         when (scope) {
             is MvModule -> {
-                addAll(scope.itemScopeEntries)
+                addAll(scope.itemEntries)
 
                 addAll(scope.enumVariants().mapNotNull { it.asEntry() })
                 addAll(scope.builtinFunctions().mapNotNull { it.asEntry() })
@@ -67,7 +67,6 @@ fun getEntriesInScope(
                 addAll(specInlineFuns.mapNotNull { it.asEntry() })
 
                 addAll(scope.schemaList.mapNotNull { it.asEntry() })
-                addAll(specFuns.mapNotNull { it.asEntry()?.copyWithNs(SCHEMAS) })
             }
 
             is MvCodeBlock -> {
@@ -212,7 +211,7 @@ private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
                     speckItemName,
                     element,
                     itemNs,
-                    adjustedItemScope = useSpeckItem.stmtUsageScope
+                    itemScope = useSpeckItem.stmtUsageScope
                 )
             )
 //            if (namespace in ns) {
