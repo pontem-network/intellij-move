@@ -369,12 +369,21 @@ module 0x1::m {
         }
     """)
 
-    fun `test resolve enum type`() = checkByCode("""
+    fun `test resolve enum as a qualifier of enum variant in type position`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
                //X
             fun main(one: S::One) {
                         //^
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum variant in type position`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+            fun main(one: S::One) {
+                            //^ unresolved
             }
         }        
     """)
@@ -392,15 +401,28 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve enum type from module with variant`() = checkByCode("""
+    fun `test cannot create enum variants in another module 1`() = checkByCode("""
         module 0x1::m { 
             enum S { One, Two }
-               //X
         }
         module 0x1::main {
             use 0x1::m;
-            fun main(one: m::S::One) {
-                           //^
+            fun main() {
+                let a = m::S::One;
+                         //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test cannot create enum variants in another module 2`() = checkByCode("""
+        module 0x1::m { 
+            enum S { One, Two }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                let a = m::S::One;
+                             //^ unresolved
             }
         }        
     """)
@@ -412,7 +434,7 @@ module 0x1::m {
         }
         module 0x1::main {
             use 0x1::S;
-            fun main(one: S::S::One) {
+            fun main(one: S::S) {
                            //^
             }
         }        
@@ -430,27 +452,40 @@ module 0x1::m {
         }        
     """)
 
-    fun `test resolve enum type from fully qualified with variant`() = checkByCode("""
+    fun `test enum expr cannot be used with import from another module`() = checkByCode("""
         module 0x1::m { 
             enum S { One, Two }
-               //X
         }
         module 0x1::main {
-            fun main(one: 0x1::m::S::One) {
-                                //^
+            use 0x1::m::S;
+            fun main() {
+                let a = S::One;
+                      //^ unresolved
             }
         }        
     """)
 
-    fun `test resolve enum type from item import`() = checkByCode("""
+    fun `test resolve enum with variant in type position from import`() = checkByCode("""
         module 0x1::m { 
             enum S { One, Two }
                //X
         }
         module 0x1::main {
             use 0x1::m::S;
-            fun main(one: S::One) {
-                        //^
+            fun main(a: S::One) {
+                      //^
+            }
+        }        
+    """)
+
+    fun `test cannot resolve enum variant in type position from import`() = checkByCode("""
+        module 0x1::m { 
+            enum S { One, Two }
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(a: S::One) {
+                          //^ unresolved
             }
         }        
     """)
@@ -460,31 +495,43 @@ module 0x1::m {
             enum S { One, Two }
                    //X
             fun main(one: S::One) {
-                            //^
+                let a = S::One;
+                          //^
             }
         }        
     """)
 
-    fun `test resolve enum variant from module`() = checkByCode("""
+    fun `test cannot resolve enum variant from different module`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
-                   //X
         }
         module 0x1::main {
             use 0x1::m;
-            fun main(one: m::S::One) {
-                               //^
+            fun main() {
+                let a = m::S::One;
+                             //^ unresolved
             }
         }        
     """)
 
-    fun `test resolve enum variant from module fully qualified`() = checkByCode("""
+    fun `test cannot create enum variant from other module fq`() = checkByCode("""
+        module 0x1::m {
+            enum S { One, Two }
+        }
+        module 0x1::main {
+            fun main() {
+                let s = 0x1::m::S::One;
+                                   //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant from module fully qualified same module`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
                    //X
-        }
-        module 0x1::main {
-            fun main(one: 0x1::m::S::One) {
+            fun main() {
+                let s = 0x1::m::S::One;
                                    //^
             }
         }        
@@ -880,12 +927,13 @@ module 0x1::m {
         }        
     """)
 
-    fun `test cannot resolve enum variant non tuple struct in call position`() = checkByCode("""
+    fun `test resolve enum variant in call position even it is not a tuple struct`() = checkByCode("""
         module 0x1::m {
             enum S { One(u8), Two }
+                             //X
             fun main() {
                 S::Two(1);
-                  //^ unresolved 
+                  //^
             }
         }        
     """)
@@ -898,6 +946,29 @@ module 0x1::m {
             fun main(s: S1) {
                 if (s is One) true;
                         //^
+            }
+        }        
+    """)
+
+    fun `test cannot use enum variant as type argument in is expr`() = checkByCode("""
+        module 0x1::m {
+            enum S1<T> { One, Two }
+            enum S2 { Inner }
+            fun main(s: S1) {
+                if (s is S1<S2::Inner>::One) true;
+                               //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve enum variant in is expr fq`() = checkByCode("""
+        module 0x1::m {
+            enum S1 { One, Two }
+                     //X  
+            enum S2 { One, Two }
+            fun main(s: S1) {
+                if (s is S1::One) true;
+                            //^
             }
         }        
     """)

@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.Visibility2
+import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 import org.move.stdext.chain
@@ -99,8 +99,8 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         }
 
         val allFunctions = module.allFunctions()
-        val friendFunctions = allFunctions.filter { it.visibility2 is Visibility2.Restricted.Friend }
-        val packageFunctions = allFunctions.filter { it.visibility2 is Visibility2.Restricted.Package }
+        val friendFunctions = allFunctions.filter { it.visibility is Visibility.Restricted.Friend }
+        val packageFunctions = allFunctions.filter { it.visibility is Visibility.Restricted.Package }
 
         if (friendFunctions.isNotEmpty() && packageFunctions.isNotEmpty()) {
             for (function in friendFunctions.chain(packageFunctions)) {

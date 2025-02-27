@@ -1,5 +1,6 @@
 package org.move.lang.core.completion
 
+import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -9,8 +10,12 @@ import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve2.ref.ResolutionContext
+import org.move.lang.core.psi.ext.MvMethodOrField
+import org.move.lang.core.psi.ext.ancestorOrSelf
+import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.types.infer.Substitution
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.lang.core.types.ty.Ty
 
 const val KEYWORD_PRIORITY = 80.0
@@ -52,6 +57,42 @@ data class MvCompletionContext(
     val resolutionCtx: ResolutionContext? = null,
     val structAsType: Boolean = false
 )
+
+data class Completions(
+    val ctx: MvCompletionContext,
+    val result: CompletionResultSet
+) {
+    fun addCompletionItem(completionItem: CompletionItem) {
+        result.addElement(completionItem)
+    }
+
+    fun addEntry(
+        entry: ScopeEntry,
+        applySubst: Substitution = emptySubstitution,
+    ) {
+        result.addElement(
+            createCompletionItem(
+                entry,
+                ctx,
+                subst = applySubst,
+                priority = entry.element.completionPriority
+            )
+        )
+    }
+
+    fun addEntries(entries: List<ScopeEntry>, applySubst: Substitution = emptySubstitution) {
+        val completionItems =
+            entries.map {
+                createCompletionItem(
+                    scopeEntry = it,
+                    completionContext = ctx,
+                    priority = it.element.completionPriority,
+                    subst = applySubst,
+                )
+            };
+        result.addAllElements(completionItems)
+    }
+}
 
 fun InsertionContext.addSuffix(suffix: String) {
     document.insertString(selectionEndOffset, suffix)

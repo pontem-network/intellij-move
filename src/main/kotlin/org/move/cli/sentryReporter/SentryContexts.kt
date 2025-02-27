@@ -35,7 +35,7 @@ data class MoveProjectContext(
             val moveTomt = MoveTomlContext(
                 name = moveProject.currentPackage.packageName,
                 dependencies_raw = rawDeps,
-                dependencies_parsed = moveProject.currentPackage.moveToml.deps.map { it.first },
+                dependencies_parsed = moveProject.currentPackage.moveToml.deps.map { it.dep },
             )
             val syntheticLibraries =
                 moveProject.project.syntheticLibraries

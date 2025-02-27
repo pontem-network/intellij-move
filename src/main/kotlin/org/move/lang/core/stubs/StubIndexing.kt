@@ -2,6 +2,7 @@ package org.move.lang.core.stubs
 
 import com.intellij.psi.stubs.IndexSink
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.index.*
 import org.move.lang.moveProject
 

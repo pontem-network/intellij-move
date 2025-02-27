@@ -54,11 +54,11 @@ class MvStructureViewTreeElement(val psi: NavigatablePsiElement): StructureViewT
                 is MvAddressDef -> psi.modules()
                 is MvModule -> {
                     listOf(
-                        psi.consts(),
+                        psi.constList,
                         psi.structs(),
                         psi.enumList,
                         psi.allFunctions(),
-                        psi.specFunctions(),
+                        psi.specFunctionList,
                     ).flatten()
                 }
                 is MvFieldsOwner -> psi.namedFields

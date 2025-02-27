@@ -5,10 +5,9 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve2.createFilter
-import org.move.lang.core.resolve2.namespace
-import org.move.lang.core.resolve2.visInfo
+import org.move.lang.core.resolve.asEntries
+import org.move.lang.core.resolve.isVisibleInContext
+import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.index.MvNamedElementIndex
 
 object ImportCandidateCollector {
@@ -20,22 +19,21 @@ object ImportCandidateCollector {
         val candidates = mutableListOf<ImportCandidate>()
         val elementsFromIndex = MvNamedElementIndex.getElementsByName(project, targetName, indexSearchScope)
 
-        for ((i, elementFromIndex) in elementsFromIndex.withIndex()) {
+        val importableEntries = elementsFromIndex.toList().asEntries().filterByNs(ns)
+        for ((i, scopeEntry) in importableEntries.withIndex()) {
             // check for cancellation sometimes
-            if (i % 100 == 0) ProgressManager.checkCanceled()
+            if (i % 50 == 0) ProgressManager.checkCanceled()
 
-            if (elementFromIndex !is MvQualNamedElement) continue
-            if (elementFromIndex.namespace !in ns) continue
+            val element = scopeEntry.element
+            if (element !is MvQualNamedElement) continue
 
-            val visFilter = elementFromIndex.visInfo().createFilter()
-            val visibilityStatus = visFilter.filter(path, ns)
-            if (visibilityStatus != Visible) continue
+            if (!isVisibleInContext(scopeEntry, path)) continue
 
             // double check in case of match
-            if (elementFromIndex.name == targetName) {
-                val itemQualName = elementFromIndex.qualName
+            if (scopeEntry.name == targetName) {
+                val itemQualName = element.qualName
                 if (itemQualName != null) {
-                    candidates.add(ImportCandidate(elementFromIndex, itemQualName))
+                    candidates.add(ImportCandidate(element, itemQualName))
                 }
             }
         }

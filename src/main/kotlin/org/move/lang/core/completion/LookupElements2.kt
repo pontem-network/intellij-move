@@ -10,23 +10,23 @@ import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyUnknown
 
-fun createLookupElement(
+fun createCompletionItem(
     scopeEntry: ScopeEntry,
     completionContext: MvCompletionContext,
     subst: Substitution = emptySubstitution,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext)
-): LookupElement {
+): CompletionItem {
     val element = scopeEntry.element
     val lookup = element
-        .getLookupElementBuilder2(completionContext, scopeEntry.name, subst)
+        .getLookupElementBuilder(completionContext, scopeEntry.name, subst)
         .withInsertHandler(insertHandler)
         .withPriority(priority)
     val props = getLookupElementProperties(element, subst, completionContext)
-    return lookup.toMvLookupElement(properties = props)
+    return lookup.toCompletionItem(properties = props)
 }
 
-fun MvNamedElement.getLookupElementBuilder2(
+fun MvNamedElement.getLookupElementBuilder(
     completionCtx: MvCompletionContext,
     scopeName: String,
     subst: Substitution = emptySubstitution,

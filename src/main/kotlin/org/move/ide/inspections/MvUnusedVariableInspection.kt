@@ -2,6 +2,8 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
@@ -33,9 +35,12 @@ class MvUnusedVariableInspection: MvLocalInspectionTool() {
                 val bindingName = binding.name
                 if (bindingName.startsWith("_")) return
 
-                val references = binding.searchReferences()
-                    // filter out `#[test(signer1, signer2)]` declarations
-                    .filter { it.element.parent !is MvAttrItem }
+                val searchHelper = PsiSearchHelper.getInstance(binding.project)
+                val usageScope = searchHelper.getCodeUsageScope(binding)
+                val references =
+                    ReferencesSearch.search(binding, usageScope)
+                        // filter out `#[test(signer1, signer2)]` declarations
+                        .filter { it.element.parent !is MvAttrItem }
                 if (references.none()) {
                     val fixes = when (binding.bindingTypeOwner) {
                         is MvFunctionParameter -> arrayOf(

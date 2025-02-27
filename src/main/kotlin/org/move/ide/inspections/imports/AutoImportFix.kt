@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.SearchScope
 import org.move.ide.inspections.DiagnosticFix
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector

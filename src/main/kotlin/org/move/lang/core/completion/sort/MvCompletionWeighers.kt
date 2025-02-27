@@ -8,7 +8,7 @@ package org.move.lang.core.completion.sort
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementWeigher
 import org.move.lang.core.completion.LookupElementProperties
-import org.move.lang.core.completion.MvLookupElement
+import org.move.lang.core.completion.CompletionItem
 
 /**
  * A list of weighers that sort completion variants in the Rust plugin.
@@ -111,7 +111,7 @@ private fun preferTrue(
     id: String
 ): MvCompletionWeigher = object : MvCompletionWeigher {
     override fun weigh(element: LookupElement): Boolean {
-        return if (element is MvLookupElement) !property(element.props) else true
+        return if (element is CompletionItem) !property(element.props) else true
     }
 
     override val id: String get() = id
@@ -176,7 +176,7 @@ private class RsCompletionWeigherAsLookupElementWeigher(
 ) : LookupElementWeigher(weigher.id, /* negated = */ false, /* dependsOnPrefix = */ false) {
 
     override fun weigh(element: LookupElement): Comparable<*> {
-        val mvLookupElement = element.`as`(MvLookupElement::class.java)
+        val mvLookupElement = element.`as`(CompletionItem::class.java)
         return weigher.weigh(mvLookupElement ?: element)
     }
 }

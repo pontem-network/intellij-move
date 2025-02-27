@@ -8,8 +8,8 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve2.PathKind.*
-import org.move.lang.core.resolve2.pathKind
+import org.move.lang.core.resolve.PathKind.*
+import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
@@ -37,7 +37,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                 is UnqualifiedPath -> tryMultiResolveOrRegisterError(path, holder)
                 is QualifiedPath -> {
                     when (pathKind) {
-                        is QualifiedPath.ModuleItem,
+                        is QualifiedPath.ModuleItemOrEnumVariant,
                         is QualifiedPath.FQModuleItem,
                         is QualifiedPath.UseGroupItem,
                         is QualifiedPath.ModuleOrItem -> {

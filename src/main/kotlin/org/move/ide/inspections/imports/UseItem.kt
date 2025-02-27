@@ -6,9 +6,9 @@ import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
-import org.move.lang.core.resolve2.PathKind
-import org.move.lang.core.resolve2.pathKind
-import org.move.lang.core.resolve2.util.forEachLeafSpeck
+import org.move.lang.core.resolve.PathKind
+import org.move.lang.core.resolve.pathKind
+import org.move.lang.core.resolve.util.forEachLeafSpeck
 
 enum class UseItemType {
     MODULE, SELF_MODULE, ITEM;
@@ -34,7 +34,7 @@ val MvUseStmt.useItems: List<UseItem>
             when (pathKind) {
                 is PathKind.QualifiedPath.Module ->
                     items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
-                is PathKind.QualifiedPath.ModuleItem -> {
+                is PathKind.QualifiedPath.ModuleItemOrEnumVariant -> {
                     debugError("not reachable, must be a bug")
                     return@forEachLeafSpeck false
                 }

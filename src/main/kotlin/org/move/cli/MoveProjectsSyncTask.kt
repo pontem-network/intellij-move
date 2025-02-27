@@ -187,7 +187,7 @@ class MoveProjectsSyncTask(
                 // Blocks till completed or cancelled by the toml / file change
                 runReadAction {
                     val rootPackage = moveProject.currentPackage
-                    val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
+                    val deps = mutableListOf<MovePackageWithAddrSubst>()
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     loadDependencies(
                         project,
@@ -358,7 +358,7 @@ class MoveProjectsSyncTask(
         private fun loadDependencies(
             project: Project,
             rootMoveToml: MoveToml,
-            deps: MutableList<Pair<MovePackage, RawAddressMap>>,
+            deps: MutableList<MovePackageWithAddrSubst>,
             visitedIds: MutableSet<DepId>,
             isRoot: Boolean,
             syncContext: SyncContext,
@@ -371,7 +371,7 @@ class MoveProjectsSyncTask(
             if (isRoot) {
                 parsedDeps = parsedDeps.withExtended(rootMoveToml.dev_deps)
             }
-            for ((dep, addressMap) in parsedDeps) {
+            for ((dep, addrSubst) in parsedDeps) {
                 val depRoot = dep.rootDirectory()
                     .unwrapOrElse {
                         syncContext.syncProgress.message(
@@ -397,7 +397,8 @@ class MoveProjectsSyncTask(
                 // parse all nested dependencies with their address maps
                 visitedIds.add(depId)
                 loadDependencies(project, depMoveToml, deps, visitedIds, false, syncContext, gitRev)
-                deps.add(Pair(depPackage, addressMap))
+                deps.add(MovePackageWithAddrSubst(depPackage, addrSubst))
+//                deps.add(depPackage to addrSubst)
 
                 syncContext.syncProgress.output(
                     "${dep.name} dependency loaded successfully, " +

@@ -3,10 +3,10 @@ package org.move.lang.completion.lookups
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.builtinFunctions
-import org.move.lang.core.resolve.SimpleScopeEntry
+import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
@@ -45,9 +45,9 @@ class BuiltInFunctionLookupTest: MvTestBase() {
         val moduleElement = myFixture.findElementInEditor<MvModule>()
         val lookup =
             moduleElement.builtinFunctions().single { it.name == name }.let {
-                val scopeEntry = SimpleScopeEntry(name, it, NAMES)
+                val scopeEntry = ScopeEntry(name, it, NAMES)
                 val completionCtx = MvCompletionContext(it, false)
-                createLookupElement(scopeEntry, completionCtx)
+                createCompletionItem(scopeEntry, completionCtx)
             }
         checkLookupPresentation(
             lookup,

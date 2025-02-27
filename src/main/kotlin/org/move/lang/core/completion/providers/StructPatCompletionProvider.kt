@@ -6,15 +6,16 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.Completions
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvLetStmt
+import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psiElement
-import org.move.lang.core.resolve.collectCompletionVariants
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve2.processItemDeclarations
+import org.move.lang.core.resolve.getImportableItemsAsEntries
+import org.move.lang.core.resolve.ref.TYPES
+import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.withParent
 
 object StructPatCompletionProvider: MvCompletionProvider() {
@@ -32,9 +33,9 @@ object StructPatCompletionProvider: MvCompletionProvider() {
         val bindingPat = parameters.position.parent as MvPatBinding
         val module = bindingPat.containingModule ?: return
         val completionCtx = MvCompletionContext(bindingPat, bindingPat.isMsl())
+        val completions = Completions(completionCtx, result)
 
-        collectCompletionVariants(result, completionCtx) {
-            processItemDeclarations(module, setOf(Namespace.TYPE), it)
-        }
+        val typeItems = getImportableItemsAsEntries(module).filterByNs(TYPES)
+        completions.addEntries(typeItems)
     }
 }

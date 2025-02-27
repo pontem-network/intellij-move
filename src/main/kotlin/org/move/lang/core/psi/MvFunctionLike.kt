@@ -29,24 +29,6 @@ val MvFunctionLike.parameters get() = this.functionParameterList?.functionParame
 
 val MvFunctionLike.parametersAsBindings: List<MvPatBinding> get() = this.parameters.map { it.patBinding }
 
-val MvFunctionLike.valueParamsAsBindings: List<MvPatBinding>
-    get() {
-        val msl = this.isMslOnlyItem
-        val parameters = this.parameters
-        return parameters
-            .filter { it.type?.loweredType(msl) !is TyLambda }
-            .map { it.patBinding }
-    }
-
-val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
-    get() {
-        val msl = this.isMslOnlyItem
-        val parameters = this.parameters
-        return parameters
-            .filter { it.type?.loweredType(msl) is TyLambda }
-            .map { it.patBinding }
-    }
-
 val MvFunctionLike.acquiresPathTypes: List<MvPathType>
     get() =
         when (this) {

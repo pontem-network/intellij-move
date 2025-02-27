@@ -4,7 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
-import org.move.lang.core.resolve2.ref.resolvePatBindingRaw
+import org.move.lang.core.resolve.ref.resolvePatBindingRaw
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 

@@ -48,10 +48,16 @@ val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.addres
 val MvModule.isSpecBuiltins: Boolean
     get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
 
+// this is extremely fast, no need to optimize anymore
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
-        val builtinModule = it.project.psiFactory.module(
-            """
+        createBuiltinFunctions(it.project)
+    }
+}
+
+private fun createBuiltinFunctions(project: Project): List<MvFunction> {
+    val builtinModule = project.psiFactory.module(
+        """
             module 0x0::builtins {
                 /// Removes `T` from address and returns it. 
                 /// Aborts if address does not hold a `T`.
@@ -71,19 +77,18 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
                 native fun freeze<S>(mut_ref: &mut S): &S;
             }            
         """.trimIndent()
-        )
-        val builtinFunctions = builtinModule.functionList
-        builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
-        builtinFunctions
-    }
+    )
+    val builtinFunctions = builtinModule.functionList
+    builtinFunctions.forEach { f -> (f as MvFunctionMixin).builtIn = true }
+    return builtinFunctions
 }
 
 fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { it.isEntry }
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
-fun MvModule.specInlineFunctions(): List<MvSpecInlineFunction> =
-    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+//fun MvModule.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
+//    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
 
 fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
@@ -135,8 +140,6 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = specFunctionList.orEmpty()
 
-fun MvModule.consts(): List<MvConst> = this.constList
-
 fun MvModule.enumVariants(): List<MvEnumVariant> = this.enumList.flatMap { it.variants }
 
 //fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
@@ -154,7 +157,7 @@ fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.or
 
 fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
 
-fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
+fun MvModuleSpec.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
     this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 private val MODULE_SPECS_KEY: Key<CachedValue<List<MvModuleSpec>>> =

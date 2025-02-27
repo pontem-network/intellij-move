@@ -1,4 +1,4 @@
-package org.move.lang.core.resolve2.ref
+package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
@@ -6,9 +6,8 @@ import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.collectResolveVariantsAsScopeEntries
-import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.processPatBindingResolveVariants
+import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.getPatBindingsResolveVariants
 import org.move.lang.core.types.infer.InferenceResult
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -50,14 +49,9 @@ class MvBindingPatReferenceImpl(
 }
 
 fun resolvePatBindingRaw(binding: MvPatBinding, expectedType: Ty? = null): List<ScopeEntry> {
-    val resolveVariants =
-        collectResolveVariantsAsScopeEntries(binding.referenceName) {
-            val filteringProcessor = filterEnumVariantsByExpectedType(expectedType, it)
-            processPatBindingResolveVariants(
-                binding,
-                false,
-                filteringProcessor
-            )
-        }
-    return resolveVariants
+    val entries = getPatBindingsResolveVariants(binding, false)
+        .filterEntriesByExpectedType(expectedType)
+
+    return entries
+        .filterByName(binding.referenceName)
 }

@@ -141,11 +141,6 @@ inline fun <reified T: PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
     return this.ancestors.filterIsInstance<T>()
 }
 
-inline fun <reified T: PsiElement> PsiElement.ancestorsOfTypeWithSelf(): Sequence<T> {
-    return (sequenceOf(this) + this.ancestors).filterIsInstance<T>()
-//    return this.ancestors.filterIsInstance<T>()
-}
-
 /**
  * Returns the element which should be used as the parent of this element in a tree up
  * walk during a resolve operation. For most elements, this returns {@code getParent()},
@@ -192,7 +187,6 @@ inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
 val PsiElement.elementType: IElementType
     // XXX: be careful not to switch to AST
     get() = if (this is MoveFile) MvFileStub.Type else PsiUtilCore.getElementType(this)
-//    get() = PsiUtilCore.getElementType(this)
 
 /**
  * Checks whether this node contains [descendant] one

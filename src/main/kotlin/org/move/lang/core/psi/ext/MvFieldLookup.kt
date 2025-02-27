@@ -8,7 +8,6 @@ import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.infer.inference
 import org.move.stdext.wrapWithList
 
-// todo: change into VisibilityFilter
 fun isFieldsAccessible(
     element: MvElement,
     item: MvStructOrEnumItemElement,
@@ -16,8 +15,8 @@ fun isFieldsAccessible(
 ): Boolean {
     if (!msl) {
         // cannot resolve field if not in the same module as struct definition
-        val dotExprModule = element.namespaceModule ?: return false
-        if (item.containingModule != dotExprModule) return false
+        val declModule = element.definitionModule ?: return false
+        if (item.containingModule != declModule) return false
     }
     return true
 }

@@ -1,12 +1,12 @@
-package org.move.lang.core.resolve2
+package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseGroup
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.IMPORTABLE_NS
 import org.move.lang.core.resolve.ref.MODULES
-import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
@@ -50,7 +50,7 @@ sealed class PathKind {
             QualifiedPath(path, qualifier, ns)
 
         // bar in foo::bar, where foo is not a named address
-        class ModuleItem(path: MvPath, qualifier: MvPath, ns: Set<Namespace>):
+        class ModuleItemOrEnumVariant(path: MvPath, qualifier: MvPath, ns: Set<Namespace>):
             QualifiedPath(path, qualifier, ns)
 
         // bar in `0x1::foo::bar` or `aptos_std::foo::bar` (where aptos_std is known named address)
@@ -75,7 +75,12 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         // use 0x1::m::{item}
         //                ^
         val useSpeckQualifier = (useGroup.parent as MvUseSpeck).path
-        return PathKind.QualifiedPath.UseGroupItem(this, useSpeckQualifier, ITEM_NAMESPACES)
+        return PathKind.QualifiedPath.UseGroupItem(
+            this,
+            useSpeckQualifier,
+            // MODULES for `Self`
+            IMPORTABLE_NS + MODULES
+        )
     }
 
     // one-element path
@@ -122,7 +127,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     // two-element paths
     if (qualifierOfQualifier == null) {
         val qualifierPathAddress = qualifier.pathAddress
-        val qualifierItemName = qualifier.referenceName
+        val qualifierReferenceName = qualifier.referenceName
         when {
             // 0x1::bar
             //       ^
@@ -132,11 +137,11 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             }
             // aptos_framework::bar
             //                  ^
-            moveProject != null && qualifierItemName != null -> {
-                val namedAddress = moveProject.getNamedAddressTestAware(qualifierItemName)
+            moveProject != null && qualifierReferenceName != null -> {
+                val namedAddress = moveProject.getNamedAddressTestAware(qualifierReferenceName)
                 if (this.isUseSpeck) {
                     val address =
-                        namedAddress ?: Address.Named(qualifierItemName, null)
+                        namedAddress ?: Address.Named(qualifierReferenceName, null)
                     return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
                 // `use std::main`
@@ -149,9 +154,15 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         }
         // module::name
         //         ^
-        return PathKind.QualifiedPath.ModuleItem(this, qualifier, ns)
+        return PathKind.QualifiedPath.ModuleItemOrEnumVariant(this, qualifier, ns)
     }
 
-    // three-element path
+    // three or four element path
+
+    if (this.isUseSpeck) {
+        // MODULES are for use 0x1::m::Self;
+        return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns + MODULES)
+    }
+
     return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns)
 }

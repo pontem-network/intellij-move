@@ -8,7 +8,6 @@ import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.ref.MvPath2ReferenceImpl
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
 tailrec fun <T: MvPath> T.basePath(): T {
@@ -67,77 +66,57 @@ val MvPath.maybeFieldsOwner get() = reference?.resolveFollowingAliases() as? MvF
 
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
-//fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
-////    val qualifierPath = this.path
-////    val parentElement = this.parent
-//
-////    val qualNamespaces = when {
-////        // m::S, S::One
-////        // ^     ^
-////        parentElement is MvPath && qualifierPath == null -> setOf(MODULE, TYPE)
-////        // m::S::One
-////        // ^
-////        parentElement is MvPath && parentElement.parent is MvPath -> setOf(MODULE)
-////        // m::S::One
-////        //    ^
-////        parentElement is MvPath/* && qualifierPath != null*/ -> setOf(TYPE)
-////        else -> NONE
-////    }
-////    // m::S, S::One
-////    // ^     ^
-////    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
-////
-////    // m::S::One
-////    // ^
-////    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
-////
-////    // m::S::One
-////    //    ^
-////    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
-//
-////    val rootPath = this.rootPath()
-////    return qualNamespaces + rootPathNamespaces(rootPath, isCompletion)
-//    return this.itemPathNamespaces(isCompletion)
-//}
-
 fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
     val qualifier = this.path
     val parent = this.parent
     return when {
         // mod::foo::bar
         //      ^
+        // note: it technically can be module with address, but for those cases this function is not called
         parent is MvPath && qualifier != null -> ENUMS
         // foo::bar
         //  ^
-        parent is MvPath -> ENUMS_N_MODULES
+        parent is MvPath -> {
+            ENUMS + MODULES
+//            // if we're inside PathType, then ENUM::ENUM_VARIANT cannot be used, so foo cannot be enum
+//            if (parent.parent is MvPathType) {
+//                MODULES
+//            } else {
+//                TYPES_N_MODULES
+//            }
+        }
         // use 0x1::foo::bar; | use 0x1::foo::{bar, baz}
         //               ^                     ^
-        parent is MvUseSpeck -> ITEM_NAMESPACES
+        parent is MvUseSpeck -> IMPORTABLE_NS
+
+        parent is MvPathType
+                && parent.parent is MvIsExpr -> TYPES_N_ENUMS_N_ENUM_VARIANTS
+
         // a: bar
         //     ^
-        parent is MvPathType && qualifier == null ->
-            if (isCompletion) TYPES_N_ENUMS_N_MODULES else TYPES_N_ENUMS
+        parent is MvPathType && qualifier == null -> if (isCompletion) TYPES_N_ENUMS + MODULES else TYPES_N_ENUMS
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
-        parent is MvCallExpr -> FUNCTIONS
+        parent is MvCallExpr -> NAMES_N_ENUM_VARIANTS
+        // all ns allowed in attributes
         parent is MvPathExpr
-                && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
+                && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NS
         // TYPES for resource indexing, NAMES for vector indexing
         parent is MvPathExpr
-                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
+                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS + NAMES
 
         // can be anything in completion
-        parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
+        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_ENUM_VARIANTS
 
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
                 || parent is MvPatStruct
                 || parent is MvPatConst
-                || parent is MvPatTupleStruct -> TYPES_N_ENUMS
-        parent is MvAccessSpecifier -> TYPES_N_ENUMS
-        parent is MvAddressSpecifierArg -> FUNCTIONS
+                || parent is MvPatTupleStruct -> TYPES_N_ENUMS_N_ENUM_VARIANTS
+        parent is MvAccessSpecifier -> TYPES
+        parent is MvAddressSpecifierArg -> NAMES
         parent is MvAddressSpecifierCallParam -> NAMES
         parent is MvFriendDecl -> MODULES
         parent is MvModuleSpec -> MODULES
@@ -165,7 +144,7 @@ val MvPath.qualifier: MvPath?
 
 abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
 
-    override fun getReference(): MvPath2Reference? {
+    override fun getReference(): MvPathReference? {
         if (referenceName == null) return null
         return when (val parent = parent) {
             is MvAttrItem -> {
@@ -175,7 +154,7 @@ abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
                 val ownerFunction = attr.attributeOwner as? MvFunction ?: return null
                 AttrItemReferenceImpl(this, ownerFunction)
             }
-            else -> MvPath2ReferenceImpl(this)
+            else -> MvPathReferenceImpl(this)
         }
     }
 }

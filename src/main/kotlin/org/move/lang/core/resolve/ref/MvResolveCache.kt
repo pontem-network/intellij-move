@@ -104,10 +104,6 @@ class MvResolveCache(project: Project) : Disposable {
         }
     }
 
-//    fun getCached(key: PsiElement, dep: ResolveCacheDependency): Any? {
-//        return getCacheFor(key, refineDependency(key, dep))[key]
-//    }
-
     private fun refineDependency(key: PsiElement, dep: ResolveCacheDependency): ResolveCacheDependency =
         when (key.containingFile?.virtualFile) {
             // If virtualFile is null then event system is not enabled for this PSI file (see
