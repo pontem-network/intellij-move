@@ -495,11 +495,12 @@ class TypeInferenceWalker(
     }
 
     fun inferMethodCallTy(receiverTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
-        val resolutionCtx = ResolutionContext(methodCall, isCompletion = false)
-        val resolvedMethods =
-            collectMethodOrPathResolveVariants(methodCall, resolutionCtx) {
-                processMethodResolveVariants(methodCall, receiverTy, msl, it)
-            }
+
+        val methodEntries = getMethodResolveVariants(methodCall, receiverTy, msl)
+            .filterByName(methodCall.referenceName)
+        val resolvedMethods = methodEntries
+            .toPathResolveResults(ResolutionContext(methodCall, isCompletion = false))
+
         val genericItem =
             resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.singleOrNull()
         ctx.resolvedMethodCalls[methodCall] = genericItem

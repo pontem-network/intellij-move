@@ -110,55 +110,49 @@ fun getPatBindingsResolveVariants(
 
 fun resolveBindingForFieldShorthand(element: MvMandatoryReferenceElement): List<ScopeEntry> {
     val ctx = ResolutionContext(element, isCompletion = false)
-    val entries = getEntriesFromWalkingScopes(element, ctx)
-        .filterByNs(NAMES)
+    val entries = getEntriesFromWalkingScopes(element, ctx).filterByNs(NAMES)
     return entries.filterByName(element.referenceName)
 }
 
 fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.fields.mapNotNull { it.asEntry() }
+    return fieldsOwner.fields.asEntries()
 }
 
 fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.namedFields.mapNotNull { it.asEntry() }
+    return fieldsOwner.namedFields.asEntries()
 }
 
 fun getEntriesFromWalkingScopes(
     scopeStart: MvElement,
     ctx: ResolutionContext,
 ): List<ScopeEntry> {
-    val collector = ScopeEntriesCollector()
+    return buildList {
+        val processedScopes = hashMapOf<String, Set<Namespace>>()
+        walkUpThroughScopes(scopeStart) { cameFrom, scope ->
+            val entries = getEntriesInScope(scope, cameFrom, ctx)
 
-    val processedScopes = hashMapOf<String, Set<Namespace>>()
-    walkUpThroughScopes(scopeStart) { cameFrom, scope ->
-        val entries = getEntriesInScope(scope, cameFrom, ctx)
+            // state between shadowing processors passed through prevScope
+            val currScope = mutableMapOf<String, Set<Namespace>>()
+            for (entry in entries) {
+                val processedNs = processedScopes[entry.name].orEmpty()
+                val entryNs = entry.namespaces
 
-        // state between shadowing processors passed through prevScope
-        val currScope = mutableMapOf<String, Set<Namespace>>()
-        for (entry in entries) {
-            val processedNs = processedScopes[entry.name].orEmpty()
-            val entryNs = entry.namespaces
-
-            // remove namespaces which are encountered before (shadowed by previous entries with this name)
-            val unprocessedNs = entryNs - processedNs
-            if (unprocessedNs.isEmpty()) {
-                // all ns for this entry were shadowed
-                continue
+                // remove namespaces which are encountered before (shadowed by previous entries with this name)
+                val unprocessedNs = entryNs - processedNs
+                if (unprocessedNs.isEmpty()) {
+                    // all ns for this entry were shadowed
+                    continue
+                }
+                add(entry.copyWithNs(namespaces = unprocessedNs))
+                // save encountered namespaces to the currScope
+                currScope[entry.name] = processedNs +  entryNs
             }
-            val entryWithReducedNs = entry.copyWithNs(namespaces = unprocessedNs)
-            collector.process(entryWithReducedNs)
+            // at the end put all entries from the current scope into the `visitedScopes`
+            processedScopes.putAll(currScope)
 
-            // save encountered namespaces to the currScope
-            currScope[entry.name] = processedNs +  entryNs
+            false
         }
-
-        // at the end put all entries from the current scope into the `visitedScopes`
-        processedScopes.putAll(currScope)
-
-        false
     }
-
-    return collector.result
 }
 
 fun ScopeEntry.matchesByAddress(moveProject: MoveProject, address: Address, isCompletion: Boolean): Boolean {

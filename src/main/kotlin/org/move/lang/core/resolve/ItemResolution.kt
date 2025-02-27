@@ -4,29 +4,33 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve2.itemEntries
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
+import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
 
-fun processMethodResolveVariants(
+fun getMethodResolveVariants(
     methodOrField: MvMethodOrField,
     receiverTy: Ty,
-    msl: Boolean,
-    processor: RsResolveProcessor
-): Boolean {
-    val moveProject = methodOrField.moveProject ?: return false
-    val itemModule = receiverTy.itemModule(moveProject) ?: return false
-    return processor
-        .wrapWithFilter { e ->
-            val function = e.element as? MvFunction ?: return@wrapWithFilter false
-            val selfTy = function.selfParamTy(msl) ?: return@wrapWithFilter false
+    msl: Boolean
+): List<ScopeEntry> {
+    return buildList {
+        val moveProject = methodOrField.moveProject ?: return@buildList
+        val itemModule = receiverTy.itemModule(moveProject) ?: return@buildList
+
+        val functionEntries = itemModule.allNonTestFunctions().asEntries()
+        for (functionEntry in functionEntries) {
+            val selfParameter = (functionEntry.element as MvFunction).selfParam ?: continue
+            val selfParameterTy = selfParameter.type?.loweredType(msl) ?: continue
             // need to use TyVar here, loweredType() erases them
             val selfTyWithTyVars =
-                selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
-            TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
+                selfParameterTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
+            if (TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)) {
+                add(functionEntry)
+            }
         }
-        .processAll(itemModule.allNonTestFunctions().mapNotNull { it.asEntry() })
+    }
 }
 
 fun getImportableItemsAsEntries(module: MvModule): List<ScopeEntry> {

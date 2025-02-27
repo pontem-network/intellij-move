@@ -6,6 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.Completions
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.MvSchemaLitField
@@ -13,7 +14,6 @@ import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.ext.getSchemaLitFieldResolveVariants
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.schemaLit
-import org.move.lang.core.resolve.toCompletionItems
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
@@ -35,10 +35,10 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
             .map { it.referenceName }
 
         val completionCtx = MvCompletionContext(literalField, literalField.isMsl())
+        val completions = Completions(completionCtx, result)
 
-        val completionItems = getSchemaLitFieldResolveVariants(literalField)
+        val schemaFieldEntries = getSchemaLitFieldResolveVariants(literalField)
             .filter { e -> e.name !in existingFieldNames }
-            .toCompletionItems(completionCtx)
-        result.addAllElements(completionItems)
+        completions.addEntries(schemaFieldEntries)
     }
 }

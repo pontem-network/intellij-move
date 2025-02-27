@@ -7,15 +7,14 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.Completions
 import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.ref.NONE
+import org.move.lang.core.resolve.getNamedFieldEntries
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider: MvCompletionProvider() {
@@ -40,49 +39,25 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         if (element is MvPatBinding) element = element.parent as MvElement
 
         val completionCtx = MvCompletionContext(element, element.isMsl())
+        val completions = Completions(completionCtx, result)
+
         when (element) {
             is MvPatField -> {
                 val patStruct = element.patStruct
-                // Path resolution is cached, but sometimes path changes so much that it can't be retrieved
-                // from cache anymore. In this case we need to get the old path.
-                // OLD: "safe" here means that if tree changes too much (=any of the ancestors of path are changed),
-                // then it's a no-op and we continue working with current path.
                 val struct = patStruct.path.maybeFieldsOwner ?: return
-                addFieldsToCompletion(
-                    struct,
-                    patStruct.fieldNames,
-                    result,
-                    completionCtx
-                )
+                val existingFields = patStruct.fieldNames.toSet()
+                val fieldEntries =
+                    getNamedFieldEntries(struct).filter { it.name !in existingFields }
+                completions.addEntries(fieldEntries)
             }
             is MvStructLitField -> {
                 val structLit = element.parentStructLitExpr
-                // see MvPatField's comment above
                 val struct = structLit.path.maybeFieldsOwner ?: return
-                addFieldsToCompletion(
-                    struct,
-                    structLit.providedFieldNames,
-                    result,
-                    completionCtx
-                )
+                val existingFields = structLit.providedFieldNames.toSet()
+                val fieldEntries =
+                    getNamedFieldEntries(struct).filter { it.name !in existingFields }
+                completions.addEntries(fieldEntries)
             }
-        }
-    }
-
-
-    private fun addFieldsToCompletion(
-        fieldsOwner: MvFieldsOwner,
-        providedFieldNames: Set<String>,
-        result: CompletionResultSet,
-        completionContext: MvCompletionContext,
-    ) {
-        for (field in fieldsOwner.namedFields.filter { it.name !in providedFieldNames }) {
-            result.addElement(
-                createCompletionItem(
-                    ScopeEntry(field.name, field, NONE),
-                    completionContext
-                )
-            )
         }
     }
 }

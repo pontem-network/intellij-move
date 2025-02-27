@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.ResolveResult
+import com.intellij.util.SmartList
 import org.move.cli.MoveProject
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
@@ -224,15 +225,13 @@ private fun resolvePath(
     ctx: ResolutionContext,
     path: MvPath,
 ): List<RsPathResolveResult<MvElement>> {
+    val referenceName = path.referenceName ?: return emptyList()
+
     val pathKind = path.pathKind()
-    val result =
-        // matches resolve variants against referenceName from path
-        collectMethodOrPathResolveVariants(path, ctx) {
-            // actually emits resolve variants
-            it.processAll(
-                getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
-            )
-        }
-    return result
+    val entries = getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
+
+    val resolveResults = entries
+        .filterByName(referenceName).toPathResolveResults(ctx)
+    return resolveResults
 }
 

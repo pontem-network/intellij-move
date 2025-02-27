@@ -9,19 +9,18 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
-import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createCompletionItem
-import org.move.lang.core.completion.getOriginalOrSelf
+import org.move.lang.core.completion.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.getPathResolveVariantsWithExpectedType
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.stdext.intersects
 
 object MvPathCompletionProvider2: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement> get() = path()
@@ -50,59 +49,59 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
             resolutionCtx = resolutionCtx,
             structAsType,
         )
+        val completions = Completions(completionContext, result)
 
-        addPathVariants(
-            pathElement, parameters, completionContext, ns, result,
-        )
+        addPathVariants(pathElement, parameters, ns, completions)
     }
 
     fun addPathVariants(
         pathElement: MvPath,
         parameters: CompletionParameters,
-        completionContext: MvCompletionContext,
         ns: Set<Namespace>,
-        result: CompletionResultSet,
+        completions: Completions,
     ) {
-        val resolutionCtx = completionContext.resolutionCtx ?: error("always non-null in path completion")
-        val processedNames = mutableSetOf<String>()
+        val resolutionCtx = completions.ctx.resolutionCtx ?: error("always non-null in path completion")
+        val pathKind = pathElement.pathKind(true)
 
-        collectCompletionVariants(result, completionContext) {
-            var processor = it
-            processor = filterPathVariantsByUseGroupContext(resolutionCtx, processor)
-            processor = processor.wrapWithFilter { e ->
-                // drop already visited items
-                if (processedNames.contains(e.name)) return@wrapWithFilter false
-                processedNames.add(e.name)
-            }
-            processor = filterCompletionVariantsByVisibility(pathElement, processor)
+        var entries = getPathResolveVariantsWithExpectedType(
+            resolutionCtx,
+            pathKind,
+            expectedType = completions.ctx.expectedTy
+        )
+        ProgressManager.checkCanceled()
 
-            val pathKind = pathElement.pathKind(true)
-            processor.processAll(
-                getPathResolveVariantsWithExpectedType(
-                    resolutionCtx,
-                    pathKind,
-                    expectedType = completionContext.expectedTy
-                )
-            )
+        val useGroup = resolutionCtx.useSpeck?.parent as? MvUseGroup
+        if (useGroup != null) {
+            val existingNames = useGroup.names.toSet()
+            entries = entries.filter { it.name !in existingNames }
+        }
+        if (useGroup == null) {
+            entries = entries.filter { it.name != "Self" }
         }
 
+        // todo: should it really be deduplicated?
+        val uniqueEntries = entries.deduplicate()
+
+        val visibleEntries = uniqueEntries
+            .dropInvisibleEntries(contextElement = pathElement)
+        val visitedNames = visibleEntries.map { it.name }
+
+        completions.addEntries(visibleEntries)
         ProgressManager.checkCanceled()
 
         addCompletionsForOutOfScopeItems(
             parameters,
             pathElement,
-            result,
-            completionContext,
+            completions,
             ns,
-            processedNames
+            visitedNames.toMutableSet()
         )
     }
 
     private fun addCompletionsForOutOfScopeItems(
         parameters: CompletionParameters,
         path: MvPath,
-        result: CompletionResultSet,
-        completionContext: MvCompletionContext,
+        completions: Completions,
         ns: Set<Namespace>,
         processedNames: MutableSet<String>,
     ) {
@@ -120,85 +119,34 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         val candidates =
             ImportCandidateCollector.getCompletionCandidates(
                 path.project,
-                result.prefixMatcher,
+                completions.result.prefixMatcher,
                 processedNames,
                 importContext,
             )
-
-        var candidatesCollector = createProcessor { e ->
-            e.entryKind as ScopeEntryKind.Candidate
-            val lookupElement = createCompletionItem(
-                e,
-                completionContext,
+        for (candidate in candidates) {
+            val scopeEntry = candidate.element.asEntry() ?: continue
+            val completionItem = createCompletionItem(
+                scopeEntry,
+                completions.ctx,
                 priority = UNIMPORTED_ITEM_PRIORITY,
-                insertHandler = ImportInsertHandler(parameters, e.entryKind.candidate)
+                insertHandler = ImportInsertHandler(parameters, candidate)
             )
-            result.addElement(lookupElement)
+            completions.addCompletionItem(completionItem)
         }
-        candidatesCollector =
-            filterPathVariantsByUseGroupContext(
-                completionContext.resolutionCtx!!,
-                candidatesCollector
-            )
-        candidatesCollector.processAll(
-            candidates.map {
-                ScopeEntry(
-                    it.qualName.itemName,
-                    it.element,
-                    ns,
-                    entryKind = ScopeEntryKind.Candidate(it)
-                )
-            }
-        )
     }
 }
 
-fun List<ScopeEntry>.filterEntriesByVisibilityInContext(contextElement: MvElement): List<ScopeEntry> {
+fun List<ScopeEntry>.dropInvisibleEntries(contextElement: MvElement): List<ScopeEntry> {
     return this.filter {
         isVisibleInContext(it, contextElement)
     }
 }
 
-fun filterCompletionVariantsByVisibility(
-    contextElement: MvElement,
-    processor: RsResolveProcessor
-): RsResolveProcessor {
-    return processor.wrapWithFilter { scopeEntry ->
-        // drop invisible items
-        isVisibleInContext(scopeEntry, contextElement)
-    }
-}
-
-fun filterPathVariantsByUseGroupContext(
-    resolutionCtx: ResolutionContext,
-    processor: RsResolveProcessor
-): RsResolveProcessor {
-    val useGroup = resolutionCtx.useSpeck?.parent as? MvUseGroup
-    val existingNames = useGroup?.names.orEmpty().toSet()
-    return processor.wrapWithFilter { e ->
-        // skip existing items, only non-empty for use groups
-        if (e.name in existingNames) return@wrapWithFilter false
-
-        // drop Self completion for non-UseGroup items
-        if (useGroup == null && e.name == "Self") return@wrapWithFilter false
-
-        true
-    }
-}
-
-fun removeCurrentModuleItem(
-    resolutionCtx: ResolutionContext,
-    processor: RsResolveProcessor
-): RsResolveProcessor {
-    return processor.wrapWithFilter { e ->
-        // filter out current module item, skips processing (return true)
-        val element = e.element.getOriginalOrSelf()
-        if (element is MvModule) {
-            val containingModule = resolutionCtx.containingModule?.getOriginalOrSelf()
-            if (containingModule != null) {
-                return@wrapWithFilter !containingModule.equalsTo(element)
-            }
-        }
+fun List<ScopeEntry>.deduplicate(): List<ScopeEntry> {
+    val visitedNames = mutableSetOf<String>()
+    return this.filter {
+        if (visitedNames.contains(it.name)) return@filter false
+        visitedNames.add(it.name)
         true
     }
 }

@@ -8,6 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
+import org.move.lang.core.completion.Completions
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.completion.providers.CommonCompletionProvider
@@ -238,7 +239,8 @@ class LookupElementTest: MvTestBase() {
 
         if (element is MvMethodOrField) {
             val ctx = MvCompletionContext(element, element.isMsl())
-            CommonCompletionProvider.addMethodOrFieldVariants(element, result, ctx)
+            val completions = Completions(ctx, result)
+            CommonCompletionProvider.addMethodOrFieldVariants(element, completions)
         }
 
         val lookup = lookups.single {

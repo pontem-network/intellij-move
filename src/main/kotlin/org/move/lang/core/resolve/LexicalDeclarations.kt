@@ -215,7 +215,7 @@ private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
                     speckItemName,
                     element,
                     itemNs,
-                    entryKind = ScopeEntryKind.CustomItemScope(useSpeckItem.stmtUsageScope)
+                    customItemScope = useSpeckItem.stmtUsageScope,
                 )
             )
         }

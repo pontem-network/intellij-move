@@ -45,12 +45,11 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     if (itemModule != null && itemModule.isBuiltins) return true
 
     val itemUsageScope =
-        if (scopeEntry.entryKind is ScopeEntryKind.CustomItemScope) {
-            item.usageScope.shrinkScope(scopeEntry.entryKind.itemScope)
+        if (scopeEntry.customItemScope != null) {
+            item.usageScope.shrinkScope(scopeEntry.customItemScope)
         } else {
             item.usageScope
         }
-//    val itemUsageScope = item.usageScope.shrinkScope(scopeEntry.itemScopeAdjustment)
 
     // #[test_only] items in non-test-only scope
     if (itemUsageScope != MAIN) {

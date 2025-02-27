@@ -1,8 +1,7 @@
 package org.move.lang.core.resolve
 
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.MvFieldDecl
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.resolve.ref.itemNs
 
 fun List<MvNamedElement>.asEntries(): List<ScopeEntry> {
     return this.mapNotNull { it.asEntry() }
