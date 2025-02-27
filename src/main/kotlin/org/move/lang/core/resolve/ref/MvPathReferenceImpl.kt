@@ -212,16 +212,12 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
 }
 
 fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
+    val referenceName = path.referenceName ?: return emptyList()
+
     val ctx = ResolutionContext(path, false)
     val kind = path.pathKind()
-    val resolveVariants =
-        collectResolveVariantsAsScopeEntries(path.referenceName) {
-            it.processAll(
-                getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
-            )
-//            processPathResolveVariantsWithExpectedType(ctx, kind, expectedType, it)
-        }
-    return resolveVariants
+    return getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
+        .filterByName(referenceName)
 }
 
 private fun resolvePath(

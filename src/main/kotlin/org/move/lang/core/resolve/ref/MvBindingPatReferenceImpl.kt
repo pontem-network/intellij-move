@@ -6,7 +6,6 @@ import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.collectResolveVariantsAsScopeEntries
 import org.move.lang.core.resolve.filterByName
 import org.move.lang.core.resolve.getPatBindingsResolveVariants
 import org.move.lang.core.types.infer.InferenceResult

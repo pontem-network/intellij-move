@@ -65,89 +65,8 @@ private class FilteringProcessor(
     override fun toString(): String = "FilteringProcessor($originalProcessor, filter = $filter)"
 }
 
-fun processWithShadowingAcrossScopes(
-    prevScope: MutableMap<String, Set<Namespace>>,
-    processor: RsResolveProcessor,
-    f: (RsResolveProcessor) -> Boolean
-): Boolean {
-    val currScope = mutableMapOf<String, Set<Namespace>>()
-    val shadowingProcessor = ShadowingProcessor(processor, prevScope, currScope)
-    val stop = f(shadowingProcessor)
-    prevScope.putAll(currScope)
-    return stop
-}
-
-private class ShadowingProcessor(
-    private val originalProcessor: RsResolveProcessor,
-    private val prevScope: Map<String, Set<Namespace>>,
-    private val currScope: MutableMap<String, Set<Namespace>>,
-): RsResolveProcessor {
-    override fun process(entry: ScopeEntry): Boolean {
-        val visitedNs = prevScope[entry.name]
-        val entryNs = entry.namespaces
-        // drop entries from namespaces that were encountered before
-        val entryWithRestNs =
-            if (visitedNs != null) {
-                val restNs = entryNs.minus(visitedNs)
-                if (restNs.isEmpty()) {
-                    return false
-                }
-                entry.copyWithNs(restNs)
-            } else {
-                entry
-            }
-        // save encountered namespaces to the currScope
-        currScope[entry.name] = visitedNs?.let { it + entryNs } ?: entryNs
-        return originalProcessor.process(entryWithRestNs)
-    }
-
-    override fun toString(): String = "ShadowingProcessor($originalProcessor)"
-}
-
-fun collectResolveVariants(referenceName: String?, f: (RsResolveProcessor) -> Unit): List<MvNamedElement> {
-    if (referenceName == null) return emptyList()
-    val processor = ResolveVariantsCollector(referenceName)
-    f(processor)
-    return processor.result
-}
-
-private class ResolveVariantsCollector(
-    private val referenceName: String,
-    val result: MutableList<MvNamedElement> = SmartList(),
-): RsResolveProcessor {
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-            val element = entry.element
-            result += element
-        }
-        return false
-    }
-}
-
 fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {
     return this.filter { it.name == name }
-}
-
-fun collectResolveVariantsAsScopeEntries(
-    referenceName: String?,
-    f: (RsResolveProcessor) -> Unit
-): List<ScopeEntry> {
-    if (referenceName == null) return emptyList()
-    val processor = ResolveVariantsAsScopeEntriesCollector(referenceName)
-    f(processor)
-    return processor.result
-}
-
-private class ResolveVariantsAsScopeEntriesCollector(
-    private val referenceName: String,
-    val result: MutableList<ScopeEntry> = mutableListOf(),
-): RsResolveProcessor {
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-            result += entry
-        }
-        return false
-    }
 }
 
 class ScopeEntriesCollector: RsResolveProcessor {
@@ -198,28 +117,6 @@ private fun collectMethodOrPathScopeEntry(
     }
 }
 
-fun resolveSingle(referenceName: String?, f: (RsResolveProcessor) -> Unit): MvNamedElement? =
-    resolveSingleEntry(referenceName, f)?.element
-
-fun resolveSingleEntry(referenceName: String?, f: (RsResolveProcessor) -> Unit): ScopeEntry? {
-    if (referenceName == null) return null
-    val processor = ResolveSingleScopeEntryCollector(referenceName)
-    f(processor)
-    return processor.result.singleOrNull()
-}
-
-private class ResolveSingleScopeEntryCollector(
-    private val referenceName: String,
-    val result: MutableList<ScopeEntry> = SmartList(),
-): RsResolveProcessor {
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-            result += entry
-        }
-        return result.isNotEmpty()
-    }
-}
-
 fun List<ScopeEntry>.toCompletionItems(
     ctx: MvCompletionContext,
     applySubst: Substitution = emptySubstitution
@@ -237,16 +134,14 @@ fun List<ScopeEntry>.toCompletionItems(
 fun collectCompletionVariants(
     result: CompletionResultSet,
     context: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
     f: (RsResolveProcessor) -> Unit
 ) {
-    val processor = CompletionVariantsCollector(result, subst, context)
+    val processor = CompletionVariantsCollector(result, context)
     f(processor)
 }
 
 private class CompletionVariantsCollector(
     private val result: CompletionResultSet,
-    private val subst: Substitution,
     private val context: MvCompletionContext,
 ): RsResolveProcessor {
     override fun process(entry: ScopeEntry): Boolean {
@@ -255,7 +150,6 @@ private class CompletionVariantsCollector(
                 scopeEntry = entry,
                 completionContext = context,
                 priority = entry.element.completionPriority,
-                subst = subst,
             )
         )
         return false

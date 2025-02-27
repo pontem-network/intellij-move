@@ -483,10 +483,11 @@ class TypeInferenceWalker(
         val tyAdt =
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
 
-        val field =
-            resolveSingle(fieldLookup.referenceName) {
-                processFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl, it)
-            } as? MvFieldDecl
+        val fieldEntry = getFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl)
+            .filterByName(fieldLookup.referenceName)
+            .singleOrNull()
+
+        val field = fieldEntry?.element as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 
         val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)
@@ -750,12 +751,10 @@ class TypeInferenceWalker(
         }
 
         litExpr.fields.forEach { field ->
-            // todo: can be cached, change field reference impl
-            val fieldName = field.referenceName
-            val namedField =
-                resolveSingle(fieldName) {
-                    it.processAll(item.namedFields.mapNotNull { it.asEntry() })
-                } as? MvNamedFieldDecl
+            val namedField = getNamedFieldEntries(item)
+                .filterByName(field.referenceName)
+                .singleOrNull()
+                ?.element as? MvNamedFieldDecl
             val rawFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr

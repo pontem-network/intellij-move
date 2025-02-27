@@ -9,54 +9,56 @@ import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleIndex
 
-fun processFieldLookupResolveVariants(
+fun getFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
     receiverItem: MvStructOrEnumItemElement,
-    msl: Boolean,
-    processor: RsResolveProcessor
-): Boolean {
-    if (!isFieldsAccessible(fieldLookup, receiverItem, msl)) return false
-    return when (receiverItem) {
-        is MvStruct -> processor.processAll(getFieldEntries(receiverItem))
-        is MvEnum -> {
-            val visitedFields = mutableSetOf<String>()
-            for (variant in receiverItem.variants) {
-                val visitedVariantFields = mutableSetOf<String>()
-                for (fieldEntry in getFieldEntries(variant)) {
-                    if (fieldEntry.name in visitedFields) continue
-
-                    if (processor.process(fieldEntry)) return true
-                    // collect all names for the variant
-                    visitedVariantFields.add(fieldEntry.name)
-                }
-                // add variant fields to the global fields list to skip them in the next variants
-                visitedFields.addAll(visitedVariantFields)
+    msl: Boolean
+): List<ScopeEntry> {
+    if (!msl) {
+        // cannot access field if not in the same module as `receiverItem` definition
+        val currentModule = fieldLookup.containingModule ?: return emptyList()
+        if (receiverItem.definitionModule != currentModule) return emptyList()
+    }
+    return buildList {
+        when (receiverItem) {
+            is MvStruct -> {
+                addAll(getFieldEntries(receiverItem))
             }
-            false
+            is MvEnum -> {
+                val visitedFields = mutableSetOf<String>()
+                for (variant in receiverItem.variants) {
+                    val visitedVariantFields = mutableSetOf<String>()
+                    for (fieldEntry in getFieldEntries(variant)) {
+                        if (fieldEntry.name in visitedFields) continue
+                        add(fieldEntry)
+                        visitedVariantFields.add(fieldEntry.name)
+                    }
+                    // add variant fields to the global fields list to skip them in the next variants
+                    visitedFields.addAll(visitedVariantFields)
+                }
+                false
+            }
         }
-        else -> error("unreachable")
     }
 }
 
-fun processStructLitFieldResolveVariants(
+fun getStructLitFieldResolveVariants(
     litField: MvStructLitField,
-    isCompletion: Boolean,
-    processor: RsResolveProcessor,
-): Boolean {
-    val fieldsOwner = litField.parentStructLitExpr.path.reference?.resolveFollowingAliases() as? MvFieldsOwner
-    if (fieldsOwner != null) {
-        if (processor.processAll(getNamedFieldEntries(fieldsOwner))) return true
+    isCompletion: Boolean
+): List<ScopeEntry> {
+    return buildList {
+        val fieldsOwner = litField.parentStructLitExpr.path.maybeFieldsOwner
+        if (fieldsOwner != null) {
+            addAll(getNamedFieldEntries(fieldsOwner))
+        }
+        // if it's a shorthand, also try to resolve to the underlying binding pat
+        if (!isCompletion && litField.expr == null) {
+            val ctx = ResolutionContext(litField, false)
+            // search through available NAME items
+            val availableBindings = getEntriesFromWalkingScopes(litField, ctx).filterByNs(NAMES)
+            addAll(availableBindings)
+        }
     }
-    // if it's a shorthand, try to resolve to the underlying binding pat
-    if (!isCompletion && litField.expr == null) {
-        val ctx = ResolutionContext(litField, false)
-        // search through available NAME items
-        val availableBindings = getEntriesFromWalkingScopes(litField, ctx)
-            .filterByNs(NAMES)
-        // todo: what if constant or functions hits here?
-        processor.processAll(availableBindings)
-    }
-    return false
 }
 
 fun getStructPatFieldResolveVariants(patFieldFull: MvPatFieldFull): List<ScopeEntry> {
@@ -113,11 +115,11 @@ fun resolveBindingForFieldShorthand(element: MvMandatoryReferenceElement): List<
     return entries.filterByName(element.referenceName)
 }
 
-private fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
     return fieldsOwner.fields.mapNotNull { it.asEntry() }
 }
 
-private fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
+fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
     return fieldsOwner.namedFields.mapNotNull { it.asEntry() }
 }
 
@@ -127,12 +129,33 @@ fun getEntriesFromWalkingScopes(
 ): List<ScopeEntry> {
     val collector = ScopeEntriesCollector()
 
-    val prevScope = hashMapOf<String, Set<Namespace>>()
+    val processedScopes = hashMapOf<String, Set<Namespace>>()
     walkUpThroughScopes(scopeStart) { cameFrom, scope ->
+        val entries = getEntriesInScope(scope, cameFrom, ctx)
+
         // state between shadowing processors passed through prevScope
-        processWithShadowingAcrossScopes(prevScope, collector) { shadowingProcessor ->
-            shadowingProcessor.processAll(getEntriesInScope(scope, cameFrom, ctx))
+        val currScope = mutableMapOf<String, Set<Namespace>>()
+        for (entry in entries) {
+            val processedNs = processedScopes[entry.name].orEmpty()
+            val entryNs = entry.namespaces
+
+            // remove namespaces which are encountered before (shadowed by previous entries with this name)
+            val unprocessedNs = entryNs - processedNs
+            if (unprocessedNs.isEmpty()) {
+                // all ns for this entry were shadowed
+                continue
+            }
+            val entryWithReducedNs = entry.copyWithNs(namespaces = unprocessedNs)
+            collector.process(entryWithReducedNs)
+
+            // save encountered namespaces to the currScope
+            currScope[entry.name] = processedNs +  entryNs
         }
+
+        // at the end put all entries from the current scope into the `visitedScopes`
+        processedScopes.putAll(currScope)
+
+        false
     }
 
     return collector.result

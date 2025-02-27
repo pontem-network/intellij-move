@@ -6,21 +6,18 @@ import org.move.lang.core.psi.ext.contexts
 import org.move.lang.core.psi.ext.label.MvLabeledExpression
 import org.move.lang.core.resolve.ref.Namespace
 
-fun resolveLabelReference(element: MvLabel): List<MvNamedElement> {
-    return collectResolveVariants(element.referenceName) {
-        processLabelResolveVariants(element, it)
-    }
-}
-
-fun processLabelResolveVariants(label: MvLabel, processor: RsResolveProcessor): Boolean {
-    for (scope in label.contexts) {
-        if (isLabelBarrier(scope)) return false
-        if (scope is MvLabeledExpression) {
-            val labelScopeEntry = scope.labelDecl?.asEntry() ?: continue
-            if (processor.process(labelScopeEntry)) return true
+fun getLabelResolveVariants(label: MvLabel): List<ScopeEntry> {
+    return buildList {
+        for (scope in label.contexts) {
+            if (isLabelBarrier(scope)) return@buildList
+            if (scope is MvLabeledExpression) {
+                val labelScopeEntry = scope.labelDecl?.asEntry()
+                if (labelScopeEntry != null) {
+                    add(labelScopeEntry)
+                }
+            }
         }
     }
-    return false
 }
 
 private fun isLabelBarrier(scope: PsiElement): Boolean {

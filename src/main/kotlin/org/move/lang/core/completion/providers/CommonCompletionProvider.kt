@@ -68,7 +68,8 @@ object CommonCompletionProvider: MvCompletionProvider() {
                     processor.processAll(getStructPatFieldResolveVariants(element))
                 }
                 // loop labels
-                is MvLabel -> processLabelResolveVariants(element, it)
+                is MvLabel -> it.processAll(getLabelResolveVariants(element))
+//                is MvLabel -> processLabelResolveVariants(element, it)
                 // `spec ITEM {}` module items, where ITEM is a reference to the function/struct/enum
                 is MvItemSpecRef -> {
                     val verifiableItems = getVerifiableItemEntries(element)
@@ -87,9 +88,12 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
         val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
         if (tyAdt != null) {
-            collectCompletionVariants(result, ctx, subst = tyAdt.substitution) {
-                processFieldLookupResolveVariants(element, tyAdt.item, ctx.msl, it)
-            }
+            val fieldEntries = getFieldLookupResolveVariants(element, tyAdt.item, ctx.msl)
+            val completionItems = fieldEntries.toCompletionItems(
+                ctx,
+                applySubst = tyAdt.substitution
+            )
+            result.addAllElements(completionItems)
         }
 
         processMethodResolveVariants(element, receiverTy, ctx.msl, createProcessor { e ->
