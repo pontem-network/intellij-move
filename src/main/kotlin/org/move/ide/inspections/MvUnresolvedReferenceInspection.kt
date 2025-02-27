@@ -37,7 +37,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
                 is UnqualifiedPath -> tryMultiResolveOrRegisterError(path, holder)
                 is QualifiedPath -> {
                     when (pathKind) {
-                        is QualifiedPath.ModuleItem,
+                        is QualifiedPath.ModuleItemOrEnumVariant,
                         is QualifiedPath.FQModuleItem,
                         is QualifiedPath.UseGroupItem,
                         is QualifiedPath.ModuleOrItem -> {

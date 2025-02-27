@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvUseGroup
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
+import org.move.lang.core.resolve.ref.IMPORTABLE_NS
 import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Namespace
@@ -50,7 +50,7 @@ sealed class PathKind {
             QualifiedPath(path, qualifier, ns)
 
         // bar in foo::bar, where foo is not a named address
-        class ModuleItem(path: MvPath, qualifier: MvPath, ns: Set<Namespace>):
+        class ModuleItemOrEnumVariant(path: MvPath, qualifier: MvPath, ns: Set<Namespace>):
             QualifiedPath(path, qualifier, ns)
 
         // bar in `0x1::foo::bar` or `aptos_std::foo::bar` (where aptos_std is known named address)
@@ -79,7 +79,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             this,
             useSpeckQualifier,
             // MODULES for `Self`
-            ITEM_NAMESPACES + MODULES
+            IMPORTABLE_NS + MODULES
         )
     }
 
@@ -154,7 +154,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         }
         // module::name
         //         ^
-        return PathKind.QualifiedPath.ModuleItem(this, qualifier, ns)
+        return PathKind.QualifiedPath.ModuleItemOrEnumVariant(this, qualifier, ns)
     }
 
     // three or four element path

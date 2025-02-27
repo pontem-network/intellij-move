@@ -15,7 +15,7 @@ import org.move.lang.core.psi.MvPatField
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.ref.ALL_NAMESPACES
+import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider: MvCompletionProvider() {
@@ -77,10 +77,11 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         completionContext: MvCompletionContext,
     ) {
         for (field in fieldsOwner.namedFields.filter { it.name !in providedFieldNames }) {
-            val scopeEntry = ScopeEntry(field.name, field, ALL_NAMESPACES)
-            createCompletionItem(scopeEntry, completionContext)
             result.addElement(
-                createCompletionItem(scopeEntry, completionContext)
+                createCompletionItem(
+                    ScopeEntry(field.name, field, NONE),
+                    completionContext
+                )
             )
         }
     }

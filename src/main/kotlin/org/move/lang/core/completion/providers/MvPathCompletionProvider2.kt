@@ -41,7 +41,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         val pathKind = pathElement.pathKind(true)
         val ns = pathKind.ns
-        val structAsType = TYPES_N_ENUMS.intersects(ns)
+        val structAsType = ns.contains(Namespace.TYPE);
 
         val completionContext = MvCompletionContext(
             pathElement,

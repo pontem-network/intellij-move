@@ -32,12 +32,13 @@ enum class Namespace {
     FUNCTION,
     TYPE,
     ENUM,
+    ENUM_VARIANT,
     SCHEMA,
     MODULE;
 
     companion object {
         fun all(): Set<Namespace> {
-            return EnumSet.of(NAME, TYPE, ENUM, SCHEMA, MODULE)
+            return EnumSet.of(NAME, TYPE, ENUM, SCHEMA, MODULE, ENUM_VARIANT)
         }
 
         fun none(): Set<Namespace> = setOf()
@@ -46,6 +47,7 @@ enum class Namespace {
 
 val NONE = Namespace.none()
 val NAMES = setOf(Namespace.NAME)
+val ENUM_VARIANTS = setOf(Namespace.ENUM_VARIANT)
 
 val MODULES = setOf(Namespace.MODULE)
 val SCHEMAS = setOf(Namespace.SCHEMA)
@@ -53,14 +55,13 @@ val TYPES = setOf(Namespace.TYPE)
 val ENUMS = setOf(Namespace.ENUM)
 
 val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
+val TYPES_N_ENUMS_N_ENUM_VARIANTS = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.ENUM_VARIANT)
+val NAMES_N_ENUM_VARIANTS = setOf(Namespace.NAME, Namespace.ENUM_VARIANT)
 val TYPES_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME)
 val TYPES_N_ENUMS_N_NAMES = setOf(Namespace.TYPE, Namespace.NAME, Namespace.ENUM)
-val ENUMS_N_MODULES = setOf(Namespace.ENUM, Namespace.MODULE)
-val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MODULE)
 
-val ALL_NAMESPACES = Namespace.all()
-val ITEM_NAMESPACES =
-    setOf(Namespace.NAME, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)
+val ALL_NS = Namespace.all()
+val IMPORTABLE_NS = setOf(Namespace.NAME, Namespace.TYPE, Namespace.SCHEMA, Namespace.ENUM)
 
 val MvNamedElement.itemNs
     get() = when (this) {
@@ -69,7 +70,7 @@ val MvNamedElement.itemNs
         is MvTypeParameter -> TYPES
         is MvStruct -> TYPES
         is MvEnum -> ENUMS
-        is MvEnumVariant -> TYPES_N_NAMES
+        is MvEnumVariant -> ENUM_VARIANTS
         is MvPatBinding -> NAMES
         is MvFieldDecl -> NAMES
         is MvConst -> NAMES

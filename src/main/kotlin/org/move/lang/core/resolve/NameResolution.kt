@@ -85,10 +85,10 @@ fun getPatBindingsResolveVariants(
         }
 
         val ctx = ResolutionContext(binding, isCompletion)
-        val ns = if (isCompletion) (TYPES_N_ENUMS_N_MODULES + NAMES) else NAMES
+        val ns = if (isCompletion) (TYPES_N_ENUMS_N_ENUM_VARIANTS + MODULES) else ENUM_VARIANTS
 
-        val bindingEntries = getEntriesFromWalkingScopes(binding, ctx)
-            .filterByNs(ns)
+        val allScopesEntries = getEntriesFromWalkingScopes(binding, ctx)
+        val bindingEntries = allScopesEntries.filterByNs(ns)
 
         for (bindingEntry in bindingEntries) {
             val element = bindingEntry.element
@@ -138,7 +138,7 @@ fun getEntriesFromWalkingScopes(
     return collector.result
 }
 
-fun <T: ScopeEntry> T.matchesByAddress(moveProject: MoveProject, address: Address, isCompletion: Boolean): Boolean {
+fun ScopeEntry.matchesByAddress(moveProject: MoveProject, address: Address, isCompletion: Boolean): Boolean {
     val module = this.element as? MvModule ?: return false
     val moduleAddress = module.address(moveProject)
     val sameValues = Address.equals(moduleAddress, address)

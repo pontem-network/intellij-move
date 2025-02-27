@@ -34,7 +34,7 @@ val MvUseStmt.useItems: List<UseItem>
             when (pathKind) {
                 is PathKind.QualifiedPath.Module ->
                     items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
-                is PathKind.QualifiedPath.ModuleItem -> {
+                is PathKind.QualifiedPath.ModuleItemOrEnumVariant -> {
                     debugError("not reachable, must be a bug")
                     return@forEachLeafSpeck false
                 }

@@ -7,20 +7,7 @@ import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes.COLON_COLON
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.ALL_NAMESPACES
-import org.move.lang.core.resolve.ref.ENUMS
-import org.move.lang.core.resolve.ref.ENUMS_N_MODULES
-import org.move.lang.core.resolve.ref.ITEM_NAMESPACES
-import org.move.lang.core.resolve.ref.MODULES
-import org.move.lang.core.resolve.ref.MvPathReference
-import org.move.lang.core.resolve.ref.MvPathReferenceImpl
-import org.move.lang.core.resolve.ref.NAMES
-import org.move.lang.core.resolve.ref.NONE
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.SCHEMAS
-import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
-import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_MODULES
-import org.move.lang.core.resolve.ref.TYPES_N_ENUMS_N_NAMES
+import org.move.lang.core.resolve.ref.*
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
 tailrec fun <T: MvPath> T.basePath(): T {
@@ -85,45 +72,50 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
     return when {
         // mod::foo::bar
         //      ^
-        parent is MvPath && qualifier != null -> TYPES_N_ENUMS
+        // note: it technically can be module with address, but for those cases this function is not called
+        parent is MvPath && qualifier != null -> ENUMS
         // foo::bar
         //  ^
         parent is MvPath -> {
-            // if we're inside PathType, then ENUM::ENUM_VARIANT cannot be used, so foo cannot be type / enum
-            ENUMS_N_MODULES
+            ENUMS + MODULES
+//            // if we're inside PathType, then ENUM::ENUM_VARIANT cannot be used, so foo cannot be enum
 //            if (parent.parent is MvPathType) {
 //                MODULES
 //            } else {
-//                TYPES_N_ENUMS_N_MODULES
+//                TYPES_N_MODULES
 //            }
         }
         // use 0x1::foo::bar; | use 0x1::foo::{bar, baz}
         //               ^                     ^
-        parent is MvUseSpeck -> ITEM_NAMESPACES
+        parent is MvUseSpeck -> IMPORTABLE_NS
+
+        parent is MvPathType
+                && parent.parent is MvIsExpr -> TYPES_N_ENUMS_N_ENUM_VARIANTS
+
         // a: bar
         //     ^
-        parent is MvPathType && qualifier == null ->
-            if (isCompletion) TYPES_N_ENUMS_N_MODULES else TYPES_N_ENUMS
+        parent is MvPathType && qualifier == null -> if (isCompletion) TYPES_N_ENUMS + MODULES else TYPES_N_ENUMS
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
-        parent is MvCallExpr -> NAMES
+        parent is MvCallExpr -> NAMES_N_ENUM_VARIANTS
+        // all ns allowed in attributes
         parent is MvPathExpr
-                && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NAMESPACES
+                && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NS
         // TYPES for resource indexing, NAMES for vector indexing
         parent is MvPathExpr
-                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
+                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS + NAMES
 
         // can be anything in completion
-        parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
+        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_ENUM_VARIANTS
 
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
                 || parent is MvPatStruct
                 || parent is MvPatConst
-                || parent is MvPatTupleStruct -> TYPES_N_ENUMS
-        parent is MvAccessSpecifier -> TYPES_N_ENUMS
+                || parent is MvPatTupleStruct -> TYPES_N_ENUMS_N_ENUM_VARIANTS
+        parent is MvAccessSpecifier -> TYPES
         parent is MvAddressSpecifierArg -> NAMES
         parent is MvAddressSpecifierCallParam -> NAMES
         parent is MvFriendDecl -> MODULES

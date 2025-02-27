@@ -7,7 +7,7 @@ import com.intellij.util.containers.addIfNotNull
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.ALL_NAMESPACES
+import org.move.lang.core.resolve.ref.ALL_NS
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.itemNs
 import org.move.lang.core.resolve.util.forEachLeafSpeck
@@ -195,11 +195,12 @@ private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
                 // aliased element cannot be resolved, but alias itself is valid, resolve to it
                 if (alias != null) {
                     val referenceName = useSpeckItem.aliasOrSpeckName ?: continue
+                    // any ns is possible here
                     add(
                         ScopeEntry(
                             referenceName,
                             alias,
-                            ALL_NAMESPACES
+                            ALL_NS
                         )
                     )
                 }

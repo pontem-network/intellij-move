@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.processItemSpecRefResolveVariants
+import org.move.lang.core.resolve.ref.getVerifiableItemEntries
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*
@@ -70,7 +70,11 @@ object CommonCompletionProvider: MvCompletionProvider() {
                 // loop labels
                 is MvLabel -> processLabelResolveVariants(element, it)
                 // `spec ITEM {}` module items, where ITEM is a reference to the function/struct/enum
-                is MvItemSpecRef -> processItemSpecRefResolveVariants(element, it)
+                is MvItemSpecRef -> {
+                    val verifiableItems = getVerifiableItemEntries(element)
+                    it.processAll(verifiableItems)
+//                    processItemSpecRefResolveVariants(element, it)
+                }
             }
         }
     }

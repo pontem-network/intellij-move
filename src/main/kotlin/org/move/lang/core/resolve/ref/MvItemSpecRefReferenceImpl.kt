@@ -8,14 +8,26 @@ import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.structs
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.collectResolveVariants
+import org.move.lang.core.resolve.asEntries
+import org.move.lang.core.resolve.filterByName
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 
-    override fun multiResolveInner(): List<MvNamedElement> =
-        collectResolveVariants(element.referenceName) {
-            processItemSpecRefResolveVariants(element, it)
-        }
+    override fun multiResolveInner(): List<MvNamedElement> {
+        val entries =
+            getVerifiableItemEntries(element).filterByName(element.referenceName)
+        return entries.map { it.element }
+    }
+}
+
+fun getVerifiableItemEntries(itemSpecRef: MvItemSpecRef): List<ScopeEntry> {
+    val module = itemSpecRef.itemSpec.module ?: return emptyList()
+    val verifiableItems = buildList {
+        addAll(module.allNonTestFunctions())
+        addAll(module.structs())
+        addAll(module.enumList)
+    }
+    return verifiableItems.asEntries()
 }
 
 fun processItemSpecRefResolveVariants(
@@ -31,7 +43,7 @@ fun processItemSpecRefResolveVariants(
         ).flatten()
     return processor.processAll(
         mslEnabledItems.mapNotNull {
-            it.name?.let { name -> ScopeEntry(name, it, ALL_NAMESPACES) }
+            it.name?.let { name -> ScopeEntry(name, it, ALL_NS) }
         }
     )
 }
