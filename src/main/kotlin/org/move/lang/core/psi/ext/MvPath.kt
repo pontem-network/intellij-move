@@ -115,9 +115,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
                 || parent is MvPatStruct
                 || parent is MvPatConst
                 || parent is MvPatTupleStruct -> TYPES_N_ENUMS_N_ENUM_VARIANTS
-        parent is MvAccessSpecifier -> TYPES
-        parent is MvAddressSpecifierArg -> NAMES
-        parent is MvAddressSpecifierCallParam -> NAMES
+
         parent is MvFriendDecl -> MODULES
         parent is MvModuleSpec -> MODULES
 
