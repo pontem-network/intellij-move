@@ -67,6 +67,8 @@
     <stubIndex implementation="org.move.lang.index.MvModuleIndex" />
     <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
+    <fileBasedIndex implementation="org.move.lang.index.MvModuleSpecFileIndex" />
+
     <platform.backend.documentation.psiTargetProvider
         implementation="org.move.ide.docs.MvPsiDocumentationTargetProvider" />
 

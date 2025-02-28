@@ -8,6 +8,7 @@ import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
+import org.move.lang.index.MvModuleSpecFileIndex
 import org.move.lang.moveProject
 
 fun getMethodResolveVariants(
@@ -34,16 +35,20 @@ fun getMethodResolveVariants(
 }
 
 fun getImportableItemsAsEntries(module: MvModule): List<ScopeEntry> {
-    return module.itemEntries + module.itemEntriesFromModuleSpecs + module.globalVariableEntries
+    return module.itemEntries + module.globalVariableEntries + module.itemEntriesFromModuleSpecs
 }
 
 val MvModule.itemEntriesFromModuleSpecs: List<ScopeEntry> get() {
     val module = this
     return buildList {
-        for (moduleSpec in module.allModuleSpecs()) {
-            addAll(moduleSpec.specFunctions().asEntries())
-            addAll(moduleSpec.specInlineFunctionsFromModuleItemSpecs().asEntries())
-            addAll(moduleSpec.schemas().asEntries())
+        val specs = module.getModuleSpecsFromIndex()
+        for (spec in specs) {
+            addAll(spec.schemas().asEntries())
+            addAll(spec.specFunctions().asEntries())
+            spec.moduleItemSpecs().forEach {
+                addAll(it.globalVariableEntries)
+                addAll(it.specInlineFunctions().asEntries())
+            }
         }
     }
 }

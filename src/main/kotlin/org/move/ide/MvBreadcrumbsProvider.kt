@@ -37,7 +37,7 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
     private object MvModuleHandler : MvElementHandler<MvModule> {
         override fun accepts(e: PsiElement): Boolean = e is MvModule
 
-        override fun elementInfo(e: MvModule): String = e.fqName()?.editorText() ?: "null"
+        override fun elementInfo(e: MvModule): String = e.fqName()?.declarationText() ?: "null"
     }
 
     private object MvModuleSpecHandler : MvElementHandler<MvModuleSpec> {

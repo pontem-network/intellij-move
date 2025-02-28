@@ -14,6 +14,7 @@ import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.index.MvModuleSpecFileIndex
 import javax.swing.Icon
 
 val MvFunction.isEntry: Boolean
@@ -77,7 +78,8 @@ fun MvFunction.innerItemSpecs(): List<MvItemSpec> {
 
 fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
     val functionName = this.name ?: return emptyList()
-    val moduleSpecs = this.module?.allModuleSpecs().orEmpty()
+    val module = this.module ?: return emptyList()
+    val moduleSpecs = module.getModuleSpecsFromIndex()
     return moduleSpecs
         .flatMap { it.moduleSpecBlock?.itemSpecList.orEmpty() }
         .filter { it.itemSpecRef?.referenceName == functionName }

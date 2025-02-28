@@ -66,7 +66,7 @@ fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
 
 val MvDocAndAttributeOwner.presentableQualifiedName: String?
     get() {
-        val fqName = (this as? MvNamedElement)?.fqName()?.editorText()
+        val fqName = (this as? MvNamedElement)?.fqName()?.declarationText()
         if (fqName != null) return fqName
         return name
     }

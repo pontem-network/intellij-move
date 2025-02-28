@@ -2,6 +2,7 @@ package org.move.ide.inspections.imports
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.util.containers.addIfNotNull
 import org.move.ide.inspections.imports.UseItemType.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -112,7 +113,14 @@ val MvItemsOwner.itemsOwnerWithSiblings: List<MvItemsOwner>
         return when (this) {
             is MvModule -> {
                 // add all module spec blocks
-                listOf(this).chain(this.allModuleSpecBlocks()).toList()
+                val module = this
+                buildList {
+                    add(module)
+                    val specs = module.getModuleSpecsFromIndex()
+                    for (spec in specs) {
+                        addIfNotNull(spec.moduleSpecBlock)
+                    }
+                }
             }
             is MvModuleSpecBlock -> {
                 // add module block

@@ -204,7 +204,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                fqName.editorText(),
+                                fqName.declarationText(),
                                 expectedCount,
                                 realCount
                             )
@@ -260,7 +260,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                fqName.editorText(),
+                                fqName.declarationText(),
                                 expectedCount,
                                 realCount
                             )
@@ -279,7 +279,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val qualName = (item as? MvNamedElement)?.fqName() ?: return
         val expectedCount = item.typeParameters.size
 
-        val itemLabel = qualName.editorText()
+        val itemLabel = qualName.declarationText()
         val realCount = typeArgumentList.typeArgumentList.size
         check(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
 

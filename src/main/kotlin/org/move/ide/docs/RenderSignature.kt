@@ -113,7 +113,7 @@ private fun StringBuilder.generateSpecInlineFunction(specInlineFn: MvSpecInlineF
 private fun StringBuilder.generateModule(mod: MvModule) {
     keyword("module")
     this += " "
-    this += mod.fqName()?.editorText() ?: "unknown"
+    this += mod.fqName()?.declarationText() ?: "unknown"
 }
 
 private fun StringBuilder.generateStructOrEnum(structOrEnum: MvStructOrEnumItemElement) {

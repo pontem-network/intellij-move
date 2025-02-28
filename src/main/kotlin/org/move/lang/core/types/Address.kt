@@ -8,13 +8,13 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.types.Address.Named
-import org.move.lang.core.types.AddressLit.Companion.normalizeValue
+import org.move.lang.core.types.AddressValue.Companion.normalizeValue
 
 const val MAX_LENGTH = 32
 
-class AddressLit(val original: String) {
-    fun canonical(): String = normalizeValue(original)
-    fun short(): String = shortenValue(original)
+class AddressValue(val value: String) {
+    fun canonical(): String = normalizeValue(value)
+    fun short(): String = shortenValue(value)
 
     companion object {
         fun normalizeValue(text: String): String {
@@ -44,38 +44,38 @@ sealed class Address {
     abstract fun text(): String
     abstract fun canonicalValue(): String?
 
-    val is0x0 get() = this is Value && this.addressLit().original == "0x0"
+    val is0x0 get() = this is Value && this.addressValue().value == "0x0"
     val is0x1 get() = canonicalValue() == "0x00000000000000000000000000000001"
 
     class Value(private val value: String): Address() {
-        fun addressLit(): AddressLit = AddressLit(value)
+        fun addressValue(): AddressValue = AddressValue(value)
 
-        override fun canonicalValue(): String = this.addressLit().canonical()
+        override fun canonicalValue(): String = this.addressValue().canonical()
 
-        override fun text(): String = this.addressLit().original
+        override fun text(): String = this.addressValue().value
 
         override fun toString(): String = "Address.Value($value)"
     }
 
     class Named(val name: String, val value: String?): Address() {
-        fun addressLit(): AddressLit? = this.value?.let { AddressLit(it) }
+        fun addressLit(): AddressValue? = this.value?.let { AddressValue(it) }
 
         override fun canonicalValue(): String? = this.addressLit()?.canonical()
 
         override fun text(): String = "$name = $value"
     }
 
-    fun editorText(): String {
+    fun declarationText(): String {
         return when (this) {
             is Named -> this.name
-            is Value -> this.addressLit().original
+            is Value -> this.addressValue().value
         }
     }
 
     fun shortenedValueText(): String? {
         return when (this) {
             is Named -> this.addressLit()?.short()
-            is Value -> this.addressLit().short()
+            is Value -> this.addressValue().short()
         }
     }
 
@@ -85,7 +85,7 @@ sealed class Address {
             if (left == null && right == null) return true
             return when {
                 left is Value && right is Value ->
-                    left.addressLit().canonical() == right.addressLit().canonical()
+                    left.addressValue().canonical() == right.addressValue().canonical()
                 left is Named && right is Named -> {
                     val leftValue = left.value?.let { normalizeValue(it) }
                     val rightValue = right.value?.let { normalizeValue(it) }
@@ -102,7 +102,7 @@ sealed class Address {
         }
 
         private fun checkValueNamedEquals(value: Value, named: Named): Boolean {
-            val normalizedValue = value.addressLit().canonical()
+            val normalizedValue = value.addressValue().canonical()
             val normalizedNamed = named.value?.let { normalizeValue(it) }
             return normalizedValue == normalizedNamed
         }

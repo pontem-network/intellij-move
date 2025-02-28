@@ -6,6 +6,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.util.indexing.FileBasedIndex
 import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
@@ -15,6 +16,9 @@ import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.address
+import org.move.lang.core.types.indexId
+import org.move.lang.core.types.indexIds
+import org.move.lang.index.MvModuleSpecFileIndex
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import org.move.utils.cache
@@ -155,20 +159,27 @@ fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.or
 
 fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
 
-fun MvModuleSpec.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
-    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+//fun MvModuleSpec.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
+//    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 private val MODULE_SPECS_KEY: Key<CachedValue<List<MvModuleSpec>>> =
     Key.create("ALL_MODULE_SPECS_KEY")
 
+fun MvModule.getModuleSpecsFromIndex(): List<MvModuleSpec> {
+    val moduleSpecs = allModuleSpecs()
+    return moduleSpecs
+}
+//fun MvModule.getModuleSpecsFromIndex(): List<MvModuleSpec> = MvModuleSpecFileIndex.getSpecsForModule(this)
+
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> = project.cacheManager.cache(this, MODULE_SPECS_KEY) {
+    val module = this
     val specs: List<MvModuleSpec> = run {
-        val moveProject = this.moveProject ?: return@run emptyList()
-        val moduleName = this.name ?: return@run emptyList()
+        val moveProject = module.moveProject ?: return@run emptyList()
+        val moduleName = module.name ?: return@run emptyList()
 
         val searchScope = moveProject.searchScope()
         // all `spec 0x1::m {}` for the current module
-        val allModuleSpecs = MvModuleSpecIndex.getElementsByModuleName(this.project, moduleName, searchScope)
+        val allModuleSpecs = MvModuleSpecIndex.getElementsByModuleName(module.project, moduleName, searchScope)
         if (allModuleSpecs.isEmpty()) return@run emptyList()
 
         allModuleSpecs
@@ -179,10 +190,6 @@ fun MvModule.allModuleSpecs(): List<MvModuleSpec> = project.cacheManager.cache(t
             .toList()
     }
     this.psiCacheResult(specs)
-}
-
-fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
-    return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
 }
 
 fun isModulesEqual(left: MvModule, right: MvModule): Boolean {

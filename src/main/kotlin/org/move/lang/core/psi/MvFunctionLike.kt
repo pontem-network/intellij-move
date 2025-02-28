@@ -55,6 +55,8 @@ val MvFunctionLike.module: MvModule?
                     this.parent as? MvModule
                 }
             }
+            is MvSpecFunction -> this.parentModule
+            is MvSpecInlineFunction -> this.parentModule
             // TODO:
             else -> null
         }

@@ -20,7 +20,7 @@ import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.Address
-import org.move.lang.core.types.AddressLit
+import org.move.lang.core.types.AddressValue
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
@@ -104,7 +104,7 @@ data class MoveProject(
     fun getValueOfDeclaredNamedAddress(name: String): String? = addressValues()[name]?.value
 
     fun getAddressNamesForValue(addressValue: String): List<String> {
-        val addressLit = AddressLit(addressValue)
+        val addressLit = AddressValue(addressValue)
         val names = mutableListOf<String>()
         for ((name, value) in addresses().values.entries) {
             val canonicalValue = value.literal.canonical()

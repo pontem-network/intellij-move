@@ -24,7 +24,7 @@ private fun MvItemsOwner.insertUseItem(usePath: ItemFQName, testOnly: Boolean) {
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
     val newUseStmt =
-        this.project.psiFactory.useStmt(usePath.editorText(), testOnly)
+        this.project.psiFactory.useStmt(usePath.declarationText(), testOnly)
     insertUseStmtAtTheCorrectLocation(this, newUseStmt)
 }
 
@@ -33,7 +33,7 @@ private fun tryInsertingIntoExistingUseStmt(
     itemQualName: ItemFQName,
     testOnly: Boolean
 ): Boolean {
-    if (itemQualName.moduleName == null) return false
+    if (itemQualName is ItemFQName.Module) return false
     val psiFactory = mod.project.psiFactory
     val useStmts = mod.useStmtList.filter { it.hasTestOnlyAttr == testOnly }
     return useStmts
@@ -50,7 +50,7 @@ private fun tryGroupWithItemSpeck(
     if (useGroup == null && rootUseSpeck.path.length < 3) return false
 
     // searching for the statement with the same module qualifier
-    val itemModulePath = itemQualName.editorModuleFqName() ?: error("moduleName cannot be zero")
+    val itemModulePath = itemQualName.moduleDeclarationText() ?: error("moduleName cannot be zero")
     if (useGroup == null) {
         val modulePath = rootUseSpeck.path.qualifier ?: return false
         if (!modulePath.textMatches(itemModulePath)) return false
@@ -59,7 +59,7 @@ private fun tryGroupWithItemSpeck(
         if (!modulePath.textMatches(itemModulePath)) return false
     }
 
-    val itemName = itemQualName.itemName
+    val itemName = itemQualName.name()
     val newUseSpeck = psiFactory.useSpeckForGroup(itemName)
 
     if (useGroup == null) {

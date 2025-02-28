@@ -220,7 +220,7 @@ module 0x1::Main {
     private fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings =
-            variants.map { (it.psiElement as? MvNamedElement)?.fqName()?.editorText() ?: it.lookupString }
+            variants.map { (it.psiElement as? MvNamedElement)?.fqName()?.declarationText() ?: it.lookupString }
         checkCompletionListStartsWith(listStart, lookupStrings)
     }
 

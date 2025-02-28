@@ -257,7 +257,7 @@ module 0x1::main {
         val candidates =
             ImportCandidateCollector
                 .getImportCandidates(importContext, targetName)
-                .map { it.qualName.editorText() }
+                .map { it.qualName.declarationText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }
             return

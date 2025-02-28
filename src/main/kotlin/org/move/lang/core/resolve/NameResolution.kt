@@ -226,7 +226,7 @@ fun walkUpThroughScopes(
             }
 
             // walk over all spec modules
-            for (moduleSpec in scope.allModuleSpecs()) {
+            for (moduleSpec in scope.getModuleSpecsFromIndex()) {
                 val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
 
                 if (handleScope(cameFrom, moduleSpecBlock)) return true
