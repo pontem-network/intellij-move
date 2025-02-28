@@ -15,26 +15,6 @@ fun IndexSink.indexModuleStub(stub: MvModuleStub) {
 
 fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
-    stub.unresolvedQualName?.let {
-        when {
-//            stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
-            stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
-            stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
-        }
-    }
-    val function = stub.psi as MvFunction
-    function.moveProject?.let { proj ->
-        stub.resolvedQualName(proj)
-            ?.let {
-                when {
-//                    stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
-                    stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
-                    stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
-                }
-            }
-    }
-//    if (!stub.isTest) {
-//    }
 }
 
 fun IndexSink.indexSpecFunctionStub(stub: MvSpecFunctionStub) {

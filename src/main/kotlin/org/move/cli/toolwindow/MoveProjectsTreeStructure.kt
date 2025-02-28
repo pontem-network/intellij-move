@@ -163,29 +163,5 @@ class MoveProjectsTreeStructure(
             override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
             override fun toTestString(): String = "View($name)"
         }
-
-//        class Tests(val testModules: List<MvModule>, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> {
-//                return testModules.map { TestModule(it, this) }.toTypedArray()
-//            }
-//
-//            override fun getName(): String = "Tests"
-//            override fun toTestString(): String = "Tests"
-//        }
-//
-//        class TestModule(val module: MvModule, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> {
-//                return module.testFunctions().map { TestFunction(it, this) }.toTypedArray()
-//            }
-//
-//            override fun getName(): String = module.name ?: ""
-//            override fun toTestString(): String = "TestModule"
-//        }
-//
-//        class TestFunction(val function: MvFunction, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> = emptyArray()
-//            override fun getName(): String = function.name ?: "<unknown>"
-//            override fun toTestString(): String = "TestFunction"
-//        }
     }
 }

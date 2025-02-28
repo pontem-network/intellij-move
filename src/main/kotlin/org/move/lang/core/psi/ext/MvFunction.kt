@@ -51,8 +51,6 @@ val MvFunctionLike.modifiers: List<String> get() {
     }
 }
 
-fun MvFunction.functionId(): String? = qualName?.cmdText()
-
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
 val MvFunction.hasTestAttr: Boolean

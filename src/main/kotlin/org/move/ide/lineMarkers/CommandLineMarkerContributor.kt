@@ -5,19 +5,16 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
 import org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer
-import org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer
-import org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.psi.ext.hasTestAttr
-import org.move.lang.core.psi.ext.isEntry
-import org.move.lang.core.psi.ext.isView
+import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.queryAttributes
 
-class CommandLineMarkerContributor : RunLineMarkerContributor() {
+class CommandLineMarkerContributor: RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         if (element.elementType != IDENTIFIER) return null
 
@@ -26,30 +23,12 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
 
         if (parent is MvFunction) {
             when {
-                parent.hasTestAttr -> {
+                parent.queryAttributes.isTest -> {
                     val config =
                         AptosTestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TEST_ITEM,
-                            contextActions(),
-                        ) { config.configurationName }
-                    }
-                }
-                parent.isEntry -> {
-                    val config = RunCommandConfigurationProducer().configFromLocation(parent)
-                    if (config != null) {
-                        return Info(
-                            MoveIcons.RUN_TRANSACTION_ITEM,
-                            contextActions(),
-                        ) { config.configurationName }
-                    }
-                }
-                parent.isView -> {
-                    val config = ViewCommandConfigurationProducer().configFromLocation(parent)
-                    if (config != null) {
-                        return Info(
-                            MoveIcons.VIEW_FUNCTION_ITEM,
                             contextActions(),
                         ) { config.configurationName }
                     }
@@ -72,6 +51,5 @@ class CommandLineMarkerContributor : RunLineMarkerContributor() {
 
 private fun contextActions(): Array<AnAction> {
     return ExecutorAction.getActions(0).toList()
-//        .filter { it.toString().startsWith("Run context configuration") }
         .toTypedArray()
 }

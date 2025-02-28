@@ -52,15 +52,9 @@
 
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
-    <configurationType
-        implementation="org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType" />
 
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
-    <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer" />
-    <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer" />
     <runLineMarkerContributor language="Move"
                               implementationClass="org.move.ide.lineMarkers.CommandLineMarkerContributor" />
 
@@ -70,9 +64,6 @@
     <stubElementTypeHolder class="org.move.lang.MvElementTypes" externalIdPrefix="move." />
 
     <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
-    <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
-    <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
-    <!--    <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />-->
     <stubIndex implementation="org.move.lang.index.MvModuleIndex" />
     <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
