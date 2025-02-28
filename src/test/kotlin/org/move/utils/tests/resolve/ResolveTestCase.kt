@@ -1,5 +1,6 @@
 package org.move.utils.tests.resolve
 
+import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import org.intellij.lang.annotations.Language
@@ -16,8 +17,6 @@ abstract class ResolveTestCase : MvTestBase() {
         @Language("Move") code: String,
     ) {
         InlineFile(code, "main.move")
-
-        CodeInsightTestFixtureImpl.ensureIndexesUpToDate(project)
 
         val (refElement, data, offset) =
             myFixture.findElementWithDataAndOffsetInEditor<MvReferenceElement>("^")

@@ -1,13 +1,10 @@
 package org.move.lang.core.resolve
 
-import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.types.Address
-import org.move.lang.core.types.Address.Named
-import org.move.lang.core.types.address
-import org.move.lang.index.MvModuleIndex
+import org.move.lang.index.MvModuleFileIndex
 
 fun getFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
@@ -145,7 +142,7 @@ fun getEntriesFromWalkingScopes(
                 }
                 add(entry.copyWithNs(namespaces = unprocessedNs))
                 // save encountered namespaces to the currScope
-                currScope[entry.name] = processedNs +  entryNs
+                currScope[entry.name] = processedNs + entryNs
             }
             // at the end put all entries from the current scope into the `visitedScopes`
             processedScopes.putAll(currScope)
@@ -155,58 +152,20 @@ fun getEntriesFromWalkingScopes(
     }
 }
 
-fun ScopeEntry.matchesByAddress(moveProject: MoveProject, address: Address, isCompletion: Boolean): Boolean {
-    val module = this.element as? MvModule ?: return false
-    val moduleAddress = module.address(moveProject)
-    val sameValues = Address.equals(moduleAddress, address)
-
-    if (sameValues && isCompletion) {
-        // compare named addresses by name in case of the same values for the completion
-        if (address is Named && moduleAddress is Named && address.name != moduleAddress.name)
-            return false
-    }
-
-    return sameValues
-}
-
-fun List<ScopeEntry>.filterByAddress(
-    moveProject: MoveProject,
-    address: Address,
-    isCompletion: Boolean
-): List<ScopeEntry> {
-    // if no Aptos project, then cannot match by address
-    return this.filter { it.matchesByAddress(moveProject, address, isCompletion) }
-}
-
 fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEntry> {
     // no Aptos project, cannot resolve modules
     val moveProject = ctx.moveProject ?: return emptyList()
-    return buildList {
-        val project = moveProject.project
-        val searchScope = moveProject.searchScope()
+    val searchScope = moveProject.searchScope()
 
-        if (ctx.isCompletion) {
-            // todo: somehow get all modules from the index (or pre-filter with address)?
-            val allModules = MvModuleIndex.getAllModuleNames(project).flatMap {
-                MvModuleIndex.getModulesByName(project, it, searchScope).mapNotNull { it.asEntry() }
-            }
-                .filterByAddress(moveProject, address, isCompletion = true)
-            addAll(allModules)
-            return@buildList
-        }
-
-        val targetModuleName = ctx.path?.referenceName ?: return@buildList
-
-        val moduleEntries = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
-            .map {
-                ScopeEntry(
-                    targetModuleName,
-                    it,
-                    MODULES,
-                )
-            }
-        addAll(moduleEntries.filterByAddress(moveProject, address, isCompletion = false))
+    if (ctx.isCompletion) {
+        val allModules = MvModuleFileIndex.getAllModulesForCompletion(moveProject, searchScope, address)
+        return allModules.asEntries()
     }
+
+    val targetModuleName = ctx.path?.referenceName ?: return emptyList()
+    val modules =
+        MvModuleFileIndex.getModulesForId(moveProject, address, targetModuleName).asEntries()
+    return modules
 }
 
 fun walkUpThroughScopes(

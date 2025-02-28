@@ -94,7 +94,7 @@ class MvDocumentationTarget(
                 val addressName = docElement.referenceName
                 val named = moveProject.getNamedAddressTestAware(addressName) ?: return null
                 val address =
-                    named.addressLit()?.value ?: "<unassigned>".escapeForHtml()
+                    named.addressValue()?.value ?: "<unassigned>".escapeForHtml()
                 definition(buffer) {
                     it += "$addressName = ${address.quote()}"
                 }

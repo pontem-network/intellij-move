@@ -7,9 +7,9 @@ import org.move.lang.index.*
 import org.move.lang.moveProject
 
 fun IndexSink.indexModuleStub(stub: MvModuleStub) {
-    stub.name?.let {
-        occurrence(MvModuleIndex.KEY, it)
-    }
+//    stub.name?.let {
+//        occurrence(MvModuleIndex.KEY, it)
+//    }
     indexNamedStub(stub)
 }
 
@@ -42,13 +42,13 @@ fun IndexSink.indexConstStub(stub: MvConstStub) {
 }
 
 fun IndexSink.indexModuleSpecStub(stub: MvModuleSpecStub) {
-    stub.moduleName?.let {
-        occurrence(MvModuleSpecIndex.KEY, it)
-    }
+//    stub.moduleName?.let {
+//        occurrence(MvModuleSpecIndex.KEY, it)
+//    }
 }
 
 private fun IndexSink.indexNamedStub(stub: MvNamedStub) {
-    stub.name?.let {
-        occurrence(MvNamedElementIndex.KEY, it)
-    }
+//    stub.name?.let {
+//        occurrence(MvNamedElementIndex.KEY, it)
+//    }
 }

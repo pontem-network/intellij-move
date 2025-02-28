@@ -8,7 +8,7 @@ import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvModuleSpec
 import org.move.lang.core.psi.ext.moduleItem
-import org.move.lang.core.types.indexId
+import org.move.lang.core.types.fqName
 import org.move.lang.moveProject
 import org.move.lang.toMoveFile
 
@@ -24,8 +24,8 @@ class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
             override fun map(inputData: FileContent): Map<String, Void?> {
                 val file = inputData.psiFile as MoveFile
                 // build a list of all modules for which there is module specs
-                val moduleIds = file.moduleSpecs().mapNotNull { it.moduleItem?.indexId() }
-                return moduleIds.associate { it to null }
+                val pathModuleIds = file.moduleSpecs().mapNotNull { it.path?.text }
+                return pathModuleIds.associate { it to null }
             }
         }
     }
@@ -39,19 +39,31 @@ class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
         fun getSpecsForModule(module: MvModule): List<MvModuleSpec> {
             val filesIndex = FileBasedIndex.getInstance()
             val project = module.project
+
+            val moduleFqName = module.fqName() ?: return emptyList()
+            // need to cover all possibilities, as index is a path text
+            val indexIds = hashSetOf(
+                moduleFqName.declarationText(),
+                moduleFqName.shortAddressValueText(),
+                moduleFqName.canonicalAddressValueText(),
+                moduleFqName.universalAddressText(),
+            )
             return buildList {
                 val searchScope = module.moveProject?.searchScope() ?: return@buildList
-                val indexId = module.indexId() ?: return@buildList
-
-                val vFiles = filesIndex.getContainingFiles(INDEX_ID, indexId, searchScope)
+                val vFiles =
+                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
+                        .distinct()
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
-                    // todo: should I check for validity here?
-                    addAll(file.moduleSpecs())
+                    for (moduleSpec in file.moduleSpecs()) {
+                        // hits name resolution here
+                        if (moduleSpec.moduleItem == module) {
+                            add(moduleSpec)
+                        }
+                    }
                 }
             }
-
-
         }
     }
 }
+

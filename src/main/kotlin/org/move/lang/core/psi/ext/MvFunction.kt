@@ -14,7 +14,6 @@ import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.index.MvModuleSpecFileIndex
 import javax.swing.Icon
 
 val MvFunction.isEntry: Boolean
@@ -33,21 +32,22 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
-val MvFunctionLike.modifiers: List<String> get() {
-    // todo: order of appearance
-    val item = this
-    return buildList {
-        if (item is MvFunction) {
-            val vis = item.visibilityModifier
-            if (vis != null) {
-                add(vis.stubVisKind.keyword)
+val MvFunctionLike.modifiers: List<String>
+    get() {
+        // todo: order of appearance
+        val item = this
+        return buildList {
+            if (item is MvFunction) {
+                val vis = item.visibilityModifier
+                if (vis != null) {
+                    add(vis.stubVisKind.keyword)
+                }
             }
+            if (item is MvFunction && item.isEntry) add("entry")
+            if (item.isNative) add("native")
+            if (item is MvFunction && item.isInline) add("inline")
         }
-        if (item is MvFunction && item.isEntry) add("entry")
-        if (item.isNative) add("native")
-        if (item is MvFunction && item.isInline) add("inline")
     }
-}
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
@@ -119,11 +119,11 @@ val MvFunction.specFunctionResultParameters: List<MvFunctionParameter>
         }
     }
 
-abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
-                                 MvFunction {
-    constructor(node: ASTNode) : super(node)
+abstract class MvFunctionMixin: MvStubbedNamedElementImpl<MvFunctionStub>,
+                                MvFunction {
+    constructor(node: ASTNode): super(node)
 
-    constructor(stub: MvFunctionStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+    constructor(stub: MvFunctionStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     var builtIn = false
 

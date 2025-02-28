@@ -41,7 +41,7 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
         val name = element.referenceName ?: return
         val importContext = ImportContext.from(element, false) ?: return
         val candidates =
-            ImportCandidateCollector.getImportCandidates(importContext, name)
+            ImportCandidateCollector.getImportCandidates(importContext, listOf(name))
         if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
@@ -90,7 +90,7 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
             val referenceName = path.referenceName ?: return null
             val importContext = ImportContext.from(path, false) ?: return null
             val candidates =
-                ImportCandidateCollector.getImportCandidates(importContext, referenceName)
+                ImportCandidateCollector.getImportCandidates(importContext, listOf(referenceName))
             return Context(candidates)
         }
     }

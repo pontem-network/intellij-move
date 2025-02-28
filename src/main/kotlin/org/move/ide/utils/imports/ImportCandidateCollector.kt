@@ -4,22 +4,19 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
-import org.move.lang.core.resolve.asEntries
 import org.move.lang.core.resolve.isVisibleInContext
-import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.types.fqName
-import org.move.lang.index.MvNamedElementIndex
+import org.move.lang.index.MvNamedItemFilesIndex
 
 object ImportCandidateCollector {
 
-    fun getImportCandidates(context: ImportContext, targetName: String): List<ImportCandidate> {
-        val (path, ns, indexSearchScope) = context
+    fun getImportCandidates(context: ImportContext, targetNames: List<String>): List<ImportCandidate> {
+        val (path, ns, searchScope) = context
         val project = path.project
 
         val candidates = mutableListOf<ImportCandidate>()
-        val elementsFromIndex = MvNamedElementIndex.getElementsByName(project, targetName, indexSearchScope)
-
-        val importableEntries = elementsFromIndex.toList().asEntries().filterByNs(ns)
+        val importableEntries =
+            MvNamedItemFilesIndex.getEntriesFor(project, searchScope, targetNames, ns)
         for ((i, scopeEntry) in importableEntries.withIndex()) {
             // check for cancellation sometimes
             if (i % 50 == 0) ProgressManager.checkCanceled()
@@ -27,7 +24,7 @@ object ImportCandidateCollector {
             if (!isVisibleInContext(scopeEntry, path)) continue
 
             // double check in case of match
-            if (scopeEntry.name == targetName) {
+            if (targetNames.any { it == scopeEntry.name }) {
                 val itemQualName = scopeEntry.element.fqName()
                 if (itemQualName != null) {
                     candidates.add(ImportCandidate(scopeEntry.element, itemQualName))
@@ -41,17 +38,13 @@ object ImportCandidateCollector {
     fun getCompletionCandidates(
         project: Project,
         prefixMatcher: PrefixMatcher,
-        processedPathNames: Set<String>,
+        processedNames: Set<String>,
         importContext: ImportContext,
     ): List<ImportCandidate> {
-        val keys = hashSetOf<String>().apply {
-            val names = MvNamedElementIndex.getAllKeys(project)
-            addAll(names)
-            removeAll(processedPathNames)
-        }
-        val matchingKeys = prefixMatcher.sortMatching(keys)
-        return matchingKeys.flatMap { targetName ->
-            getImportCandidates(importContext, targetName).distinctBy { it.element }
-        }
+        val namesFromIndex = MvNamedItemFilesIndex.getAllItemNames(project, importContext.ns)
+        val keys = namesFromIndex - processedNames
+        val matchingKeys = prefixMatcher.sortMatching(keys).toList()
+        return getImportCandidates(importContext, matchingKeys)
+            .distinctBy { it.element }
     }
 }

@@ -256,7 +256,7 @@ module 0x1::main {
         val importContext = ImportContext.from(path, true) ?: error("no import context")
         val candidates =
             ImportCandidateCollector
-                .getImportCandidates(importContext, targetName)
+                .getImportCandidates(importContext, listOf(targetName))
                 .map { it.qualName.declarationText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }

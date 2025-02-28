@@ -10,7 +10,6 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.getModuleSpecsFromIndex
 import org.move.lang.core.psi.ext.innerItemSpecs
 import org.move.lang.core.psi.ext.outerItemSpecs
-import org.move.lang.index.MvModuleSpecFileIndex
 import javax.swing.Icon
 
 class ItemSpecsLineMarkerProvider: RelatedItemLineMarkerProvider() {

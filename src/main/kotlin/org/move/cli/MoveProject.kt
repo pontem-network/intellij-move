@@ -19,9 +19,10 @@ import org.move.cli.manifest.MoveToml
 import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvModule
+import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.AddressValue
-import org.move.lang.index.MvNamedElementIndex
+import org.move.lang.index.MvNamedItemFilesIndex
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
@@ -131,16 +132,6 @@ data class MoveProject(
         }
         return searchScope
     }
-
-    fun getModulesFromIndex(name: String): Collection<MvModule> {
-        return MvNamedElementIndex
-            .getElementsByName(project, name, searchScope())
-            .filterIsInstance<MvModule>()
-    }
-
-    val aptosConfigYaml: AptosConfigYaml? get() = this.currentPackage.aptosConfigYaml
-
-    val profiles: Set<String> = this.aptosConfigYaml?.profiles.orEmpty()
 
     fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
         val folders = allAccessibleMoveFolders()

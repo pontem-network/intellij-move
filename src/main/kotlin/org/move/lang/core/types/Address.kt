@@ -58,9 +58,9 @@ sealed class Address {
     }
 
     class Named(val name: String, val value: String?): Address() {
-        fun addressLit(): AddressValue? = this.value?.let { AddressValue(it) }
+        fun addressValue(): AddressValue? = this.value?.let { AddressValue(it) }
 
-        override fun canonicalValue(): String? = this.addressLit()?.canonical()
+        override fun canonicalValue(): String? = this.addressValue()?.canonical()
 
         override fun text(): String = "$name = $value"
     }
@@ -72,10 +72,25 @@ sealed class Address {
         }
     }
 
+    fun universalText(): String {
+        // returns Address.Named for named address, and normalized Address.Value for value address
+        return when (this) {
+            is Named -> this.name
+            is Value -> this.addressValue().canonical()
+        }
+    }
+
     fun shortenedValueText(): String? {
         return when (this) {
-            is Named -> this.addressLit()?.short()
+            is Named -> this.addressValue()?.short()
             is Value -> this.addressValue().short()
+        }
+    }
+
+    fun canonicalValueText(): String? {
+        return when (this) {
+            is Named -> this.addressValue()?.canonical()
+            is Value -> this.addressValue().canonical()
         }
     }
 

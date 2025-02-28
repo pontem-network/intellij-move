@@ -5,10 +5,23 @@ import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.parentModule
 import org.move.lang.moveProject
 
-fun MvModule.indexIds(): Set<String> = setOfNotNull(this.indexId())
+fun moduleIndexId(address: Address, name: String): String {
+    return "${address.universalText()}::$name"
+}
 
-fun MvModule.indexId(): String? {
-    return this.fqName()?.declarationText()
+fun addressIndexIds(address: Address): List<String> {
+    return listOfNotNull(
+        address.universalText(), address.canonicalValueText()
+    )
+}
+
+fun moduleIndexIds(address: Address, name: String): HashSet<String> {
+    return addressIndexIds(address).map { "$it::$name" }.toHashSet()
+}
+
+fun MvModule.indexIds(): HashSet<String> {
+    val fqName = this.fqName() as? ItemFQName.Module ?: return hashSetOf()
+    return moduleIndexIds(fqName.address, fqName.name)
 }
 
 fun MvNamedElement.fqName(): ItemFQName? {
@@ -73,14 +86,40 @@ sealed class ItemFQName {
         }
     }
 
-    fun cmdText(): String {
+    fun universalAddressText(): String {
+        return when (this) {
+            is Module -> {
+                val addressText = this.address.universalText()
+                "$addressText::${this.name}"
+            }
+            is Item -> {
+                val moduleCmdText = this.moduleName.universalAddressText()
+                "$moduleCmdText::${this.name}"
+            }
+        }
+    }
+
+    fun canonicalAddressValueText(): String {
+        return when (this) {
+            is Module -> {
+                val addressText = this.address.canonicalValueText()
+                "$addressText::${this.name}"
+            }
+            is Item -> {
+                val moduleCmdText = this.moduleName.canonicalAddressValueText()
+                "$moduleCmdText::${this.name}"
+            }
+        }
+    }
+
+    fun shortAddressValueText(): String {
         return when (this) {
             is Module -> {
                 val addressText = this.address.shortenedValueText()
                 "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleCmdText = this.moduleName.cmdText()
+                val moduleCmdText = this.moduleName.shortAddressValueText()
                 "$moduleCmdText::${this.name}"
             }
         }
