@@ -16,6 +16,7 @@ import org.move.lang.core.psi.ext.entryFunctions
 import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.hasTestOnlyAttr
 import org.move.lang.core.psi.ext.viewFunctions
+import org.move.lang.core.types.fqName
 import org.move.stdext.iterateMoveFiles
 
 class MoveProjectsTreeStructure(
@@ -122,7 +123,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { module.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { module.fqName()?.editorText() ?: "null" }
             override fun toTestString(): String = "Module($name)"
         }
 
@@ -141,7 +142,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { function.fqName()?.editorText() ?: "null" }
             override fun toTestString(): String = "Entrypoint($name)"
         }
 
@@ -160,7 +161,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { function.fqName()?.editorText() ?: "null" }
             override fun toTestString(): String = "View($name)"
         }
     }

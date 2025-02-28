@@ -65,6 +65,20 @@ sealed class Address {
         override fun text(): String = "$name = $value"
     }
 
+    fun editorText(): String {
+        return when (this) {
+            is Named -> this.name
+            is Value -> this.addressLit().original
+        }
+    }
+
+    fun shortenedValueText(): String? {
+        return when (this) {
+            is Named -> this.addressLit()?.short()
+            is Value -> this.addressLit().short()
+        }
+    }
+
     companion object {
         fun equals(left: Address?, right: Address?): Boolean {
             if (left === right) return true

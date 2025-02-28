@@ -28,6 +28,7 @@ import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.enumItem
 import org.move.lang.core.psi.ext.fieldOwner
 import org.move.lang.core.psi.ext.modifiers
+import org.move.lang.core.types.fqName
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.joinToWithBuffer
 
@@ -112,7 +113,7 @@ private fun StringBuilder.generateSpecInlineFunction(specInlineFn: MvSpecInlineF
 private fun StringBuilder.generateModule(mod: MvModule) {
     keyword("module")
     this += " "
-    this += mod.qualName?.editorText() ?: "unknown"
+    this += mod.fqName()?.editorText() ?: "unknown"
 }
 
 private fun StringBuilder.generateStructOrEnum(structOrEnum: MvStructOrEnumItemElement) {

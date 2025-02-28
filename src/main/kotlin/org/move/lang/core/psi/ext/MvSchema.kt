@@ -6,7 +6,6 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
@@ -49,13 +48,6 @@ abstract class MvSchemaMixin: MvStubbedNamedElementImpl<MvSchemaStub>,
     constructor(stub: MvSchemaStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
-
-    override val qualName: ItemQualName?
-        get() {
-            val itemName = this.name ?: return null
-            val moduleFQName = this.parentModule?.qualName ?: return null
-            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
-        }
 
     override fun declaredType(msl: Boolean): Ty = MvPsiTypeImplUtil.declaredType(this)
 }

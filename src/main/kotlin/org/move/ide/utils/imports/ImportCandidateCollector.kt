@@ -4,10 +4,10 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
-import org.move.lang.core.psi.MvQualNamedElement
 import org.move.lang.core.resolve.asEntries
 import org.move.lang.core.resolve.isVisibleInContext
 import org.move.lang.core.resolve.ref.filterByNs
+import org.move.lang.core.types.fqName
 import org.move.lang.index.MvNamedElementIndex
 
 object ImportCandidateCollector {
@@ -24,16 +24,13 @@ object ImportCandidateCollector {
             // check for cancellation sometimes
             if (i % 50 == 0) ProgressManager.checkCanceled()
 
-            val element = scopeEntry.element
-            if (element !is MvQualNamedElement) continue
-
             if (!isVisibleInContext(scopeEntry, path)) continue
 
             // double check in case of match
             if (scopeEntry.name == targetName) {
-                val itemQualName = element.qualName
+                val itemQualName = scopeEntry.element.fqName()
                 if (itemQualName != null) {
-                    candidates.add(ImportCandidate(element, itemQualName))
+                    candidates.add(ImportCandidate(scopeEntry.element, itemQualName))
                 }
             }
         }

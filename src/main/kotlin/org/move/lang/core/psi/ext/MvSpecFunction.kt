@@ -13,7 +13,6 @@ import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.definitionModule
 import org.move.lang.core.stubs.MvSpecFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemQualName
 import javax.swing.Icon
 
 val MvSpecFunction.parentModule: MvModule? get() {
@@ -38,26 +37,11 @@ abstract class MvSpecFunctionMixin: MvStubbedNamedElementImpl<MvSpecFunctionStub
 
     constructor(stub: MvSpecFunctionStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
-    override val qualName: ItemQualName?
-        get() {
-            val itemName = this.name ?: return null
-            val moduleFQName = this.parentModule?.qualName ?: return null
-            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
-        }
-
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
 }
 
 abstract class MvSpecInlineFunctionMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
                                                          MvSpecInlineFunction {
-
-
-    override val qualName: ItemQualName?
-        get() {
-            val itemName = this.name ?: return null
-            val moduleFQName = this.parentModule?.qualName ?: return null
-            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
-        }
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
 }

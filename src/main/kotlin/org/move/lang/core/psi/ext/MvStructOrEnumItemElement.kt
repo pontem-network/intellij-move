@@ -5,8 +5,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.ty.*
 
-interface MvStructOrEnumItemElement: MvQualNamedElement,
-                                     MvItemElement,
+interface MvStructOrEnumItemElement: MvItemElement,
                                      MvTypeDeclarationElement,
                                      MvGenericDeclaration {
 

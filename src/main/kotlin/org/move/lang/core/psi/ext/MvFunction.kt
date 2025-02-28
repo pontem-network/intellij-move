@@ -1,18 +1,15 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
@@ -127,13 +124,6 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
     constructor(stub: MvFunctionStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
     var builtIn = false
-
-    override val qualName: ItemQualName?
-        get() {
-            val itemName = this.name ?: return null
-            val moduleFQName = this.module?.qualName ?: return null
-            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
-        }
 
     override val modificationTracker = MvModificationTracker(this)
 

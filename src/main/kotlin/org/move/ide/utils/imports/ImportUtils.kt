@@ -3,7 +3,7 @@ package org.move.ide.utils.imports
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.ItemFQName
 import org.move.openapiext.checkWriteAccessAllowed
 
 /**
@@ -19,27 +19,18 @@ fun ImportCandidate.import(context: MvElement) {
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
-private fun MvItemsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
+private fun MvItemsOwner.insertUseItem(usePath: ItemFQName, testOnly: Boolean) {
 
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
     val newUseStmt =
         this.project.psiFactory.useStmt(usePath.editorText(), testOnly)
     insertUseStmtAtTheCorrectLocation(this, newUseStmt)
-
-//    val anchor = childrenOfType<MvUseStmt>().lastElement
-//    if (anchor != null) {
-//        addAfter(newUseStmt, anchor)
-//    } else {
-//        val firstItem = this.items().first()
-//        addBefore(newUseStmt, firstItem)
-//        addBefore(psiFactory.createNewline(), firstItem)
-//    }
 }
 
 private fun tryInsertingIntoExistingUseStmt(
     mod: MvItemsOwner,
-    itemQualName: ItemQualName,
+    itemQualName: ItemFQName,
     testOnly: Boolean
 ): Boolean {
     if (itemQualName.moduleName == null) return false
@@ -50,7 +41,7 @@ private fun tryInsertingIntoExistingUseStmt(
 }
 
 private fun tryGroupWithItemSpeck(
-    psiFactory: MvPsiFactory, useStmt: MvUseStmt, itemQualName: ItemQualName
+    psiFactory: MvPsiFactory, useStmt: MvUseStmt, itemQualName: ItemFQName
 ): Boolean {
     val rootUseSpeck = useStmt.useSpeck ?: return false
 

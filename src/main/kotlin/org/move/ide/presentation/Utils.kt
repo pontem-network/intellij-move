@@ -5,18 +5,10 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvEnumVariant
-import org.move.lang.core.psi.MvFunctionLike
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvNamedFieldDecl
-import org.move.lang.core.psi.MvQualNamedElement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.enumItem
-import org.move.lang.core.psi.signatureText
 import org.move.lang.core.types.address
+import org.move.lang.core.types.fqName
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.rootPath
@@ -74,8 +66,8 @@ fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
 
 val MvDocAndAttributeOwner.presentableQualifiedName: String?
     get() {
-        val qName = (this as? MvQualNamedElement)?.qualName?.editorText()
-        if (qName != null) return qName
+        val fqName = (this as? MvNamedElement)?.fqName()?.editorText()
+        if (fqName != null) return fqName
         return name
     }
 

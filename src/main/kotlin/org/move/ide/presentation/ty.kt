@@ -9,6 +9,7 @@ import org.move.ide.docs.MvColorUtils.colored
 import org.move.ide.docs.escapeForHtml
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
+import org.move.lang.core.types.fqName
 import org.move.lang.core.types.ty.*
 import org.move.stdext.chainIf
 
@@ -145,7 +146,7 @@ private fun render(
         }
         is TyTypeParameter -> typeParam(ty)
         is TyAdt -> {
-            val itemName = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val itemName = if (fq) ty.item.fqName()?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(
@@ -170,7 +171,7 @@ private fun render(
             "$params -> $retType"
         }
         is TySchema -> {
-            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val name = if (fq) ty.item.fqName()?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) {
                     ""

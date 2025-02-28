@@ -14,8 +14,6 @@ import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.stubs.ext.childrenStubsOfType
-import org.move.lang.core.types.Address
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
@@ -199,14 +197,4 @@ abstract class MvModuleMixin: MvStubbedNamedElementImpl<MvModuleStub>,
     constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
-
-    override val qualName: ItemQualName?
-        get() {
-            // from stub
-            val moduleName = this.name ?: return null
-            val moveProject = this.moveProject
-            // from stub
-            val address = this.address(moveProject) ?: Address.Value("0x0")
-            return ItemQualName(this, address, null, moduleName)
-        }
 }
