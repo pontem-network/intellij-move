@@ -20,7 +20,6 @@ import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.layout.ValidationInfoBuilder
 import com.intellij.util.PsiErrorElementUtil
 import com.intellij.util.text.nullize
-import org.move.openapiext.project
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JLabel

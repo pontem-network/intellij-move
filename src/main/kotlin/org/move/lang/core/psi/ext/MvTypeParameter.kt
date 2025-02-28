@@ -7,7 +7,6 @@ import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyTypeParameter
 
 val MvTypeParameter.isPhantom get() = hasChild(MvElementTypes.PHANTOM)
 

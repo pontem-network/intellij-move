@@ -10,11 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.ide.MvHighlighter
 import org.move.lang.MoveLanguage
-import org.move.lang.core.psi.MvBlockFields
-import org.move.lang.core.psi.MvCodeBlock
-import org.move.lang.core.psi.MvEnumBody
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvType
+import org.move.lang.core.psi.*
 
 sealed class MvContextType(presentableName: String): TemplateContextType(presentableName) {
 

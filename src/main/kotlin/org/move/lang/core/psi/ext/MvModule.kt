@@ -2,18 +2,11 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvFunctionStub
-import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.stubs.MvStructStub
-import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.stubs.ext.childrenStubsOfType
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecFileIndex
 import javax.swing.Icon
@@ -30,13 +23,8 @@ val MvModule.friendModules: Sequence<MvModule>
             .mapNotNull { it.path.reference?.resolveFollowingAliases() as? MvModule }
     }
 
-fun MvModule.allFunctions(): List<MvFunction> {
-    val stub = greenStub
-    return stub?.childrenStubsOfType<MvFunctionStub>()?.map { it.psi } ?: functionList
-}
-
-fun MvModule.allNonTestFunctions(): List<MvFunction> = this.allFunctions().filter { f -> !f.hasTestAttr }
-fun MvModule.testFunctions(): List<MvFunction> = this.allFunctions().filter { f -> f.hasTestAttr }
+fun MvModule.allNonTestFunctions(): List<MvFunction> = this.functionList.filter { f -> !f.hasTestAttr }
+fun MvModule.testFunctions(): List<MvFunction> = this.functionList.filter { f -> f.hasTestAttr }
 
 val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
 val MvModule.isSpecBuiltins: Boolean
@@ -77,9 +65,9 @@ private fun createBuiltinFunctions(project: Project): List<MvFunction> {
     return builtinFunctions
 }
 
-fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { it.isEntry }
+fun MvModule.entryFunctions(): List<MvFunction> = this.functionList.filter { it.isEntry }
 
-fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
+fun MvModule.viewFunctions(): List<MvFunction> = this.functionList.filter { it.isView }
 
 //fun MvModule.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
 //    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
@@ -90,17 +78,7 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
 }
 
 fun MvModule.tupleStructs(): List<MvStruct> =
-    this.structs().filter { it.tupleFields != null }
-
-fun MvModule.structs(): List<MvStruct> {
-    return getProjectPsiDependentCache(this) {
-        val stub = it.greenStub
-        stub?.childrenStubsOfType<MvStructStub>()?.map { s -> s.psi } ?: it.structList
-    }
-}
-
-//private val BUILTIN_SPEC_FUNCTIONS_KEY =
-//    Key.create<CachedValue<List<MvSpecFunction>>>("org.move.BUILTIN_SPEC_FUNCTIONS_KEY")
+    this.structList.filter { it.tupleFields != null }
 
 fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
     return getProjectPsiDependentCache(this) {
@@ -157,12 +135,8 @@ fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
     return left.getOriginalOrSelf() == right.getOriginalOrSelf()
 }
 
-abstract class MvModuleMixin: MvStubbedNamedElementImpl<MvModuleStub>,
-                              MvModule {
-
-    constructor(node: ASTNode): super(node)
-
-    constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
+abstract class MvModuleMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
+                                             MvModule {
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 }

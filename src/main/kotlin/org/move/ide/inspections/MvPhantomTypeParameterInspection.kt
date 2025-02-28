@@ -4,7 +4,10 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.PhantomFix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.isPhantom
+import org.move.lang.core.psi.ext.moveReference
+import org.move.lang.core.psi.ext.typeArguments
 
 class MvPhantomTypeParameterInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {

@@ -6,7 +6,6 @@ import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
-import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.AddressValue.Companion.normalizeValue
 
@@ -179,11 +178,7 @@ fun StubInputStream.deserializeStubAddress(): StubAddress {
 }
 
 
-val MvModule.stubAddress: StubAddress
-    get() {
-        val stub = greenStub
-        return stub?.address ?: this.psiStubAddress()
-    }
+val MvModule.stubAddress: StubAddress get() = psiStubAddress()
 
 //fun MvModule.addressAsCanonicalValue(moveProject: MoveProject): String? =
 //    this.address(moveProject)?.canonicalValue(moveProject)

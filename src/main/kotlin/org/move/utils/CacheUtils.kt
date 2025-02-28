@@ -5,8 +5,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
-import com.intellij.psi.util.*
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 

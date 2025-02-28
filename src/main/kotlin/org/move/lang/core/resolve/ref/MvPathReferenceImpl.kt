@@ -1,7 +1,6 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.ResolveResult
-import com.intellij.util.SmartList
 import org.move.cli.MoveProject
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*

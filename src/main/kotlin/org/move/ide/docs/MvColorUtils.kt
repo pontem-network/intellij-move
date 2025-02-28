@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.editor.richcopy.HtmlSyntaxInfoUtil
-import io.ktor.util.escapeHTML
+import io.ktor.util.*
 import org.move.ide.colors.MvColor
 
 @Suppress("UnstableApiUsage")

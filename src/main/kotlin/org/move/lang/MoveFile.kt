@@ -9,8 +9,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.MvConstants
 import org.move.cli.MoveProject
+import org.move.cli.MvConstants
 import org.move.cli.moveProjectsService
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf

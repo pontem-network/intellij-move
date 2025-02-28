@@ -9,7 +9,6 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.util.containers.addAllIfNotNull
 import org.move.cli.settings.moveSettings
 import org.move.lang.MvElementTypes.FUNCTION_PARAMETER_LIST
-import org.move.lang.MvElementTypes.LABEL_DECL
 import org.move.lang.core.FUNCTION_MODIFIERS
 import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.MvPsiPattern.afterAnySibling
@@ -20,14 +19,12 @@ import org.move.lang.core.MvPsiPattern.identifierStatementBeginningPattern
 import org.move.lang.core.MvPsiPattern.itemSpecStmt
 import org.move.lang.core.MvPsiPattern.module
 import org.move.lang.core.MvPsiPattern.moduleSpecBlock
-import org.move.lang.core.MvPsiPattern.onStatementBeginning
 import org.move.lang.core.MvPsiPattern.script
 import org.move.lang.core.MvPsiPattern.toplevel
 import org.move.lang.core.MvPsiPattern.typeParameter
 import org.move.lang.core.TYPES
 import org.move.lang.core.completion.providers.FunctionModifierCompletionProvider
 import org.move.lang.core.completion.providers.KeywordCompletionProvider
-import org.move.lang.core.tokenSetOf
 
 class KeywordCompletionContributor: CompletionContributor() {
     init {

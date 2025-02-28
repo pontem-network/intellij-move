@@ -1,17 +1,11 @@
 package org.move.lang.core.resolve
 
-import org.move.lang.core.completion.CompletionItem
-import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
-import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
-import org.move.lang.core.types.infer.Substitution
-import org.move.lang.core.types.infer.emptySubstitution
 
 
 data class ScopeEntry(

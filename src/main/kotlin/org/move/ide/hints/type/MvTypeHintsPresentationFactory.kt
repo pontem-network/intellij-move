@@ -3,7 +3,10 @@ package org.move.ide.hints.type
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
 import org.move.ide.presentation.hintText
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyTuple
+import org.move.lang.core.types.ty.TyTypeParameter
 
 @Suppress("UnstableApiUsage")
 class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {

@@ -14,7 +14,10 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.allowedNamespaces
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.hasAncestor
+import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.moveProject
 import org.move.openapiext.runWriteCommandAction

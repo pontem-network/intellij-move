@@ -5,11 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import org.jetbrains.annotations.NonNls
-import org.move.lang.core.psi.MvBorrowExpr
-import org.move.lang.core.psi.MvDerefExpr
-import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.psi.MvParensExpr
-import org.move.lang.core.psi.MvVisitor
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.unwrap
 
 class MvNeedlessDerefRefInspection: MvLocalInspectionTool() {

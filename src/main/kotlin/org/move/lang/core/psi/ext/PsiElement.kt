@@ -11,15 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.prevLeaf
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.impl.MvFileStub
-import org.move.lang.core.types.address
-import org.move.lang.moveProject
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.document
-import org.move.openapiext.rootPath
-import java.nio.file.Path
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
@@ -184,9 +176,7 @@ inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
 /**
  * Extracts node's element type
  */
-val PsiElement.elementType: IElementType
-    // XXX: be careful not to switch to AST
-    get() = if (this is MoveFile) MvFileStub.Type else PsiUtilCore.getElementType(this)
+val PsiElement.elementType: IElementType get() = PsiUtilCore.getElementType(this)
 
 /**
  * Checks whether this node contains [descendant] one

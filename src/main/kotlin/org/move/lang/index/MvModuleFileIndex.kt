@@ -8,12 +8,8 @@ import org.move.cli.MoveProject
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.types.Address
+import org.move.lang.core.types.*
 import org.move.lang.core.types.Address.Named
-import org.move.lang.core.types.address
-import org.move.lang.core.types.addressIndexIds
-import org.move.lang.core.types.indexIds
-import org.move.lang.core.types.moduleIndexIds
 import org.move.lang.toMoveFile
 
 class MvModuleFileIndex: ScalarIndexExtension<String>() {

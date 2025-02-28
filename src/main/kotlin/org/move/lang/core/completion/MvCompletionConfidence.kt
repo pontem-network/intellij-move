@@ -6,11 +6,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.ThreeState
 import org.move.lang.MvElementTypes.IDENTIFIER
-import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvLetStmt
+import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
-import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.bindingOwner
+import org.move.lang.core.psi.ext.elementType
 
 class MvCompletionConfidence : CompletionConfidence() {
     override fun shouldSkipAutopopup(

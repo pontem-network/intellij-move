@@ -55,9 +55,9 @@ class MvStructureViewTreeElement(val psi: NavigatablePsiElement): StructureViewT
                 is MvModule -> {
                     listOf(
                         psi.constList,
-                        psi.structs(),
+                        psi.structList,
                         psi.enumList,
-                        psi.allFunctions(),
+                        psi.functionList,
                         psi.specFunctionList,
                     ).flatten()
                 }

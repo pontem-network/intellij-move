@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.psi.PsiElement
+import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
-import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.MvPatStruct
 
 

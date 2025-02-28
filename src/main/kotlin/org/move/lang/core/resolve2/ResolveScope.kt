@@ -16,7 +16,7 @@ val MvModule.itemEntries: List<ScopeEntry>
             // types
             this.enumList.asEntries(),
             this.schemaList.asEntries(),
-            this.structs().asEntries(),
+            this.structList.asEntries(),
 
             // callables
             this.allNonTestFunctions().asEntries(),

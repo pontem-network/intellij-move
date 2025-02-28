@@ -3,7 +3,8 @@ package org.move.ide.navigation.goto
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveVisitor
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.modules
+import org.move.lang.core.psi.ext.namedFields
 
 abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
 
@@ -15,9 +16,9 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
 
     override fun visitModule(o: MvModule) {
         processNamedElement(o)
-        o.allFunctions().forEach { it.accept(this) }
+        o.functionList.forEach { it.accept(this) }
         o.specFunctionList.forEach { it.accept(this) }
-        o.structs().forEach { it.accept(this) }
+        o.structList.forEach { it.accept(this) }
         o.constList.forEach { it.accept(this) }
     }
 

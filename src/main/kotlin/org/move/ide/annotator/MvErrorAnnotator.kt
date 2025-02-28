@@ -12,11 +12,11 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.address
+import org.move.lang.core.types.fqName
 import org.move.lang.core.types.fullname
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.fqName
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyTypeParameter
@@ -421,7 +421,7 @@ private fun checkFunctionDuplicates(
 ) {
     val fnName = fn.name ?: return
     val functions =
-        fn.module?.allFunctions() ?: fn.script?.functionList ?: emptyList()
+        fn.module?.functionList ?: fn.script?.functionList ?: emptyList()
     val duplicateFunctions = getDuplicates(functions.asSequence())
 
     if (fnName !in duplicateFunctions.map { it.name }) {
@@ -438,7 +438,7 @@ private fun checkStructDuplicates(
     struct: MvStruct,
 ) {
     val structName = struct.name ?: return
-    val duplicateSignatures = getDuplicates(struct.module.structs().asSequence())
+    val duplicateSignatures = getDuplicates(struct.module.structList.asSequence())
     if (structName !in duplicateSignatures.map { it.name }) {
         return
     }

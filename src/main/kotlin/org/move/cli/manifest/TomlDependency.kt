@@ -2,7 +2,6 @@ package org.move.cli.manifest
 
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findDirectory
 import com.intellij.util.SystemProperties
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.move.stdext.RsResult

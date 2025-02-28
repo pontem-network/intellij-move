@@ -6,7 +6,6 @@ import com.intellij.util.containers.addIfNotNull
 import org.move.ide.inspections.imports.UseItemType.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.stdext.chain
 
 class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
 

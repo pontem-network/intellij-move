@@ -1,8 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
-import com.intellij.navigation.ItemPresentation
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvBlockFields
 import org.move.lang.core.psi.MvNamedFieldDecl

@@ -1,14 +1,15 @@
 package org.move.lang.core.resolve
 
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.selfParam
 import org.move.lang.core.resolve2.itemEntries
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
-import org.move.lang.index.MvModuleSpecFileIndex
 import org.move.lang.moveProject
 
 fun getMethodResolveVariants(

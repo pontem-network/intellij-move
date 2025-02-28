@@ -5,7 +5,6 @@ import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import org.apache.commons.lang3.RandomStringUtils
 import org.move.lang.MoveFile
 import org.move.lang.toMoveFile
 import java.nio.file.Files

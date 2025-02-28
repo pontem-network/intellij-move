@@ -1,9 +1,10 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.StubBasedPsiElement
-import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.psi.MvAbilitiesList
+import org.move.lang.core.psi.MvAbility
+import org.move.lang.core.psi.MvGenericDeclaration
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.types.ty.Ability
 
 interface MvStructOrEnumItemElement: MvItemElement,
                                      MvTypeDeclarationElement,
@@ -28,13 +29,4 @@ val MvStructOrEnumItemElement.hasStore: Boolean get() = Ability.STORE in abiliti
 val MvStructOrEnumItemElement.hasCopy: Boolean get() = Ability.COPY in abilities
 val MvStructOrEnumItemElement.hasDrop: Boolean get() = Ability.DROP in abilities
 
-val MvStructOrEnumItemElement.module: MvModule
-    get() {
-        if (this is StubBasedPsiElement<*>) {
-            val moduleStub = greenStub?.parentStub as? MvModuleStub
-            if (moduleStub != null) {
-                return moduleStub.psi
-            }
-        }
-        return this.parent as MvModule
-    }
+val MvStructOrEnumItemElement.module: MvModule get() = this.parent as MvModule

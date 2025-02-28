@@ -1,11 +1,6 @@
 package org.move.lang.core.types
 
-import org.move.lang.core.psi.MvEnum
-import org.move.lang.core.psi.MvSchema
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvTypeParameter
-import org.move.lang.core.psi.tyTypeParams
-import org.move.lang.core.psi.typeParamsToTypeParamsSubst
+import org.move.lang.core.psi.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TySchema

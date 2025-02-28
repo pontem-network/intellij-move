@@ -6,8 +6,12 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValueProvider.Result
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.NamedItemScope.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.NamedItemScope.MAIN
+import org.move.lang.core.psi.NamedItemScope.VERIFY
+import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
+import org.move.lang.core.psi.ext.ancestorsOfType
+import org.move.lang.core.psi.ext.qualifier
+import org.move.lang.core.psi.ext.rootPath
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.cacheResult

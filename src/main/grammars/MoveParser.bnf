@@ -252,8 +252,6 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER '{' ModuleItem_with_rec
         "org.move.lang.core.psi.ext.MvItemsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
-    stubClass = "org.move.lang.core.stubs.MvModuleStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -264,9 +262,6 @@ private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
 }
 private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
 // top-level recovery
-//private ModuleItem_first ::= use | <<nativeFunctionModifierSet VisibilityModifier>>
-//                            | fun | CONST_KW | STRUCT_KW | spec
-//                            | Attr_first | "friend" | "enum"
 private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
                             | Attr_first | "friend" | "package" | "entry" | "inline" | "enum"
 private TopLevel_first ::= MODULE_KW | SCRIPT_KW
@@ -290,8 +285,6 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAscription Initializer ';'
         "org.move.lang.core.psi.ext.MvTypeAscriptionOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
-    stubClass = "org.move.lang.core.stubs.MvConstStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -309,8 +302,6 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
-    stubClass = "org.move.lang.core.stubs.MvSpecFunctionStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private SpecFunctionItem ::= SpecFunctionInner
@@ -371,17 +362,6 @@ SpecInlineFunctionStmt ::= SpecInlineFunctionInner
     ]
 }
 
-//fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
-//                        (';' | BlockFields)?
-//{
-//    implements = [
-//        "org.move.lang.core.psi.ext.MvStructOrEnumItemElement"
-//        "org.move.lang.core.psi.ext.MvFieldsOwner"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvStructMixin"
-//    stubClass = "org.move.lang.core.stubs.MvStructStub"
-//    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
-//}
 Struct ::= Attr* STRUCT_KW IDENTIFIER TypeParameterList?
             // abilities are at the beginning or at the end
             AbilitiesList? ( TupleStructTail | BlockStructTail )
@@ -392,8 +372,6 @@ Struct ::= Attr* STRUCT_KW IDENTIFIER TypeParameterList?
         "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
-    stubClass = "org.move.lang.core.stubs.MvStructStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private TrailingAbilitiesList ::= AbilitiesList ';'
@@ -427,8 +405,6 @@ Enum ::= Attr* enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody (Abili
         "org.move.lang.core.psi.ext.MvStructOrEnumItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvEnumMixin"
-    stubClass = "org.move.lang.core.stubs.MvEnumStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 EnumBody ::= '{' (EnumVariant ','?)* '}'
@@ -444,8 +420,6 @@ EnumVariant ::= Attr* IDENTIFIER VariantArgs?
         "org.move.lang.core.psi.ext.MvFieldsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvEnumVariantMixin"
-    stubClass = "org.move.lang.core.stubs.MvEnumVariantStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private VariantArgs ::= BlockFields | TupleFields
@@ -462,8 +436,6 @@ fake Function ::= Attr* native? VisibilityModifier? entry? inline?
         "org.move.lang.core.psi.MvModificationTrackerOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
-    stubClass = "org.move.lang.core.stubs.MvFunctionStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -1334,13 +1306,9 @@ private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
 ModuleSpec ::= Attr* spec PathImpl ModuleSpecBlock
-//ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"
-    mixin = "org.move.lang.core.psi.ext.MvModuleSpecMixin"
-    stubClass = "org.move.lang.core.stubs.MvModuleSpecStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
@@ -1437,8 +1405,6 @@ Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock
         "org.move.lang.core.psi.ext.MvTypeDeclarationElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
-    stubClass = "org.move.lang.core.stubs.MvSchemaStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 

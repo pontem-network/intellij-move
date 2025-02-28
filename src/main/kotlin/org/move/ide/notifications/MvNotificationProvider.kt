@@ -17,7 +17,6 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import java.util.function.Function
 import javax.swing.JComponent
-import kotlin.io.relativeToOrNull
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()

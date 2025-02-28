@@ -88,7 +88,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         module: MvModule
     ) {
         if (!module.project.moveSettings.enablePublicPackage) {
-            for (function in module.allFunctions()) {
+            for (function in module.functionList) {
                 val modifier = function.visibilityModifier ?: continue
                 if (modifier.hasPackage) {
                     Diagnostic.PublicPackageIsNotSupportedInCompilerV1(modifier)
@@ -98,7 +98,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
             return
         }
 
-        val allFunctions = module.allFunctions()
+        val allFunctions = module.functionList
         val friendFunctions = allFunctions.filter { it.visibility is Visibility.Restricted.Friend }
         val packageFunctions = allFunctions.filter { it.visibility is Visibility.Restricted.Package }
 

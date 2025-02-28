@@ -5,7 +5,6 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.types.infer.inference
 import org.move.stdext.wrapWithList
 

@@ -5,7 +5,6 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ScopeEntry
 import org.move.lang.core.resolve.asEntries
-import org.move.lang.core.resolve.asEntry
 import org.move.lang.core.resolve.filterByName
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached

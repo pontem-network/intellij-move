@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.*
 

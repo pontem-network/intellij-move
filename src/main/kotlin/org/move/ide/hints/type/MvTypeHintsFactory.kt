@@ -5,11 +5,7 @@ import com.intellij.codeInsight.hints.declarative.CollapseState.Collapsed
 import com.intellij.codeInsight.hints.declarative.CollapseState.Expanded
 import com.intellij.psi.createSmartPointer
 import org.move.ide.presentation.hintText
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyAdt
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyTuple
-import org.move.lang.core.types.ty.TyVector
+import org.move.lang.core.types.ty.*
 
 object MvTypeHintsFactory {
     fun typeHint(type: Ty, treeBuilder: PresentationTreeBuilder) {

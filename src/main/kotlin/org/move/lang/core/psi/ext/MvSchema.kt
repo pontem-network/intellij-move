@@ -1,11 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvSchemaStub
-import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
@@ -14,14 +13,15 @@ import org.move.lang.core.types.ty.TyUnknown
 
 val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
-val MvSchema.parentModule: MvModule? get() {
-    val parent = this.parent
-    if (parent is MvModule) return parent
-    if (parent is MvModuleSpecBlock) {
-        return parent.moduleSpec.moduleItem
+val MvSchema.parentModule: MvModule?
+    get() {
+        val parent = this.parent
+        if (parent is MvModule) return parent
+        if (parent is MvModuleSpecBlock) {
+            return parent.moduleSpec.moduleItem
+        }
+        return null
     }
-    return null
-}
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
@@ -40,12 +40,8 @@ val MvSchema.fieldsAsBindings get() = this.fieldStmts.map { it.patBinding }
 
 val MvIncludeStmt.expr: MvExpr? get() = this.childOfType()
 
-abstract class MvSchemaMixin: MvStubbedNamedElementImpl<MvSchemaStub>,
-                              MvSchema {
-
-    constructor(node: ASTNode): super(node)
-
-    constructor(stub: MvSchemaStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
+abstract class MvSchemaMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
+                                             MvSchema {
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 

@@ -7,9 +7,9 @@ import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.bindingOwner
 import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.ext.isShorthand
-import org.move.lang.core.psi.ext.bindingOwner
 
 
 class MvRenameProcessor: RenamePsiElementProcessor() {

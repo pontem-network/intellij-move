@@ -14,15 +14,11 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.AddressValue
-import org.move.lang.index.MvNamedItemFilesIndex
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode

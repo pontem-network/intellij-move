@@ -13,7 +13,9 @@ import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.MarkdownFlavourDescriptor
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.html.*
+import org.intellij.markdown.html.GeneratingProvider
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.html.SimpleTagProvider
 import org.intellij.markdown.parser.LinkMap
 import org.intellij.markdown.parser.MarkdownParser
 import java.net.URI

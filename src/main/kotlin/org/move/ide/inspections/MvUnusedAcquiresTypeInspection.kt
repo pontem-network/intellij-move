@@ -4,8 +4,8 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.fixes.RemoveAcquiresFix
-import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.declaringModule
+import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.types.infer.AcquireTypesOwnerVisitor

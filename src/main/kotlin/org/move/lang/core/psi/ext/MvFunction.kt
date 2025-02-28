@@ -2,35 +2,26 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvFunctionStub
-import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
-val MvFunction.isEntry: Boolean
-    get() {
-        val stub = greenStub
-        return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
-    }
+val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
 val MvFunction.isPublicScript: Boolean get() = this.visibilityModifier?.hasScript ?: false
 
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 
-val MvFunction.isView: Boolean
-    get() {
-        val stub = greenStub
-        return stub?.isView ?: queryAttributes.isView
-    }
+val MvFunction.isView: Boolean get() = queryAttributes.isView
 
 val MvFunctionLike.modifiers: List<String>
     get() {
@@ -51,11 +42,7 @@ val MvFunctionLike.modifiers: List<String>
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
-val MvFunction.hasTestAttr: Boolean
-    get() {
-        val stub = greenStub
-        return stub?.isTest ?: queryAttributes.isTest
-    }
+val MvFunction.hasTestAttr: Boolean get() = queryAttributes.isTest
 
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
 
@@ -84,8 +71,6 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
         .flatMap { it.moduleSpecBlock?.itemSpecList.orEmpty() }
         .filter { it.itemSpecRef?.referenceName == functionName }
 }
-
-val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
 
 fun MvFunctionLike.returnTypeTy(msl: Boolean): Ty {
     val retType = this.returnType ?: return TyUnit
@@ -119,12 +104,8 @@ val MvFunction.specFunctionResultParameters: List<MvFunctionParameter>
         }
     }
 
-abstract class MvFunctionMixin: MvStubbedNamedElementImpl<MvFunctionStub>,
-                                MvFunction {
-    constructor(node: ASTNode): super(node)
-
-    constructor(stub: MvFunctionStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
-
+abstract class MvFunctionMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
+                                               MvFunction {
     var builtIn = false
 
     override val modificationTracker = MvModificationTracker(this)

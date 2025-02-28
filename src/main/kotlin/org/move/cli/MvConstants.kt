@@ -1,6 +1,5 @@
 package org.move.cli
 
-import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import org.move.stdext.exists
 import java.nio.file.Path
 

@@ -5,7 +5,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import org.move.ide.hints.paramInfo.ParameterInfoProvider.ParametersInfo
 import org.move.lang.MvElementTypes.TYPE_ARGUMENT_LIST
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvGenericDeclaration
+import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.typeParameters
 
 class TypeParameterInfoProvider: ParameterInfoProvider {
     override val targetElementType: IElementType get() = TYPE_ARGUMENT_LIST
