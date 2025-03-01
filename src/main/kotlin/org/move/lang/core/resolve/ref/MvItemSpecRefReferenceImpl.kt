@@ -8,13 +8,14 @@ import org.move.lang.core.psi.ext.module
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
         val entries =
             getVerifiableItemEntries(element).filterByName(element.referenceName)
-        return entries.map { it.element }
+        return entries.namedElements()
     }
 }
 

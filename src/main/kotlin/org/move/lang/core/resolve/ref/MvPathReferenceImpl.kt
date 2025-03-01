@@ -34,13 +34,13 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()
 
-    fun rawMultiResolveIfVisible(): List<RsPathResolveResult<MvElement>> =
+    fun rawMultiResolveIfVisible(): List<RsPathResolveResult> =
         rawMultiResolve().filter { it.isVisible }
 
-    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
+    fun rawMultiResolve(): List<RsPathResolveResult> =
         rawMultiResolveUsingInferenceCache() ?: rawCachedMultiResolve()
 
-    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult<MvElement>>? {
+    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult>? {
         val pathElement = element.parent
         val msl = pathElement.isMsl()
 
@@ -59,7 +59,7 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
         return null
     }
 
-    private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult<MvElement>>? {
+    private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult>? {
         // Path resolution is cached, but sometimes path changes so much that it can't be retrieved
         // from cache anymore. In this case we need to get the old path.
         val originalPath = path.getOriginalOrSelf()
@@ -69,15 +69,15 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
             }
     }
 
-    private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
+    private fun rawCachedMultiResolve(): List<RsPathResolveResult> {
         return MvResolveCache
             .getInstance(element.project)
             .resolveWithCaching(element, ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE, Resolver)
             .orEmpty()
     }
 
-    private object Resolver: (MvElement) -> List<RsPathResolveResult<MvElement>> {
-        override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
+    private object Resolver: (MvElement) -> List<RsPathResolveResult> {
+        override fun invoke(path: MvElement): List<RsPathResolveResult> {
             // should not really happen
             if (path !is MvPath) return emptyList()
             val resolutionCtx = ResolutionContext(path, isCompletion = false)
@@ -227,14 +227,14 @@ fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
 private fun resolvePath(
     ctx: ResolutionContext,
     path: MvPath,
-): List<RsPathResolveResult<MvElement>> {
+): List<RsPathResolveResult> {
     val referenceName = path.referenceName ?: return emptyList()
 
     val pathKind = path.pathKind()
     val entries = getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
 
     val resolveResults = entries
-        .filterByName(referenceName).toPathResolveResults(ctx)
+        .filterByName(referenceName).toPathResolveResults(ctx.methodOrPath)
     return resolveResults
 }
 

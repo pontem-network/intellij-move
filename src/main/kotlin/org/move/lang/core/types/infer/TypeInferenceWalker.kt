@@ -10,9 +10,9 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
-import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePathRaw
 import org.move.lang.core.types.infer.Expectation.NoExpectation
@@ -354,15 +354,10 @@ class TypeInferenceWalker(
                 }
                 true
             }
-        val resolvedItems = entries.map {
-            ResolvedItem(
-                it.element,
-                isVisibleInContext(it, path)
-            )
-        }
-        ctx.writePath(path, resolvedItems)
-        // resolve aliases
-        return resolvedItems.singleOrNull { it.isVisible }
+        val resolveResults = entries.toPathResolveResults(path)
+        ctx.writePath(path, resolveResults)
+
+        return resolveResults.singleOrNull { it.isVisible }
             ?.element
             ?.let { resolveAliases(it) }
     }
@@ -477,7 +472,7 @@ class TypeInferenceWalker(
     fun writePatTy(psi: MvPat, ty: Ty): Unit =
         ctx.writePatTy(psi, ty)
 
-    fun getResolvedPath(path: MvPath): List<ResolvedItem> {
+    fun getResolvedPath(path: MvPath): List<RsPathResolveResult> {
         return ctx.resolvedPaths[path] ?: emptyList()
     }
 
@@ -501,7 +496,7 @@ class TypeInferenceWalker(
         val methodEntries = getMethodResolveVariants(methodCall, receiverTy, msl)
             .filterByName(methodCall.referenceName)
         val resolvedMethods = methodEntries
-            .toPathResolveResults(ResolutionContext(methodCall, isCompletion = false))
+            .toPathResolveResults(methodCall)
 
         val genericItem =
             resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.singleOrNull()

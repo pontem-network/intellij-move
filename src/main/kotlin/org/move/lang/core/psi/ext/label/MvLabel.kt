@@ -11,6 +11,7 @@ import org.move.lang.core.resolve.getLabelResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.ResolveCacheDependency
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 class MvLabelReferenceImpl(
     element: MvLabel
@@ -21,8 +22,7 @@ class MvLabelReferenceImpl(
 
     override fun multiResolveInner(): List<MvNamedElement> {
         return getLabelResolveVariants(element)
-            .filterByName(element.referenceName)
-            .map { it.element }
+            .filterByName(element.referenceName).namedElements()
 
     }
 

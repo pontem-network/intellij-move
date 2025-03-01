@@ -23,13 +23,14 @@ fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {
     return this.filter { it.name == name }
 }
 
-fun List<ScopeEntry>.toPathResolveResults(ctx: ResolutionContext): List<RsPathResolveResult<MvElement>> {
-    return this.map { toPathResolveResult(it, ctx) }
+fun List<ScopeEntry>.namedElements(): List<MvNamedElement> = this.map { it.element }
+
+fun List<ScopeEntry>.toPathResolveResults(contextElement: MvElement?): List<RsPathResolveResult> {
+    return this.map { toPathResolveResult(it, contextElement) }
 }
 
-fun toPathResolveResult(scopeEntry: ScopeEntry, ctx: ResolutionContext): RsPathResolveResult<MvElement> {
+fun toPathResolveResult(scopeEntry: ScopeEntry, contextElement: MvElement?): RsPathResolveResult {
     val element = scopeEntry.element
-    val contextElement = ctx.methodOrPath
     if (contextElement != null) {
         return RsPathResolveResult(element, isVisibleInContext(scopeEntry, contextElement))
     } else {
@@ -45,3 +46,4 @@ fun MvNamedElement.asEntry(): ScopeEntry? {
     val name = this.name ?: return null
     return ScopeEntry(name, this, this.itemNs)
 }
+

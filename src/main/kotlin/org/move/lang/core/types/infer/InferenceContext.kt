@@ -9,6 +9,7 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
@@ -85,7 +86,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
 
-    private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
+    private val resolvedPaths: Map<MvPath, List<RsPathResolveResult>>,
     private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
@@ -107,7 +108,7 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
 
-    fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
+    fun getResolvedPath(path: MvPath): List<RsPathResolveResult>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
     fun getResolvedField(field: MvFieldLookup): MvNamedElement? = resolvedFields[field]
@@ -179,7 +180,7 @@ class InferenceContext(
     val lambdaExprTypes = mutableMapOf<MvLambdaExpr, Ty>()
     val lambdaExprs = mutableListOf<MvLambdaExpr>()
 
-    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
+    val resolvedPaths = mutableMapOf<MvPath, List<RsPathResolveResult>>()
     val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
     val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
@@ -323,7 +324,7 @@ class InferenceContext(
         this.patTypes[pat] = ty
     }
 
-    fun writePath(path: MvPath, resolved: List<ResolvedItem>) {
+    fun writePath(path: MvPath, resolved: List<RsPathResolveResult>) {
         resolvedPaths[path] = resolved
     }
 
@@ -542,11 +543,6 @@ class InferenceContext(
         typeErrors.add(typeError)
     }
 }
-
-data class ResolvedItem(
-    val element: MvNamedElement,
-    val isVisible: Boolean,
-)
 
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }

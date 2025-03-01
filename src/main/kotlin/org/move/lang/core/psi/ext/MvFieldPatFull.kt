@@ -8,6 +8,7 @@ import org.move.lang.core.resolve.getStructPatFieldResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.ResolveCacheDependency
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 val MvPatFieldFull.patField: MvPatField get() = parent as MvPatField
 val MvPatFieldFull.patStruct: MvPatStruct get() = patField.patStruct
@@ -21,7 +22,7 @@ abstract class MvPatFieldFullMixin(node: ASTNode): MvElementImpl(node),
         object: MvPolyVariantReferenceCached<MvPatFieldFull>(this@MvPatFieldFullMixin) {
             override fun multiResolveInner(): List<MvNamedElement> =
                 getStructPatFieldResolveVariants(element)
-                    .filterByName(element.referenceName).map { it.element }
+                    .filterByName(element.referenceName).namedElements()
 
             override val cacheDependency: ResolveCacheDependency
                 get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE

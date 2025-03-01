@@ -9,6 +9,7 @@ import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.resolveBindingForFieldShorthand
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
@@ -37,7 +38,7 @@ class MvSchemaLitFieldReferenceImpl(
         if (shorthand) {
             variants += resolveBindingForFieldShorthand(element)
         }
-        return variants.map { it.element }
+        return variants.namedElements()
     }
 }
 
