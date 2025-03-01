@@ -100,18 +100,6 @@ data class MoveProject(
 
     fun getValueOfDeclaredNamedAddress(name: String): String? = addressValues()[name]?.value
 
-    fun getAddressNamesForValue(addressValue: String): List<String> {
-        val addressLit = AddressValue(addressValue)
-        val names = mutableListOf<String>()
-        for ((name, value) in addresses().values.entries) {
-            val canonicalValue = value.literal.canonical()
-            if (canonicalValue == addressLit.canonical()) {
-                names.add(name)
-            }
-        }
-        return names
-    }
-
     fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
         for (folder in allAccessibleMoveFolders()) {

@@ -4,7 +4,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValueProvider.Result
-import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.NamedItemScope.VERIFY
@@ -12,9 +11,7 @@ import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.ancestorsOfType
 import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.psi.ext.rootPath
-import org.move.utils.cache
-import org.move.utils.cacheManager
-import org.move.utils.cacheResult
+import org.move.utils.psiCacheResult
 
 // classifies foo of `foo::bar::baz`
 sealed class BasePathType {
@@ -47,30 +44,18 @@ fun MvPath.basePathType(): BasePathType? {
     return qualifier.referenceName?.let { BasePathType.Module(it) }
 }
 
-private val USAGE_SCOPE_KEY: Key<CachedValue<NamedItemScope>> = Key.create("USAGE_SCOPE_KEY")
-
-class UsageScopeProvider(val scopeElement: MvElement): CachedValueProvider<NamedItemScope> {
-    override fun compute(): Result<NamedItemScope> {
-        var scope = MAIN
-        for (ancestor in scopeElement.ancestorsOfType<MvDocAndAttributeOwner>()) {
-            // msl items
-            if (scopeElement is MvSpecCodeBlock || scopeElement is MvItemSpecRef) {
-                scope = VERIFY
-                break
-            }
-            // explicit attrs, #[test], #[test_only], #[verify_only]
-            val attributeScope = ancestor.itemScopeFromAttributes()
-            if (attributeScope != null) {
-                scope = attributeScope
-                break
-            }
-        }
-        return scopeElement.cacheResult(scope, listOf(PsiModificationTracker.MODIFICATION_COUNT))
-    }
-}
-
 val MvElement.usageScope: NamedItemScope
     get() {
-        return project.cacheManager
-            .cache(this, USAGE_SCOPE_KEY, UsageScopeProvider(this))
+        for (ancestor in this.ancestorsOfType<MvDocAndAttributeOwner>()) {
+            // msl items
+            if (this is MvSpecCodeBlock || this is MvItemSpecRef) {
+                return VERIFY
+            }
+            // explicit attrs, #[test], #[test_only], #[verify_only]
+            val attributeScope = ancestor.itemScopeFromAttributes
+            if (attributeScope != null) {
+                return attributeScope
+            }
+        }
+        return MAIN
     }

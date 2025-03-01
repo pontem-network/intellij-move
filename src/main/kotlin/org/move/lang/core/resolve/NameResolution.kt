@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve
 
+import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
@@ -8,6 +9,7 @@ import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.types.Address
 import org.move.lang.index.MvModuleFileIndex
+import org.move.utils.psiCacheResult
 
 fun getFieldLookupResolveVariants(
     fieldLookup: MvMethodOrField,
@@ -129,7 +131,7 @@ fun getEntriesFromWalkingScopes(
     return buildList {
         val processedScopes = hashMapOf<String, Set<Namespace>>()
         walkUpThroughScopes(scopeStart) { cameFrom, scope ->
-            val entries = getEntriesInScope(scope, cameFrom, ctx)
+            val entries = getEntriesInScope(scope, cameFrom)
 
             // state between shadowing processors passed through prevScope
             val currScope = mutableMapOf<String, Set<Namespace>>()
@@ -219,10 +221,22 @@ private fun getModuleItemSpecsInItemsOwner(
     cameFrom: MvElement,
     itemsOwner: MvItemsOwner,
 ): List<MvSpecCodeBlock> {
-    val moduleItemSpecs = when (itemsOwner) {
-        is MvModule -> itemsOwner.moduleItemSpecList
-        is MvModuleSpecBlock -> itemsOwner.moduleItemSpecList
-        else -> emptyList()
-    }
+//    val moduleItemSpecs = when (itemsOwner) {
+//        is MvModule -> itemsOwner.moduleItemSpecList
+//        is MvModuleSpecBlock -> itemsOwner.moduleItemSpecList
+//        else -> emptyList()
+//    }
+    val moduleItemSpecs = ModuleItemSpecs(itemsOwner).getResults()
     return moduleItemSpecs.filter { it != cameFrom }.mapNotNull { it.itemSpecBlock }
+}
+
+class ModuleItemSpecs(override val owner: MvItemsOwner): PsiCachedValueProvider<List<MvModuleItemSpec>> {
+    override fun compute(): CachedValueProvider.Result<List<MvModuleItemSpec>> {
+        val moduleItemSpecs = when (owner) {
+            is MvModule -> owner.moduleItemSpecList
+            is MvModuleSpecBlock -> owner.moduleItemSpecList
+            else -> emptyList()
+        }
+        return owner.psiCacheResult(moduleItemSpecs)
+    }
 }

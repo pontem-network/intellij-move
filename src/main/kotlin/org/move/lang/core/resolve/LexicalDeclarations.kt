@@ -1,33 +1,24 @@
 package org.move.lang.core.resolve
 
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.CachedValueProvider
 import com.intellij.util.containers.addIfNotNull
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.asEntry
-import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.core.resolve.scopeEntry.useSpeckEntries
-import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.stdext.chain
+import org.move.utils.psiCacheResult
 
-fun getEntriesInScope(
-    scope: MvElement,
-    cameFrom: MvElement,
-    ctx: ResolutionContext,
-): List<ScopeEntry> {
+fun getEntriesInScope(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
     return buildList {
         if (scope is MvGenericDeclaration) {
             addAll(scope.typeParameters.asEntries())
         }
         when (scope) {
             is MvModule -> {
-                addAll(scope.itemEntries)
-
-                addAll(scope.enumVariants().asEntries())
-                addAll(scope.builtinFunctions().asEntries())
-                addAll(scope.builtinSpecFunctions().asEntries())
+                addAll(ModuleResolveScope(scope).getResults())
             }
             is MvScript -> {
                 addAll(scope.constList.asEntries())
@@ -39,18 +30,7 @@ fun getEntriesInScope(
                 addAll(scope.lambdaParametersAsBindings.asEntries())
             }
             is MvItemSpec -> {
-                val refItem = scope.item
-                when (refItem) {
-                    is MvFunction -> {
-                        addAll(refItem.typeParameters.asEntries())
-
-                        addAll(refItem.parametersAsBindings.asEntries())
-                        addAll(refItem.specFunctionResultParameters.map { it.patBinding }.asEntries())
-                    }
-                    is MvStruct -> {
-                        addAll(refItem.namedFields.asEntries())
-                    }
-                }
+                addAll(ItemSpecResolveScope(scope).getResults())
             }
 
             is MvSchema -> {
@@ -58,23 +38,17 @@ fun getEntriesInScope(
             }
 
             is MvModuleSpecBlock -> {
-                val specFuns = scope.specFunctionList
-                addAll(specFuns.asEntries())
-
-                val specInlineFuns = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-                addAll(specInlineFuns.asEntries())
-
-                addAll(scope.schemaList.asEntries())
+                addAll(ModuleSpecBlockResolveScope(scope).getResults())
             }
 
             is MvCodeBlock -> {
-                val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom, ctx)
-                addAll(letBindings.asEntries())
+                val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
+                addAll(letBindings)
             }
 
             is MvSpecCodeBlock -> {
-                val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom, ctx)
-                addAll(letBindings.asEntries())
+                val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
+                addAll(letBindings)
 
                 val globalEntries = scope.builtinSpecConsts().asEntries()
                     .chain(scope.globalVariables().asEntries())
@@ -121,53 +95,40 @@ fun getEntriesInScope(
 
 private fun getVisibleLetPatBindingsWithShadowing(
     scope: MvElement,
-    cameFrom: MvElement,
-    ctx: ResolutionContext,
-): Pair<List<MvPatBinding>, MutableSet<String>> {
+    stmtOrTailExpr: MvElement,
+): Pair<List<ScopeEntry>, MutableSet<String>> {
     val visibleLetStmts = when (scope) {
         is MvCodeBlock -> {
-            scope.letStmts
+            BlockLetStmts(scope).getResults()
                 // drops all let-statements after the current position
-                .filter { it.cameBefore(cameFrom) }
-                // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                .filter {
-                    cameFrom != it
-                            && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                }
+                .filter { it.first.strictlyBefore(stmtOrTailExpr) }
         }
         is MvSpecCodeBlock -> {
-            val currentLetStmt = ctx.element.ancestorOrSelf<MvLetStmt>(stopAt = MvSpecCodeBlock::class.java)
+            val currentLetStmt = stmtOrTailExpr as? MvLetStmt
+            val allLetStmts = BlockLetStmts(scope).getResults()
             when {
                 currentLetStmt != null -> {
                     // if post = true, then both pre and post are accessible, else only pre
                     val letStmts = if (currentLetStmt.post) {
-                        scope.allLetStmts
+                        allLetStmts
                     } else {
-                        scope.allLetStmts.filter { !it.post }
+                        allLetStmts.filter { !it.first.post }
                     }
                     letStmts
                         // drops all let-statements after the current position
-                        .filter { it.cameBefore(cameFrom) }
-                        // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                        .filter {
-                            cameFrom != it
-                                    && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                        }
-
+                        .filter { it.first.strictlyBefore(stmtOrTailExpr) }
                 }
-                else -> scope.allLetStmts
+                else -> allLetStmts
             }
         }
         else -> error("unreachable")
     }
     // shadowing support (look at latest first)
-    val letPatBindings = visibleLetStmts
-        .asReversed()
-        .flatMap { it.pat?.bindings.orEmpty() }
+    val bindingEntries = visibleLetStmts.asReversed().flatMap { it.second }
 
     val visited = mutableSetOf<String>()
     val bindings = buildList {
-        for (binding in letPatBindings) {
+        for (binding in bindingEntries) {
             val name = binding.name
             if (name in visited) continue
             visited += name
@@ -175,4 +136,15 @@ private fun getVisibleLetPatBindingsWithShadowing(
         }
     }
     return bindings to visited
+}
+
+class BlockLetStmts(override val owner: AnyBlock): PsiCachedValueProvider<List<Pair<MvLetStmt, List<ScopeEntry>>>> {
+    override fun compute(): CachedValueProvider.Result<List<Pair<MvLetStmt, List<ScopeEntry>>>> {
+        val letStmts = owner.stmtList.filterIsInstance<MvLetStmt>()
+            .map {
+                val bindings = it.pat?.bindings.orEmpty().asEntries()
+                it to bindings
+            }
+        return owner.psiCacheResult(letStmts)
+    }
 }

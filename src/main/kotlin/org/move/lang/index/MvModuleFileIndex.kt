@@ -50,7 +50,7 @@ class MvModuleFileIndex: ScalarIndexExtension<String>() {
 
             return buildList {
                 val vFiles =
-                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, prefixedIds, searchScope).distinct()
+                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, prefixedIds, searchScope)
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
                     val filtered = file.modules().filterByAddress(moveProject, address, isCompletion = true)
@@ -66,7 +66,7 @@ class MvModuleFileIndex: ScalarIndexExtension<String>() {
             val indexIds = moduleIndexIds(address, moduleName)
             return buildList {
                 val vFiles =
-                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope).distinct()
+                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
                     val filtered =

@@ -60,11 +60,6 @@ abstract class MoveFileBase(fileViewProvider: FileViewProvider): PsiFileBase(fil
 
 class MoveFile(fileViewProvider: FileViewProvider) : MoveFileBase(fileViewProvider) {
 
-    fun addressBlocks(): List<MvAddressBlock> {
-        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvAddressDef::class.java)
-        return defs.mapNotNull { it.addressBlock }.toList()
-    }
-
     fun scripts(): List<MvScript> = this.childrenOfType<MvScript>()
 
     fun modules(): List<MvModule> {

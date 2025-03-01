@@ -37,10 +37,11 @@ class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
         val INDEX_ID: ID<String, Void> = ID.create("org.move.index.MvModuleSpecFileIndex")
 
         fun getSpecsForModule(module: MvModule): List<MvModuleSpec> {
-            val filesIndex = FileBasedIndex.getInstance()
             val project = module.project
 
             val moduleFqName = module.fqName() ?: return emptyList()
+            val searchScope = module.moveProject?.searchScope() ?: return emptyList()
+
             // need to cover all possibilities, as index is a path text
             val indexIds = hashSetOf(
                 moduleFqName.declarationText(),
@@ -48,11 +49,10 @@ class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
                 moduleFqName.canonicalAddressValueText(),
                 moduleFqName.universalAddressText(),
             )
+            val filesIndex = FileBasedIndex.getInstance()
             return buildList {
-                val searchScope = module.moveProject?.searchScope() ?: return@buildList
                 val vFiles =
                     filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
-                        .distinct()
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
                     for (moduleSpec in file.moduleSpecs()) {

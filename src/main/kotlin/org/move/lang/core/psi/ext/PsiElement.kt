@@ -2,6 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.openapi.util.Condition
+import com.intellij.openapi.util.Segment
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
@@ -286,8 +287,13 @@ fun PsiElement.isErrorElement(): Boolean =
 fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
 
-fun PsiElement.cameBefore(element: PsiElement) =
-    PsiUtilCore.compareElementsByPosition(this, element) <= 0
+fun PsiElement.strictlyBefore(element: PsiElement): Boolean {
+    val leftRange = this.textRange
+    val rightRange = element.textRange
+    val ret = Segment.BY_START_OFFSET_THEN_END_OFFSET.compare(leftRange, rightRange)
+    return ret < 0
+//    return PsiUtilCore.compareElementsByPosition(this, element) < 0
+}
 
 @Suppress("UNCHECKED_CAST")
 inline val <T: StubElement<*>> StubBasedPsiElement<T>.greenStub: T?

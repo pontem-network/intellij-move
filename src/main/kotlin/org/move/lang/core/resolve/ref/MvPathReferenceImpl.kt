@@ -7,11 +7,12 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
+import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
-import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -93,7 +94,10 @@ fun getPathResolveVariantsWithExpectedType(
 ): List<ScopeEntry> {
     // if path qualifier is enum, then the expected type is that enum
     var correctedExpectedType = expectedType
-    if (pathKind is PathKind.QualifiedPath) {
+    if (
+        pathKind is PathKind.QualifiedPath.ModuleItemOrEnumVariant
+        || pathKind is PathKind.QualifiedPath.FQModuleItem
+    ) {
         val qualifierItem = pathKind.qualifier.reference?.resolveFollowingAliases()
         if (qualifierItem is MvEnum) {
             correctedExpectedType = TyAdt.valueOf(qualifierItem)
@@ -172,6 +176,13 @@ fun getQualifiedPathEntries(
     val qualifierItem = qualifier.reference?.resolveFollowingAliases()
     return buildList {
         when (qualifierItem) {
+            is MvModule -> {
+                add(ScopeEntry("Self", qualifierItem, MODULES))
+                addAll(qualifierItem.importableItemEntries)
+            }
+            is MvEnum -> {
+                addAll(qualifierItem.variants.asEntries())
+            }
             null -> {
                 // can be a module, try for named address as a qualifier
                 val addressName = qualifier.referenceName ?: return@buildList
@@ -179,18 +190,8 @@ fun getQualifiedPathEntries(
                 val moveProject = ctx.moveProject ?: return@buildList
                 // no such named address
                 val address = moveProject.getNamedAddressTestAware(addressName) ?: return@buildList
-
                 val moduleEntries = getModulesAsEntries(ctx, address)
                 addAll(moduleEntries)
-            }
-            is MvModule -> {
-                add(ScopeEntry("Self", qualifierItem, MODULES))
-
-                val moduleItems = getImportableItemsAsEntries(qualifierItem)
-                addAll(moduleItems)
-            }
-            is MvEnum -> {
-                addAll(qualifierItem.variants.mapNotNull { it.asEntry() })
             }
         }
     }

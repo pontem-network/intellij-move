@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvTupleFieldDecl
 import javax.swing.Icon
 
 val MvTupleFieldDecl.position: Int?
-    get() = owner?.positionalFields?.withIndex()?.firstOrNull { it.value === this }?.index
+    get() = this@position.owner?.positionalFields?.withIndex()?.firstOrNull { it.value === this }?.index
 
 abstract class MvTupleFieldDeclMixin(node: ASTNode): MvElementImpl(node), MvTupleFieldDecl {
 

@@ -2,13 +2,16 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.CachedValueProvider
 import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.lang.core.resolve.getResults
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecFileIndex
+import org.move.utils.psiCacheResult
 import javax.swing.Icon
 
 fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
@@ -29,13 +32,6 @@ fun MvModule.testFunctions(): List<MvFunction> = this.functionList.filter { f ->
 val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
 val MvModule.isSpecBuiltins: Boolean
     get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
-
-// this is extremely fast, no need to optimize anymore
-fun MvModule.builtinFunctions(): List<MvFunction> {
-    return getProjectPsiDependentCache(this) {
-        createBuiltinFunctions(it.project)
-    }
-}
 
 private fun createBuiltinFunctions(project: Project): List<MvFunction> {
     val builtinModule = project.psiFactory.module(
@@ -69,54 +65,10 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.functionList.filter { it.
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.functionList.filter { it.isView }
 
-//fun MvModule.specInlineFunctionsFromModuleItemSpecs(): List<MvSpecInlineFunction> =
-//    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-
-fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
-    val trimmedText = text.trimIndent()
-    return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
-}
-
 fun MvModule.tupleStructs(): List<MvStruct> =
     this.structList.filter { it.tupleFields != null }
 
-fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
-    return getProjectPsiDependentCache(this) {
-        val builtinsModule = it.project.psiFactory.module(
-            """
-            module 0x0::builtin_spec_functions {
-                spec native fun max_u8(): num;
-                spec native fun max_u64(): num;
-                spec native fun max_u128(): num;
-                spec native fun global<T: key>(addr: address): T;
-                spec native fun old<T>(_: T): T;
-                spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;
-                spec native fun TRACE<T>(_: T): T;
-                
-                spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;
-                spec native fun vec<T>(_: T): vector<T>;
-                spec native fun len<T>(_: vector<T>): num;
-                spec native fun contains<T>(v: vector<T>, e: T): bool;
-                spec native fun index_of<T>(_: vector<T>, _: T): num;
-                spec native fun range<T>(_: vector<T>): range;
-                spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;
-                spec native fun in_range<T>(_: vector<T>, _: num): bool;
-                spec native fun int2bv(_: num): bv;
-                spec native fun bv2int(_: bv): num;
-            }            
-        """.trimIndent()
-        )
-        builtinsModule.specFunctionList
-    }
-}
-
-fun MvModule.specFunctions(): List<MvSpecFunction> = specFunctionList.orEmpty()
-
 fun MvModule.enumVariants(): List<MvEnumVariant> = this.enumList.flatMap { it.variants }
-
-//fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
-////    this.childrenOfType<MvItemSpec>()
-////        .filter { it.itemSpecRef?.moduleKw != null }
 
 val MvModuleSpec.moduleItem: MvModule? get() = this.path?.reference?.resolve() as? MvModule
 
@@ -129,7 +81,14 @@ fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.or
 
 fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
 
-fun MvModule.getModuleSpecsFromIndex(): List<MvModuleSpec> = MvModuleSpecFileIndex.getSpecsForModule(this)
+class ModuleSpecsFromIndex(override val owner: MvModule): PsiCachedValueProvider<List<MvModuleSpec>> {
+    override fun compute(): CachedValueProvider.Result<List<MvModuleSpec>> {
+        val specs = MvModuleSpecFileIndex.getSpecsForModule(owner)
+        return owner.psiCacheResult(specs)
+    }
+}
+
+fun MvModule.getModuleSpecsFromIndex(): List<MvModuleSpec> = ModuleSpecsFromIndex(this).getResults()
 
 fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
     return left.getOriginalOrSelf() == right.getOriginalOrSelf()

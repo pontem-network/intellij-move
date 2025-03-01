@@ -20,5 +20,5 @@ fun <K, V> FileBasedIndex.getContainingFilesForAnyKey(
         null,
         collectProcessor
     )
-    return collectProcessor.results.toList()
+    return collectProcessor.results.distinct().toList()
 }

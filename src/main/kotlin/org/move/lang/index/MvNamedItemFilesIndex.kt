@@ -61,7 +61,7 @@ class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
             val filesIndex = FileBasedIndex.getInstance()
             return buildList {
                 val vFiles =
-                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope).distinct()
+                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
                     val entries = file.importableEntries().filterByNs(ns)
@@ -84,7 +84,6 @@ private fun MoveFile.importableEntries(): List<ScopeEntry> {
         for (module in file.modules()) {
             val moduleEntry = module.asEntry() ?: continue
             add(moduleEntry)
-
             addAll(module.itemEntries)
         }
     }
