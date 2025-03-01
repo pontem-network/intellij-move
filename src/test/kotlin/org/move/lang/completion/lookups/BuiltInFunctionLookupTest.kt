@@ -6,7 +6,7 @@ import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.builtinFunctions
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor

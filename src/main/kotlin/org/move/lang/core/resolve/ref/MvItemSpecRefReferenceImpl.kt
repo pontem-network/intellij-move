@@ -5,9 +5,9 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.allNonTestFunctions
 import org.move.lang.core.psi.ext.itemSpec
 import org.move.lang.core.psi.ext.module
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.asEntries
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.filterByName
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 

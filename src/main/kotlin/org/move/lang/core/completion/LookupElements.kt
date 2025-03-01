@@ -12,7 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution

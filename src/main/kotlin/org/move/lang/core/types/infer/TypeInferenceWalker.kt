@@ -10,6 +10,8 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePathRaw

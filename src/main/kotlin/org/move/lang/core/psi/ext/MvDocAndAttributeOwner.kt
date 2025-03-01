@@ -58,8 +58,4 @@ class QueryAttributes(
 
     override fun toString(): String =
         "QueryAttributes(${attributes.joinToString { it.text }})"
-
-    companion object {
-        val EMPTY: QueryAttributes = QueryAttributes(emptySequence())
-    }
 }

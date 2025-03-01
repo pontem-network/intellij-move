@@ -8,7 +8,7 @@ import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
-import org.move.lang.core.resolve.util.forEachLeafSpeck
+import org.move.lang.core.resolve.scopeEntry.forEachLeafSpeck
 
 enum class UseItemType {
     MODULE, SELF_MODULE, ITEM;

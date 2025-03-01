@@ -6,7 +6,7 @@ import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvLabel
 import org.move.lang.core.psi.MvLabelDecl
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.getLabelResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached

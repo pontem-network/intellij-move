@@ -2,7 +2,7 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvFieldDecl
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.stdext.intersects
 import java.util.*
 

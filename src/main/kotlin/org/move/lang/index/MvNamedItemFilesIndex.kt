@@ -7,12 +7,12 @@ import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.asEntry
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.filterByNs
-import org.move.lang.core.resolve2.itemEntries
+import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.toMoveFile
 
 class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {

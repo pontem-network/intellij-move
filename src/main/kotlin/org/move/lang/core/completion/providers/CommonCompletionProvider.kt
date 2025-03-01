@@ -13,6 +13,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.getVerifiableItemEntries
 import org.move.lang.core.types.infer.InferenceContext

@@ -2,7 +2,7 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.getStructLitFieldResolveVariants
 
 class MvStructLitFieldReferenceImpl(

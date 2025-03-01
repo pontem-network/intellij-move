@@ -16,6 +16,8 @@ import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext

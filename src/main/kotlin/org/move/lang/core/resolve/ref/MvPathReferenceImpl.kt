@@ -7,6 +7,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
+import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.resolve.ref.Namespace.MODULE
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty

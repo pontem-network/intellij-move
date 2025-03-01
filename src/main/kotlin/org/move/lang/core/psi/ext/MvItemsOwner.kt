@@ -1,8 +1,8 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.asEntries
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
 
 interface MvItemsOwner: MvElement {
     val useStmtList: List<MvUseStmt>

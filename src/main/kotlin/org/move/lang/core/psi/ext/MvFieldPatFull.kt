@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.getStructPatFieldResolveVariants
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached

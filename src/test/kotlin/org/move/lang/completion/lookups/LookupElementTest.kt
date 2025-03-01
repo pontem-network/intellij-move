@@ -16,7 +16,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.utils.tests.MoveV2

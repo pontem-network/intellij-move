@@ -4,7 +4,9 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.selfParam
-import org.move.lang.core.resolve2.itemEntries
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty

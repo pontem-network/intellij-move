@@ -1,21 +1,16 @@
 package org.move.lang.core.resolve
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.containers.addIfNotNull
-import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.ALL_NS
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.asEntry
+import org.move.lang.core.resolve.scopeEntry.itemEntries
+import org.move.lang.core.resolve.scopeEntry.useSpeckEntries
 import org.move.lang.core.resolve.ref.ResolutionContext
-import org.move.lang.core.resolve.ref.itemNs
-import org.move.lang.core.resolve.util.forEachLeafSpeck
-import org.move.lang.core.resolve2.itemEntries
 import org.move.stdext.chain
-import org.move.utils.cache
-import org.move.utils.cacheManager
-import org.move.utils.psiCacheResult
 
 fun getEntriesInScope(
     scope: MvElement,
@@ -119,7 +114,7 @@ fun getEntriesInScope(
         }
 
         if (scope is MvItemsOwner) {
-            addAll(scope.getUseSpeckElements())
+            addAll(scope.useSpeckEntries)
         }
     }
 }
@@ -180,79 +175,4 @@ private fun getVisibleLetPatBindingsWithShadowing(
         }
     }
     return bindings to visited
-}
-
-private fun MvItemsOwner.getUseSpeckElements(): List<ScopeEntry> {
-    val useSpeckItems = getUseSpeckItems()
-
-    return buildList {
-        for (useSpeckItem in useSpeckItems) {
-            val speckPath = useSpeckItem.speckPath
-            val alias = useSpeckItem.alias
-
-            val resolvedItem = speckPath.reference?.resolve()
-            if (resolvedItem == null) {
-                // aliased element cannot be resolved, but alias itself is valid, resolve to it
-                if (alias != null) {
-                    val referenceName = useSpeckItem.aliasOrSpeckName ?: continue
-                    // any ns is possible here
-                    add(
-                        ScopeEntry(
-                            referenceName,
-                            alias,
-                            ALL_NS
-                        )
-                    )
-                }
-                continue
-            }
-
-            val element = alias ?: resolvedItem
-            val itemNs = resolvedItem.itemNs
-            val speckItemName = useSpeckItem.aliasOrSpeckName ?: continue
-            add(
-                ScopeEntry(
-                    speckItemName,
-                    element,
-                    itemNs,
-                    customItemScope = useSpeckItem.stmtUsageScope,
-                )
-            )
-        }
-    }
-}
-
-private val USE_SPECK_ITEMS_KEY: Key<CachedValue<List<UseSpeckItem>>> = Key.create("USE_SPECK_ITEMS_KEY")
-
-private fun MvItemsOwner.getUseSpeckItems(): List<UseSpeckItem> =
-    project.cacheManager.cache(this, USE_SPECK_ITEMS_KEY) {
-        val items = buildList {
-            for (useStmt in useStmtList) {
-                val usageScope = useStmt.usageScope
-                useStmt.forEachLeafSpeck { speckPath, alias ->
-                    add(UseSpeckItem(speckPath, alias, usageScope))
-                }
-            }
-        }
-        this.psiCacheResult(items)
-    }
-
-private data class UseSpeckItem(
-    val speckPath: MvPath,
-    val alias: MvUseAlias?,
-    val stmtUsageScope: NamedItemScope
-) {
-    val aliasOrSpeckName: String?
-        get() {
-            if (alias != null) {
-                return alias.name
-            } else {
-                var n = speckPath.referenceName ?: return null
-                // 0x1::m::Self -> 0x1::m
-                if (n == "Self") {
-                    n = speckPath.qualifier?.referenceName ?: return null
-                }
-                return n
-            }
-        }
 }

@@ -1,11 +1,13 @@
-package org.move.lang.core.resolve
+package org.move.lang.core.resolve.scopeEntry
 
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
+import org.move.lang.core.resolve.isVisibleInContext
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
+import org.move.lang.core.resolve.ref.itemNs
 
 
 data class ScopeEntry(
@@ -35,3 +37,11 @@ fun toPathResolveResult(scopeEntry: ScopeEntry, ctx: ResolutionContext): RsPathR
     }
 }
 
+fun List<MvNamedElement>.asEntries(): List<ScopeEntry> {
+    return this.mapNotNull { it.asEntry() }
+}
+
+fun MvNamedElement.asEntry(): ScopeEntry? {
+    val name = this.name ?: return null
+    return ScopeEntry(name, this, this.itemNs)
+}
