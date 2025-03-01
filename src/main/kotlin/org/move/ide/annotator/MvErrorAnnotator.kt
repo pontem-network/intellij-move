@@ -13,7 +13,6 @@ import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fqName
-import org.move.lang.core.types.fullname
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
@@ -74,7 +73,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
                 val itemModule = typeArgTy.declaringModule() ?: return
                 if (currentModule != itemModule) {
-                    val itemModuleName = itemModule.fullname() ?: return
+                    val itemModuleName = itemModule.fqName()?.declarationText() ?: return
                     var moduleQualTypeName = typeArgTy.fullname()
                     if (moduleQualTypeName.split("::").size == 3) {
                         // fq name

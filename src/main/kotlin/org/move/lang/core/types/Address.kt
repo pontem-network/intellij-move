@@ -1,12 +1,9 @@
 package org.move.lang.core.types
 
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
-import org.move.lang.core.types.Address.Named
 import org.move.lang.core.types.AddressValue.Companion.normalizeValue
 
 const val MAX_LENGTH = 32
@@ -123,84 +120,19 @@ sealed class Address {
     }
 }
 
-sealed class StubAddress {
-    data object Unknown: StubAddress()
-    data class Value(val value: String): StubAddress()
-    data class Named(val name: String): StubAddress()
+fun MvModule.address(moveProject: MoveProject?): Address? = this.addressRef()?.address(moveProject)
 
-    fun asInt(): Int {
-        return when (this) {
-            is Unknown -> UNKNOWN_INT
-            is Value -> VALUE_INT
-            is Named -> NAMED_INT
-        }
-    }
-
-    fun asAddress(moveProject: MoveProject?): Address? {
-        return when (this) {
-            is Named -> {
-                if (moveProject == null) {
-                    Named(this.name, null)
-                } else {
-                    moveProject.getNamedAddressTestAware(this.name)
-                        ?: Named(this.name, null)
-                }
-            }
-            is Value -> Address.Value(this.value)
-            is Unknown -> null
-        }
-    }
-
-    companion object {
-        const val UNKNOWN_INT = 0
-        const val VALUE_INT = 1
-        const val NAMED_INT = 2
-    }
-}
-
-fun StubOutputStream.serializeStubAddress(stubAddress: StubAddress) {
-    writeInt(stubAddress.asInt())
-    when (stubAddress) {
-        is StubAddress.Value -> writeUTFFast(stubAddress.value)
-        is StubAddress.Named -> writeUTFFast(stubAddress.name)
-        is StubAddress.Unknown -> {}
-    }
-}
-
-fun StubInputStream.deserializeStubAddress(): StubAddress {
-    val addressInt = this.readInt()
-    return when (addressInt) {
-        StubAddress.UNKNOWN_INT -> StubAddress.Unknown
-        StubAddress.VALUE_INT -> StubAddress.Value(this.readUTFFast())
-        StubAddress.NAMED_INT -> StubAddress.Named(this.readUTFFast())
-        else -> error("Invalid value")
-    }
-}
-
-
-val MvModule.stubAddress: StubAddress get() = psiStubAddress()
-
-//fun MvModule.addressAsCanonicalValue(moveProject: MoveProject): String? =
-//    this.address(moveProject)?.canonicalValue(moveProject)
-
-fun MvModule.address(moveProject: MoveProject?): Address? = this.stubAddress.asAddress(moveProject)
-
-fun MvAddressRef.address(moveProject: MoveProject?): Address? = psiStubAddress().asAddress(moveProject)
-
-fun MvModule.psiStubAddress(): StubAddress =
-    this.addressRef()?.psiStubAddress() ?: StubAddress.Unknown
-
-fun MvAddressRef.psiStubAddress(): StubAddress {
+fun MvAddressRef.address(moveProject: MoveProject?): Address? {
     val namedAddress = this.namedAddress
     if (namedAddress != null) {
-        return StubAddress.Named(namedAddress.referenceName)
+        val name = namedAddress.referenceName
+        return if (moveProject == null) {
+            Address.Named(name, null)
+        } else {
+            moveProject.getNamedAddressTestAware(name) ?: Address.Named(name, null)
+        }
     }
-    val addressText = this.diemAddress?.text ?: this.bech32Address?.text ?: return StubAddress.Unknown
-    return StubAddress.Value(addressText)
-}
 
-fun MvModule.fullname(): String? {
-    val addressName = this.address(null)?.text() ?: return null
-    val moduleName = this.name ?: return null
-    return "$addressName::$moduleName"
+    val addressText = this.diemAddress?.text ?: this.integerLiteral?.text ?: return null
+    return Address.Value(addressText)
 }
