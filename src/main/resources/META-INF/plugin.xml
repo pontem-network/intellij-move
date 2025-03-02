@@ -276,7 +276,7 @@
                      implementationClass="org.move.ide.inspections.MvUnusedImportInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused declaration"
-                     enabledByDefault="true" level="WARNING"
+                     enabledByDefault="false" level="WARNING"
                      implementationClass="org.move.ide.inspections.MvUnusedVariableInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused test signer"
