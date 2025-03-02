@@ -12,7 +12,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.address
-import org.move.lang.core.types.fullname
+import org.move.lang.core.types.fqName
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
@@ -73,7 +73,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
                 val itemModule = typeArgTy.declaringModule() ?: return
                 if (currentModule != itemModule) {
-                    val itemModuleName = itemModule.fullname() ?: return
+                    val itemModuleName = itemModule.fqName()?.declarationText() ?: return
                     var moduleQualTypeName = typeArgTy.fullname()
                     if (moduleQualTypeName.split("::").size == 3) {
                         // fq name
@@ -186,24 +186,24 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
         val msl = methodOrPath.isMslScope
         val parent = methodOrPath.parent
-        val qualItem = methodOrPath.reference?.resolveFollowingAliases() as? MvQualNamedElement ?: return
+        val item = methodOrPath.reference?.resolveFollowingAliases() ?: return
 
-        val qualName = qualItem.qualName ?: return
+        val fqName = item.fqName() ?: return
         when {
-            qualItem is MvStruct && parent is MvPathType -> {
+            item is MvStruct && parent is MvPathType -> {
                 if (parent.ancestorStrict<MvAcquiresType>() != null) return
 
                 if (realCount != 0) {
                     val typeArgumentList =
                         methodOrPath.typeArgumentList ?: error("cannot be null if realCount != 0")
-                    checkTypeArgumentList(typeArgumentList, qualItem, holder)
+                    checkTypeArgumentList(typeArgumentList, item, holder)
                 } else {
-                    val expectedCount = qualItem.typeParameters.size
+                    val expectedCount = item.typeParameters.size
                     if (expectedCount != 0) {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                qualName.editorText(),
+                                fqName.declarationText(),
                                 expectedCount,
                                 realCount
                             )
@@ -211,15 +211,15 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     }
                 }
             }
-            qualItem is MvStruct && parent is MvStructLitExpr -> {
+            item is MvStruct && parent is MvStructLitExpr -> {
                 // if any type param is passed, inference is disabled, so check fully
                 if (realCount != 0) {
                     val typeArgumentList =
                         methodOrPath.typeArgumentList ?: error("cannot be null if realCount != 0")
-                    checkTypeArgumentList(typeArgumentList, qualItem, holder)
+                    checkTypeArgumentList(typeArgumentList, item, holder)
                 }
             }
-            qualItem is MvFunction -> {
+            item is MvFunction -> {
                 val callable =
                     when (parent) {
                         is MvCallExpr -> parent
@@ -230,7 +230,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     // if any type param is passed, inference is disabled, so check fully
                     val typeArgumentList =
                         methodOrPath.typeArgumentList ?: error("cannot be null if realCount != 0")
-                    checkTypeArgumentList(typeArgumentList, qualItem, holder)
+                    checkTypeArgumentList(typeArgumentList, item, holder)
                 } else {
                     val inference = callable.inference(msl) ?: return
                     if (callable.descendantHasTypeError(inference.typeErrors)) {
@@ -247,19 +247,19 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     }
                 }
             }
-            qualItem is MvSchema && parent is MvSchemaLit -> {
-                val expectedCount = qualItem.typeParameters.size
+            item is MvSchema && parent is MvSchemaLit -> {
+                val expectedCount = item.typeParameters.size
                 if (realCount != 0) {
                     val typeArgumentList =
                         methodOrPath.typeArgumentList ?: error("cannot be null if realCount != 0")
-                    checkTypeArgumentList(typeArgumentList, qualItem, holder)
+                    checkTypeArgumentList(typeArgumentList, item, holder)
                 } else {
                     // if no type args are passed, check whether all type params are inferrable
-                    if (qualItem.requiredTypeParams.isNotEmpty() && expectedCount != 0) {
+                    if (item.requiredTypeParams.isNotEmpty() && expectedCount != 0) {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                qualName.editorText(),
+                                fqName.declarationText(),
                                 expectedCount,
                                 realCount
                             )
@@ -275,10 +275,10 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         item: MvGenericDeclaration,
         holder: MvAnnotationHolder,
     ) {
-        val qualName = (item as? MvQualNamedElement)?.qualName ?: return
+        val qualName = (item as? MvNamedElement)?.fqName() ?: return
         val expectedCount = item.typeParameters.size
 
-        val itemLabel = qualName.editorText()
+        val itemLabel = qualName.declarationText()
         val realCount = typeArgumentList.typeArgumentList.size
         check(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
 
@@ -420,7 +420,7 @@ private fun checkFunctionDuplicates(
 ) {
     val fnName = fn.name ?: return
     val functions =
-        fn.module?.allFunctions() ?: fn.script?.functionList ?: emptyList()
+        fn.module?.functionList ?: fn.script?.functionList ?: emptyList()
     val duplicateFunctions = getDuplicates(functions.asSequence())
 
     if (fnName !in duplicateFunctions.map { it.name }) {
@@ -437,7 +437,7 @@ private fun checkStructDuplicates(
     struct: MvStruct,
 ) {
     val structName = struct.name ?: return
-    val duplicateSignatures = getDuplicates(struct.module.structs().asSequence())
+    val duplicateSignatures = getDuplicates(struct.module.structList.asSequence())
     if (structName !in duplicateSignatures.map { it.name }) {
         return
     }

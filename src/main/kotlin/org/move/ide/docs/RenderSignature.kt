@@ -12,22 +12,9 @@ import org.move.ide.docs.MvColorUtils.colored
 import org.move.ide.docs.MvColorUtils.keyword
 import org.move.ide.presentation.presentableQualifiedName
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvEnum
-import org.move.lang.core.psi.MvEnumVariant
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvFunctionLike
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvNamedFieldDecl
-import org.move.lang.core.psi.MvSchema
-import org.move.lang.core.psi.MvSpecFunction
-import org.move.lang.core.psi.MvSpecInlineFunction
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
-import org.move.lang.core.psi.ext.enumItem
-import org.move.lang.core.psi.ext.fieldOwner
-import org.move.lang.core.psi.ext.modifiers
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.fqName
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.joinToWithBuffer
 
@@ -112,7 +99,7 @@ private fun StringBuilder.generateSpecInlineFunction(specInlineFn: MvSpecInlineF
 private fun StringBuilder.generateModule(mod: MvModule) {
     keyword("module")
     this += " "
-    this += mod.qualName?.editorText() ?: "unknown"
+    this += mod.fqName()?.declarationText() ?: "unknown"
 }
 
 private fun StringBuilder.generateStructOrEnum(structOrEnum: MvStructOrEnumItemElement) {

@@ -1,26 +1,25 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.DebugUtil
-import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.isDebugModeEnabled
+import org.move.ide.formatter.impl.fileWithLocation
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.lang.core.resolve.getResults
+import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
-import org.move.utils.cache
-import org.move.utils.cacheManager
 import org.move.utils.cacheResult
 import org.move.utils.recursionGuard
-
-interface MvInferenceContextOwner: MvElement
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
     return expectedTy.kind == TyInteger.DEFAULT_KIND
@@ -85,7 +84,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
 
-    private val resolvedPaths: Map<MvPath, List<ResolvedItem>>,
+    private val resolvedPaths: Map<MvPath, List<RsPathResolveResult>>,
     private val resolvedFields: Map<MvFieldLookup, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
@@ -107,7 +106,7 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
 
-    fun getResolvedPath(path: MvPath): List<ResolvedItem>? =
+    fun getResolvedPath(path: MvPath): List<RsPathResolveResult>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
 
     fun getResolvedField(field: MvFieldLookup): MvNamedElement? = resolvedFields[field]
@@ -121,46 +120,10 @@ data class InferenceResult(
         patFieldTypes[patField] ?: inferenceErrorOrFallback(patField, TyUnknown)
 }
 
-fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
-    val inferenceCtx = InferenceContext(msl)
-    return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
-        ?: error("Cannot run nested type inference")
-}
-
-private val NEW_INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceResult>> =
-    Key.create("NEW_INFERENCE_KEY_NON_MSL")
-private val NEW_INFERENCE_KEY_MSL: Key<CachedValue<InferenceResult>> = Key.create("NEW_INFERENCE_KEY_MSL")
-
-fun MvInferenceContextOwner.inference(msl: Boolean): InferenceResult {
-    return if (msl) {
-        project.cacheManager.cache(this, NEW_INFERENCE_KEY_MSL) {
-            val localModificationTracker =
-                this.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    this.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            this.cacheResult(inferTypesIn(this, true), cacheDependencies)
-        }
-    } else {
-        project.cacheManager.cache(this, NEW_INFERENCE_KEY_NON_MSL) {
-            val localModificationTracker =
-                this.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    this.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            this.cacheResult(inferTypesIn(this, false), cacheDependencies)
-        }
-    }
-}
-
-fun MvElement.inferenceOwner(): MvInferenceContextOwner? = this.ancestorOrSelf()
+fun MvElement.inferenceContextOwner(): MvInferenceContextOwner? = this.ancestorOrSelf()
 
 fun MvElement.inference(msl: Boolean): InferenceResult? {
-    val contextOwner = inferenceOwner() ?: return null
+    val contextOwner = inferenceContextOwner() ?: return null
     return contextOwner.inference(msl)
 }
 
@@ -179,7 +142,7 @@ class InferenceContext(
     val lambdaExprTypes = mutableMapOf<MvLambdaExpr, Ty>()
     val lambdaExprs = mutableListOf<MvLambdaExpr>()
 
-    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedItem>>()
+    val resolvedPaths = mutableMapOf<MvPath, List<RsPathResolveResult>>()
     val resolvedFields = mutableMapOf<MvFieldLookup, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
     val resolvedBindings = mutableMapOf<MvPatBinding, MvNamedElement?>()
@@ -323,7 +286,7 @@ class InferenceContext(
         this.patTypes[pat] = ty
     }
 
-    fun writePath(path: MvPath, resolved: List<ResolvedItem>) {
+    fun writePath(path: MvPath, resolved: List<RsPathResolveResult>) {
         resolvedPaths[path] = resolved
     }
 
@@ -542,11 +505,6 @@ class InferenceContext(
         typeErrors.add(typeError)
     }
 }
-
-data class ResolvedItem(
-    val element: MvNamedElement,
-    val isVisible: Boolean,
-)
 
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }

@@ -1,17 +1,13 @@
-package org.move.lang.core.resolve
+package org.move.lang.core.resolve.scopeEntry
 
-import org.move.lang.core.completion.CompletionItem
-import org.move.lang.core.completion.MvCompletionContext
-import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
-import org.move.lang.core.psi.completionPriority
+import org.move.lang.core.resolve.isVisibleInContext
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
-import org.move.lang.core.types.infer.Substitution
-import org.move.lang.core.types.infer.emptySubstitution
+import org.move.lang.core.resolve.ref.itemNs
 
 
 data class ScopeEntry(
@@ -27,17 +23,27 @@ fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {
     return this.filter { it.name == name }
 }
 
-fun List<ScopeEntry>.toPathResolveResults(ctx: ResolutionContext): List<RsPathResolveResult<MvElement>> {
-    return this.map { toPathResolveResult(it, ctx) }
+fun List<ScopeEntry>.namedElements(): List<MvNamedElement> = this.map { it.element }
+
+fun List<ScopeEntry>.toPathResolveResults(contextElement: MvElement?): List<RsPathResolveResult> {
+    return this.map { toPathResolveResult(it, contextElement) }
 }
 
-fun toPathResolveResult(scopeEntry: ScopeEntry, ctx: ResolutionContext): RsPathResolveResult<MvElement> {
+fun toPathResolveResult(scopeEntry: ScopeEntry, contextElement: MvElement?): RsPathResolveResult {
     val element = scopeEntry.element
-    val contextElement = ctx.methodOrPath
     if (contextElement != null) {
         return RsPathResolveResult(element, isVisibleInContext(scopeEntry, contextElement))
     } else {
         return RsPathResolveResult(element, true)
     }
+}
+
+fun List<MvNamedElement>.asEntries(): List<ScopeEntry> {
+    return this.mapNotNull { it.asEntry() }
+}
+
+fun MvNamedElement.asEntry(): ScopeEntry? {
+    val name = this.name ?: return null
+    return ScopeEntry(name, this, this.itemNs)
 }
 

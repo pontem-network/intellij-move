@@ -1,7 +1,6 @@
 package org.move.ide.presentation
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.bindingOwner
 import org.move.lang.core.psi.ext.bindingTypeOwner
 
 class PresentationInfo(

@@ -3,7 +3,7 @@ package org.move.ide.utils.imports
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.ItemFQName
 import org.move.openapiext.checkWriteAccessAllowed
 
 /**
@@ -19,30 +19,21 @@ fun ImportCandidate.import(context: MvElement) {
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
-private fun MvItemsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
+private fun MvItemsOwner.insertUseItem(usePath: ItemFQName, testOnly: Boolean) {
 
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
     val newUseStmt =
-        this.project.psiFactory.useStmt(usePath.editorText(), testOnly)
+        this.project.psiFactory.useStmt(usePath.declarationText(), testOnly)
     insertUseStmtAtTheCorrectLocation(this, newUseStmt)
-
-//    val anchor = childrenOfType<MvUseStmt>().lastElement
-//    if (anchor != null) {
-//        addAfter(newUseStmt, anchor)
-//    } else {
-//        val firstItem = this.items().first()
-//        addBefore(newUseStmt, firstItem)
-//        addBefore(psiFactory.createNewline(), firstItem)
-//    }
 }
 
 private fun tryInsertingIntoExistingUseStmt(
     mod: MvItemsOwner,
-    itemQualName: ItemQualName,
+    itemQualName: ItemFQName,
     testOnly: Boolean
 ): Boolean {
-    if (itemQualName.moduleName == null) return false
+    if (itemQualName is ItemFQName.Module) return false
     val psiFactory = mod.project.psiFactory
     val useStmts = mod.useStmtList.filter { it.hasTestOnlyAttr == testOnly }
     return useStmts
@@ -50,7 +41,7 @@ private fun tryInsertingIntoExistingUseStmt(
 }
 
 private fun tryGroupWithItemSpeck(
-    psiFactory: MvPsiFactory, useStmt: MvUseStmt, itemQualName: ItemQualName
+    psiFactory: MvPsiFactory, useStmt: MvUseStmt, itemQualName: ItemFQName
 ): Boolean {
     val rootUseSpeck = useStmt.useSpeck ?: return false
 
@@ -59,7 +50,7 @@ private fun tryGroupWithItemSpeck(
     if (useGroup == null && rootUseSpeck.path.length < 3) return false
 
     // searching for the statement with the same module qualifier
-    val itemModulePath = itemQualName.editorModuleFqName() ?: error("moduleName cannot be zero")
+    val itemModulePath = itemQualName.moduleDeclarationText() ?: error("moduleName cannot be zero")
     if (useGroup == null) {
         val modulePath = rootUseSpeck.path.qualifier ?: return false
         if (!modulePath.textMatches(itemModulePath)) return false
@@ -68,7 +59,7 @@ private fun tryGroupWithItemSpeck(
         if (!modulePath.textMatches(itemModulePath)) return false
     }
 
-    val itemName = itemQualName.itemName
+    val itemName = itemQualName.name()
     val newUseSpeck = psiFactory.useSpeckForGroup(itemName)
 
     if (useGroup == null) {

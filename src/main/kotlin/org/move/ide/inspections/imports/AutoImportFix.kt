@@ -14,7 +14,10 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.MvUseStmt
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.allowedNamespaces
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.hasAncestor
+import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.moveProject
 import org.move.openapiext.runWriteCommandAction
@@ -41,7 +44,7 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
         val name = element.referenceName ?: return
         val importContext = ImportContext.from(element, false) ?: return
         val candidates =
-            ImportCandidateCollector.getImportCandidates(importContext, name)
+            ImportCandidateCollector.getImportCandidates(importContext, listOf(name))
         if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
@@ -90,13 +93,13 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
             val referenceName = path.referenceName ?: return null
             val importContext = ImportContext.from(path, false) ?: return null
             val candidates =
-                ImportCandidateCollector.getImportCandidates(importContext, referenceName)
+                ImportCandidateCollector.getImportCandidates(importContext, listOf(referenceName))
             return Context(candidates)
         }
     }
 }
 
-data class ImportContext private constructor(
+data class ImportContext(
     val pathElement: MvPath,
     val ns: Set<Namespace>,
     val indexSearchScope: GlobalSearchScope,

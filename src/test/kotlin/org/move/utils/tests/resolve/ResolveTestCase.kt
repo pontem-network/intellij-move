@@ -1,5 +1,8 @@
 package org.move.utils.tests.resolve
 
+import com.intellij.testFramework.IndexingTestUtil
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.containingModule

@@ -2,8 +2,9 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.getStructLitFieldResolveVariants
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 class MvStructLitFieldReferenceImpl(
     field: MvStructLitField
@@ -14,5 +15,5 @@ class MvStructLitFieldReferenceImpl(
     override fun multiResolveInner(): List<MvNamedElement> =
         getStructLitFieldResolveVariants(element, false)
             .filterByName(element.referenceName)
-            .map { it.element }
+            .namedElements()
 }

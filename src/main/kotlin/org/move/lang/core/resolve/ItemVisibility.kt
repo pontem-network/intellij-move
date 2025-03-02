@@ -6,6 +6,7 @@ import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility.*
 import org.move.stdext.containsAny

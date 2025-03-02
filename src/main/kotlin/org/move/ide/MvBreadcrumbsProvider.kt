@@ -6,6 +6,7 @@ import com.intellij.ui.breadcrumbs.BreadcrumbsProvider
 import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.expr
+import org.move.lang.core.types.fqName
 
 class MvBreadcrumbsProvider : BreadcrumbsProvider {
 
@@ -36,7 +37,7 @@ class MvBreadcrumbsProvider : BreadcrumbsProvider {
     private object MvModuleHandler : MvElementHandler<MvModule> {
         override fun accepts(e: PsiElement): Boolean = e is MvModule
 
-        override fun elementInfo(e: MvModule): String = e.qualName?.editorText() ?: "null"
+        override fun elementInfo(e: MvModule): String = e.fqName()?.declarationText() ?: "null"
     }
 
     private object MvModuleSpecHandler : MvElementHandler<MvModuleSpec> {

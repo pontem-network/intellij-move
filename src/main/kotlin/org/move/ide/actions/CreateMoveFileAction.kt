@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.intellij.psi.createSmartPointer
 import com.intellij.util.IncorrectOperationException
 import com.jetbrains.rd.util.firstOrNull
 import fleet.util.logging.logger

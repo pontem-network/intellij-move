@@ -3,8 +3,8 @@ package org.move.cli.externalSystem
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.move.cli.MvConstants
 import org.move.cli.MoveProject
+import org.move.cli.MvConstants
 import org.move.cli.moveProjectsService
 
 @Service(Service.Level.PROJECT)

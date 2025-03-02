@@ -1,7 +1,8 @@
 package org.move.lang.completion
 
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MvQualNamedElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.types.fqName
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.completion.CompletionTestCase
 
@@ -219,7 +220,7 @@ module 0x1::Main {
     private fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings =
-            variants.map { (it.psiElement as? MvQualNamedElement)?.qualName?.editorText() ?: it.lookupString }
+            variants.map { (it.psiElement as? MvNamedElement)?.fqName()?.declarationText() ?: it.lookupString }
         checkCompletionListStartsWith(listStart, lookupStrings)
     }
 

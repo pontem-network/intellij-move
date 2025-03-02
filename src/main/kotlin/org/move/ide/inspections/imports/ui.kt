@@ -34,7 +34,7 @@ fun showItemsToImportChooser(
     val itemImportUi = if (isUnitTestMode) {
         MOCK
             ?: error(
-                "Multiple items: ${items.map { it.qualName.editorText() }}. " +
+                "Multiple items: ${items.map { it.qualName.declarationText() }}. " +
                         "You should set mock ui via `withMockImportItemUi`"
             )
     } else {
@@ -57,7 +57,7 @@ interface ImportItemUi {
     fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit)
 }
 
-private class PopupImportItemUi(private val project: Project, private val dataContext: DataContext) :
+private class PopupImportItemUi(private val project: Project, private val dataContext: DataContext):
     ImportItemUi {
 
     override fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit) {
@@ -65,7 +65,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
 
         // TODO: sort items in popup
         val step =
-            object : BaseListPopupStep<ImportCandidatePsiElement>("Item to Import", candidatePsiItems) {
+            object: BaseListPopupStep<ImportCandidatePsiElement>("Item to Import", candidatePsiItems) {
                 override fun isAutoSelectionEnabled(): Boolean = false
                 override fun isSpeedSearchEnabled(): Boolean = true
                 override fun hasSubstep(selectedValue: ImportCandidatePsiElement?): Boolean = false
@@ -79,14 +79,14 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
                 }
 
                 override fun getTextFor(value: ImportCandidatePsiElement): String =
-                    value.importCandidate.qualName.editorText()
+                    value.importCandidate.qualName.declarationText()
 
                 override fun getIconFor(value: ImportCandidatePsiElement): Icon =
                     value.importCandidate.element.getIcon(0)
             }
 
         @Suppress("UNCHECKED_CAST")
-        val popup = object : ListPopupImpl(project, step) {
+        val popup = object: ListPopupImpl(project, step) {
             override fun getListElementRenderer(): ListCellRenderer<*> {
                 val baseRenderer = super.getListElementRenderer() as PopupListElementRenderer<Any>
                 val psiRenderer = RsImportCandidateCellRenderer()
@@ -113,11 +113,11 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
     }
 }
 
-private class ImportCandidatePsiElement(val importCandidate: ImportCandidate) : FakePsiElement() {
+private class ImportCandidatePsiElement(val importCandidate: ImportCandidate): FakePsiElement() {
     override fun getParent(): PsiElement? = importCandidate.element.parent
 }
 
-private class RsImportCandidateCellRenderer : DefaultPsiElementCellRenderer() {
+private class RsImportCandidateCellRenderer: DefaultPsiElementCellRenderer() {
 
     private val Any.importCandidate: ImportCandidate? get() = (this as? ImportCandidatePsiElement)?.importCandidate
 
@@ -129,23 +129,9 @@ private class RsImportCandidateCellRenderer : DefaultPsiElementCellRenderer() {
 
     override fun getContainerText(element: PsiElement, name: String): String? {
         val importCandidate = element.importCandidate
-        return if (importCandidate != null) {
-            val fqName = importCandidate.qualName
-            val container = if (fqName.moduleName == null) {
-                fqName.address.text()
-            } else {
-                "${fqName.address.text()}::${fqName.moduleName}"
-            }
-            "($container)"
-        } else {
-            super.getContainerText(element, name)
+        if (importCandidate != null) {
+            return "(${importCandidate.qualName.containerName()})"
         }
+        return super.getContainerText(element, name)
     }
-
-//    override fun getItemLocation(value: Any?): TextWithIcon? {
-//        // TODO: change into proper package name
-//        val moveProject = value?.importCandidate?.element?.moveProject ?: return null
-//        val packageName = moveProject.packageName ?: return null
-//        return TextWithIcon(packageName, MvIcons.MOVE)
-//    }
 }

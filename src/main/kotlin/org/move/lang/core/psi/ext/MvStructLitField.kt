@@ -1,7 +1,9 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvStructLitExpr
+import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvStructLitFieldReferenceImpl

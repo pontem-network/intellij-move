@@ -7,11 +7,12 @@ import org.move.ide.inspections.fixes.IntegerCastFix
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.MvFieldsOwner
 import org.move.lang.core.psi.ext.MvItemElement
-import org.move.lang.core.psi.ext.MvStructOrEnumItemElement
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyAdt
+import org.move.lang.core.types.ty.TyInteger
+import org.move.lang.core.types.ty.TyTuple
 
 sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String

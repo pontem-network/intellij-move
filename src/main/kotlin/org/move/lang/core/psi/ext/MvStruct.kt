@@ -1,15 +1,14 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
-import com.intellij.navigation.ItemPresentation
-import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.MvStructStub
-import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.psi.MvAbilitiesList
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.impl.MvNamedElementImpl
+import org.move.lang.core.psi.psiFactory
+import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.Ty
@@ -80,19 +79,8 @@ fun MvStruct.addAbility(ability: String) {
     }
 }
 
-abstract class MvStructMixin: MvStubbedNamedElementImpl<MvStructStub>,
-                              MvStruct {
-
-    constructor(node: ASTNode): super(node)
-
-    constructor(stub: MvStructStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
-
-    override val qualName: ItemQualName?
-        get() {
-            val itemName = this.name ?: return null
-            val moduleFQName = this.module.qualName ?: return null
-            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
-        }
+abstract class MvStructMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
+                                             MvStruct {
 
     override fun declaredType(msl: Boolean): Ty = MvPsiTypeImplUtil.declaredType(this)
 

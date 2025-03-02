@@ -1,7 +1,6 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.ResolveResult
-import com.intellij.util.SmartList
 import org.move.cli.MoveProject
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
@@ -9,6 +8,10 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
 import org.move.lang.core.resolve.ref.Namespace.MODULE
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -31,13 +34,13 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()
 
-    fun rawMultiResolveIfVisible(): List<RsPathResolveResult<MvElement>> =
+    fun rawMultiResolveIfVisible(): List<RsPathResolveResult> =
         rawMultiResolve().filter { it.isVisible }
 
-    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
+    fun rawMultiResolve(): List<RsPathResolveResult> =
         rawMultiResolveUsingInferenceCache() ?: rawCachedMultiResolve()
 
-    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult<MvElement>>? {
+    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult>? {
         val pathElement = element.parent
         val msl = pathElement.isMsl()
 
@@ -56,7 +59,7 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
         return null
     }
 
-    private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult<MvElement>>? {
+    private fun getResolvedPathFromInference(path: MvPath, msl: Boolean): List<RsPathResolveResult>? {
         // Path resolution is cached, but sometimes path changes so much that it can't be retrieved
         // from cache anymore. In this case we need to get the old path.
         val originalPath = path.getOriginalOrSelf()
@@ -66,15 +69,15 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
             }
     }
 
-    private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
+    private fun rawCachedMultiResolve(): List<RsPathResolveResult> {
         return MvResolveCache
             .getInstance(element.project)
             .resolveWithCaching(element, ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE, Resolver)
             .orEmpty()
     }
 
-    private object Resolver: (MvElement) -> List<RsPathResolveResult<MvElement>> {
-        override fun invoke(path: MvElement): List<RsPathResolveResult<MvElement>> {
+    private object Resolver: (MvElement) -> List<RsPathResolveResult> {
+        override fun invoke(path: MvElement): List<RsPathResolveResult> {
             // should not really happen
             if (path !is MvPath) return emptyList()
             val resolutionCtx = ResolutionContext(path, isCompletion = false)
@@ -90,7 +93,10 @@ fun getPathResolveVariantsWithExpectedType(
 ): List<ScopeEntry> {
     // if path qualifier is enum, then the expected type is that enum
     var correctedExpectedType = expectedType
-    if (pathKind is PathKind.QualifiedPath) {
+    if (
+        pathKind is PathKind.QualifiedPath.ModuleItemOrEnumVariant
+        || pathKind is PathKind.QualifiedPath.FQModuleItem
+    ) {
         val qualifierItem = pathKind.qualifier.reference?.resolveFollowingAliases()
         if (qualifierItem is MvEnum) {
             correctedExpectedType = TyAdt.valueOf(qualifierItem)
@@ -139,8 +145,7 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
                 }
                 // local
                 addAll(
-                    getEntriesFromWalkingScopes(ctx.element, ctx)
-                        .filterByNs(pathKind.ns)
+                    getEntriesFromWalkingScopes(ctx.element, pathKind.ns)
                 )
             }
             is PathKind.QualifiedPath.Module -> {
@@ -169,6 +174,13 @@ fun getQualifiedPathEntries(
     val qualifierItem = qualifier.reference?.resolveFollowingAliases()
     return buildList {
         when (qualifierItem) {
+            is MvModule -> {
+                add(ScopeEntry("Self", qualifierItem, MODULES))
+                addAll(qualifierItem.importableItemEntries)
+            }
+            is MvEnum -> {
+                addAll(qualifierItem.variants.asEntries())
+            }
             null -> {
                 // can be a module, try for named address as a qualifier
                 val addressName = qualifier.referenceName ?: return@buildList
@@ -176,18 +188,8 @@ fun getQualifiedPathEntries(
                 val moveProject = ctx.moveProject ?: return@buildList
                 // no such named address
                 val address = moveProject.getNamedAddressTestAware(addressName) ?: return@buildList
-
                 val moduleEntries = getModulesAsEntries(ctx, address)
                 addAll(moduleEntries)
-            }
-            is MvModule -> {
-                add(ScopeEntry("Self", qualifierItem, MODULES))
-
-                val moduleItems = getImportableItemsAsEntries(qualifierItem)
-                addAll(moduleItems)
-            }
-            is MvEnum -> {
-                addAll(qualifierItem.variants.mapNotNull { it.asEntry() })
             }
         }
     }
@@ -224,14 +226,14 @@ fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
 private fun resolvePath(
     ctx: ResolutionContext,
     path: MvPath,
-): List<RsPathResolveResult<MvElement>> {
+): List<RsPathResolveResult> {
     val referenceName = path.referenceName ?: return emptyList()
 
     val pathKind = path.pathKind()
     val entries = getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
 
     val resolveResults = entries
-        .filterByName(referenceName).toPathResolveResults(ctx)
+        .filterByName(referenceName).toPathResolveResults(ctx.methodOrPath)
     return resolveResults
 }
 

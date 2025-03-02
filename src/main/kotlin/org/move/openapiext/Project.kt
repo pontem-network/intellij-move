@@ -8,7 +8,6 @@ import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
-import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)

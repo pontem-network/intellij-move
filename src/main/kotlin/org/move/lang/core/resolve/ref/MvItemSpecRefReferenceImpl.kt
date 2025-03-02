@@ -5,17 +5,17 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.allNonTestFunctions
 import org.move.lang.core.psi.ext.itemSpec
 import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.structs
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.asEntries
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
         val entries =
             getVerifiableItemEntries(element).filterByName(element.referenceName)
-        return entries.map { it.element }
+        return entries.namedElements()
     }
 }
 
@@ -23,7 +23,7 @@ fun getVerifiableItemEntries(itemSpecRef: MvItemSpecRef): List<ScopeEntry> {
     val module = itemSpecRef.itemSpec.module ?: return emptyList()
     val verifiableItems = buildList {
         addAll(module.allNonTestFunctions())
-        addAll(module.structs())
+        addAll(module.structList)
         addAll(module.enumList)
     }
     return verifiableItems.asEntries()

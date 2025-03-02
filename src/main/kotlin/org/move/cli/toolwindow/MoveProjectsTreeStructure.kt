@@ -16,6 +16,7 @@ import org.move.lang.core.psi.ext.entryFunctions
 import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.hasTestOnlyAttr
 import org.move.lang.core.psi.ext.viewFunctions
+import org.move.lang.core.types.fqName
 import org.move.stdext.iterateMoveFiles
 
 class MoveProjectsTreeStructure(
@@ -122,7 +123,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { module.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { module.fqName()?.declarationText() ?: "null" }
             override fun toTestString(): String = "Module($name)"
         }
 
@@ -141,7 +142,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { function.fqName()?.declarationText() ?: "null" }
             override fun toTestString(): String = "Entrypoint($name)"
         }
 
@@ -160,32 +161,8 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String = runReadAction { function.fqName()?.declarationText() ?: "null" }
             override fun toTestString(): String = "View($name)"
         }
-
-//        class Tests(val testModules: List<MvModule>, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> {
-//                return testModules.map { TestModule(it, this) }.toTypedArray()
-//            }
-//
-//            override fun getName(): String = "Tests"
-//            override fun toTestString(): String = "Tests"
-//        }
-//
-//        class TestModule(val module: MvModule, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> {
-//                return module.testFunctions().map { TestFunction(it, this) }.toTypedArray()
-//            }
-//
-//            override fun getName(): String = module.name ?: ""
-//            override fun toTestString(): String = "TestModule"
-//        }
-//
-//        class TestFunction(val function: MvFunction, parent: SimpleNode) : MoveSimpleNode(parent) {
-//            override fun buildChildren(): Array<SimpleNode> = emptyArray()
-//            override fun getName(): String = function.name ?: "<unknown>"
-//            override fun toTestString(): String = "TestFunction"
-//        }
     }
 }

@@ -3,7 +3,6 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.stdext.chain
 
 val MvItemSpec.item: MvNamedElement? get() = this.itemSpecRef?.reference?.resolve()
 

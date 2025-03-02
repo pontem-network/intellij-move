@@ -1,19 +1,8 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvEnum
-import org.move.lang.core.psi.MvEnumVariant
-import org.move.lang.core.psi.MvFunctionLike
-import org.move.lang.core.psi.MvGlobalVariableStmt
-import org.move.lang.core.psi.MvLabelDecl
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvPatBinding
-import org.move.lang.core.psi.MvSchema
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvTypeParameter
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvFieldDecl
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.stdext.intersects
 import java.util.*
 
@@ -84,4 +73,5 @@ fun List<ScopeEntry>.filterByNs(ns: Set<Namespace>): List<ScopeEntry> {
     return this.filter {
         it.namespaces.intersects(ns)
     }
+
 }

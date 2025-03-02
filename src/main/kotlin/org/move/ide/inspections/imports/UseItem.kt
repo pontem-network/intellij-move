@@ -8,7 +8,7 @@ import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
-import org.move.lang.core.resolve.util.forEachLeafSpeck
+import org.move.lang.core.resolve.scopeEntry.useSpeckLeaves
 
 enum class UseItemType {
     MODULE, SELF_MODULE, ITEM;
@@ -25,32 +25,30 @@ val MvItemsOwner.useItems: List<UseItem> get() = this.useStmtList.flatMap { it.u
 
 val MvUseStmt.useItems: List<UseItem>
     get() {
-        val items = mutableListOf<UseItem>()
-        val stmtItemScope = this.usageScope
-        this.forEachLeafSpeck { speckPath, useAlias ->
-            val useSpeck = speckPath.parent as MvUseSpeck
-            val nameOrAlias = useAlias?.name ?: speckPath.referenceName ?: return@forEachLeafSpeck false
-            val pathKind = speckPath.pathKind()
-            when (pathKind) {
-                is PathKind.QualifiedPath.Module ->
-                    items.add(UseItem(useSpeck, nameOrAlias, MODULE, stmtItemScope))
-                is PathKind.QualifiedPath.ModuleItemOrEnumVariant -> {
-                    debugError("not reachable, must be a bug")
-                    return@forEachLeafSpeck false
-                }
-                is PathKind.QualifiedPath -> {
-                    if (pathKind.path.referenceName == "Self") {
-                        val moduleName =
-                            useAlias?.name ?: pathKind.qualifier.referenceName ?: return@forEachLeafSpeck false
-                        items.add(UseItem(useSpeck, moduleName, SELF_MODULE, stmtItemScope))
-                    } else {
-                        items.add(UseItem(useSpeck, nameOrAlias, ITEM, stmtItemScope))
+        val stmt = this
+        val stmtScope = stmt.usageScope
+        return buildList {
+            for ((speckPath, speckAlias) in stmt.useSpeckLeaves) {
+                val useSpeck = speckPath.parent as MvUseSpeck
+                val nameOrAlias = speckAlias?.name ?: speckPath.referenceName ?: continue
+                val pathKind = speckPath.pathKind()
+                when (pathKind) {
+                    is PathKind.QualifiedPath.Module ->
+                        add(UseItem(useSpeck, nameOrAlias, MODULE, stmtScope))
+                    is PathKind.QualifiedPath.ModuleItemOrEnumVariant -> {
+                        debugError("not reachable, must be a bug")
                     }
+                    is PathKind.QualifiedPath -> {
+                        if (pathKind.path.referenceName == "Self") {
+                            val moduleName =
+                                speckAlias?.name ?: pathKind.qualifier.referenceName ?: continue
+                            add(UseItem(useSpeck, moduleName, SELF_MODULE, stmtScope))
+                        } else {
+                            add(UseItem(useSpeck, nameOrAlias, ITEM, stmtScope))
+                        }
+                    }
+                    else -> Unit
                 }
-                else -> return@forEachLeafSpeck false
             }
-            false
         }
-
-        return items
     }

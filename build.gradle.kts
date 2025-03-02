@@ -59,8 +59,6 @@ allprojects {
         implementation("io.sentry:sentry:7.14.0") {
             exclude("org.slf4j")
         }
-        // cannot be updated further, problems with underlying library
-        implementation("com.github.ajalt.clikt:clikt:3.5.4")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+")
         // required for the StringEscapeUtils
         implementation("org.apache.commons:commons-text:1.12.0")

@@ -9,10 +9,15 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.MvPsiPattern.path
-import org.move.lang.core.completion.*
+import org.move.lang.core.completion.Completions
+import org.move.lang.core.completion.MvCompletionContext
+import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
+import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext

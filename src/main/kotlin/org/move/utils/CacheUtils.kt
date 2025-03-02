@@ -5,22 +5,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
-import com.intellij.psi.util.*
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 
 val Project.cacheManager: CachedValuesManager get() = CachedValuesManager.getManager(this)
-
-fun <T> Project.globalPsiDependentCache(
-    key: Key<CachedValue<T>>,
-    provider: (Project) -> T
-): T {
-    val cacheManager = this.cacheManager
-    return cacheManager.getCachedValue(this, key, {
-        CachedValueProvider.Result.create(provider(this), PsiModificationTracker.MODIFICATION_COUNT)
-    }, false)
-}
 
 fun <T> CachedValuesManager.cache(
     dataHolder: UserDataHolder,
@@ -35,6 +28,14 @@ fun <T> MvElement.psiCacheResult(value: T): CachedValueProvider.Result<T> =
         value,
         PsiModificationTracker.MODIFICATION_COUNT
     )
+
+fun <T> MvElement.containingFileCacheResult(value: T): CachedValueProvider.Result<T> {
+    val file = containingFile?.originalFile?.virtualFile
+    return file?.fileCacheResult(value) ?: this.psiCacheResult(value)
+}
+
+fun <T> VirtualFile.fileCacheResult(value: T): CachedValueProvider.Result<T> =
+    CachedValueProvider.Result.create(value, this)
 
 fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValueProvider.Result<T> {
     return when {

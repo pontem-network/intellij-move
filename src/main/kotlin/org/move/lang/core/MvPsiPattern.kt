@@ -1,7 +1,10 @@
 package org.move.lang.core
 
-import com.intellij.patterns.*
+import com.intellij.patterns.ElementPattern
+import com.intellij.patterns.ObjectPattern
+import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.patterns.PsiElementPattern
 import com.intellij.patterns.StandardPatterns.or
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement

@@ -20,6 +20,7 @@ object MoveIcons {
     val MODULE = load("/icons/module.svg")
 
     val STRUCT = load("/icons/struct.svg")
+    val ENUM = AllIcons.Nodes.Enum
     val SCHEMA = AllIcons.Nodes.Static
 
     val FIELD = load("/icons/nodes/field.svg")

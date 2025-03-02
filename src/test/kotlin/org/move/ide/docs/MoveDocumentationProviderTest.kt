@@ -238,7 +238,6 @@ module 0x1::m {
 <div class='content'><p>my specification function</p></div>
 """)
 
-    // todo: add context support
     fun `test inline spec fun docs`() = doTest("""
         module 0x1::m {
             spec module {

@@ -42,31 +42,4 @@ fun PsiElement.findModificationTrackerOwner(strict: Boolean): MvModificationTrac
         element = element.parent
     }
     return null
-//    return findContextOfType(
-//        strict,
-//        MvFunction::class, MvItemSpec::class,
-//    )
-//    return context
-}
-
-// We have to process contexts without index access because accessing indices during PSI event processing is slow.
-//private val PsiElement.contextWithoutIndexAccess: PsiElement?
-//    //    get() = if (this is RsExpandedElement) {
-////        RsExpandedElement.getContextImpl(this, isIndexAccessForbidden = true)
-////    } else {
-//    get() = stubParent
-////    }
-
-@Suppress("UNCHECKED_CAST")
-private fun <T: PsiElement> PsiElement.findContextOfType(
-    strict: Boolean,
-    vararg classes: KClass<out T>
-): T? {
-    var element = if (strict) stubParent else this
-
-    while (element != null && !classes.any { it.isInstance(element) }) {
-        element = element.stubParent
-    }
-
-    return element as T?
 }

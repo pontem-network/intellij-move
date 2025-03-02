@@ -2,6 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.openapi.util.Condition
+import com.intellij.openapi.util.Segment
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
@@ -11,15 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.prevLeaf
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.*
-import org.move.lang.core.stubs.impl.MvFileStub
-import org.move.lang.core.types.address
-import org.move.lang.moveProject
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.document
-import org.move.openapiext.rootPath
-import java.nio.file.Path
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
@@ -184,9 +177,7 @@ inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
 /**
  * Extracts node's element type
  */
-val PsiElement.elementType: IElementType
-    // XXX: be careful not to switch to AST
-    get() = if (this is MoveFile) MvFileStub.Type else PsiUtilCore.getElementType(this)
+val PsiElement.elementType: IElementType get() = PsiUtilCore.getElementType(this)
 
 /**
  * Checks whether this node contains [descendant] one
@@ -296,8 +287,13 @@ fun PsiElement.isErrorElement(): Boolean =
 fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
 
-fun PsiElement.cameBefore(element: PsiElement) =
-    PsiUtilCore.compareElementsByPosition(this, element) <= 0
+fun PsiElement.strictlyBefore(element: PsiElement): Boolean {
+    val leftRange = this.textRange
+    val rightRange = element.textRange
+    val ret = Segment.BY_START_OFFSET_THEN_END_OFFSET.compare(leftRange, rightRange)
+    return ret < 0
+//    return PsiUtilCore.compareElementsByPosition(this, element) < 0
+}
 
 @Suppress("UNCHECKED_CAST")
 inline val <T: StubElement<*>> StubBasedPsiElement<T>.greenStub: T?

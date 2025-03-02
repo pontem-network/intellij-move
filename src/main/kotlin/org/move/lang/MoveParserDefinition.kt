@@ -12,10 +12,9 @@ import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.MvTokenType
 import org.move.lang.core.lexer.createMoveLexer
-import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.lang.core.tokenSetOf
 
-class MoveParserDefinition : ParserDefinition {
+class MoveParserDefinition: ParserDefinition {
     override fun createLexer(project: Project): Lexer {
         return createMoveLexer()
     }
@@ -44,7 +43,7 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     companion object {
-        val FILE = MvFileStub.Type
+        val FILE = IFileElementType(MoveLanguage)
 
         @JvmField
         val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")

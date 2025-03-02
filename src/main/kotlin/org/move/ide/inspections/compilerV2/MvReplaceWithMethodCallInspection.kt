@@ -3,10 +3,13 @@ package org.move.ide.inspections.compilerV2
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.compilerV2.fixes.ReplaceWithMethodCallFix
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemModule
 import org.move.lang.core.psi.ext.valueArguments
+import org.move.lang.core.psi.module
+import org.move.lang.core.psi.selfParamTy
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInfer

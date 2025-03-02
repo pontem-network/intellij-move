@@ -5,7 +5,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.inference
 
 abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
 

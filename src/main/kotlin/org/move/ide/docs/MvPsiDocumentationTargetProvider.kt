@@ -9,7 +9,7 @@ import com.intellij.platform.backend.documentation.PsiDocumentationTargetProvide
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.createSmartPointer
-import io.ktor.http.quote
+import io.ktor.http.*
 import org.move.ide.docs.MvColorUtils.asAbility
 import org.move.ide.docs.MvColorUtils.asTypeParam
 import org.move.ide.docs.MvColorUtils.colored
@@ -17,25 +17,13 @@ import org.move.ide.docs.MvColorUtils.keyword
 import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.presentationInfo
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvAbility
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.MvFunctionParameterList
-import org.move.lang.core.psi.MvNamedAddress
-import org.move.lang.core.psi.MvPatBinding
-import org.move.lang.core.psi.MvReturnType
-import org.move.lang.core.psi.MvType
-import org.move.lang.core.psi.MvTypeParameter
-import org.move.lang.core.psi.MvTypeParameterList
-import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
 import org.toml.lang.psi.TomlKeySegment
-import kotlin.collections.isNotEmpty
 
 class MvPsiDocumentationTargetProvider: PsiDocumentationTargetProvider {
     override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
@@ -94,7 +82,7 @@ class MvDocumentationTarget(
                 val addressName = docElement.referenceName
                 val named = moveProject.getNamedAddressTestAware(addressName) ?: return null
                 val address =
-                    named.addressLit()?.original ?: "<unassigned>".escapeForHtml()
+                    named.addressValue()?.value ?: "<unassigned>".escapeForHtml()
                 definition(buffer) {
                     it += "$addressName = ${address.quote()}"
                 }

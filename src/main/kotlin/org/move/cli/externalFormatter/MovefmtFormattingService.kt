@@ -8,17 +8,14 @@ import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
 import com.intellij.notification.NotificationType.ERROR
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.progress.util.ProgressIndicatorBase
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.psi.PsiFile
 import com.intellij.psi.formatter.FormatterUtil
 import org.move.cli.externalFormatter.MovefmtFormattingService.Companion.FormattingReason.*
-import org.move.cli.tools.Movefmt
 import org.move.ide.notifications.showBalloon
 import org.move.lang.MoveFile
 import org.move.openapiext.rootPath

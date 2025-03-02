@@ -5,21 +5,12 @@ import com.intellij.codeInsight.hints.declarative.HintFontSize.ABitSmallerThanIn
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvForIterCondition
-import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.MvLambdaParameter
-import org.move.lang.core.psi.MvLetStmt
-import org.move.lang.core.psi.MvPat
-import org.move.lang.core.psi.MvPatBinding
-import org.move.lang.core.psi.MvPatField
-import org.move.lang.core.psi.MvPatFieldFull
-import org.move.lang.core.psi.MvRangeQuantBinding
-import org.move.lang.core.psi.MvSchemaFieldStmt
-import org.move.lang.core.psi.MvTypeQuantBinding
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.bindingTypeOwner
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.inferenceOwner
+import org.move.lang.core.types.infer.inferenceContextOwner
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvTypeInlayHintsProvider2: InlayHintsProvider {
@@ -62,7 +53,7 @@ class MvTypeInlayHintsProvider2: InlayHintsProvider {
                 else -> return
             }
 
-            val contextInferenceOwner = patBinding.inferenceOwner() ?: return
+            val contextInferenceOwner = patBinding.inferenceContextOwner() ?: return
             val msl = patBinding.isMsl()
             val ty = contextInferenceOwner.inference(msl).getBindingType(patBinding)
             if (ty is TyUnknown) return

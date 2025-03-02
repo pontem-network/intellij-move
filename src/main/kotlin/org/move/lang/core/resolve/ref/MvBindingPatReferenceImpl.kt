@@ -5,9 +5,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.getPatBindingsResolveVariants
+import org.move.lang.core.resolve.scopeEntry.namedElements
 import org.move.lang.core.types.infer.InferenceResult
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -39,7 +40,7 @@ class MvBindingPatReferenceImpl(
     }
 
     private fun rawCachedMultiResolve(): List<MvNamedElement> =
-        resolvePatBindingRaw(element, expectedType = null).map { it.element }
+        resolvePatBindingRaw(element, expectedType = null).namedElements()
 
     override fun handleElementRename(newName: String): PsiElement {
         if (element.parent !is MvPatField) return super.handleElementRename(newName)

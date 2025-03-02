@@ -1,18 +1,17 @@
 package org.move.lang.core.psi
 
-import com.intellij.ide.projectView.PresentationData
-import com.intellij.openapi.editor.colors.TextAttributesKey
 import org.move.cli.settings.moveSettings
-import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.deepFoldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.functionTy
 
 interface MvFunctionLike: MvNameIdentifierOwner,
                           MvGenericDeclaration,
@@ -47,14 +46,9 @@ val MvFunctionLike.anyBlock: AnyBlock?
 val MvFunctionLike.module: MvModule?
     get() =
         when (this) {
-            is MvFunction -> {
-                val moduleStub = greenStub?.parentStub as? MvModuleStub
-                if (moduleStub != null) {
-                    moduleStub.psi
-                } else {
-                    this.parent as? MvModule
-                }
-            }
+            is MvFunction -> this.parent as? MvModule
+            is MvSpecFunction -> this.parentModule
+            is MvSpecInlineFunction -> this.parentModule
             // TODO:
             else -> null
         }

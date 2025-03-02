@@ -1,7 +1,6 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.psi.PsiElement
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.types.ty.Ty

@@ -4,10 +4,10 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
-import org.move.lang.core.resolve.ref.MvPathReference
-import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
+import org.move.lang.core.resolve.ref.MvPathReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 
 val MvAttrItem.unqualifiedIdent: PsiElement?
     get() {

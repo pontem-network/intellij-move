@@ -4,7 +4,8 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.contexts
 import org.move.lang.core.psi.ext.label.MvLabeledExpression
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
 
 fun getLabelResolveVariants(label: MvLabel): List<ScopeEntry> {
     return buildList {

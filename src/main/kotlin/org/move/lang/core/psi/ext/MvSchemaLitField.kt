@@ -3,13 +3,13 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ScopeEntry
-import org.move.lang.core.resolve.asEntries
-import org.move.lang.core.resolve.asEntry
-import org.move.lang.core.resolve.filterByName
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntries
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.resolveBindingForFieldShorthand
+import org.move.lang.core.resolve.scopeEntry.namedElements
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
@@ -38,7 +38,7 @@ class MvSchemaLitFieldReferenceImpl(
         if (shorthand) {
             variants += resolveBindingForFieldShorthand(element)
         }
-        return variants.map { it.element }
+        return variants.namedElements()
     }
 }
 

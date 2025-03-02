@@ -6,7 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyUnknown
 

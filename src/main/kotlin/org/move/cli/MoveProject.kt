@@ -14,14 +14,11 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.cli.tests.NamedAddressFromTestAnnotationService
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.Address
-import org.move.lang.core.types.AddressLit
-import org.move.lang.index.MvNamedElementIndex
+import org.move.lang.core.types.AddressValue
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
@@ -103,18 +100,6 @@ data class MoveProject(
 
     fun getValueOfDeclaredNamedAddress(name: String): String? = addressValues()[name]?.value
 
-    fun getAddressNamesForValue(addressValue: String): List<String> {
-        val addressLit = AddressLit(addressValue)
-        val names = mutableListOf<String>()
-        for ((name, value) in addresses().values.entries) {
-            val canonicalValue = value.literal.canonical()
-            if (canonicalValue == addressLit.canonical()) {
-                names.add(name)
-            }
-        }
-        return names
-    }
-
     fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
         for (folder in allAccessibleMoveFolders()) {
@@ -131,16 +116,6 @@ data class MoveProject(
         }
         return searchScope
     }
-
-    fun getModulesFromIndex(name: String): Collection<MvModule> {
-        return MvNamedElementIndex
-            .getElementsByName(project, name, searchScope())
-            .filterIsInstance<MvModule>()
-    }
-
-    val aptosConfigYaml: AptosConfigYaml? get() = this.currentPackage.aptosConfigYaml
-
-    val profiles: Set<String> = this.aptosConfigYaml?.profiles.orEmpty()
 
     fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
         val folders = allAccessibleMoveFolders()
