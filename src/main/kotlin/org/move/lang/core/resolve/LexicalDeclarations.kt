@@ -4,43 +4,23 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.util.containers.addIfNotNull
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
-import org.move.lang.core.resolve.scopeEntry.asEntries
-import org.move.lang.core.resolve.scopeEntry.asEntry
-import org.move.lang.core.resolve.scopeEntry.useSpeckEntries
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.scopeEntry.*
 import org.move.stdext.chain
 import org.move.utils.psiCacheResult
 
-fun getEntriesInScope(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
-    return buildList {
-        if (scope is MvGenericDeclaration) {
-            addAll(scope.typeParameters.asEntries())
+fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
+    return when (scope) {
+        is MvCodeBlock, is MvSpecCodeBlock, is MvMatchArm -> getEntriesInBlocks(scope, cameFrom)
+        else -> {
+            getEntriesInResolveScopes(scope)
         }
+    }
+}
+
+private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
+    return buildList {
         when (scope) {
-            is MvModule -> {
-                addAll(ModuleResolveScope(scope).getResults())
-            }
-            is MvScript -> {
-                addAll(scope.constList.asEntries())
-            }
-            is MvFunctionLike -> {
-                addAll(scope.parametersAsBindings.asEntries())
-            }
-            is MvLambdaExpr -> {
-                addAll(scope.lambdaParametersAsBindings.asEntries())
-            }
-            is MvItemSpec -> {
-                addAll(ItemSpecResolveScope(scope).getResults())
-            }
-
-            is MvSchema -> {
-                addAll(scope.fieldsAsBindings.asEntries())
-            }
-
-            is MvModuleSpecBlock -> {
-                addAll(ModuleSpecBlockResolveScope(scope).getResults())
-            }
-
             is MvCodeBlock -> {
                 val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
                 addAll(letBindings)
@@ -62,28 +42,11 @@ fun getEntriesInScope(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
                 addAll(inlineFunctions)
             }
 
-            is MvQuantBindingsOwner -> {
-                addAll(scope.bindings.asEntries())
-            }
-
-            is MvForExpr -> {
-                val iterBinding = scope.forIterCondition?.patBinding
-                if (iterBinding != null) {
-                    addIfNotNull(iterBinding.asEntry())
-                }
-            }
             is MvMatchArm -> {
                 if (cameFrom !is MvPat) {
                     // coming from rhs, use pat bindings from lhs
                     addAll(scope.pat.bindings.asEntries())
                 }
-            }
-
-            is MvApplySchemaStmt -> {
-                val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
-                val patternTypeParams =
-                    toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
-                addAll(patternTypeParams.asEntries())
             }
         }
 
@@ -92,6 +55,87 @@ fun getEntriesInScope(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
         }
     }
 }
+
+class EntriesInResolveScopes(override val owner: MvElement): PsiCachedValueProvider<List<ScopeEntry>> {
+    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
+        val entries = buildList {
+            if (owner is MvGenericDeclaration) {
+                addAll(owner.typeParameters.asEntries())
+            }
+            when (owner) {
+                is MvModule -> {
+                    addAll(owner.itemEntries)
+                    addAll(owner.enumVariants().asEntries())
+                    addAll(owner.builtinFunctions().asEntries())
+                    addAll(owner.builtinSpecFunctions().asEntries())
+                }
+                is MvScript -> {
+                    addAll(owner.constList.asEntries())
+                }
+                is MvFunctionLike -> {
+                    addAll(owner.parametersAsBindings.asEntries())
+                }
+                is MvLambdaExpr -> {
+                    addAll(owner.lambdaParametersAsBindings.asEntries())
+                }
+                is MvItemSpec -> {
+                    val refItem = owner.item
+                    when (refItem) {
+                        is MvFunction -> {
+                            addAll(refItem.typeParameters.asEntries())
+
+                            addAll(refItem.parametersAsBindings.asEntries())
+                            addAll(refItem.specFunctionResultParameters.map { it.patBinding }.asEntries())
+                        }
+                        is MvStruct -> {
+                            addAll(refItem.namedFields.asEntries())
+                        }
+                    }
+                }
+
+                is MvSchema -> {
+                    addAll(owner.fieldsAsBindings.asEntries())
+                }
+
+                is MvModuleSpecBlock -> {
+                    val specFuns = owner.specFunctionList
+                    addAll(specFuns.asEntries())
+
+                    val specInlineFuns = owner.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+                    addAll(specInlineFuns.asEntries())
+
+                    addAll(owner.schemaList.asEntries())
+                }
+
+                is MvQuantBindingsOwner -> {
+                    addAll(owner.bindings.asEntries())
+                }
+
+                is MvForExpr -> {
+                    val iterBinding = owner.forIterCondition?.patBinding
+                    if (iterBinding != null) {
+                        addIfNotNull(iterBinding.asEntry())
+                    }
+                }
+
+                is MvApplySchemaStmt -> {
+                    val toPatterns = owner.applyTo?.functionPatternList.orEmpty()
+                    val patternTypeParams =
+                        toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
+                    addAll(patternTypeParams.asEntries())
+                }
+            }
+
+            if (owner is MvItemsOwner) {
+                addAll(owner.useSpeckEntries)
+            }
+        }
+        return owner.psiCacheResult(entries)
+    }
+}
+
+private fun getEntriesInResolveScopes(scope: MvElement): List<ScopeEntry> =
+    EntriesInResolveScopes(scope).getResults()
 
 private fun getVisibleLetPatBindingsWithShadowing(
     scope: MvElement,

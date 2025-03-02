@@ -1,7 +1,6 @@
 package org.move.lang.core.resolve.scopeEntry
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
 import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.MvUseAlias
@@ -9,21 +8,28 @@ import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.psi.ext.qualifier
+import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.lang.core.resolve.getResults
 import org.move.lang.core.resolve.ref.ALL_NS
 import org.move.lang.core.resolve.ref.itemNs
-import org.move.utils.cache
-import org.move.utils.cacheManager
 import org.move.utils.psiCacheResult
 
-private val USE_SPECK_ENTRIES: Key<CachedValue<List<ScopeEntry>>> = Key.create("USE_SPECK_ENTRIES")
+class UseSpeckEntries(override val owner: MvItemsOwner): PsiCachedValueProvider<List<ScopeEntry>> {
+    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
+        return owner.psiCacheResult(
+            owner.useStmtList.useSpeckEntries()
+        )
+    }
+}
 
 val MvItemsOwner.useSpeckEntries: List<ScopeEntry>
     get() {
-        val stmts = this.useStmtList
-        if (stmts.isEmpty()) return emptyList()
-        return project.cacheManager.cache(this, USE_SPECK_ENTRIES) {
-            psiCacheResult(this.useStmtList.useSpeckEntries())
-        }
+        return UseSpeckEntries(this).getResults()
+//        val stmts = this.useStmtList
+//        if (stmts.isEmpty()) return emptyList()
+//        return project.cacheManager.cache(this, USE_SPECK_ENTRIES) {
+//            psiCacheResult(this.useStmtList.useSpeckEntries())
+//        }
     }
 
 private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {

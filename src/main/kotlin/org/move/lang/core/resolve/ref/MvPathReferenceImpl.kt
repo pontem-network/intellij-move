@@ -146,8 +146,7 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
                 }
                 // local
                 addAll(
-                    getEntriesFromWalkingScopes(ctx.element, ctx)
-                        .filterByNs(pathKind.ns)
+                    getEntriesFromWalkingScopes(ctx.element, pathKind.ns)
                 )
             }
             is PathKind.QualifiedPath.Module -> {
