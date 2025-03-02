@@ -10,7 +10,7 @@ import org.move.lang.core.psi.ext.bindingTypeOwner
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.inferenceOwner
+import org.move.lang.core.types.infer.inferenceContextOwner
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvTypeInlayHintsProvider2: InlayHintsProvider {
@@ -53,7 +53,7 @@ class MvTypeInlayHintsProvider2: InlayHintsProvider {
                 else -> return
             }
 
-            val contextInferenceOwner = patBinding.inferenceOwner() ?: return
+            val contextInferenceOwner = patBinding.inferenceContextOwner() ?: return
             val msl = patBinding.isMsl()
             val ty = contextInferenceOwner.inference(msl).getBindingType(patBinding)
             if (ty is TyUnknown) return

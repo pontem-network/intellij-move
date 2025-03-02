@@ -134,8 +134,9 @@ class EntriesInResolveScopes(override val owner: MvElement): PsiCachedValueProvi
     }
 }
 
-private fun getEntriesInResolveScopes(scope: MvElement): List<ScopeEntry> =
-    EntriesInResolveScopes(scope).getResults()
+private fun getEntriesInResolveScopes(scope: MvElement): List<ScopeEntry> {
+    return EntriesInResolveScopes(scope).getResults()
+}
 
 private fun getVisibleLetPatBindingsWithShadowing(
     scope: MvElement,

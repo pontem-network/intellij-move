@@ -1,14 +1,16 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.DebugUtil
-import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.isDebugModeEnabled
+import org.move.ide.formatter.impl.fileWithLocation
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.lang.core.resolve.getResults
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
@@ -16,12 +18,8 @@ import org.move.lang.toNioPathOrNull
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
-import org.move.utils.cache
-import org.move.utils.cacheManager
 import org.move.utils.cacheResult
 import org.move.utils.recursionGuard
-
-interface MvInferenceContextOwner: MvElement
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
     return expectedTy.kind == TyInteger.DEFAULT_KIND
@@ -122,46 +120,10 @@ data class InferenceResult(
         patFieldTypes[patField] ?: inferenceErrorOrFallback(patField, TyUnknown)
 }
 
-fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
-    val inferenceCtx = InferenceContext(msl)
-    return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
-        ?: error("Cannot run nested type inference")
-}
-
-private val NEW_INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceResult>> =
-    Key.create("NEW_INFERENCE_KEY_NON_MSL")
-private val NEW_INFERENCE_KEY_MSL: Key<CachedValue<InferenceResult>> = Key.create("NEW_INFERENCE_KEY_MSL")
-
-fun MvInferenceContextOwner.inference(msl: Boolean): InferenceResult {
-    return if (msl) {
-        project.cacheManager.cache(this, NEW_INFERENCE_KEY_MSL) {
-            val localModificationTracker =
-                this.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    this.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            this.cacheResult(inferTypesIn(this, true), cacheDependencies)
-        }
-    } else {
-        project.cacheManager.cache(this, NEW_INFERENCE_KEY_NON_MSL) {
-            val localModificationTracker =
-                this.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    this.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            this.cacheResult(inferTypesIn(this, false), cacheDependencies)
-        }
-    }
-}
-
-fun MvElement.inferenceOwner(): MvInferenceContextOwner? = this.ancestorOrSelf()
+fun MvElement.inferenceContextOwner(): MvInferenceContextOwner? = this.ancestorOrSelf()
 
 fun MvElement.inference(msl: Boolean): InferenceResult? {
-    val contextOwner = inferenceOwner() ?: return null
+    val contextOwner = inferenceContextOwner() ?: return null
     return contextOwner.inference(msl)
 }
 
