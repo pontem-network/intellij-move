@@ -14,6 +14,8 @@ import org.move.lang.core.resolve.ref.ALL_NS
 import org.move.lang.core.resolve.ref.itemNs
 import org.move.utils.psiCacheResult
 
+val MvItemsOwner.useSpeckEntries: List<ScopeEntry> get() = UseSpeckEntries(this).getResults()
+
 class UseSpeckEntries(override val owner: MvItemsOwner): PsiCachedValueProvider<List<ScopeEntry>> {
     override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
         return owner.psiCacheResult(
@@ -21,16 +23,6 @@ class UseSpeckEntries(override val owner: MvItemsOwner): PsiCachedValueProvider<
         )
     }
 }
-
-val MvItemsOwner.useSpeckEntries: List<ScopeEntry>
-    get() {
-        return UseSpeckEntries(this).getResults()
-//        val stmts = this.useStmtList
-//        if (stmts.isEmpty()) return emptyList()
-//        return project.cacheManager.cache(this, USE_SPECK_ENTRIES) {
-//            psiCacheResult(this.useStmtList.useSpeckEntries())
-//        }
-    }
 
 private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {
     val speckItems = this.getUseSpeckItems()

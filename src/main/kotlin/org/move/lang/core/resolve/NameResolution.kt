@@ -130,6 +130,7 @@ fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: Set<Namespace>): List
         val visitedScopes = hashMapOf<String, Set<Namespace>>()
         for ((scope, cameFrom) in resolveScopes) {
             val entries = getEntriesInScope(scope, cameFrom, ns)
+            if (entries.isEmpty()) continue
 
             // state between shadowing processors passed through prevScope
             val currScope = mutableMapOf<String, Set<Namespace>>()

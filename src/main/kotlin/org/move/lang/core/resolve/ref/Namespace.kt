@@ -73,4 +73,5 @@ fun List<ScopeEntry>.filterByNs(ns: Set<Namespace>): List<ScopeEntry> {
     return this.filter {
         it.namespaces.intersects(ns)
     }
+
 }

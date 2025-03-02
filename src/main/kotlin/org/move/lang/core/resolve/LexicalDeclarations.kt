@@ -6,46 +6,41 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.scopeEntry.*
-import org.move.stdext.chain
 import org.move.utils.psiCacheResult
 
 fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
     return when (scope) {
-        is MvCodeBlock, is MvSpecCodeBlock, is MvMatchArm -> getEntriesInBlocks(scope, cameFrom)
+        is MvCodeBlock, is MvSpecCodeBlock, is MvMatchArm -> getEntriesInBlocks(scope, cameFrom, ns)
         else -> {
             getEntriesInResolveScopes(scope)
         }
     }
 }
 
-private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement): List<ScopeEntry> {
+private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
     return buildList {
-        when (scope) {
-            is MvCodeBlock -> {
-                val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
-                addAll(letBindings)
-            }
-
-            is MvSpecCodeBlock -> {
-                val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
-                addAll(letBindings)
-
-                val globalEntries = scope.builtinSpecConsts().asEntries()
-                    .chain(scope.globalVariables().asEntries())
-                for (scopeEntry in globalEntries) {
-                    if (scopeEntry.name in visited) continue
-                    visited += scopeEntry.name
-                    add(scopeEntry)
+        if (Namespace.NAME in ns) {
+            when (scope) {
+                is MvCodeBlock -> {
+                    val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
+                    addAll(letBindings)
                 }
 
-                val inlineFunctions = scope.specInlineFunctions().asReversed().asEntries()
-                addAll(inlineFunctions)
-            }
+                is MvSpecCodeBlock -> {
+                    val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
+                    addAll(letBindings)
 
-            is MvMatchArm -> {
-                if (cameFrom !is MvPat) {
-                    // coming from rhs, use pat bindings from lhs
-                    addAll(scope.pat.bindings.asEntries())
+                    val globalEntries = SpecCodeBlockNonBindings(scope).getResults()
+                    addAll(
+                        globalEntries.filter { it.name !in visited }
+                    )
+                }
+
+                is MvMatchArm -> {
+                    if (cameFrom !is MvPat) {
+                        // coming from rhs, use pat bindings from lhs
+                        addAll(scope.pat.bindings.asEntries())
+                    }
                 }
             }
         }
@@ -53,6 +48,17 @@ private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement): List<Scop
         if (scope is MvItemsOwner) {
             addAll(scope.useSpeckEntries)
         }
+    }
+}
+
+class SpecCodeBlockNonBindings(override val owner: MvSpecCodeBlock): PsiCachedValueProvider<List<ScopeEntry>> {
+    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
+        val entries = buildList {
+            addAll(owner.builtinSpecConsts().asEntries())
+            addAll(owner.globalVariables().asEntries())
+            addAll(owner.specInlineFunctions().asReversed().asEntries())
+        }
+        return owner.psiCacheResult(entries)
     }
 }
 

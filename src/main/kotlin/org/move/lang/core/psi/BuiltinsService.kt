@@ -4,10 +4,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.ext.MvFunctionMixin
 import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
 import org.move.utils.psiCacheResult
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
@@ -27,7 +25,7 @@ class BuiltinSpecConsts(override val owner: MvSpecCodeBlock): PsiCachedValueProv
 }
 
 fun MvSpecCodeBlock.builtinSpecConsts(): List<MvConst> {
-    return BuiltinSpecConsts(this).getResults()
+    return this.project.service<BuiltinsService>().builtinSpecConsts()
 }
 
 

@@ -1,44 +1,41 @@
 package org.move.lang.core.resolve.scopeEntry
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.allNonTestFunctions
 import org.move.lang.core.psi.ext.specInlineFunctions
 import org.move.lang.core.psi.ext.tupleStructs
+import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.lang.core.resolve.getResults
 import org.move.lang.core.resolve.ref.NAMES
-import org.move.utils.cache
-import org.move.utils.cacheManager
 import org.move.utils.psiCacheResult
-
-private val ITEM_ENTRIES_KEY: Key<CachedValue<List<ScopeEntry>>> = Key.create("ITEM_ENTRIES_KEY")
 
 val MvModule.itemEntries: List<ScopeEntry>
     get() {
-        return project.cacheManager
-            .cache(this, ITEM_ENTRIES_KEY) {
-                this.psiCacheResult(this.itemEntriesInner)
+        return ItemEntries(this).getResults()
+    }
+
+class ItemEntries(override val owner: MvModule): PsiCachedValueProvider<List<ScopeEntry>> {
+    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
+        val entries =
+            buildList(owner.children.size / 2) {
+                // consts
+                addAll(owner.constList.asEntries())
+
+                // types
+                addAll(owner.enumList.asEntries())
+                addAll(owner.schemaList.asEntries())
+                addAll(owner.structList.asEntries())
+
+                // callables
+                addAll(owner.allNonTestFunctions().asEntries())
+                addAll(owner.tupleStructs().mapNotNull { it.asEntry()?.copyWithNs(NAMES) })
+
+                // spec callables
+                addAll(owner.specFunctionList.asEntries())
+                addAll(owner.moduleItemSpecList.flatMap { it.specInlineFunctions() }.asEntries())
             }
+        // one hop up to get to the file, cheap enough to use
+        return owner.psiCacheResult(entries)
     }
-
-private val MvModule.itemEntriesInner: List<ScopeEntry>
-    get() {
-        return listOf(
-            // consts
-            this.constList.asEntries(),
-
-            // types
-            this.enumList.asEntries(),
-            this.schemaList.asEntries(),
-            this.structList.asEntries(),
-
-            // callables
-            this.allNonTestFunctions().asEntries(),
-            this.tupleStructs().mapNotNull { it.asEntry()?.copyWithNs(NAMES) },
-
-            // spec callables
-            this.specFunctionList.asEntries(),
-            this.moduleItemSpecList.flatMap { it.specInlineFunctions() }.asEntries(),
-        ).flatten()
-    }
+}
