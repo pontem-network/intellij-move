@@ -66,6 +66,7 @@
     <fileBasedIndex implementation="org.move.lang.index.MvNamedItemFilesIndex" />
     <fileBasedIndex implementation="org.move.lang.index.MvModuleFileIndex" />
     <fileBasedIndex implementation="org.move.lang.index.MvModuleSpecFileIndex" />
+    <fileBasedIndex implementation="org.move.lang.index.MvItemNamespaceIndex" />
 
     <platform.backend.documentation.psiTargetProvider
         implementation="org.move.ide.docs.MvPsiDocumentationTargetProvider" />

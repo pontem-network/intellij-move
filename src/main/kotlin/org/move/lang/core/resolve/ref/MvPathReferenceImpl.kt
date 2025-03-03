@@ -172,7 +172,7 @@ fun getQualifiedPathEntries(
         when (qualifierItem) {
             is MvModule -> {
                 add(ScopeEntry("Self", lazy { qualifierItem }, MODULES))
-                addAll(qualifierItem.importableItemEntries)
+                addAll(qualifierItem.allScopesImportableEntries)
             }
             is MvEnum -> {
                 addAll(qualifierItem.variants.asEntries())

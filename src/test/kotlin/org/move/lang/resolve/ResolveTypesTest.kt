@@ -190,7 +190,10 @@ class ResolveTypesTest : ResolveTestCase() {
 
     fun `test resolve type to alias`() = checkByCode(
         """
-        module M {
+        module 0x1::Transaction {
+            struct Sender { val: u8 }
+        }
+        module 0x1::m {
             use 0x1::Transaction::Sender as MySender;
                                           //X
             fun main(n: MySender) {}
@@ -199,9 +202,22 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    fun `test unresolved for unresolved alias`() = checkByCode(
+        """
+        module 0x1::m {
+            use 0x1::Transaction::Sender as MySender;
+            fun main(n: MySender) {}
+                      //^ unresolved
+        }
+    """
+    )
+
     fun `test resolve return type to alias`() = checkByCode(
         """
-        module M {
+        module 0x1::Transaction {
+            struct Sender { val: u8 }
+        }
+        module 0x1::m {
             use 0x1::Transaction::Sender as MySender;
                                           //X
             fun main(): MySender {}

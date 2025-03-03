@@ -47,12 +47,20 @@ sealed class PathKind {
             QualifiedPath(path, qualifier, ns)
 
         // bar in foo::bar, where foo is not a named address
-        class ModuleItemOrEnumVariant(path: MvPath, qualifier: MvPath, ns: NsSet):
-            QualifiedPath(path, qualifier, ns)
+        class ModuleItemOrEnumVariant(path: MvPath, qualifier: MvPath, ns: NsSet): QualifiedPath(path, qualifier, ns)
 
         // bar in `0x1::foo::bar` or `aptos_std::foo::bar` (where aptos_std is known named address)
-        class FQModuleItem(path: MvPath, qualifier: MvPath, ns: NsSet):
-            QualifiedPath(path, qualifier, ns)
+        class FQModuleItem(path: MvPath, qualifier: MvPath, ns: NsSet): QualifiedPath(path, qualifier, ns) {
+            fun baseAddress(): Address? {
+                val base = this.path.basePath()
+                val pathKind = base.pathKind(isCompletion = false)
+                return when (pathKind) {
+                    is NamedAddress -> pathKind.address
+                    is ValueAddress -> pathKind.address
+                    else -> null
+                }
+            }
+        }
 
         // use 0x1::m::{item1};
         //               ^
@@ -136,13 +144,13 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             //                  ^
             moveProject != null && qualifierReferenceName != null -> {
                 val namedAddress = moveProject.getNamedAddressTestAware(qualifierReferenceName)
+                // `use std::main`
+                //            ^
                 if (this.isUseSpeck) {
                     val address =
                         namedAddress ?: Address.Named(qualifierReferenceName, null)
                     return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
-                // `use std::main`
-                //            ^
                 if (namedAddress != null) {
                     // known named address, can be module path, or module item path too
                     return PathKind.QualifiedPath.ModuleOrItem(this, qualifier, ns.add(MODULES), namedAddress)
@@ -155,9 +163,8 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
     }
 
     // three or four element path
-
     if (this.isUseSpeck) {
-        // MODULES are for use 0x1::m::Self;
+        // MODULES are for `use 0x1::m::Self;`
         return PathKind.QualifiedPath.FQModuleItem(this, qualifier, ns.add(MODULES))
     }
 

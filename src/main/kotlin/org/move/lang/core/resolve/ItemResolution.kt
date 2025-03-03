@@ -3,6 +3,7 @@ package org.move.lang.core.resolve
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvModuleSpec
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.selfParam
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
@@ -43,15 +44,15 @@ fun getMethodResolveVariants(
     }
 }
 
-class ImportableItemsAsEntries(override val owner: MvModule): PsiCachedValueProvider<List<ScopeEntry>> {
-    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
-        val entries = owner.itemEntries + owner.globalVariableEntries + owner.itemEntriesFromModuleSpecs
-        return owner.psiCacheResult(entries)
-    }
+val MvModule.allScopesImportableEntries: List<ScopeEntry> get() {
+    return AllScopesImportableEntries(this).getResults()
 }
 
-val MvModule.importableItemEntries: List<ScopeEntry> get() {
-    return ImportableItemsAsEntries(this).getResults()
+class AllScopesImportableEntries(override val owner: MvModule): PsiCachedValueProvider<List<ScopeEntry>> {
+    override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
+        val entries = owner.importableEntries + owner.itemEntriesFromRelatedModuleSpecs
+        return owner.psiCacheResult(entries)
+    }
 }
 
 //fun getImportableItemsAsEntries(module: MvModule): List<ScopeEntry> {
@@ -59,18 +60,29 @@ val MvModule.importableItemEntries: List<ScopeEntry> get() {
 ////    return module.itemEntries + module.globalVariableEntries + module.itemEntriesFromModuleSpecs
 //}
 
-val MvModule.itemEntriesFromModuleSpecs: List<ScopeEntry>
+val MvModule.itemEntriesFromRelatedModuleSpecs: List<ScopeEntry>
     get() {
         val module = this
         return buildList {
             val specs = module.getModuleSpecsFromIndex()
             for (spec in specs) {
-                addAll(spec.schemas().asEntries())
-                addAll(spec.specFunctions().asEntries())
-                spec.moduleItemSpecs().forEach {
-                    addAll(it.globalVariableEntries)
-                    addAll(it.specInlineFunctions().asEntries())
-                }
+                addAll(spec.importableEntries)
             }
         }
     }
+
+val MvModule.importableEntries: List<ScopeEntry> get() {
+    return this.itemEntries + this.globalVariableEntries
+}
+
+val MvModuleSpec.importableEntries: List<ScopeEntry> get() {
+    val spec = this
+    return buildList {
+        addAll(spec.schemas().asEntries())
+        addAll(spec.specFunctions().asEntries())
+        spec.moduleItemSpecs().forEach {
+            addAll(it.globalVariableEntries)
+            addAll(it.specInlineFunctions().asEntries())
+        }
+    }
+}

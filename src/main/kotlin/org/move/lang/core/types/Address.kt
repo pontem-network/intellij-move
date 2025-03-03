@@ -76,6 +76,14 @@ sealed class Address {
         }
     }
 
+    fun universalShortText(): String {
+        // returns Address.Named for named address, and normalized Address.Value for value address
+        return when (this) {
+            is Named -> this.name
+            is Value -> this.addressValue().short()
+        }
+    }
+
     fun shortenedValueText(): String? {
         return when (this) {
             is Named -> this.addressValue()?.short()
