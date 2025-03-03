@@ -109,7 +109,7 @@ fun getPathResolveVariantsWithExpectedType(
 
 fun List<ScopeEntry>.filterEntriesByExpectedType(expectedType: Ty?): List<ScopeEntry> {
     return this.filter {
-        val entryElement = it.element
+        val entryElement = it.element()
         if (entryElement !is MvEnumVariant) return@filter true
 
         val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum

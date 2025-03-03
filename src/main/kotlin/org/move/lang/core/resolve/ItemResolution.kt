@@ -30,7 +30,8 @@ fun getMethodResolveVariants(
 
         val functionEntries = itemModule.allNonTestFunctions().asEntries()
         for (functionEntry in functionEntries) {
-            val selfParameter = (functionEntry.element as MvFunction).selfParam ?: continue
+            val f = functionEntry.element() as? MvFunction ?: continue
+            val selfParameter = f.selfParam ?: continue
             val selfParameterTy = selfParameter.type?.loweredType(msl) ?: continue
             // need to use TyVar here, loweredType() erases them
             val selfTyWithTyVars =

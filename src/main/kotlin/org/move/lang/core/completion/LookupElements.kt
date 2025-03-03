@@ -75,7 +75,7 @@ data class Completions(
                 entry,
                 ctx,
                 subst = applySubst,
-                priority = entry.element.completionPriority
+                priority = entry.completionPriority
             )
         )
     }
@@ -86,7 +86,7 @@ data class Completions(
                 createCompletionItem(
                     scopeEntry = it,
                     completionContext = ctx,
-                    priority = it.element.completionPriority,
+                    priority = it.completionPriority,
                     subst = applySubst,
                 )
             };

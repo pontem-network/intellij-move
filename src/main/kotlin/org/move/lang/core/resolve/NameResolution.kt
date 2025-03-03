@@ -97,7 +97,7 @@ fun getPatBindingsResolveVariants(
         val bindingEntries = getEntriesFromWalkingScopes(binding, ns)
 
         for (bindingEntry in bindingEntries) {
-            val element = bindingEntry.element
+            val element = bindingEntry.element()
 
             // copied as is from the intellij-rust, handles all items that can be matched in match arms
             val isConstantLike = element.isConstantLike

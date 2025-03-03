@@ -27,7 +27,7 @@ object AptosTestLocator: SMTestLocator {
         return buildList {
             val name = qualifiedName.substringAfterLast(NAME_SEPARATOR)
             for (entry in MvNamedItemFilesIndex.getEntriesFor(project, scope, listOf(name), NAMES)) {
-                val element = entry.element
+                val element = entry.element()
                 if (element is MvFunction) {
                     if (element.fqName()?.shortAddressValueText() == qualifiedName) {
                         add(PsiLocation.fromPsiElement(element))

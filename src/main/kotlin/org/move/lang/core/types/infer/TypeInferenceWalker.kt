@@ -9,12 +9,14 @@ import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.impl.MvNamedFieldDeclImpl
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePathRaw
+import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
 import org.move.lang.core.types.infer.Expectation.NoExpectation
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
@@ -346,9 +348,10 @@ class TypeInferenceWalker(
     ): MvNamedElement? {
         val entries = resolvePathRaw(path, expectedType)
             .filter {
-                if (it.element is MvPatBinding) {
+                val namedElement = it.element()
+                if (namedElement is MvPatBinding) {
                     // filter out bindings which are resolvable to enum variants
-                    if (ctx.resolvedBindings[it.element] is MvEnumVariant) {
+                    if (ctx.resolvedBindings[namedElement] is MvEnumVariant) {
                         return@filter false
                     }
                 }
@@ -484,7 +487,7 @@ class TypeInferenceWalker(
             .filterByName(fieldLookup.referenceName)
             .singleOrNull()
 
-        val field = fieldEntry?.element as? MvFieldDecl
+        val field = fieldEntry?.element() as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 
         val fieldTy = field?.type?.loweredType(msl)?.substitute(tyAdt.typeParameterValues)
@@ -748,18 +751,17 @@ class TypeInferenceWalker(
             unifySubst(tyVarsSubst, expectedTyTypeParams)
         }
 
+        val namedFieldEntries = getNamedFieldEntries(item)
         litExpr.fields.forEach { field ->
-            val namedField = getNamedFieldEntries(item)
-                .filterByName(field.referenceName)
-                .singleOrNull()
-                ?.element as? MvNamedFieldDecl
+            val namedField = namedFieldEntries
+                .filterByName(field.referenceName).singleItemOrNull() as? MvNamedFieldDecl
             val rawFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = rawFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val binding = resolveBindingForFieldShorthand(field).singleOrNull()?.element
+                val binding = resolveBindingForFieldShorthand(field).singleItemOrNull()
                 val bindingTy = (binding as? MvPatBinding)
                     ?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerce(field, bindingTy, fieldTy)

@@ -5,7 +5,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.resolve.isVisibleInContext
-import org.move.lang.core.types.fqName
 import org.move.lang.index.MvNamedItemFilesIndex
 
 object ImportCandidateCollector {
@@ -25,9 +24,9 @@ object ImportCandidateCollector {
 
             // double check in case of match
             if (targetNames.any { it == scopeEntry.name }) {
-                val itemQualName = scopeEntry.element.fqName()
-                if (itemQualName != null) {
-                    candidates.add(ImportCandidate(scopeEntry.element, itemQualName))
+                val fqName = scopeEntry.elementFQName()
+                if (fqName != null) {
+                    candidates.add(ImportCandidate(scopeEntry.element(), fqName))
                 }
             }
         }

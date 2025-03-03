@@ -19,7 +19,7 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     val attrItem = contextElement.ancestorStrict<MvAttrItem>()
     if (attrItem != null) return true
 
-    val item = scopeEntry.element
+    val item = scopeEntry.element()
     val itemNs = scopeEntry.namespaces
 
     val contextUsageScope = contextElement.usageScope

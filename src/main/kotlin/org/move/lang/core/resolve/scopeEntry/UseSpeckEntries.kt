@@ -29,6 +29,7 @@ private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {
     return buildList {
         for (speckItem in speckItems) {
             val speckPath = speckItem.speckPath
+            val itemName = speckItem.speckName
             val referencedItem = speckPath.reference?.resolve()
 
             val alias = speckItem.alias
@@ -38,7 +39,7 @@ private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {
                     // any ns is possible here
                     add(
                         ScopeEntry(
-                            speckItem.speckName,
+                            itemName,
                             alias,
                             ALL_NS
                         )
@@ -50,7 +51,7 @@ private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {
             val itemNs = referencedItem.itemNs
             add(
                 ScopeEntry(
-                    speckItem.speckName,
+                    itemName,
                     element,
                     itemNs,
                     customItemScope = speckItem.speckUsageScope,
