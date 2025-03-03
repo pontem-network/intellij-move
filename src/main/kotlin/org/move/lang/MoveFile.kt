@@ -8,9 +8,6 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import com.intellij.psi.util.PsiModificationTracker
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.MvConstants
 import org.move.cli.moveProjectsService
@@ -18,11 +15,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
-import org.move.lang.core.resolve.PsiFileCachedValueProvider
-import org.move.lang.core.resolve.getResults
+import org.move.utils.PsiFileCachedValueProvider
+import org.move.utils.getResults
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
-import org.move.stdext.chain
 import org.move.utils.fileCacheResult
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path

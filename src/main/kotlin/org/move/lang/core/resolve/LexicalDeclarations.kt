@@ -6,6 +6,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.scopeEntry.*
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 
 fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {

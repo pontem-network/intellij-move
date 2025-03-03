@@ -5,7 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.ext.MvFunctionMixin
-import org.move.lang.core.resolve.PsiCachedValueProvider
+import org.move.utils.PsiCachedValueProvider
 import org.move.utils.psiCacheResult
 
 fun MvModule.builtinFunctions(): List<MvFunction> {

@@ -8,8 +8,8 @@ import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.psi.ext.qualifier
-import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.lang.core.resolve.ref.ALL_NS
 import org.move.lang.core.resolve.ref.itemNs
 import org.move.utils.psiCacheResult

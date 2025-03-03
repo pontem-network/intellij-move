@@ -6,6 +6,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
@@ -13,15 +14,30 @@ import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 
-val Project.cacheManager: CachedValuesManager get() = CachedValuesManager.getManager(this)
-
-fun <T> CachedValuesManager.cache(
-    dataHolder: UserDataHolder,
-    key: Key<CachedValue<T>>,
-    provider: CachedValueProvider<T>
-): T {
-    return getCachedValue(dataHolder, key, provider, false)
+interface PsiCachedValueProvider<T>: CachedValueProvider<T> {
+    val owner: MvElement
+    abstract override fun compute(): CachedValueProvider.Result<T>
 }
+
+fun <T> PsiCachedValueProvider<T>.getResults(): T {
+    val manager = this.owner.project.cacheManager
+    val key = manager.getKeyForClass<T>(this::class.java)
+    return manager.getCachedValue(this.owner, key, this, false)
+}
+
+
+interface PsiFileCachedValueProvider<T>: CachedValueProvider<T> {
+    val file: PsiFile
+    abstract override fun compute(): CachedValueProvider.Result<T>
+}
+
+fun <T> PsiFileCachedValueProvider<T>.getResults(): T {
+    val manager = this.file.project.cacheManager
+    val key = manager.getKeyForClass<T>(this::class.java)
+    return manager.getCachedValue(this.file, key, this, false)
+}
+
+val Project.cacheManager: CachedValuesManager get() = CachedValuesManager.getManager(this)
 
 fun <T> MvElement.psiCacheResult(value: T): CachedValueProvider.Result<T> =
     CachedValueProvider.Result.create(

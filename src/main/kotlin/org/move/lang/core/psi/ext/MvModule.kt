@@ -7,8 +7,8 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecFileIndex
 import org.move.utils.psiCacheResult

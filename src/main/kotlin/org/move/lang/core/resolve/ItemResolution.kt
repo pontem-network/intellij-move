@@ -14,6 +14,8 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.moveProject
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 import kotlin.collections.plus
 

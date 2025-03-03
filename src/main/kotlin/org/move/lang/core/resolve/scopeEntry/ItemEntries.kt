@@ -5,8 +5,8 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.allNonTestFunctions
 import org.move.lang.core.psi.ext.specInlineFunctions
 import org.move.lang.core.psi.ext.tupleStructs
-import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.utils.psiCacheResult
 

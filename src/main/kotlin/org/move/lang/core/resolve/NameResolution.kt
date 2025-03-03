@@ -12,6 +12,8 @@ import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.types.Address
 import org.move.lang.index.MvModuleFileIndex
 import org.move.stdext.intersects
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 
 fun getFieldLookupResolveVariants(
