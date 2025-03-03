@@ -33,7 +33,8 @@ fun MvSpecCodeBlock.builtinSpecConsts(): List<MvConst> {
 class BuiltinsService(val project: Project) {
 
     fun builtinFunctions(): List<MvFunction> {
-        val builtinFunctions = (this.builtinsModule.copy() as? MvModule)?.functionList.orEmpty()
+        val builtinFunctions = builtinsModule.functionList
+//        val builtinFunctions = (this.builtinsModule.copy() as? MvModule)?.functionList.orEmpty()
         builtinFunctions.forEach { f ->
             (f as MvFunctionMixin).builtIn = true
         }
@@ -41,11 +42,12 @@ class BuiltinsService(val project: Project) {
     }
 
     fun builtinSpecFunctions(): List<MvSpecFunction> {
-        return (this.builtinsSpecModule.copy() as? MvModule)?.specFunctionList.orEmpty()
+        return this.builtinsSpecModule.specFunctionList
+//        return (this.builtinsSpecModule.copy() as? MvModule)?.specFunctionList.orEmpty()
     }
 
     fun builtinSpecConsts(): List<MvConst> {
-        return (this.builtinsSpecConstModule.copy() as? MvModule)?.constList.orEmpty()
+        return builtinsSpecConstModule.constList
     }
 
     private val builtinsModule: MvModule = project.psiFactory.module(

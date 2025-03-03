@@ -76,7 +76,7 @@ sealed class Address {
         }
     }
 
-    fun universalShortText(): String {
+    fun indexId(): String {
         // returns Address.Named for named address, and normalized Address.Value for value address
         return when (this) {
             is Named -> this.name

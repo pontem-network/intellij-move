@@ -36,7 +36,7 @@ class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
                 return buildMap {
                     for (entry in entries) {
                         val fqName = entry.element()?.fqName() ?: continue
-                        val indexId = fqName.universalShortAddressText()
+                        val indexId = fqName.indexId()
                         set(indexId, nsToString(entry.namespaces))
                     }
                 }

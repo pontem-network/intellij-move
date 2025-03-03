@@ -2,9 +2,7 @@ package org.move.lang.core.types
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.parentModule
 import org.move.lang.core.psi.ext.parentModuleOrModuleSpec
-import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.moveProject
@@ -117,14 +115,14 @@ sealed class ItemFQName {
         }
     }
 
-    fun universalShortAddressText(): String {
+    fun indexId(): String {
         return when (this) {
             is Module -> {
-                val addressText = this.address.universalShortText()
+                val addressText = this.address.indexId()
                 "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleCmdText = this.moduleFQName.universalShortAddressText()
+                val moduleCmdText = this.moduleFQName.indexId()
                 "$moduleCmdText::${this.name}"
             }
         }

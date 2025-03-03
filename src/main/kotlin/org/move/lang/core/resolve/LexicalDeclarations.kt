@@ -67,7 +67,7 @@ class SpecCodeBlockNonBindings(override val owner: MvSpecCodeBlock): PsiCachedVa
 
 class EntriesInResolveScopes(override val owner: MvElement): PsiCachedValueProvider<List<ScopeEntry>> {
     override fun compute(): CachedValueProvider.Result<List<ScopeEntry>> {
-        val entries = buildList {
+        val entries = buildList(10) {
             if (owner is MvGenericDeclaration) {
                 addAll(owner.typeParameters.asEntries())
             }

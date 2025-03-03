@@ -1,10 +1,7 @@
 package org.move.lang.index
 
 import com.intellij.util.indexing.*
-import com.intellij.util.io.EnumeratorStringDescriptor
-import com.intellij.util.io.KeyDescriptor
 import org.move.lang.MoveFile
-import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvModuleSpec
 import org.move.lang.core.psi.ext.moduleItem
@@ -14,13 +11,15 @@ import org.move.lang.toMoveFile
 
 class MvModuleSpecFileIndex: MvScalarFileIndexExtension() {
     override fun getName(): ID<String, Void> = INDEX_ID
+    override fun getVersion(): Int = 2
 
     override fun getIndexer(): DataIndexer<String, Void?, FileContent> {
         return object: DataIndexer<String, Void?, FileContent> {
             override fun map(inputData: FileContent): Map<String, Void?> {
                 val file = inputData.psiFile as MoveFile
                 // build a list of all modules for which there is module specs
-                val pathModuleIds = file.moduleSpecs().mapNotNull { it.path?.text }
+                val pathModuleIds = file.moduleSpecs().mapNotNull { it.fqName()?.indexId() }
+//                val pathModuleIds = file.moduleSpecs().mapNotNull { it.path?.text }
                 return pathModuleIds.associate { it to null }
             }
         }
@@ -37,16 +36,19 @@ class MvModuleSpecFileIndex: MvScalarFileIndexExtension() {
             val searchScope = module.moveProject?.searchScope() ?: return emptyList()
 
             // need to cover all possibilities, as index is a path text
-            val indexIds = hashSetOf(
-                moduleFqName.declarationText(),
-                moduleFqName.shortAddressValueText(),
-                moduleFqName.canonicalAddressValueText(),
-                moduleFqName.universalAddressText(),
-            )
+//            val indexIds = hashSetOf(
+//                moduleFqName.declarationText(),
+//                moduleFqName.shortAddressValueText(),
+//                moduleFqName.canonicalAddressValueText(),
+//                moduleFqName.universalAddressText(),
+//            )
+            val indexId = moduleFqName.indexId()
             val filesIndex = FileBasedIndex.getInstance()
             return buildList {
                 val vFiles =
-                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
+                    filesIndex.getContainingFiles(INDEX_ID, indexId, searchScope)
+//                val vFiles =
+//                    filesIndex.getContainingFilesForAnyKey(INDEX_ID, indexIds, searchScope)
                 val files = vFiles.mapNotNull { it.toMoveFile(project) }
                 for (file in files) {
                     for (moduleSpec in file.moduleSpecs()) {

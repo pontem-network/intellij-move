@@ -12,7 +12,7 @@ import org.move.utils.psiCacheResult
 
 val MvModule.itemEntries: List<ScopeEntry>
     get() {
-        return ItemEntries(this).getResults()
+        return getItemEntriesInner(this)
     }
 
 class ItemEntries(override val owner: MvModule): PsiCachedValueProvider<List<ScopeEntry>> {
@@ -38,4 +38,26 @@ class ItemEntries(override val owner: MvModule): PsiCachedValueProvider<List<Sco
         // one hop up to get to the file, cheap enough to use
         return owner.psiCacheResult(entries)
     }
+}
+
+fun getItemEntriesInner(owner: MvModule): List<ScopeEntry> {
+    val entries =
+        buildList(owner.children.size / 2) {
+            // consts
+            addAll(owner.constList.asEntries())
+
+            // types
+            addAll(owner.enumList.asEntries())
+            addAll(owner.schemaList.asEntries())
+            addAll(owner.structList.asEntries())
+
+            // callables
+            addAll(owner.allNonTestFunctions().asEntries())
+            addAll(owner.tupleStructs().mapNotNull { it.asEntry()?.copyWithNs(NAMES) })
+
+            // spec callables
+            addAll(owner.specFunctionList.asEntries())
+            addAll(owner.moduleItemSpecList.flatMap { it.specInlineFunctions() }.asEntries())
+        }
+    return entries
 }

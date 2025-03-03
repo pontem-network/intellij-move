@@ -63,7 +63,7 @@ val MvUseStmt.useItems: List<UseItem>
                     is PathKind.QualifiedPath.ModuleOrItem -> qualifierKind.address
                     else -> continue
                 }
-                val fqName = "${address.universalShortText()}::$moduleName::$childName"
+                val fqName = "${address.indexId()}::$moduleName::$childName"
                 useItems.add(
                     UseItem(
                         childUseSpeck,
@@ -114,7 +114,7 @@ val MvUseStmt.useItems: List<UseItem>
                     )
                 } else {
                     val address = pathKind.baseAddress() ?: return useItems
-                    val fqName = "${address.universalShortText()}::$moduleName::$rootName"
+                    val fqName = "${address.indexId()}::$moduleName::$rootName"
                     useItems.add(
                         UseItem(
                             rootUseSpeck,
