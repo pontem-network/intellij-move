@@ -15,12 +15,8 @@ import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.toMoveFile
 
-class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
+class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
     override fun getName(): ID<String, Void> = INDEX_ID
-    override fun getVersion(): Int = 1
-    override fun dependsOnFileContent(): Boolean = true
-
-    override fun getInputFilter(): FileBasedIndex.InputFilter = DefaultFileTypeSpecificInputFilter(MoveFileType)
 
     override fun getIndexer(): DataIndexer<String, Void?, FileContent> {
         return object: DataIndexer<String, Void?, FileContent> {
@@ -33,8 +29,6 @@ class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
             }
         }
     }
-
-    override fun getKeyDescriptor(): KeyDescriptor<String?> = EnumeratorStringDescriptor.INSTANCE
 
     @Suppress("CompanionObjectInExtension")
     companion object {

@@ -12,12 +12,8 @@ import org.move.lang.core.types.fqName
 import org.move.lang.moveProject
 import org.move.lang.toMoveFile
 
-class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
+class MvModuleSpecFileIndex: MvScalarFileIndexExtension() {
     override fun getName(): ID<String, Void> = INDEX_ID
-    override fun getVersion(): Int = 1
-    override fun dependsOnFileContent(): Boolean = true
-
-    override fun getInputFilter(): FileBasedIndex.InputFilter = DefaultFileTypeSpecificInputFilter(MoveFileType)
 
     override fun getIndexer(): DataIndexer<String, Void?, FileContent> {
         return object: DataIndexer<String, Void?, FileContent> {
@@ -29,8 +25,6 @@ class MvModuleSpecFileIndex: ScalarIndexExtension<String>() {
             }
         }
     }
-
-    override fun getKeyDescriptor(): KeyDescriptor<String?> = EnumeratorStringDescriptor.INSTANCE
 
     @Suppress("CompanionObjectInExtension")
     companion object {
