@@ -15,13 +15,15 @@ import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
-import org.move.lang.core.resolve.scopeEntry.asEntry
+import org.move.lang.core.resolve.PathKind
+import org.move.lang.core.resolve.isVisibleInContext
+import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.getPathResolveVariantsWithExpectedType
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -45,7 +47,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         val pathKind = pathElement.pathKind(true)
         val ns = pathKind.ns
-        val structAsType = ns.contains(Namespace.TYPE);
+        val structAsType = ns.contains(Namespace.TYPE)
 
         val completionContext = MvCompletionContext(
             pathElement,
@@ -136,7 +138,9 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, candidate)
             )
-            completions.addCompletionItem(completionItem)
+            if (completionItem != null) {
+                completions.addCompletionItem(completionItem)
+            }
         }
     }
 }

@@ -40,19 +40,18 @@ private fun List<MvUseStmt>.useSpeckEntries(): List<ScopeEntry> {
                     add(
                         ScopeEntry(
                             itemName,
-                            alias,
+                            lazy { alias },
                             ALL_NS
                         )
                     )
                 }
                 continue
             }
-            val element = alias ?: referencedItem
             val itemNs = referencedItem.itemNs
             add(
                 ScopeEntry(
                     itemName,
-                    element,
+                    lazy { alias ?: referencedItem },
                     itemNs,
                     customItemScope = speckItem.speckUsageScope,
                 )

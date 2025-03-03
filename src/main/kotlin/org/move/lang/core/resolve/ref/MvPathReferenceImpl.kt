@@ -139,9 +139,7 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
             is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
                 if (MODULE in pathKind.ns) {
                     // Self::call() as an expression
-                    ctx.containingModule?.let {
-                        add(ScopeEntry("Self", it, MODULES))
-                    }
+                    add(ScopeEntry("Self", lazy { ctx.containingModule }, MODULES))
                 }
                 // local
                 addAll(
@@ -175,7 +173,7 @@ fun getQualifiedPathEntries(
     return buildList {
         when (qualifierItem) {
             is MvModule -> {
-                add(ScopeEntry("Self", qualifierItem, MODULES))
+                add(ScopeEntry("Self", lazy { qualifierItem }, MODULES))
                 addAll(qualifierItem.importableItemEntries)
             }
             is MvEnum -> {

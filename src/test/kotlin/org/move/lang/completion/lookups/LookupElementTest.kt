@@ -200,10 +200,10 @@ class LookupElementTest: MvTestBase() {
             ?: error("Marker `^` should point to the MvNamedElement")
 
         val name = element.name ?: error("name == null")
-        val scopeEntry = ScopeEntry(name, element, NAMES)
+        val scopeEntry = ScopeEntry(name, lazy { element }, NAMES)
         val completionCtx = MvCompletionContext(element, false)
 
-        val lookup = createCompletionItem(scopeEntry, completionCtx)
+        val lookup = createCompletionItem(scopeEntry, completionCtx)!!
         checkLookupPresentation(
             lookup,
             tailText = tailText,
