@@ -18,7 +18,8 @@ import org.move.lang.core.psi.ext.allowedNamespaces
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.hasAncestor
 import org.move.lang.core.psi.ext.qualifier
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Ns
+import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.moveProject
 import org.move.openapiext.runWriteCommandAction
 
@@ -101,14 +102,14 @@ class AutoImportFix(element: MvPath): DiagnosticFix<MvPath>(element),
 
 data class ImportContext(
     val pathElement: MvPath,
-    val ns: Set<Namespace>,
+    val ns: NsSet,
     val indexSearchScope: GlobalSearchScope,
 ) {
     companion object {
         fun from(
             path: MvPath,
             isCompletion: Boolean,
-            ns: Set<Namespace> = path.allowedNamespaces(isCompletion),
+            ns: NsSet = path.allowedNamespaces(isCompletion),
         ): ImportContext? {
             val searchScope = path.moveProject?.searchScope() ?: return null
             return ImportContext(path, ns, searchScope)

@@ -129,8 +129,6 @@ inline fun <T, R> Iterable<T>.mapToSet(transform: (T) -> R): Set<R> =
 inline fun <T, R : Any> Iterable<T>.mapNotNullToSet(transform: (T) -> R?): Set<R> =
     mapNotNullTo(HashSet(mapCapacity(collectionSizeOrDefault(10))), transform)
 
-fun <T> Set<T>.intersects(other: Iterable<T>): Boolean = other.any { this.contains(it) }
-
 fun <T> Set<T>.containsAny(vararg items: T): Boolean = items.any { this.contains(it) }
 
 inline fun <T> Iterable<T>.joinToWithBuffer(
@@ -155,7 +153,7 @@ inline fun <T> Iterable<T>.joinToWithBuffer(
 fun <T : Any> Iterator<T>.nextOrNull(): T? =
     if (hasNext()) next() else null
 
-inline fun <reified T : Enum<T>> enumSetOf(): EnumSet<T> = EnumSet.noneOf(T::class.java)
+inline fun <reified T : Enum<T>> emptyEnumSet(): EnumSet<T> = EnumSet.noneOf(T::class.java)
 
 typealias LookbackValue<T> = Pair<T, T?>
 

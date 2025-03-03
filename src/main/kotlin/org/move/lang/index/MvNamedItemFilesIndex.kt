@@ -3,14 +3,12 @@ package org.move.lang.index
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.*
-import com.intellij.util.io.EnumeratorStringDescriptor
-import com.intellij.util.io.KeyDescriptor
 import org.move.lang.MoveFile
-import org.move.lang.MoveFileType
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.scopeEntry.filterByName
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Ns
+import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.toMoveFile
@@ -34,7 +32,7 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
     companion object {
         val INDEX_ID: ID<String, Void> = ID.create("org.move.index.MvNamedElementFileIndex")
 
-        fun getAllItemNames(project: Project, ns: Set<Namespace>): Set<String> {
+        fun getAllItemNames(project: Project, ns: NsSet): Set<String> {
             val filesIndex = FileBasedIndex.getInstance()
             val itemIds = filesIndex.getAllKeys(INDEX_ID, project)
             val matchedItemIds = itemIds
@@ -48,7 +46,7 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
             project: Project,
             searchScope: GlobalSearchScope,
             targetNames: List<String>,
-            ns: Set<Namespace>
+            ns: NsSet
         ): List<ScopeEntry> {
             val indexIds = targetNames.flatMap { namedIndexIds(it, ns) }.toHashSet()
 
@@ -66,7 +64,7 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
             }
         }
 
-        private fun namedIndexIds(name: String, ns: Set<Namespace>): HashSet<String> {
+        private fun namedIndexIds(name: String, ns: NsSet): HashSet<String> {
             return ns.map { "$name::${it.name}" }.toHashSet()
         }
     }

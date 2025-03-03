@@ -19,7 +19,8 @@ import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.isVisibleInContext
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Ns
+import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.getPathResolveVariantsWithExpectedType
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
@@ -47,7 +48,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
 
         val pathKind = pathElement.pathKind(true)
         val ns = pathKind.ns
-        val structAsType = ns.contains(Namespace.TYPE)
+        val structAsType = ns.contains(Ns.TYPE)
 
         val completionContext = MvCompletionContext(
             pathElement,
@@ -64,7 +65,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
     fun addPathVariants(
         pathElement: MvPath,
         parameters: CompletionParameters,
-        ns: Set<Namespace>,
+        ns: NsSet,
         completions: Completions,
     ) {
         val resolutionCtx = completions.ctx.resolutionCtx ?: error("always non-null in path completion")
@@ -109,7 +110,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
         parameters: CompletionParameters,
         path: MvPath,
         completions: Completions,
-        ns: Set<Namespace>,
+        ns: NsSet,
         processedNames: MutableSet<String>,
     ) {
         // disable auto-import in module specs for now

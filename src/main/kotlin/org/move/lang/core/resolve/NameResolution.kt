@@ -11,7 +11,6 @@ import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.types.Address
 import org.move.lang.index.MvModuleFileIndex
-import org.move.stdext.intersects
 import org.move.utils.PsiCachedValueProvider
 import org.move.utils.getResults
 import org.move.utils.psiCacheResult
@@ -92,7 +91,7 @@ fun getPatBindingsResolveVariants(
             }
         }
 
-        val ns = if (isCompletion) (TYPES_N_ENUMS_N_ENUM_VARIANTS + MODULES) else ENUM_VARIANTS
+        val ns = if (isCompletion) TYPES_N_ENUMS_N_ENUM_VARIANTS_N_MODULES else ENUM_VARIANTS
 
         val bindingEntries = getEntriesFromWalkingScopes(binding, ns)
 
@@ -125,17 +124,17 @@ fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
     return fieldsOwner.namedFields.asEntries()
 }
 
-fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
+fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: NsSet): List<ScopeEntry> {
     val entries = buildList {
         val resolveScopes = getResolveScopes(scopeStart)
 
-        val visitedScopes = hashMapOf<String, Set<Namespace>>()
+        val visitedScopes = hashMapOf<String, NsSet>()
         for ((scope, cameFrom) in resolveScopes) {
             val entries = getEntriesInScope(scope, cameFrom, ns)
             if (entries.isEmpty()) continue
 
             // state between shadowing processors passed through prevScope
-            val currScope = mutableMapOf<String, Set<Namespace>>()
+            val currScope = mutableMapOf<String, NsSet>()
             for (entry in entries) {
                 val entryNs = entry.namespaces
 
@@ -145,15 +144,15 @@ fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: Set<Namespace>): List
                 }
 
                 // remove namespaces which are encountered before (shadowed by previous entries with this name)
-                val visitedNs = visitedScopes[entry.name].orEmpty()
-                val unprocessedNs = entryNs - visitedNs
+                val visitedNs = visitedScopes[entry.name] ?: NONE
+                val unprocessedNs = entryNs.sub(visitedNs)
                 if (unprocessedNs.isEmpty()) {
                     // all ns for this entry were shadowed
                     continue
                 }
-                add(entry.copyWithNs(namespaces = unprocessedNs))
+                add(entry.copyWithNs(ns = unprocessedNs))
                 // save encountered namespaces to the currScope
-                currScope[entry.name] = visitedNs + entryNs
+                currScope[entry.name] = visitedNs.add(unprocessedNs)
             }
             // at the end put all entries from the current scope into the `visitedScopes`
             visitedScopes.putAll(currScope)

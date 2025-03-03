@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
-import org.move.lang.core.resolve.ref.Namespace.MODULE
+import org.move.lang.core.resolve.ref.Ns.MODULE
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
@@ -25,11 +25,9 @@ interface InferenceCachedPathElement: MvElement {
 class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(element),
                                             MvPathReference {
 
-    override fun resolve(): MvNamedElement? =
-        rawMultiResolveIfVisible().singleOrNull()?.element as? MvNamedElement
+    override fun resolve(): MvNamedElement? = rawMultiResolveIfVisible().singleOrNull()?.element
 
-    override fun multiResolve(): List<MvNamedElement> =
-        rawMultiResolveIfVisible().mapNotNull { it.element as? MvNamedElement }
+    override fun multiResolve(): List<MvNamedElement> = rawMultiResolveIfVisible().map { it.element }
 
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()

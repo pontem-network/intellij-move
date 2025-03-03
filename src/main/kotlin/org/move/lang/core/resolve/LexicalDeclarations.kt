@@ -4,13 +4,14 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.util.containers.addIfNotNull
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Ns
+import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.scopeEntry.*
 import org.move.utils.PsiCachedValueProvider
 import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 
-fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
+fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: NsSet): List<ScopeEntry> {
     return when (scope) {
         is MvCodeBlock, is MvSpecCodeBlock, is MvMatchArm -> getEntriesInBlocks(scope, cameFrom, ns)
         else -> {
@@ -19,9 +20,9 @@ fun getEntriesInScope(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>)
     }
 }
 
-private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement, ns: Set<Namespace>): List<ScopeEntry> {
+private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement, ns: NsSet): List<ScopeEntry> {
     return buildList {
-        if (Namespace.NAME in ns) {
+        if (Ns.NAME in ns) {
             when (scope) {
                 is MvCodeBlock -> {
                     val (letBindings, _) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
