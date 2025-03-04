@@ -91,16 +91,12 @@ private fun render(
     fq: Boolean = false,
     toHtml: Boolean = false,
     typeParam: (TyTypeParameter) -> String = {
-        it.name?.chainIf(toHtml) { colored(this, asTypeParam) }
-            ?: anonymous
-//        colored(it.name, asTypeParam, toHtml) ?: anonymous
+        it.name?.chainIf(toHtml) { colored(this, asTypeParam) } ?: anonymous
     },
     tyVar: (TyInfer.TyVar) -> String = {
         val varName =
-            it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) }
-                ?: "_${it.hashCode()}"
+            it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) } ?: "_${it.hashCode()}"
         "?$varName"
-//        colored(it.origin?.name, asTypeParam, toHtml) ?: "_"
     },
 ): String {
     check(level >= 0)
@@ -156,7 +152,6 @@ private fun render(
                     transform = r
                 )
             itemName + typeArgs
-//            itemName + typeArgs.chainIf(toHtml) { escapeForHtml() }
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
