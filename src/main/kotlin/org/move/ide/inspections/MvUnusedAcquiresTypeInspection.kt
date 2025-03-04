@@ -7,34 +7,24 @@ import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.MvCallable
-import org.move.lang.core.types.infer.AcquireTypesOwnerVisitor
-import org.move.lang.core.types.infer.acquiresContext
+import org.move.lang.core.types.infer.AcquiresTypeContext
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.infer.visitInnerAcquireTypeOwners
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.moveProject
 
 class MvUnusedAcquiresTypeVisitor(val holder: ProblemsHolder): MvVisitor() {
     override fun visitAcquiresType(o: MvAcquiresType) {
         val function = o.parent as? MvFunction ?: return
         val currentModule = function.module ?: return
-        val acquiresContext = o.moveProject?.acquiresContext ?: return
+        val ctx = AcquiresTypeContext()
         val inference = function.inference(false)
 
         val callAcquiresTypes = mutableSetOf<String>()
-        val visitor = object: AcquireTypesOwnerVisitor() {
-            override fun visitAcquireTypesOwner(acqTypesOwner: MvAcquireTypesOwner) {
-                val types =
-                    when (acqTypesOwner) {
-                        is MvCallable -> acquiresContext.getCallTypes(acqTypesOwner, inference)
-                        is MvIndexExpr -> acquiresContext.getIndexExprTypes(acqTypesOwner, inference)
-                        else -> error("when is exhaustive")
-                    }
-                callAcquiresTypes.addAll(types.map { it.fullnameNoArgs() })
-            }
+        visitInnerAcquireTypeOwners(function) {
+            val types = ctx.getAcquiredTypes(it, inference)
+            callAcquiresTypes.addAll(types.map { it.fullnameNoArgs() })
         }
-        visitor.visitElement(function)
 
         val unusedTypeIndices = mutableListOf<Int>()
         val visitedTypes = mutableSetOf<String>()
