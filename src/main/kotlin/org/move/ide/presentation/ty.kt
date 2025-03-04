@@ -20,16 +20,20 @@ fun Ty.declaringModule(): MvModule? = when (this) {
     else -> null
 }
 
-fun Ty.nameNoArgs(): String {
-    return this.name().replace(Regex("<.*>"), "")
-}
-
 fun Ty.name(colors: Boolean = false): String {
     return text(fq = false, colors = colors)
 }
 
+private val TYPE_ARGS_REGEX = Regex("<.*>")
+
 fun Ty.fullnameNoArgs(): String {
-    return this.fullname().replace(Regex("<.*>"), "")
+    val fullname = render(
+        this,
+        level = 1,
+        fq = true,
+        toHtml = false,
+    )
+    return fullname.replace(TYPE_ARGS_REGEX, "")
 }
 
 fun Ty.fullname(colors: Boolean = false): String {
