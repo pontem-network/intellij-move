@@ -80,13 +80,12 @@ class MvDocumentationTarget(
             is MvNamedAddress -> {
                 val moveProject = docElement.moveProject ?: return null
                 val addressName = docElement.referenceName
-                val named = moveProject.getNamedAddressTestAware(addressName) ?: return null
+                val named = moveProject.getNamedAddress(addressName) ?: return null
                 val address =
-                    named.addressValue()?.value ?: "<unassigned>".escapeForHtml()
+                    named.resolveToNumericAddress(moveProject)?.value ?: "<unassigned>".escapeForHtml()
                 definition(buffer) {
                     it += "$addressName = ${address.quote()}"
                 }
-//                return "$refName = \"$address\""
             }
             is MvPatBinding -> {
                 val presentationInfo = docElement.presentationInfo ?: return null

@@ -24,23 +24,6 @@ class NamedModulePathValuesTest: MvProjectTestBase() {
         }
     }
 
-    fun `test placeholder address`() = checkByFileTree {
-        moveToml(
-            """
-        [addresses]
-        Std = "_"
-        """
-        )
-        sources {
-            move(
-                "main.move", """
-            module Std::Module {}
-                   //^ Std = _
-            """
-            )
-        }
-    }
-
     fun `test dependency address`() = checkByFileTree {
         moveToml(
             """
@@ -209,10 +192,13 @@ class NamedModulePathValuesTest: MvProjectTestBase() {
         val expectedValue = data.trim()
 
         val moveProject = project.moveProjectsService.findMoveProjectForPsiElement(address)!!
-        val actualValue = moveProject.getNamedAddressTestAware(address.referenceName)!!.text()
-
+        val actualNamedAddress =
+            moveProject.getNamedAddress(address.referenceName) ?: error("cannot find named address")
+        val numericAddress =
+            actualNamedAddress.resolveToNumericAddress(moveProject) ?: error("cannot resolve into numeric")
+        val actualValue = "${actualNamedAddress.name} = ${numericAddress.short()}"
         check(actualValue == expectedValue) {
-            "Value mismatch. Expected $expectedValue, found: $actualValue"
+            "Value mismatch. Expected `$expectedValue`, found: `$actualValue`"
         }
     }
 }

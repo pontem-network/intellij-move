@@ -146,7 +146,7 @@ private fun render(
         }
         is TyTypeParameter -> typeParam(ty)
         is TyAdt -> {
-            val itemName = if (fq) ty.item.fqName()?.declarationText() ?: anonymous else (ty.item.name ?: anonymous)
+            val itemName = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(
@@ -170,7 +170,7 @@ private fun render(
             "$params -> $retType"
         }
         is TySchema -> {
-            val name = if (fq) ty.item.fqName()?.declarationText() ?: anonymous else (ty.item.name ?: anonymous)
+            val name = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) {
                     ""

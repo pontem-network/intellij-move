@@ -13,12 +13,11 @@ sealed class PathKind {
 
     abstract val ns: NsSet
 
-    // aptos_std:: where aptos_std is a existing named address in a project
+    // `use aptos_std::` where aptos_std is a existing named address in a project
     data class NamedAddress(val address: Address.Named): PathKind() {
         override val ns: NsSet get() = NONE
     }
 
-    // aptos_std:: where aptos_std is a existing named address in a project
     data class NamedAddressOrUnqualifiedPath(
         val address: Address.Named,
         override val ns: NsSet
@@ -102,19 +101,14 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         val useSpeck = this.useSpeck
         if (useSpeck != null && useSpeck.parent is MvUseStmt) {
             // if so, local path expr is a named address
-            val namedAddress = moveProject?.getNamedAddressTestAware(referenceName)
-            if (namedAddress != null) {
-                return PathKind.NamedAddress(namedAddress)
-            }
-            // and it can be with null value if absent, still a named address
-            return PathKind.NamedAddress(Address.Named(referenceName, null))
+            return PathKind.NamedAddress(Address.Named(referenceName))
         }
 
         // outside use stmt context
         if (moveProject != null) {
             // check whether there's a '::' after it, then try for a named address
             if (this.isColonColonNext) {
-                val namedAddress = moveProject.getNamedAddressTestAware(referenceName)
+                val namedAddress = moveProject.getNamedAddress(referenceName)
                 if (namedAddress != null) {
                     return PathKind.NamedAddressOrUnqualifiedPath(namedAddress, MODULES)
                 }
@@ -143,12 +137,12 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             // aptos_framework::bar
             //                  ^
             moveProject != null && qualifierReferenceName != null -> {
-                val namedAddress = moveProject.getNamedAddressTestAware(qualifierReferenceName)
+                val namedAddress = moveProject.getNamedAddress(qualifierReferenceName)
                 // `use std::main`
                 //            ^
                 if (this.isUseSpeck) {
                     val address =
-                        namedAddress ?: Address.Named(qualifierReferenceName, null)
+                        namedAddress ?: Address.Named(qualifierReferenceName)
                     return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
                 }
                 if (namedAddress != null) {

@@ -1,37 +1,16 @@
 package org.move.lang.core.types
 
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.parentModuleOrModuleSpec
-import org.move.lang.core.resolve.PathKind
-import org.move.lang.core.resolve.pathKind
-import org.move.lang.moveProject
-
-fun moduleIndexId(address: Address, name: String): String {
-    return "${address.universalText()}::$name"
-}
-
-fun addressIndexIds(address: Address): List<String> {
-    return listOfNotNull(
-        address.universalText(), address.canonicalValueText()
-    )
-}
-
-fun moduleIndexIds(address: Address, name: String): HashSet<String> {
-    return addressIndexIds(address).map { "$it::$name" }.toHashSet()
-}
-
-fun MvModule.indexIds(): HashSet<String> {
-    val fqName = this.fqName() as? ItemFQName.Module ?: return hashSetOf()
-    return moduleIndexIds(fqName.address, fqName.name)
-}
+import org.move.lang.core.psi.ext.qualifier
 
 fun MvElement.fqName(): ItemFQName? {
     return when (this) {
         is MvModule -> {
             val name = this.name ?: return null
-            val moveProject = this.moveProject
-            val address = this.address(moveProject) ?: Address.Value("0x0")
+            val address = this.address() ?: return null
             ItemFQName.Module(address, name)
         }
         is MvStruct, is MvEnum -> {
@@ -51,13 +30,20 @@ fun MvElement.fqName(): ItemFQName? {
         }
         is MvModuleSpec -> {
             val path = this.path ?: return null
+            val qualifier = path.qualifier ?: return null
             val name = path.referenceName ?: return null
-            val pathKind = path.pathKind(isCompletion = false)
-            return when (pathKind) {
-                is PathKind.QualifiedPath.Module -> ItemFQName.Module(pathKind.address, name)
-                is PathKind.QualifiedPath.ModuleOrItem -> ItemFQName.Module(pathKind.address, name)
-                else -> null
+
+            // three element path cannot be present in module spec
+            if (qualifier.qualifier != null) return null
+
+            val qualifierAddress = qualifier.pathAddress
+            if (qualifierAddress != null) {
+                val address = Address.Value(qualifierAddress.text)
+                return ItemFQName.Module(address, name)
             }
+
+            val qualifierName = qualifier.referenceName ?: return null
+            return ItemFQName.Module(Address.Named(qualifierName), name)
         }
         is MvConst -> {
             val name = this.name ?: return null
@@ -77,40 +63,28 @@ sealed class ItemFQName {
         is Item -> this.name
     }
 
-    fun containerName(): String = when (this) {
-        is Module -> this.address.declarationText()
-        is Item -> this.moduleFQName.declarationText()
-    }
+    fun qualifierName(): String =
+        when (this) {
+            is Module -> this.address.identifierText()
+            is Item -> this.moduleFQName.identifierText()
+        }
 
-    fun moduleDeclarationText(): String? {
+    fun moduleText(): String? {
         return when (this) {
-            is Module -> this.declarationText()
-            is Item -> this.moduleFQName.declarationText()
+            is Module -> this.identifierText()
+            is Item -> this.moduleFQName.identifierText()
         }
     }
 
-    fun declarationText(): String {
+    fun identifierText(): String {
         return when (this) {
             is Module -> {
-                val addressText = this.address.declarationText()
+                val addressText = this.address.identifierText()
                 return "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleDeclarationText = this.moduleFQName.declarationText()
+                val moduleDeclarationText = this.moduleFQName.identifierText()
                 return "$moduleDeclarationText::${this.name}"
-            }
-        }
-    }
-
-    fun universalAddressText(): String {
-        return when (this) {
-            is Module -> {
-                val addressText = this.address.universalText()
-                "$addressText::${this.name}"
-            }
-            is Item -> {
-                val moduleCmdText = this.moduleFQName.universalAddressText()
-                "$moduleCmdText::${this.name}"
             }
         }
     }
@@ -128,27 +102,14 @@ sealed class ItemFQName {
         }
     }
 
-    fun canonicalAddressValueText(): String {
+    fun commandLineText(moveProject: MoveProject?): String? {
         return when (this) {
             is Module -> {
-                val addressText = this.address.canonicalValueText()
+                val addressText = this.address.resolveToNumericAddress(moveProject)?.short() ?: return null
                 "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleCmdText = this.moduleFQName.canonicalAddressValueText()
-                "$moduleCmdText::${this.name}"
-            }
-        }
-    }
-
-    fun shortAddressValueText(): String {
-        return when (this) {
-            is Module -> {
-                val addressText = this.address.shortenedValueText()
-                "$addressText::${this.name}"
-            }
-            is Item -> {
-                val moduleCmdText = this.moduleFQName.shortAddressValueText()
+                val moduleCmdText = this.moduleFQName.commandLineText(moveProject) ?: return null
                 "$moduleCmdText::${this.name}"
             }
         }

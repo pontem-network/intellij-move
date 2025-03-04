@@ -15,10 +15,10 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.cli.manifest.MoveToml
-import org.move.cli.tests.NamedAddressFromTestAnnotationService
+import org.move.cli.tests.testAddressesService
 import org.move.lang.MoveFile
-import org.move.lang.core.types.Address
-import org.move.lang.core.types.AddressValue
+import org.move.lang.core.types.Address.Named
+import org.move.lang.core.types.NumericAddress
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
@@ -56,7 +56,7 @@ data class MoveProject(
         return folders
     }
 
-    fun addresses(): PackageAddresses {
+    fun namedAddresses(): PackageAddresses {
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val packageName = this.currentPackage.packageName
 
@@ -74,8 +74,8 @@ data class MoveProject(
         }
     }
 
-    fun addressValues(): AddressMap {
-        return addresses().values
+    fun numericTomlAddresses(): AddressMap {
+        return namedAddresses().values
     }
 
     fun currentPackageAddresses(): AddressMap {
@@ -86,19 +86,48 @@ data class MoveProject(
         return map
     }
 
-    fun getNamedAddressTestAware(name: String): Address.Named? {
-        val declaredNamedValue = getValueOfDeclaredNamedAddress(name)
+    fun getNamedAddress(name: String): Named? {
+        val declaredNamedValue = getAddressValueByName(name)
         if (declaredNamedValue != null) {
-            return Address.Named(name, declaredNamedValue)
-        }
-        if (isUnitTestMode) {
-            val namedAddressService = project.service<NamedAddressFromTestAnnotationService>()
-            return namedAddressService.getNamedAddress(this, name)
+            return Named(name)
         }
         return null
     }
 
-    fun getValueOfDeclaredNamedAddress(name: String): String? = addressValues()[name]?.value
+    fun getAddressNamesForValue(numericAddress: NumericAddress): List<String> {
+        val moveProject = this
+        return buildList {
+            for ((name, tomlAddress) in moveProject.numericTomlAddresses()) {
+                if (tomlAddress.numericAddress == numericAddress) {
+                    add(name)
+                }
+            }
+            if (isUnitTestMode) {
+                val testAddresses =
+                    moveProject.project.testAddressesService.getNamedAddressesForValue(moveProject, numericAddress)
+                addAll(testAddresses)
+            }
+        }
+    }
+
+    fun getNumericAddressByName(name: String): NumericAddress? {
+        val numericValue = this.getAddressValueByName(name)
+        return numericValue
+            ?.takeIf { it != "_" }
+            ?.let {
+                NumericAddress(it)
+            }
+    }
+
+    fun getAddressValueByName(name: String): String? {
+        val numericTomlAddress = numericTomlAddresses()[name]
+        if (numericTomlAddress == null) {
+            if (isUnitTestMode) {
+                return project.testAddressesService.getNamedAddress(this, name)
+            }
+        }
+        return numericTomlAddress?.value
+    }
 
     fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
@@ -165,9 +194,11 @@ data class MoveProject(
                     ) as TomlFile
 
             val moveToml = MoveToml(project, tomlFile)
-            val movePackage = MovePackage(project, contentRoot,
-                                          packageName = "DummyPackage",
-                                          tomlMainAddresses = moveToml.declaredAddresses())
+            val movePackage = MovePackage(
+                project, contentRoot,
+                packageName = "DummyPackage",
+                tomlMainAddresses = moveToml.declaredAddresses()
+            )
             return movePackage
         }
 

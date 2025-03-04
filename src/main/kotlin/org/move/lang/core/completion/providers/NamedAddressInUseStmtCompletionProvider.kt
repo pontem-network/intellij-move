@@ -9,7 +9,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.cli.AddressVal
+import org.move.cli.TomlAddress
 import org.move.ide.MoveIcons
 import org.move.lang.core.MvPsiPattern
 import org.move.lang.core.completion.alreadyHasColonColon
@@ -33,7 +33,7 @@ object AddressInModuleDeclCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val moveProject = parameters.position.moveProject ?: return
-        val addresses = moveProject.addressValues()
+        val addresses = moveProject.numericTomlAddresses()
         for ((name, value) in addresses.entries.sortedBy { it.key }) {
             val lookup = LookupElementBuilder
                 .create(name)
@@ -65,7 +65,7 @@ object NamedAddressAtValueExprCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val moveProject = parameters.position.moveProject ?: return
-        val declaredNamedAddresses = moveProject.addresses().values
+        val declaredNamedAddresses = moveProject.namedAddresses().values
         for ((name, addressVal) in declaredNamedAddresses.entries.sortedBy { it.key }) {
             val lookup = addressVal.createCompletionLookupElement(name)
             result.addElement(lookup)
@@ -97,7 +97,7 @@ object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
     ) {
         val element = parameters.position
         val moveProject = element.moveProject ?: return
-        val declaredNamedAddresses = moveProject.addresses().values
+        val declaredNamedAddresses = moveProject.namedAddresses().values
         for ((name, addressVal) in declaredNamedAddresses.entries.sortedBy { it.key }) {
             val lookup = addressVal.createCompletionLookupElement(name)
             result.addElement(lookup)
@@ -105,7 +105,7 @@ object NamedAddressInUseStmtCompletionProvider: MvCompletionProvider() {
     }
 }
 
-fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElement {
+fun TomlAddress.createCompletionLookupElement(lookupString: String): LookupElement {
     return LookupElementBuilder
         .create(lookupString)
         .withIcon(MoveIcons.ADDRESS)

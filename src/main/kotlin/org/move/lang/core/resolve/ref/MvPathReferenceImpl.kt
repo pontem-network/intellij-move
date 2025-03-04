@@ -183,7 +183,7 @@ fun getQualifiedPathEntries(
                 // no Aptos project, cannot resolve by address
                 val moveProject = ctx.moveProject ?: return@buildList
                 // no such named address
-                val address = moveProject.getNamedAddressTestAware(addressName) ?: return@buildList
+                val address = moveProject.getNamedAddress(addressName) ?: return@buildList
                 val moduleEntries = getModulesAsEntries(ctx, address)
                 addAll(moduleEntries)
             }

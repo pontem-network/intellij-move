@@ -34,7 +34,7 @@ class MoveToml(
             if (addressVal.first == MvConstants.ADDR_PLACEHOLDER) {
                 placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
             } else {
-                values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)
+                values[addressName] = TomlAddress(value, tomlKeyValue, null, packageName)
             }
         }
         return PackageAddresses(values, placeholders)
