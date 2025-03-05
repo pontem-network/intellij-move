@@ -1,16 +1,17 @@
 package org.move.lang.index
 
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.DataIndexer
 import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.util.indexing.FileContent
 import com.intellij.util.indexing.ID
 import com.intellij.util.io.DataExternalizer
 import com.intellij.util.io.EnumeratorStringDescriptor
+import org.move.cli.MoveProject
 import org.move.lang.MoveFile
 import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Ns
 import org.move.lang.core.resolve.ref.NsSet
+import org.move.lang.core.types.ItemFQName
 import org.move.lang.core.types.fqName
 
 private fun nsToString(ns: NsSet): String {
@@ -24,6 +25,7 @@ private fun nsFromString(s: String): NsSet {
 
 class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
     override fun getName(): ID<String, String> = INDEX_ID
+    override fun getVersion(): Int = 2
 
     override fun getValueExternalizer(): DataExternalizer<String> = EnumeratorStringDescriptor.INSTANCE
 
@@ -48,11 +50,14 @@ class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
     companion object {
         val INDEX_ID: ID<String, String> = ID.create("org.move.index.MvItemNamespaceIndex")
 
-        fun getItemNs(searchScope: GlobalSearchScope, fqName: String): NsSet {
+        fun getItemNs(moveProject: MoveProject, fqName: ItemFQName): NsSet {
             val filesIndex = FileBasedIndex.getInstance()
-            val value = filesIndex.getValues(INDEX_ID, fqName, searchScope)
-                // should be always a single value
-                .firstOrNull()
+            val searchScope = moveProject.searchScope()
+            val indexIds = fqName.searchIndexIds(moveProject)
+            val value =
+                filesIndex.getValuesForAnyKey(INDEX_ID, indexIds, searchScope)
+                    // should be always a single value
+                    .firstOrNull()
             return if (value == null) NONE else nsFromString(value)
         }
     }

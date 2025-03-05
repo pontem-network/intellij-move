@@ -38,11 +38,13 @@ annotation class WithEnabledInspections(vararg val inspections: KClass<out Inspe
 annotation class MoveV2(val enabled: Boolean = true)
 
 @Inherited
+@Repeatable
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class NamedAddress(val name: String, val value: String)
 
 @Inherited
+@Repeatable
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithAdvancedSetting(val id: String, val value: Boolean)

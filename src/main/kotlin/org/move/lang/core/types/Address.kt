@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
 
-class NumericAddress(val value: String) {
+data class NumericAddress(val value: String) {
     fun short(): String = trimmedValue(value)
     fun normalized(): String = short()
 
@@ -47,12 +47,12 @@ sealed class Address {
         return numericAddress == NumericAddress("0x1")
     }
 
-    class Value(val numericAddress: NumericAddress): Address() {
+    data class Value(val numericAddress: NumericAddress): Address() {
         constructor(value: String):
                 this(NumericAddress(value))
     }
 
-    class Named(val name: String): Address()
+    data class Named(val name: String): Address()
 
     fun identifierText(): String {
         return when (this) {

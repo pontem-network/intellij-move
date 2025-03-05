@@ -8,11 +8,12 @@ import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
+import org.move.lang.core.types.ItemFQName
 
 sealed class UseItemType2 {
     object Module: UseItemType2()
     object SelfModule: UseItemType2()
-    data class Item(val fqName: String): UseItemType2()
+    data class Item(val fqName: ItemFQName): UseItemType2()
 }
 
 data class UseItem(
@@ -63,7 +64,10 @@ val MvUseStmt.useItems: List<UseItem>
                     is PathKind.QualifiedPath.ModuleOrItem -> qualifierKind.address
                     else -> continue
                 }
-                val fqName = "${address.indexId()}::$moduleName::$childName"
+                val fqName = ItemFQName.Item(
+                    ItemFQName.Module(address, moduleName),
+                    childName
+                )
                 useItems.add(
                     UseItem(
                         childUseSpeck,
@@ -114,7 +118,10 @@ val MvUseStmt.useItems: List<UseItem>
                     )
                 } else {
                     val address = pathKind.baseAddress() ?: return useItems
-                    val fqName = "${address.indexId()}::$moduleName::$rootName"
+                    val fqName = ItemFQName.Item(
+                        ItemFQName.Module(address, moduleName),
+                        rootName
+                    )
                     useItems.add(
                         UseItem(
                             rootUseSpeck,
