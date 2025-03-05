@@ -3,7 +3,6 @@ package org.move.ide.inspections
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.CachedValueProvider
 import org.move.ide.inspections.fixes.AddAcquiresFix
 import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.declaringModule
@@ -20,9 +19,6 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.utils.PsiCachedValueProvider
-import org.move.utils.getResults
-import org.move.utils.psiCacheResult
 
 data class NamedTy(var ty: Ty) {
 
@@ -35,31 +31,25 @@ data class NamedTy(var ty: Ty) {
 
 fun List<Ty>.asNamedTys(): List<NamedTy> = this.map { NamedTy(it) }
 
-class GetFunctionAcquiresTypes(override val owner: MvFunction): PsiCachedValueProvider<List<NamedTy>> {
-    override fun compute(): CachedValueProvider.Result<List<NamedTy>> {
-        val ctx = AcquiresTypeContext()
-        val tys = when {
-            owner.isInline -> {
-                // collect `acquires` from inner calls and index exprs
-                val inference = owner.inference(false)
-                val allTypes = mutableListOf<Ty>()
-                visitInnerAcquireTypeOwners(owner) {
-                    val tys = ctx.getAcquiredTypes(it, inference)
-                    allTypes.addAll(tys.map { it.ty })
-                }
-                allTypes
+fun getFunctionAcquiresTypes(owner: MvFunction): List<NamedTy> {
+    val ctx = AcquiresTypeContext()
+    val tys = when {
+        owner.isInline -> {
+            // collect `acquires` from inner calls and index exprs
+            val inference = owner.inference(false)
+            val allTypes = mutableListOf<NamedTy>()
+            visitInnerAcquireTypeOwners(owner) {
+                val tys = ctx.getAcquiredTypes(it, inference)
+                allTypes.addAll(tys)
             }
-            else -> {
-                // parse from MvAcquiresType
-                owner.acquiresPathTypes.map { it.loweredType(false) }
-            }
+            allTypes
         }
-        val namedTys = tys.asNamedTys()
-        // trigger fullname to be able to cache it
-        namedTys.forEach { it.fullname }
-
-        return owner.psiCacheResult(namedTys)
+        else -> {
+            // parse from MvAcquiresType
+            owner.acquiresPathTypes.map { it.loweredType(false) }.asNamedTys()
+        }
     }
+    return tys
 }
 
 class AcquiresTypeContext {
@@ -85,7 +75,7 @@ class AcquiresTypeContext {
         val callTy = inference.getCallableType(callable) as? TyFunction ?: return emptyList()
         val functionItem = callTy.item as? MvFunction ?: return emptyList()
         return if (functionItem.isInline) {
-            val functionTypes = GetFunctionAcquiresTypes(functionItem).getResults()
+            val functionTypes = getFunctionAcquiresTypes(functionItem)
             functionTypes
                 .forEach {
                     it.ty = it.ty.substituteOrUnknown(callTy.substitution)

@@ -2,12 +2,10 @@ package org.move.lang.types
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.AcquiresTypeContext
-import org.move.ide.inspections.GetFunctionAcquiresTypes
-import org.move.ide.presentation.fullnameNoArgs
+import org.move.ide.inspections.getFunctionAcquiresTypes
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.types.infer.inference
-import org.move.utils.getResults
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
@@ -287,7 +285,7 @@ class AcquiresTypesTest: MvTestBase() {
         InlineFile(myFixture, code, "main.move")
 
         val function = myFixture.findElementInEditor<MvFunction>()
-        val actualTypes = GetFunctionAcquiresTypes(function).getResults().map { it.fullname }
+        val actualTypes = getFunctionAcquiresTypes(function).map { it.fullname }
         if (expectedTypes.isEmpty()) {
             check(actualTypes.isEmpty()) { "Expected empty list" }
         }

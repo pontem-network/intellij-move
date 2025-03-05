@@ -2,17 +2,15 @@ package org.move.utils
 
 import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
-import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
-import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.moveStructureModificationTracker
 
 interface PsiCachedValueProvider<T>: CachedValueProvider<T> {
     val owner: MvElement
@@ -26,12 +24,12 @@ fun <T> PsiCachedValueProvider<T>.getResults(): T {
 }
 
 
-interface PsiFileCachedValueProvider<T>: CachedValueProvider<T> {
-    val file: PsiFile
+interface MoveFileCachedValueProvider<T>: CachedValueProvider<T> {
+    val file: MoveFile
     abstract override fun compute(): CachedValueProvider.Result<T>
 }
 
-fun <T> PsiFileCachedValueProvider<T>.getResults(): T {
+fun <T> MoveFileCachedValueProvider<T>.getResults(): T {
     val manager = this.file.project.cacheManager
     val key = manager.getKeyForClass<T>(this::class.java)
     return manager.getCachedValue(this.file, key, this, false)
@@ -45,13 +43,12 @@ fun <T> MvElement.psiCacheResult(value: T): CachedValueProvider.Result<T> =
         PsiModificationTracker.MODIFICATION_COUNT
     )
 
-fun <T> MvElement.containingFileCacheResult(value: T): CachedValueProvider.Result<T> {
-    val file = containingFile?.originalFile?.virtualFile
-    return file?.fileCacheResult(value) ?: this.psiCacheResult(value)
+fun <T> Project.moveStructureCacheResult(value: T): CachedValueProvider.Result<T> {
+    return CachedValueProvider.Result.create(
+        value,
+        this.moveStructureModificationTracker
+    )
 }
-
-fun <T> VirtualFile.fileCacheResult(value: T): CachedValueProvider.Result<T> =
-    CachedValueProvider.Result.create(value, this)
 
 fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValueProvider.Result<T> {
     return when {
