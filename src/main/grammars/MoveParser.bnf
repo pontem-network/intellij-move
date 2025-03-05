@@ -508,6 +508,22 @@ private ReturnTypeItem_with_recover ::= Type
 }
 private ReturnTypeItem_recover ::= !( '{' | ';' | acquires | reads | writes | pure | '!' )
 
+ResourceAccessItemList ::= <<isResourceAccessEnabled>> ResourceAccessItem*
+ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
+
+AccessSpecifierList ::= <<comma_separated_list AccessSpecifier>>
+AccessSpecifier ::= <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
+
+AddressSpecifier ::= '(' AddressSpecifierArg ')' { pin = 1 }
+AddressSpecifierArg ::= '*'
+                        | AddressSpecifierLit
+                        | <<pathMode 'VALUE' (PathImpl '(' AddressSpecifierCallParam ')')>>
+                        | IDENTIFIER
+AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
+
+AddressSpecifierCallParam ::= AddressSpecifierCallParamImpl
+AddressSpecifierCallParamImpl ::= PathIdent { elementType = Path }
+
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
 private AcquiresType_items ::= <<comma_separated_list PathType>>
