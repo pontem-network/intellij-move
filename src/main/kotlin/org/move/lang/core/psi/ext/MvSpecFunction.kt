@@ -4,8 +4,17 @@ import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.impl.MvNamedElementImpl
 import javax.swing.Icon
+
+val MslOnlyElement.parentModuleOrModuleSpec: MvElement?
+    get() {
+        for (ancestor in this.ancestors) {
+            if (ancestor is MvModule || ancestor is MvModuleSpec) {
+                return ancestor
+            }
+        }
+        return null
+    }
 
 val MvSpecFunction.parentModule: MvModule?
     get() {
@@ -19,7 +28,8 @@ val MvSpecFunction.parentModule: MvModule?
 
 val MvSpecInlineFunction.parentModule: MvModule?
     get() {
-        val specCodeBlock = this.parent.parent as MvSpecCodeBlock
+        val functionStmt = this.parent as MvSpecInlineFunctionStmt
+        val specCodeBlock = functionStmt.parent as MvSpecCodeBlock
         val moduleSpec = specCodeBlock.parent as? MvModuleItemSpec ?: return null
         return moduleSpec.definitionModule
     }

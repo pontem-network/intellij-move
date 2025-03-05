@@ -66,7 +66,7 @@ val MvPath.maybeFieldsOwner get() = reference?.resolveFollowingAliases() as? MvF
 
 val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
-fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
+fun MvPath.allowedNamespaces(isCompletion: Boolean = false): NsSet {
     val qualifier = this.path
     val parent = this.parent
     return when {
@@ -77,7 +77,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
         // foo::bar
         //  ^
         parent is MvPath -> {
-            ENUMS + MODULES
+            ENUMS_N_MODULES
 //            // if we're inside PathType, then ENUM::ENUM_VARIANT cannot be used, so foo cannot be enum
 //            if (parent.parent is MvPathType) {
 //                MODULES
@@ -94,7 +94,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
 
         // a: bar
         //     ^
-        parent is MvPathType && qualifier == null -> if (isCompletion) TYPES_N_ENUMS + MODULES else TYPES_N_ENUMS
+        parent is MvPathType && qualifier == null -> if (isCompletion) TYPES_N_ENUMS_N_MODULES else TYPES_N_ENUMS
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
@@ -104,7 +104,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NS
         // TYPES for resource indexing, NAMES for vector indexing
         parent is MvPathExpr
-                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS + NAMES
+                && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
 
         // can be anything in completion
         parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_ENUM_VARIANTS

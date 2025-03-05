@@ -1,10 +1,9 @@
 package org.move.lang.core.psi
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.ext.*
-import org.move.utils.cache
-import org.move.utils.cacheManager
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 
 enum class NamedItemScope {
@@ -22,14 +21,16 @@ enum class NamedItemScope {
     }
 }
 
-private val ATTRIBUTES_ITEM_SCOPE: Key<CachedValue<NamedItemScope?>> = Key.create("ATTRIBUTES_ITEM_SCOPE")
+class AttributesItemScope(override val owner: MvDocAndAttributeOwner): PsiCachedValueProvider<NamedItemScope?> {
+    override fun compute(): CachedValueProvider.Result<NamedItemScope?> {
+        val itemScope = owner.attributesItemScopeInner()
+        return owner.psiCacheResult(itemScope)
+    }
+}
 
 val MvDocAndAttributeOwner.itemScopeFromAttributes: NamedItemScope?
     get() {
-        return project.cacheManager.cache(
-            this,
-            ATTRIBUTES_ITEM_SCOPE
-        ) { psiCacheResult(this.attributesItemScopeInner()) }
+        return AttributesItemScope(this).getResults()
     }
 
 private fun MvDocAndAttributeOwner.attributesItemScopeInner(): NamedItemScope? =

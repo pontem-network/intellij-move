@@ -5,6 +5,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
 import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
 import org.move.lang.core.resolve.ref.resolvePatBindingRaw
+import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
@@ -27,7 +28,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
         is MvPatBinding -> {
             val resolveVariants = resolvePatBindingRaw(this, expectedType = ty)
             // todo: check visibility?
-            val item = resolveVariants.singleOrNull()?.element
+            val item = resolveVariants.singleItemOrNull()
             fcx.ctx.resolvedBindings[this] = item
 
             val bindingType =

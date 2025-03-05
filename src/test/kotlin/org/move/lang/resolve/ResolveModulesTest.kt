@@ -81,9 +81,23 @@ class ResolveModulesTest : ResolveTestCase() {
 
     fun `test resolve module to imported module with alias`() = checkByCode(
         """
+        module 0x1::Transaction {}
         module 0x1::m {
             use 0x1::Transaction as MyTransaction;
                                   //X
+            fun main() {
+                let a = MyTransaction::create();
+                      //^
+            }
+        }
+    """
+    )
+
+    fun `test unresolved if alias points to unresolved item`() = checkByCode(
+        """
+        module 0x1::m {
+            use 0x1::Transaction as MyTransaction;
+                                    //X
             fun main() {
                 let a = MyTransaction::create();
                       //^

@@ -4,135 +4,111 @@ import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
-import org.move.lang.core.types.AddressValue.Companion.normalizeValue
 
-const val MAX_LENGTH = 32
+class NumericAddress(val value: String) {
+    fun short(): String = trimmedValue(value)
+    fun normalized(): String = short()
 
-class AddressValue(val value: String) {
-    fun canonical(): String = normalizeValue(value)
-    fun short(): String = shortenValue(value)
+    override fun hashCode(): Int {
+        return this.value.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is NumericAddress) {
+            return false
+        }
+        return this.short() == other.short()
+    }
 
     companion object {
-        fun normalizeValue(text: String): String {
+        fun trimmedValue(text: String): String {
             if (!text.startsWith("0")) return text
             val trimmed = if (!text.startsWith("0x")) {
                 text.substring(1 until text.length)
             } else {
                 text.substring(2 until text.length)
             }
-            return "0x" + trimmed.padStart(MAX_LENGTH, '0')
-        }
-
-        fun shortenValue(text: String): String {
-            if (!text.startsWith("0")) return text
-            val trimmed = if (!text.startsWith("0x")) {
-                text.substring(1 until text.length)
-            } else {
-                text.substring(2 until text.length)
+            var trimmedAddress = trimmed.trimStart('0')
+            if (trimmedAddress.isBlank()) {
+                // 0x0
+                trimmedAddress = "0"
             }
-            return "0x" + trimmed.trimStart('0')
+            return "0x$trimmedAddress"
         }
     }
 }
 
 sealed class Address {
+    val is0x0: Boolean
+        get() = this is Value && this.numericAddress.short() == "0x0"
 
-    abstract fun text(): String
-    abstract fun canonicalValue(): String?
-
-    val is0x0 get() = this is Value && this.addressValue().value == "0x0"
-    val is0x1 get() = canonicalValue() == "0x00000000000000000000000000000001"
-
-    class Value(private val value: String): Address() {
-        fun addressValue(): AddressValue = AddressValue(value)
-
-        override fun canonicalValue(): String = this.addressValue().canonical()
-
-        override fun text(): String = this.addressValue().value
-
-        override fun toString(): String = "Address.Value($value)"
+    fun is0x1(moveProject: MoveProject): Boolean {
+        val numericAddress = this.resolveToNumericAddress(moveProject) ?: return false
+        return numericAddress == NumericAddress("0x1")
     }
 
-    class Named(val name: String, val value: String?): Address() {
-        fun addressValue(): AddressValue? = this.value?.let { AddressValue(it) }
-
-        override fun canonicalValue(): String? = this.addressValue()?.canonical()
-
-        override fun text(): String = "$name = $value"
+    class Value(val numericAddress: NumericAddress): Address() {
+        constructor(value: String):
+                this(NumericAddress(value))
     }
 
-    fun declarationText(): String {
+    class Named(val name: String): Address()
+
+    fun identifierText(): String {
         return when (this) {
             is Named -> this.name
-            is Value -> this.addressValue().value
+            is Value -> this.numericAddress.value
         }
     }
 
-    fun universalText(): String {
+    fun normalizedText(): String {
         // returns Address.Named for named address, and normalized Address.Value for value address
         return when (this) {
             is Named -> this.name
-            is Value -> this.addressValue().canonical()
+            is Value -> this.numericAddress.normalized()
         }
     }
 
-    fun shortenedValueText(): String? {
+    fun resolveToNumericAddress(moveProject: MoveProject?): NumericAddress? {
         return when (this) {
-            is Named -> this.addressValue()?.short()
-            is Value -> this.addressValue().short()
+            is Named -> moveProject?.getNumericAddressByName(name)
+            is Value -> this.numericAddress
         }
     }
 
-    fun canonicalValueText(): String? {
-        return when (this) {
-            is Named -> this.addressValue()?.canonical()
-            is Value -> this.addressValue().canonical()
+    fun indexId(): String = this.normalizedText()
+
+    fun searchIndexIds(moveProject: MoveProject): Set<String> {
+        val address = this
+        return buildSet {
+            if (address is Named) {
+                add(address.name)
+            }
+            val numericAddress = address.resolveToNumericAddress(moveProject)
+            if (numericAddress != null) {
+                add(numericAddress.normalized())
+                addAll(moveProject.getAddressNamesForValue(numericAddress))
+            }
         }
     }
 
     companion object {
-        fun equals(left: Address?, right: Address?): Boolean {
+        fun equals(left: Address, right: Address, moveProject: MoveProject): Boolean {
             if (left === right) return true
-            if (left == null && right == null) return true
-            return when {
-                left is Value && right is Value ->
-                    left.addressValue().canonical() == right.addressValue().canonical()
-                left is Named && right is Named -> {
-                    val leftValue = left.value?.let { normalizeValue(it) }
-                    val rightValue = right.value?.let { normalizeValue(it) }
-                    if (leftValue == null && rightValue == null) {
-                        // null items cannot be equal
-                        return false
-                    }
-                    return leftValue == rightValue
-                }
-                left is Value && right is Named -> checkValueNamedEquals(left, right)
-                left is Named && right is Value -> checkValueNamedEquals(right, left)
-                else -> false
-            }
-        }
-
-        private fun checkValueNamedEquals(value: Value, named: Named): Boolean {
-            val normalizedValue = value.addressValue().canonical()
-            val normalizedNamed = named.value?.let { normalizeValue(it) }
-            return normalizedValue == normalizedNamed
+            val leftNumeric = left.resolveToNumericAddress(moveProject) ?: return false
+            val rightNumeric = right.resolveToNumericAddress(moveProject) ?: return false
+            return leftNumeric.normalized() == rightNumeric.normalized()
         }
     }
 }
 
-fun MvModule.address(moveProject: MoveProject?): Address? = this.addressRef()?.address(moveProject)
+fun MvModule.address(): Address? = this.addressRef()?.refAddress()
 
-fun MvAddressRef.address(moveProject: MoveProject?): Address? {
+fun MvAddressRef.refAddress(): Address? {
     val namedAddress = this.namedAddress
     if (namedAddress != null) {
-        val name = namedAddress.referenceName
-        return if (moveProject == null) {
-            Address.Named(name, null)
-        } else {
-            moveProject.getNamedAddressTestAware(name) ?: Address.Named(name, null)
-        }
+        return Address.Named(namedAddress.referenceName)
     }
-
-    val addressText = this.diemAddress?.text ?: this.integerLiteral?.text ?: return null
-    return Address.Value(addressText)
+    val value = this.diemAddress?.text ?: this.integerLiteral?.text ?: return null
+    return Address.Value(value)
 }

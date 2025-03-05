@@ -10,6 +10,7 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.types.fqName
 import org.move.lang.index.MvNamedItemFilesIndex
+import org.move.lang.moveProject
 
 object AptosTestLocator: SMTestLocator {
 
@@ -27,9 +28,9 @@ object AptosTestLocator: SMTestLocator {
         return buildList {
             val name = qualifiedName.substringAfterLast(NAME_SEPARATOR)
             for (entry in MvNamedItemFilesIndex.getEntriesFor(project, scope, listOf(name), NAMES)) {
-                val element = entry.element
+                val element = entry.element()
                 if (element is MvFunction) {
-                    if (element.fqName()?.shortAddressValueText() == qualifiedName) {
+                    if (element.fqName()?.commandLineText(element.moveProject) == qualifiedName) {
                         add(PsiLocation.fromPsiElement(element))
                     }
                 }

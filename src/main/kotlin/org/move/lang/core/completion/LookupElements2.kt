@@ -16,8 +16,8 @@ fun createCompletionItem(
     subst: Substitution = emptySubstitution,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext)
-): CompletionItem {
-    val element = scopeEntry.element
+): CompletionItem? {
+    val element = scopeEntry.element() ?: return null
     val lookup = element
         .getLookupElementBuilder(completionContext, scopeEntry.name, subst)
         .withInsertHandler(insertHandler)

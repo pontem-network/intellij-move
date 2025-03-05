@@ -7,8 +7,8 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecFileIndex
 import org.move.utils.psiCacheResult
@@ -29,9 +29,7 @@ val MvModule.friendModules: Sequence<MvModule>
 fun MvModule.allNonTestFunctions(): List<MvFunction> = this.functionList.filter { f -> !f.hasTestAttr }
 fun MvModule.testFunctions(): List<MvFunction> = this.functionList.filter { f -> f.hasTestAttr }
 
-val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
-val MvModule.isSpecBuiltins: Boolean
-    get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
+val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address()?.is0x0 == true)
 
 private fun createBuiltinFunctions(project: Project): List<MvFunction> {
     val builtinModule = project.psiFactory.module(

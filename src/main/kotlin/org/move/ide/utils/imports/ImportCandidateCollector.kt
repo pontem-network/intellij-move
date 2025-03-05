@@ -25,9 +25,12 @@ object ImportCandidateCollector {
 
             // double check in case of match
             if (targetNames.any { it == scopeEntry.name }) {
-                val itemQualName = scopeEntry.element.fqName()
-                if (itemQualName != null) {
-                    candidates.add(ImportCandidate(scopeEntry.element, itemQualName))
+                val namedElement = scopeEntry.element()
+                if (namedElement != null) {
+                    val fqName = namedElement.fqName()
+                    if (fqName != null) {
+                        candidates.add(ImportCandidate(namedElement, fqName))
+                    }
                 }
             }
         }

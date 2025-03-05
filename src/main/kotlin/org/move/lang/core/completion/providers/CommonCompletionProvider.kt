@@ -97,7 +97,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
         val methodEntries = getMethodResolveVariants(element, receiverTy, msl)
         for (methodEntry in methodEntries) {
-            val f = methodEntry.element as MvFunction
+            val f = methodEntry.element() as? MvFunction ?: continue
             val subst = f.tyVarsSubst
             val funcTy = f.functionTy(msl).substitute(subst) as TyFunction
             val selfTy = funcTy.paramTypes.first()

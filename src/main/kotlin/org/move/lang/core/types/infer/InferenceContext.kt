@@ -2,15 +2,11 @@ package org.move.lang.core.types.infer
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.DebugUtil
-import com.intellij.psi.util.CachedValueProvider
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.isDebugModeEnabled
-import org.move.ide.formatter.impl.fileWithLocation
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.PsiCachedValueProvider
-import org.move.lang.core.resolve.getResults
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
@@ -18,8 +14,6 @@ import org.move.lang.toNioPathOrNull
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
-import org.move.utils.cacheResult
-import org.move.utils.recursionGuard
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
     return expectedTy.kind == TyInteger.DEFAULT_KIND

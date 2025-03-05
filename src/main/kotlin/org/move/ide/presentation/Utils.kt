@@ -9,7 +9,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fqName
-import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.rootPath
 import java.nio.file.Path
@@ -58,15 +57,14 @@ fun getPresentationForStructure(psi: PsiElement): ItemPresentation {
 
 fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
     is MvModule -> {
-        val moveProj = this.moveProject
-        this.address(moveProj)?.text() ?: ""
+        this.address()?.normalizedText() ?: ""
     }
     else -> containingFilePath(tryRelative)?.toString()
 }
 
 val MvDocAndAttributeOwner.presentableQualifiedName: String?
     get() {
-        val fqName = (this as? MvNamedElement)?.fqName()?.declarationText()
+        val fqName = (this as? MvNamedElement)?.fqName()?.identifierText()
         if (fqName != null) return fqName
         return name
     }

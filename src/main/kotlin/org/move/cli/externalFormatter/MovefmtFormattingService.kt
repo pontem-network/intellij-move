@@ -21,12 +21,12 @@ import org.move.lang.MoveFile
 import org.move.openapiext.rootPath
 import org.move.openapiext.showSettingsDialog
 import org.move.stdext.blankToNull
-import org.move.stdext.enumSetOf
+import org.move.stdext.emptyEnumSet
 import org.move.stdext.unwrapOrThrow
 
 class MovefmtFormattingService: AsyncDocumentFormattingService() {
     // only whole file formatting is supported
-    override fun getFeatures(): Set<FormattingService.Feature> = enumSetOf()
+    override fun getFeatures(): Set<FormattingService.Feature> = emptyEnumSet()
 
     override fun canFormat(file: PsiFile): Boolean =
         file is MoveFile && file.project.movefmtSettings.useMovefmt && getFormattingReason() == ReformatCode

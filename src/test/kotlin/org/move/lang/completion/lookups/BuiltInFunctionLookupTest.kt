@@ -45,9 +45,9 @@ class BuiltInFunctionLookupTest: MvTestBase() {
         val moduleElement = myFixture.findElementInEditor<MvModule>()
         val lookup =
             moduleElement.builtinFunctions().single { it.name == name }.let {
-                val scopeEntry = ScopeEntry(name, it, NAMES)
+                val scopeEntry = ScopeEntry(name, lazy { it }, NAMES)
                 val completionCtx = MvCompletionContext(it, false)
-                createCompletionItem(scopeEntry, completionCtx)
+                createCompletionItem(scopeEntry, completionCtx)!!
             }
         checkLookupPresentation(
             lookup,

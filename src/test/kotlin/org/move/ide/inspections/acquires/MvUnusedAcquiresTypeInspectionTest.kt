@@ -1,9 +1,10 @@
-package org.move.ide.inspections
+package org.move.ide.inspections.acquires
 
+import org.move.ide.inspections.MvAcquiresCheckInspection
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvUnusedAcquiresTypeInspectionTest: InspectionTestBase(MvUnusedAcquiresTypeInspection::class) {
+class MvUnusedAcquiresTypeInspectionTest: InspectionTestBase(MvAcquiresCheckInspection::class) {
     fun `test no error if used acquires type`() = checkWarnings(
         """
         module 0x1::M {

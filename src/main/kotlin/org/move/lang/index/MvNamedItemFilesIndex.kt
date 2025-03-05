@@ -2,25 +2,24 @@ package org.move.lang.index
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.util.indexing.*
-import com.intellij.util.io.EnumeratorStringDescriptor
-import com.intellij.util.io.KeyDescriptor
+import com.intellij.util.indexing.DataIndexer
+import com.intellij.util.indexing.FileBasedIndex
+import com.intellij.util.indexing.FileContent
+import com.intellij.util.indexing.ID
 import org.move.lang.MoveFile
-import org.move.lang.MoveFileType
+import org.move.lang.core.psi.ext.globalVariableEntries
+import org.move.lang.core.resolve.importableEntries
+import org.move.lang.core.resolve.ref.NsSet
+import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.scopeEntry.filterByName
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.toMoveFile
 
-class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
+class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
     override fun getName(): ID<String, Void> = INDEX_ID
-    override fun getVersion(): Int = 1
-    override fun dependsOnFileContent(): Boolean = true
-
-    override fun getInputFilter(): FileBasedIndex.InputFilter = DefaultFileTypeSpecificInputFilter(MoveFileType)
+    override fun getVersion(): Int = 2
 
     override fun getIndexer(): DataIndexer<String, Void?, FileContent> {
         return object: DataIndexer<String, Void?, FileContent> {
@@ -34,27 +33,25 @@ class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
         }
     }
 
-    override fun getKeyDescriptor(): KeyDescriptor<String?> = EnumeratorStringDescriptor.INSTANCE
-
     @Suppress("CompanionObjectInExtension")
     companion object {
         val INDEX_ID: ID<String, Void> = ID.create("org.move.index.MvNamedElementFileIndex")
 
-        fun getAllItemNames(project: Project, ns: Set<Namespace>): Set<String> {
+        fun getAllItemNames(project: Project, ns: NsSet): Set<String> {
             val filesIndex = FileBasedIndex.getInstance()
             val itemIds = filesIndex.getAllKeys(INDEX_ID, project)
             val matchedItemIds = itemIds
                 .filter { name ->
-                    ns.any { name.endsWith("::$it") }
+                    ns.any { name.endsWith("#$it") }
                 }
-            return matchedItemIds.map { it.split("::")[0] }.toSet()
+            return matchedItemIds.map { it.split("#")[0] }.toSet()
         }
 
         fun getEntriesFor(
             project: Project,
             searchScope: GlobalSearchScope,
             targetNames: List<String>,
-            ns: Set<Namespace>
+            ns: NsSet
         ): List<ScopeEntry> {
             val indexIds = targetNames.flatMap { namedIndexIds(it, ns) }.toHashSet()
 
@@ -72,19 +69,22 @@ class MvNamedItemFilesIndex: ScalarIndexExtension<String>() {
             }
         }
 
-        private fun namedIndexIds(name: String, ns: Set<Namespace>): HashSet<String> {
-            return ns.map { "$name::${it.name}" }.toHashSet()
+        private fun namedIndexIds(name: String, ns: NsSet): HashSet<String> {
+            return ns.map { "$name#${it.name}" }.toHashSet()
         }
     }
 }
 
-private fun MoveFile.importableEntries(): List<ScopeEntry> {
+fun MoveFile.importableEntries(): List<ScopeEntry> {
     val file = this
     return buildList {
         for (module in file.modules()) {
             val moduleEntry = module.asEntry() ?: continue
             add(moduleEntry)
-            addAll(module.itemEntries)
+            addAll(module.importableEntries)
+        }
+        for (moduleSpec in file.moduleSpecs()) {
+            addAll(moduleSpec.importableEntries)
         }
     }
 }

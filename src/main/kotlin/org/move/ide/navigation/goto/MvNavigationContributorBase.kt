@@ -10,7 +10,7 @@ abstract class MvNavigationContributorBase: ChooseByNameContributorEx,
                                             GotoClassContributor {
 
     override fun getQualifiedName(item: NavigationItem): String? =
-        (item as? MvNamedElement)?.fqName()?.declarationText()
+        (item as? MvNamedElement)?.fqName()?.identifierText()
 
     override fun getQualifiedNameSeparator(): String = "::"
 }

@@ -20,7 +20,6 @@ import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.moveProject
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 
@@ -73,7 +72,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
                 val itemModule = typeArgTy.declaringModule() ?: return
                 if (currentModule != itemModule) {
-                    val itemModuleName = itemModule.fqName()?.declarationText() ?: return
+                    val itemModuleName = itemModule.fqName()?.identifierText() ?: return
                     var moduleQualTypeName = typeArgTy.fullname()
                     if (moduleQualTypeName.split("::").size == 3) {
                         // fq name
@@ -135,14 +134,14 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
     private fun checkModuleDef(moveHolder: MvAnnotationHolder, mod: MvModule) {
         val modName = mod.name ?: return
-        val moveProject = mod.moveProject ?: return
-        val addressIdent = mod.address(moveProject) ?: return
-        val modIdent = Pair(addressIdent.text(), modName)
+        val moduleAddress = mod.address() ?: return
+        val modIdent = moduleAddress.normalizedText() to modName
+
         val file = mod.containingMoveFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }
-                .groupBy { Pair(it.address(moveProject)?.text(), it.name) }
+                .groupBy { it.address()?.normalizedText() to it.name }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()
@@ -203,7 +202,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                fqName.declarationText(),
+                                fqName.identifierText(),
                                 expectedCount,
                                 realCount
                             )
@@ -259,7 +258,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         Diagnostic
                             .TypeArgumentsNumberMismatch(
                                 methodOrPath,
-                                fqName.declarationText(),
+                                fqName.identifierText(),
                                 expectedCount,
                                 realCount
                             )
@@ -278,7 +277,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val qualName = (item as? MvNamedElement)?.fqName() ?: return
         val expectedCount = item.typeParameters.size
 
-        val itemLabel = qualName.declarationText()
+        val itemLabel = qualName.identifierText()
         val realCount = typeArgumentList.typeArgumentList.size
         check(realCount != 0) { "Should be non-zero if typeArgumentList exists" }
 

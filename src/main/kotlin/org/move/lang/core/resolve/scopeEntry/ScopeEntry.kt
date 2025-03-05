@@ -1,40 +1,47 @@
 package org.move.lang.core.resolve.scopeEntry
 
+import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
+import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.resolve.isVisibleInContext
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.resolve.ref.itemNs
 
 
 data class ScopeEntry(
     val name: String,
-    val element: MvNamedElement,
-    val namespaces: Set<Namespace>,
+    private val element: Lazy<MvNamedElement?>,
+    val namespaces: NsSet,
     val customItemScope: NamedItemScope? = null,
 ) {
-    fun copyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
+    fun element(): MvNamedElement? = this.element.value
+
+    val completionPriority: Double get() = this.element()?.completionPriority ?: LOCAL_ITEM_PRIORITY
+
+    fun copyWithNs(ns: NsSet): ScopeEntry = copy(namespaces = ns)
 }
 
 fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {
     return this.filter { it.name == name }
 }
 
-fun List<ScopeEntry>.namedElements(): List<MvNamedElement> = this.map { it.element }
+fun List<ScopeEntry>.namedElements(): List<MvNamedElement> = this.mapNotNull { it.element() }
+
+fun List<ScopeEntry>.singleItemOrNull(): MvNamedElement? = this.singleOrNull()?.element()
 
 fun List<ScopeEntry>.toPathResolveResults(contextElement: MvElement?): List<RsPathResolveResult> {
-    return this.map { toPathResolveResult(it, contextElement) }
+    return this.mapNotNull { toPathResolveResult(it, contextElement) }
 }
 
-fun toPathResolveResult(scopeEntry: ScopeEntry, contextElement: MvElement?): RsPathResolveResult {
-    val element = scopeEntry.element
-    if (contextElement != null) {
-        return RsPathResolveResult(element, isVisibleInContext(scopeEntry, contextElement))
+fun toPathResolveResult(scopeEntry: ScopeEntry, contextElement: MvElement?): RsPathResolveResult? {
+    val element = scopeEntry.element() ?: return null
+    return if (contextElement != null) {
+        RsPathResolveResult(element, isVisibleInContext(scopeEntry, contextElement))
     } else {
-        return RsPathResolveResult(element, true)
+        RsPathResolveResult(element, true)
     }
 }
 
@@ -44,6 +51,6 @@ fun List<MvNamedElement>.asEntries(): List<ScopeEntry> {
 
 fun MvNamedElement.asEntry(): ScopeEntry? {
     val name = this.name ?: return null
-    return ScopeEntry(name, this, this.itemNs)
+    return ScopeEntry(name, lazy { this }, this.itemNs)
 }
 

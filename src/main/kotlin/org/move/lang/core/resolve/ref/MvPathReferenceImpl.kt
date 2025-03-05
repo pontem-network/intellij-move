@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
-import org.move.lang.core.resolve.ref.Namespace.MODULE
+import org.move.lang.core.resolve.ref.Ns.MODULE
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
@@ -25,11 +25,9 @@ interface InferenceCachedPathElement: MvElement {
 class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(element),
                                             MvPathReference {
 
-    override fun resolve(): MvNamedElement? =
-        rawMultiResolveIfVisible().singleOrNull()?.element as? MvNamedElement
+    override fun resolve(): MvNamedElement? = rawMultiResolveIfVisible().singleOrNull()?.element
 
-    override fun multiResolve(): List<MvNamedElement> =
-        rawMultiResolveIfVisible().mapNotNull { it.element as? MvNamedElement }
+    override fun multiResolve(): List<MvNamedElement> = rawMultiResolveIfVisible().map { it.element }
 
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()
@@ -109,7 +107,7 @@ fun getPathResolveVariantsWithExpectedType(
 
 fun List<ScopeEntry>.filterEntriesByExpectedType(expectedType: Ty?): List<ScopeEntry> {
     return this.filter {
-        val entryElement = it.element
+        val entryElement = it.element()
         if (entryElement !is MvEnumVariant) return@filter true
 
         val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum
@@ -139,9 +137,7 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
             is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
                 if (MODULE in pathKind.ns) {
                     // Self::call() as an expression
-                    ctx.containingModule?.let {
-                        add(ScopeEntry("Self", it, MODULES))
-                    }
+                    add(ScopeEntry("Self", lazy { ctx.containingModule }, MODULES))
                 }
                 // local
                 addAll(
@@ -175,8 +171,8 @@ fun getQualifiedPathEntries(
     return buildList {
         when (qualifierItem) {
             is MvModule -> {
-                add(ScopeEntry("Self", qualifierItem, MODULES))
-                addAll(qualifierItem.importableItemEntries)
+                add(ScopeEntry("Self", lazy { qualifierItem }, MODULES))
+                addAll(qualifierItem.allScopesImportableEntries)
             }
             is MvEnum -> {
                 addAll(qualifierItem.variants.asEntries())
@@ -187,7 +183,7 @@ fun getQualifiedPathEntries(
                 // no Aptos project, cannot resolve by address
                 val moveProject = ctx.moveProject ?: return@buildList
                 // no such named address
-                val address = moveProject.getNamedAddressTestAware(addressName) ?: return@buildList
+                val address = moveProject.getNamedAddress(addressName) ?: return@buildList
                 val moduleEntries = getModulesAsEntries(ctx, address)
                 addAll(moduleEntries)
             }

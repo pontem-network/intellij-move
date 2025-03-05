@@ -7,8 +7,7 @@ import org.move.ide.presentation.locationString
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.types.address
-import org.move.lang.moveProject
+import org.move.lang.core.types.refAddress
 
 fun MvAddressDef.modules(): List<MvModule> =
     addressBlock?.childrenOfType<MvModule>().orEmpty()
@@ -18,7 +17,7 @@ abstract class MvAddressDefMixin(node: ASTNode): MvElementImpl(node),
                                                  MvAddressDef {
 
     override fun getPresentation(): ItemPresentation? {
-        val addressText = this.addressRef?.address(this.moveProject)?.text() ?: ""
+        val addressText = this.addressRef?.refAddress()?.identifierText() ?: ""
         return PresentationData(
             addressText,
             this.locationString(tryRelative = true),

@@ -13,7 +13,7 @@ import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psiElement
-import org.move.lang.core.resolve.importableItemEntries
+import org.move.lang.core.resolve.allScopesImportableEntries
 import org.move.lang.core.resolve.ref.TYPES
 import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.withParent
@@ -35,7 +35,7 @@ object StructPatCompletionProvider: MvCompletionProvider() {
         val completionCtx = MvCompletionContext(bindingPat, bindingPat.isMsl())
         val completions = Completions(completionCtx, result)
 
-        val typeItems = module.importableItemEntries.filterByNs(TYPES)
+        val typeItems = module.allScopesImportableEntries.filterByNs(TYPES)
         completions.addEntries(typeItems)
     }
 }

@@ -12,8 +12,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.emptySubstitution
 import org.move.lang.core.types.ty.Ty
@@ -70,26 +70,27 @@ data class Completions(
         entry: ScopeEntry,
         applySubst: Substitution = emptySubstitution,
     ) {
-        result.addElement(
-            createCompletionItem(
-                entry,
-                ctx,
-                subst = applySubst,
-                priority = entry.element.completionPriority
-            )
+        val completionItem = createCompletionItem(
+            entry,
+            ctx,
+            subst = applySubst,
+            priority = entry.completionPriority
         )
+        if (completionItem != null) {
+            result.addElement(completionItem)
+        }
     }
 
     fun addEntries(entries: List<ScopeEntry>, applySubst: Substitution = emptySubstitution) {
         val completionItems =
-            entries.map {
+            entries.mapNotNull {
                 createCompletionItem(
                     scopeEntry = it,
                     completionContext = ctx,
-                    priority = it.element.completionPriority,
+                    priority = it.completionPriority,
                     subst = applySubst,
                 )
-            };
+            }
         result.addAllElements(completionItems)
     }
 }

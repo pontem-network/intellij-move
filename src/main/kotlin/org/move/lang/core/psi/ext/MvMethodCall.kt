@@ -8,6 +8,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.resolve.ref.MvMethodCallReferenceImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.NumericAddress
 import org.move.lang.core.types.address
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -27,7 +28,10 @@ fun Ty.itemModule(moveProject: MoveProject): MvModule? {
     }
 }
 
-fun MvModule.is0x1Address(moveProject: MoveProject): Boolean = this.address(moveProject)?.is0x1 ?: false
+fun MvModule.is0x1Address(moveProject: MoveProject): Boolean {
+    val address = this.address() ?: return false
+    return address.is0x1(moveProject)
+}
 
 abstract class MvMethodCallMixin(node: ASTNode): MvElementImpl(node), MvMethodCall {
 

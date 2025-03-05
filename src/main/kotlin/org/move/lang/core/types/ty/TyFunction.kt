@@ -1,10 +1,15 @@
 package org.move.lang.core.types.ty
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.util.CachedValueProvider
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.returnTypeTy
 import org.move.lang.core.types.infer.*
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
+import org.move.utils.moveStructureCacheResult
+import org.move.utils.psiCacheResult
 
 data class TyFunction(
     override val item: MvGenericDeclaration,
@@ -55,7 +60,27 @@ data class TyFunction(
 }
 
 // does not account for explicit type arguments
-fun MvFunctionLike.functionTy(msl: Boolean): TyFunction = rawFunctionTy(this, msl)
+fun MvFunctionLike.functionTy(msl: Boolean): TyFunction {
+    val ty = if (!msl)
+        GetTyFunction(this).getResults()
+    else
+        GetTyFunctionMsl(this).getResults()
+    return ty
+}
+
+class GetTyFunction(override val owner: MvFunctionLike): PsiCachedValueProvider<TyFunction> {
+    override fun compute(): CachedValueProvider.Result<TyFunction> {
+        val ty = rawFunctionTy(owner, false)
+        return owner.project.moveStructureCacheResult(ty)
+    }
+}
+
+class GetTyFunctionMsl(override val owner: MvFunctionLike): PsiCachedValueProvider<TyFunction> {
+    override fun compute(): CachedValueProvider.Result<TyFunction> {
+        val ty = rawFunctionTy(owner, true)
+        return owner.project.moveStructureCacheResult(ty)
+    }
+}
 
 private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyFunction {
     val typeParamsSubst = item.typeParamsToTypeParamsSubst
@@ -70,3 +95,4 @@ private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyFunction {
         acqTypes,
     )
 }
+

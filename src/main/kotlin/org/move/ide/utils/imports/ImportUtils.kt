@@ -24,7 +24,7 @@ private fun MvItemsOwner.insertUseItem(usePath: ItemFQName, testOnly: Boolean) {
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
     val newUseStmt =
-        this.project.psiFactory.useStmt(usePath.declarationText(), testOnly)
+        this.project.psiFactory.useStmt(usePath.identifierText(), testOnly)
     insertUseStmtAtTheCorrectLocation(this, newUseStmt)
 }
 
@@ -50,7 +50,7 @@ private fun tryGroupWithItemSpeck(
     if (useGroup == null && rootUseSpeck.path.length < 3) return false
 
     // searching for the statement with the same module qualifier
-    val itemModulePath = itemQualName.moduleDeclarationText() ?: error("moduleName cannot be zero")
+    val itemModulePath = itemQualName.moduleText() ?: error("moduleName cannot be zero")
     if (useGroup == null) {
         val modulePath = rootUseSpeck.path.qualifier ?: return false
         if (!modulePath.textMatches(itemModulePath)) return false
@@ -108,39 +108,6 @@ private fun tryGroupWithItemSpeck(
             useGroup.addAfter(newUseSpeck, newComma)
         }
     }
-
-//    val useItems = useStmt.useItems
-//    if (useItems.all { it.type == MODULE }) return false
-//
-//    val itemUseItem = useItems.firstOrNull() ?: return false
-//    val itemUseSpeck = itemUseItem.useSpeck
-//    val qualifier = itemUseSpeck.qualifier ?: itemUseSpeck.path.qualifier ?: return false
-//
-//    val fqModuleName = usePath.editorModuleFqName() ?: error("checked in the upper level")
-//    if (!qualifier.textMatches(fqModuleName)) return false
-
-//    val itemName = usePath.itemName
-//    val useStmtNames = useItems.map { it.nameOrAlias }
-//    if (itemName in useStmtNames) return true
-
-//    val useGroup = itemUseSpeck.useGroup
-//    val useSpeck = psiFactory.useSpeckForGroup(itemName)
-//    if (useGroup != null) {
-//        // add after the last item
-//        val useSpeckList = useGroup.useSpeckList
-//        if (useSpeckList.isEmpty()) {
-//            // use 0x1::m::{};
-//            useGroup.addAfter(useSpeck, useGroup.lBrace)
-//        } else {
-//            // use 0x1::m::{item1} -> use 0x1::m::{item1, item2}
-//            val lastItem = useSpeckList.last()
-//            useGroup.addAfter(
-//                useSpeck,
-//                useGroup.addAfter(psiFactory.createComma(), lastItem)
-//            )
-//        }
-//    } else {
-//    }
     return true
 }
 

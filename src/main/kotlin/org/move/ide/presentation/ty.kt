@@ -20,16 +20,20 @@ fun Ty.declaringModule(): MvModule? = when (this) {
     else -> null
 }
 
-fun Ty.nameNoArgs(): String {
-    return this.name().replace(Regex("<.*>"), "")
-}
-
 fun Ty.name(colors: Boolean = false): String {
     return text(fq = false, colors = colors)
 }
 
+private val TYPE_ARGS_REGEX = Regex("<.*>")
+
 fun Ty.fullnameNoArgs(): String {
-    return this.fullname().replace(Regex("<.*>"), "")
+    val fullname = render(
+        this,
+        level = 1,
+        fq = true,
+        toHtml = false,
+    )
+    return fullname.replace(TYPE_ARGS_REGEX, "")
 }
 
 fun Ty.fullname(colors: Boolean = false): String {
@@ -91,16 +95,12 @@ private fun render(
     fq: Boolean = false,
     toHtml: Boolean = false,
     typeParam: (TyTypeParameter) -> String = {
-        it.name?.chainIf(toHtml) { colored(this, asTypeParam) }
-            ?: anonymous
-//        colored(it.name, asTypeParam, toHtml) ?: anonymous
+        it.name?.chainIf(toHtml) { colored(this, asTypeParam) } ?: anonymous
     },
     tyVar: (TyInfer.TyVar) -> String = {
         val varName =
-            it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) }
-                ?: "_${it.hashCode()}"
+            it.origin?.name?.chainIf(toHtml) { colored(this, asTypeParam) } ?: "_${it.hashCode()}"
         "?$varName"
-//        colored(it.origin?.name, asTypeParam, toHtml) ?: "_"
     },
 ): String {
     check(level >= 0)
@@ -146,7 +146,7 @@ private fun render(
         }
         is TyTypeParameter -> typeParam(ty)
         is TyAdt -> {
-            val itemName = if (fq) ty.item.fqName()?.declarationText() ?: anonymous else (ty.item.name ?: anonymous)
+            val itemName = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(
@@ -156,7 +156,6 @@ private fun render(
                     transform = r
                 )
             itemName + typeArgs
-//            itemName + typeArgs.chainIf(toHtml) { escapeForHtml() }
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
@@ -171,7 +170,7 @@ private fun render(
             "$params -> $retType"
         }
         is TySchema -> {
-            val name = if (fq) ty.item.fqName()?.declarationText() ?: anonymous else (ty.item.name ?: anonymous)
+            val name = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) {
                     ""

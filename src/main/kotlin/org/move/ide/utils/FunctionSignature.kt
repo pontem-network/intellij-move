@@ -5,14 +5,13 @@
 
 package org.move.ide.utils
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.utils.PsiCachedValueProvider
+import org.move.utils.getResults
 import org.move.lang.core.types.ty.Ability
-import org.move.utils.cache
-import org.move.utils.cacheManager
+import org.move.utils.psiCacheResult
 
 data class FunctionSignature(
     val typeParameters: List<TypeParameter>,
@@ -92,16 +91,16 @@ data class FunctionSignature(
     }
 }
 
-private val FUNCTION_SIGNATURE_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
-
-fun MvFunction.getSignature(): FunctionSignature? =
-    project.cacheManager.cache(this, FUNCTION_SIGNATURE_KEY) {
-        val signature = FunctionSignature.fromFunction(this)
-        CachedValueProvider.Result.create(
-            signature,
-            project.moveStructureModificationTracker
-        )
+class ComputeFunctionSignature(override val owner: MvFunction): PsiCachedValueProvider<FunctionSignature?> {
+    override fun compute(): CachedValueProvider.Result<FunctionSignature?> {
+        val signature = FunctionSignature.fromFunction(owner)
+        return owner.psiCacheResult(signature)
     }
+}
+
+fun MvFunction.getSignature(): FunctionSignature? {
+    return ComputeFunctionSignature(this).getResults()
+}
 
 val MvItemSpecSignature.functionSignature: FunctionSignature
     get() = FunctionSignature.fromItemSpecSignature(this)

@@ -1,6 +1,6 @@
 package org.move.cli
 
-import org.move.lang.core.types.AddressValue
+import org.move.lang.core.types.NumericAddress
 import org.move.openapiext.singleSegmentOrNull
 import org.move.openapiext.stringValue
 import org.toml.lang.psi.TomlKeySegment
@@ -8,7 +8,7 @@ import org.toml.lang.psi.TomlKeyValue
 
 typealias RawAddressVal = Pair<String, TomlKeyValue>
 
-data class AddressVal(
+data class TomlAddress(
     val value: String,
     val keyValue: TomlKeyValue?,
     val placeholderKeyValue: TomlKeyValue?,
@@ -20,7 +20,7 @@ data class AddressVal(
                 ?: this.keyValue?.singleSegmentOrNull()
         }
 
-    val literal: AddressValue get() = AddressValue(value)
+    val numericAddress: NumericAddress get() = NumericAddress(value)
 }
 
 data class PlaceholderVal(
@@ -30,7 +30,7 @@ data class PlaceholderVal(
 
 typealias RawAddressMap = MutableMap<String, RawAddressVal>
 
-typealias AddressMap = MutableMap<String, AddressVal>
+typealias AddressMap = MutableMap<String, TomlAddress>
 typealias PlaceholderMap = MutableMap<String, PlaceholderVal>
 
 fun mutableRawAddressMap(): RawAddressMap = mutableMapOf()
@@ -45,16 +45,16 @@ data class PackageAddresses(
         val values = mutableAddressMap()
         for ((name, pVal) in placeholders.entries) {
             val value = pVal.keyValue.value?.stringValue() ?: continue
-            values[name] = AddressVal(value, pVal.keyValue, pVal.keyValue, pVal.packageName)
+            values[name] = TomlAddress(value, pVal.keyValue, pVal.keyValue, pVal.packageName)
         }
         return values
     }
 
-    fun get(name: String): AddressVal? {
+    fun get(name: String): TomlAddress? {
         if (name in this.values) return this.values[name]
         return this.placeholders[name]
             ?.let {
-                AddressVal(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+                TomlAddress(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
             }
     }
 
@@ -63,7 +63,7 @@ data class PackageAddresses(
         for ((pName, pVal) in this.placeholders.entries) {
             val pSubst = localSubst.remove(pName) ?: continue
             val (value, keyValue) = pSubst
-            this.values[pName] = AddressVal(value, keyValue, pVal.keyValue, packageName)
+            this.values[pName] = TomlAddress(value, keyValue, pVal.keyValue, packageName)
         }
         // renames
         for ((newName, oldNameVal) in localSubst.entries) {
@@ -71,7 +71,7 @@ data class PackageAddresses(
             // pop old AddressVal for this name, it shouldn't be present anymore
             val oldAddressVal = this.values.remove(oldName) ?: continue
             // rename with new name and old value
-            this.values[newName] = AddressVal(oldAddressVal.value, keyValue, keyValue, packageName)
+            this.values[newName] = TomlAddress(oldAddressVal.value, keyValue, keyValue, packageName)
         }
     }
 

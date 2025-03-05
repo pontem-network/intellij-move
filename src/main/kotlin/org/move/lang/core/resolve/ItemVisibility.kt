@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
-import org.move.lang.core.resolve.ref.Namespace.*
+import org.move.lang.core.resolve.ref.Ns.*
 import org.move.lang.core.resolve.ref.Visibility.*
 import org.move.stdext.containsAny
 
@@ -19,7 +19,7 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     val attrItem = contextElement.ancestorStrict<MvAttrItem>()
     if (attrItem != null) return true
 
-    val item = scopeEntry.element
+    val item = scopeEntry.element() ?: return false
     val itemNs = scopeEntry.namespaces
 
     val contextUsageScope = contextElement.usageScope
