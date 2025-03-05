@@ -30,7 +30,7 @@ object AptosTestLocator: SMTestLocator {
             for (entry in MvNamedItemFilesIndex.getEntriesFor(project, scope, listOf(name), NAMES)) {
                 val element = entry.element()
                 if (element is MvFunction) {
-                    if (element.fqName()?.commandLineText(element.moveProject) == qualifiedName) {
+                    if (element.fqName()?.numericAddressText(element.moveProject) == qualifiedName) {
                         add(PsiLocation.fromPsiElement(element))
                     }
                 }

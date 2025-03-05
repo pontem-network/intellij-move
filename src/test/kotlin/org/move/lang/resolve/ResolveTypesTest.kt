@@ -1,6 +1,7 @@
 package org.move.lang.resolve
 
 import org.move.utils.tests.MoveV2
+import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveTypesTest : ResolveTestCase() {
@@ -1073,6 +1074,22 @@ module 0x1::m {
             fun main(s: One) {
                         //^ unresolved  
             }
+        }        
+    """)
+
+    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("aptos_framework", "0x1")
+    fun `test resolve type imported with a different named address with same value`() = checkByCode("""
+        module aptos_std::m1 {
+            struct Type { val: u8 }
+                  //X
+        }
+        module aptos_framework::m2 {
+        }
+        module 0x1::m {
+            use aptos_framework::m1::Type;
+            fun main(s: Type) {}
+                       //^
         }        
     """)
 }

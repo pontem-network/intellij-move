@@ -102,14 +102,26 @@ sealed class ItemFQName {
         }
     }
 
-    fun commandLineText(moveProject: MoveProject?): String? {
+    fun searchIndexIds(moveProject: MoveProject): List<String> {
+        val name = this.name()
+        return when (this) {
+            is Module -> {
+                return this.address.searchIndexIds(moveProject).map { "$it::$name" }
+            }
+            is Item -> {
+                return this.moduleFQName.searchIndexIds(moveProject).map { "$it::$name" }
+            }
+        }
+    }
+
+    fun numericAddressText(moveProject: MoveProject?): String? {
         return when (this) {
             is Module -> {
                 val addressText = this.address.resolveToNumericAddress(moveProject)?.short() ?: return null
                 "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleCmdText = this.moduleFQName.commandLineText(moveProject) ?: return null
+                val moduleCmdText = this.moduleFQName.numericAddressText(moveProject) ?: return null
                 "$moduleCmdText::${this.name}"
             }
         }

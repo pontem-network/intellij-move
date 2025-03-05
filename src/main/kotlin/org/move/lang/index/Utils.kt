@@ -11,6 +11,7 @@ import com.intellij.util.io.DataExternalizer
 import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
 import com.intellij.util.io.VoidDataExternalizer
+import org.jetbrains.annotations.NotNull
 import org.move.lang.MoveFileType
 
 abstract class MvFileIndexExtension<V>: FileBasedIndexExtension<String, V>() {
@@ -40,4 +41,19 @@ fun <K, V> FileBasedIndex.getContainingFilesForAnyKey(
         collectProcessor
     )
     return collectProcessor.results.distinct().toList()
+}
+
+fun <V> FileBasedIndex.getValuesForAnyKey(
+    indexId: ID<String, V>,
+    dataKeys: Collection<String>,
+    searchScope: GlobalSearchScope
+): List<V> {
+    val fileIndex = this
+    val values = buildList {
+        for (dataKey in dataKeys) {
+            val values = fileIndex.getValues(indexId, dataKey, searchScope)
+            addAll(values)
+        }
+    }
+    return values.distinct()
 }
