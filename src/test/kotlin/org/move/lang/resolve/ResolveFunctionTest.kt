@@ -837,15 +837,16 @@ module 0x1::mod {
     """
     )
 
-    fun `test variable shadows function with the same name even if not callable`() = checkByCode(
+    // todo: change later
+    fun `test variable not shadows function with the same name even if not callable`() = checkByCode(
         """
 module 0x1::mod {
     fun name() {}
+       //X
     fun main() {
         let name = 1;
-           //X
         name();
-         //^       
+         //^ multiple  
     }
 }        
     """

@@ -6,12 +6,15 @@ import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.containingModule
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.types.fqName
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
+import kotlin.collections.first
+import kotlin.collections.orEmpty
 
 abstract class ResolveTestCase : MvTestBase() {
     protected fun checkByCode(
@@ -26,6 +29,20 @@ abstract class ResolveTestCase : MvTestBase() {
             val resolved = refElement.reference?.resolve()
             check(resolved == null) {
                 "$refElement `${refElement.text}`should be unresolved, was resolved to\n$resolved `${resolved?.text}`"
+            }
+            return
+        }
+        if (data == "multiple") {
+            val multiResolve = (refElement.reference as? MvPolyVariantReference)?.multiResolve().orEmpty()
+            check(multiResolve.size >= 2) {
+                if (multiResolve.size == 1) {
+                    "$refElement `${refElement.text}`should be resolved to multiple items, " +
+                            "was resolved to\n${multiResolve.first()} `${multiResolve.first().text}`"
+                }
+                if (multiResolve.isEmpty()) {
+                    "$refElement `${refElement.text}`should be resolved to multiple items, " +
+                            "was unresolved"
+                }
             }
             return
         }

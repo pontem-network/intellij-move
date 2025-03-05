@@ -10,6 +10,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.toPsiFile
@@ -20,7 +21,7 @@ import org.move.utils.tests.TestProject
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import kotlin.math.min
 
-abstract class ResolveProjectTestCase : MvProjectTestBase() {
+abstract class ResolveProjectTestCase: MvProjectTestBase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
         checkByFileTree(
             code,
@@ -84,7 +85,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         }
     }
 
-    protected fun <T : PsiElement, R : PsiElement> checkByFileTree(
+    protected fun <T: PsiElement, R: PsiElement> checkByFileTree(
         @Language("Move") code: String,
         refClass: Class<R>,
         targetClass: Class<T>
@@ -93,7 +94,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         checkByTestProject(testProject, refClass, targetClass)
     }
 
-    protected fun <T : PsiElement, R : PsiElement> checkByFileTree(
+    protected fun <T: PsiElement, R: PsiElement> checkByFileTree(
         refClass: Class<R>,
         targetClass: Class<T>,
         fileTree: FileTreeBuilder.() -> Unit
@@ -102,7 +103,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         checkByTestProject(testProject, refClass, targetClass)
     }
 
-    private fun <T : PsiElement, R : PsiElement> checkByTestProject(
+    private fun <T: PsiElement, R: PsiElement> checkByTestProject(
         testProject: TestProject,
         refClass: Class<R>,
         targetClass: Class<T>
@@ -130,13 +131,13 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         }
     }
 
-    private fun <T : PsiElement> findElementInFile(file: PsiFile, psiClass: Class<T>, marker: String): T {
+    private fun <T: PsiElement> findElementInFile(file: PsiFile, psiClass: Class<T>, marker: String): T {
         val (element, data, _) = findElementWithDataAndOffsetInFile(file, psiClass, marker)
         check(data.isEmpty()) { "Did not expect marker data" }
         return element
     }
 
-    private fun <T : PsiElement> findElementWithDataAndOffsetInFile(
+    private fun <T: PsiElement> findElementWithDataAndOffsetInFile(
         file: PsiFile,
         psiClass: Class<T>,
         marker: String
@@ -147,7 +148,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         return elementsWithDataAndOffset.first()
     }
 
-    private fun <T : PsiElement> findElementsWithDataAndOffsetInFile(
+    private fun <T: PsiElement> findElementsWithDataAndOffsetInFile(
         file: PsiFile,
         psiClass: Class<T>,
         marker: String
@@ -161,7 +162,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
     }
 }
 
-fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
+fun <T: PsiElement> findElementsWithDataAndOffsetInEditor(
     file: PsiFile,
     doc: Document,
     psiClass: Class<T>,
@@ -179,7 +180,8 @@ fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
         val markerEndOffset = markerOffset + caretMarker.length - 1
         val markerLine = doc.getLineNumber(markerEndOffset)
         val makerColumn = markerEndOffset - doc.getLineStartOffset(markerLine)
-        val elementOffset = min(doc.getLineStartOffset(markerLine - 1) + makerColumn, doc.getLineEndOffset(markerLine - 1))
+        val elementOffset =
+            min(doc.getLineStartOffset(markerLine - 1) + makerColumn, doc.getLineEndOffset(markerLine - 1))
         val elementAtMarker = file.findElementAt(elementOffset)!!
 
         val element = PsiTreeUtil.getParentOfType(elementAtMarker, psiClass, false)

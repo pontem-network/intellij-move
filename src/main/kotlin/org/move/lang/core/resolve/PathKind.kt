@@ -83,7 +83,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
             this,
             useSpeckQualifier,
             // MODULES for `Self`
-            IMPORTABLE_NS_N_MODULES
+            IMPORTABLE_NS.add(MODULES)
         )
     }
 

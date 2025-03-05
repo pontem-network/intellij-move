@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve.scopeEntry
 
 import com.intellij.psi.util.CachedValueProvider
+import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.ext.MvItemsOwner
 import org.move.lang.core.resolve.ref.MODULES
 import org.move.lang.core.resolve.ref.NsSet
@@ -41,7 +42,7 @@ private fun MvItemsOwner.useSpeckEntries(): List<ScopeEntry> {
                     useItem.nameOrAlias,
                     lazy { useItem.alias ?: useItem.useSpeck.path.reference?.resolve() },
                     itemNs,
-                    customItemScope = useItem.scope,
+                    customItemScope = useItem.scope.takeIf { it != NamedItemScope.MAIN },
                 )
             )
         }
