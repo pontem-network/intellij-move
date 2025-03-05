@@ -1,17 +1,18 @@
 package org.move.lang.types
 
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.AcquiresTypeContext
+import org.move.ide.inspections.GetFunctionAcquiresTypes
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.types.infer.getAcquiresTypes
-import org.move.lang.core.types.infer.getInnerAcquiresTypes
 import org.move.lang.core.types.infer.inference
+import org.move.utils.getResults
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
-class AcquiresTypesTest : MvTestBase() {
+class AcquiresTypesTest: MvTestBase() {
     fun `test no acquired types on function without storage access`() = testFunction(
         """
             module 0x1::m {
@@ -219,7 +220,8 @@ class AcquiresTypesTest : MvTestBase() {
         listOf("0x1::m::S", "0x1::m::T", "0x1::m::U")
     )
 
-    fun `test inline acquires with a different module item`() = testCallExpr("""
+    fun `test inline acquires with a different module item`() = testCallExpr(
+        """
         module 0x1::item {
             struct Item has key {}
         }
@@ -233,9 +235,11 @@ class AcquiresTypesTest : MvTestBase() {
                 borrow_global<Element>(@0x1);
             } 
         }                
-    """, listOf("0x1::item::Item"))
+    """, listOf("0x1::item::Item")
+    )
 
-    fun `test inline acquires with generic`() = testFunction("""
+    fun `test inline acquires with generic`() = testFunction(
+        """
         module 0x1::item {
             struct Item has key {}
         }
@@ -246,7 +250,8 @@ class AcquiresTypesTest : MvTestBase() {
                 borrow_global<Element>(@0x1);
             } 
         }                
-    """, listOf("Element"))
+    """, listOf("Element")
+    )
 
     // TODO: test
 //    fun `test recursive inline function`() = testFunction("""
@@ -282,7 +287,7 @@ class AcquiresTypesTest : MvTestBase() {
         InlineFile(myFixture, code, "main.move")
 
         val function = myFixture.findElementInEditor<MvFunction>()
-        val actualTypes = function.getInnerAcquiresTypes().map { it.fullnameNoArgs() }
+        val actualTypes = GetFunctionAcquiresTypes(function).getResults().map { it.fullname }
         if (expectedTypes.isEmpty()) {
             check(actualTypes.isEmpty()) { "Expected empty list" }
         }
@@ -297,7 +302,8 @@ class AcquiresTypesTest : MvTestBase() {
 
         val callExpr = myFixture.findElementInEditor<MvCallExpr>()
         val inference = callExpr.inference(false) ?: error("No inference")
-        val actualTypes = callExpr.getAcquiresTypes(inference).map { it.fullnameNoArgs() }
+        val actualTypes =
+            AcquiresTypeContext().getAcquiredTypesInCall(callExpr, inference).map { it.fullname }
         if (expectedTypes.isEmpty()) {
             check(actualTypes.isEmpty()) { "Expected empty list" }
         }

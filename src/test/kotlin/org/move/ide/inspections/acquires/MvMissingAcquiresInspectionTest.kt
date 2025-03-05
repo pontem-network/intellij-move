@@ -1,9 +1,10 @@
-package org.move.ide.inspections
+package org.move.ide.inspections.acquires
 
+import org.move.ide.inspections.MvAcquiresCheckInspection
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvMissingAcquiresInspectionTest : InspectionTestBase(MvMissingAcquiresInspection::class) {
+class MvMissingAcquiresInspectionTest: InspectionTestBase(MvAcquiresCheckInspection::class) {
     fun `test no error when acquired type cannot be inferred`() = checkErrors(
         """
     module 0x1::M {
@@ -184,7 +185,8 @@ module 0x1::main {
     """
     )
 
-    fun `test outer function requires acquires through inline function`() = checkErrors("""
+    fun `test outer function requires acquires through inline function`() = checkErrors(
+        """
 module 0x1::main {
     struct S has key {}
     fun call() {
@@ -194,7 +196,8 @@ module 0x1::main {
         borrow_global<T>(object::object_address(source_object))
     }
 }
-    """)
+    """
+    )
 
     @MoveV2()
     fun `test missing acquires with receiver style`() = checkErrors(
@@ -208,7 +211,8 @@ module 0x1::main {
                 s.<error descr="Function 'main' is not marked as 'acquires S'">acquire()</error>;
             }
         }
-    """)
+    """
+    )
 
     @MoveV2(false)
     fun `test no error with index if unsupported`() = checkErrors(
@@ -253,12 +257,14 @@ module 0x1::main {
     """
     )
 
-    fun `test no error for generic type parameter for non inline function`() = checkErrors("""
+    fun `test no error for generic type parameter for non inline function`() = checkErrors(
+        """
 module 0x1::m {
     fun main<Contract: key>() {
         let c = borrow_global<Contract>(@0x1);
         c;
     }
 }               
-    """)
+    """
+    )
 }

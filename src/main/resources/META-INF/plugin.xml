@@ -259,14 +259,18 @@
                      displayName="Type checking"
                      enabledByDefault="true" level="ERROR"
                      implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
+<!--    <localInspection language="Move" groupName="Move"-->
+<!--                     displayName="Missing acquires"-->
+<!--                     enabledByDefault="true" level="ERROR"-->
+<!--                     implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />-->
+<!--    <localInspection language="Move" groupName="Move"-->
+<!--                     displayName="Unused acquires"-->
+<!--                     enabledByDefault="true" level="WARNING"-->
+<!--                     implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection" />-->
     <localInspection language="Move" groupName="Move"
-                     displayName="Missing acquires"
-                     enabledByDefault="true" level="ERROR"
-                     implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />
-    <localInspection language="Move" groupName="Move"
-                     displayName="Unused acquires"
+                     displayName="Acquires checking"
                      enabledByDefault="true" level="WARNING"
-                     implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection" />
+                     implementationClass="org.move.ide.inspections.MvAcquiresCheckInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused struct type parameter"
                      enabledByDefault="true" level="ERROR"

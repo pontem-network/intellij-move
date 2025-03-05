@@ -1083,7 +1083,7 @@ CallExpr ::= PathImpl !'!' ValueArgumentList {
 //    pin = 2
     implements = [
         "org.move.lang.core.psi.ext.MvCallable"
-        "org.move.lang.core.types.infer.MvAcquireTypesOwner"
+        "org.move.lang.core.psi.MvAcquireTypesOwner"
         "org.move.lang.core.resolve.ref.InferenceCachedPathElement"
     ]
 }
@@ -1190,14 +1190,16 @@ MethodCall ::= IDENTIFIER ColonTypeArgumentList? ValueArgumentList
         "org.move.lang.core.psi.ext.MvMethodOrField"
         "org.move.lang.core.psi.ext.MvMethodOrPath"
         "org.move.lang.core.psi.ext.MvCallable"
-        "org.move.lang.core.types.infer.MvAcquireTypesOwner"
+        "org.move.lang.core.psi.MvAcquireTypesOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvMethodCallMixin"
 }
 
 IndexExpr ::= Expr IndexArg
 {
-    implements = [ "org.move.lang.core.types.infer.MvAcquireTypesOwner" ]
+    implements = [
+        "org.move.lang.core.psi.MvAcquireTypesOwner"
+    ]
 }
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
