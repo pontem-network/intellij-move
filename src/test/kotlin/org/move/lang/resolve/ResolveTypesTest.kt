@@ -1092,4 +1092,32 @@ module 0x1::m {
                        //^
         }        
     """)
+
+    @NamedAddress("aptos_std", "0x1")
+    fun `test resolve type imported with duplicate import`() = checkByCode("""
+        module aptos_std::m1 {
+            struct Type { val: u8 }
+                  //X
+        }
+        module 0x1::m {
+            use aptos_std::m1::Type;
+            use aptos_std::m1::Type;
+            fun main(s: Type) {}
+                       //^
+        }        
+    """)
+
+    @NamedAddress("aptos_std", "0x1")
+    fun `test resolve module imported with duplicate import`() = checkByCode("""
+        module aptos_std::m1 {
+            struct Type { val: u8 }
+                  //X
+        }
+        module 0x1::m {
+            use aptos_std::m1;
+            use aptos_std::m1;
+            fun main(s: m1::Type) {}
+                           //^
+        }        
+    """)
 }
