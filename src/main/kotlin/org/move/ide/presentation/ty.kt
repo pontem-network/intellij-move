@@ -75,15 +75,6 @@ fun Ty.expectedTyText(): String {
     )
 }
 
-//val Ty.insertionSafeText: String
-//    get() = render(
-//        this,
-//        level = Int.MAX_VALUE,
-//        unknown = "_",
-//        anonymous = "_",
-//        integer = "_"
-//    )
-
 fun tyToString(ty: Ty) = render(ty, Int.MAX_VALUE)
 
 private fun render(

@@ -3,13 +3,10 @@ package org.move.ide.inspections.compilerV2
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.compilerV2.fixes.ReplaceWithMethodCallFix
-import org.move.lang.core.psi.MvCallExpr
-import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemModule
 import org.move.lang.core.psi.ext.valueArguments
-import org.move.lang.core.psi.module
-import org.move.lang.core.psi.selfParamTy
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInfer
@@ -22,9 +19,10 @@ class MvReplaceWithMethodCallInspection:
 
     override fun visitTargetElement(element: MvCallExpr, holder: ProblemsHolder, isOnTheFly: Boolean) {
         val function = element.path.reference?.resolveFollowingAliases() as? MvFunction ?: return
+        val functionSelfParam = function.selfParam ?: return
+
         val msl = element.isMsl()
         val inference = element.inference(msl) ?: return
-
         val firstArgExpr = element.valueArguments.firstOrNull()?.expr ?: return
         val firstArgExprTy = inference.getExprType(firstArgExpr)
         if (firstArgExprTy.hasTyUnknown) return
@@ -34,7 +32,7 @@ class MvReplaceWithMethodCallInspection:
         val itemModule = firstArgExprTy.itemModule(moveProject) ?: return
         if (methodModule != itemModule) return
 
-        val selfTy = function.selfParamTy(msl)
+        val selfTy = functionSelfParam.loweredTy(msl)
             ?.deepFoldTyTypeParameterWith { TyInfer.TyVar(it) } ?: return
         if (selfTy.hasTyUnknown) return
 
