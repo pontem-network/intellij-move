@@ -837,20 +837,6 @@ module 0x1::mod {
     """
     )
 
-    fun `test variable shadows function with the same name even if not callable`() = checkByCode(
-        """
-module 0x1::mod {
-    fun name() {}
-    fun main() {
-        let name = 1;
-           //X
-        name();
-         //^       
-    }
-}        
-    """
-    )
-
     fun `test resolve local function when module with same name is imported`() = checkByCode(
         """
         module 0x1::royalty {}
@@ -1231,15 +1217,51 @@ module 0x1::m2 {
     }
 }    """)
 
-    // todo: function values PR
-//    fun `test resolve lambda from let stmt`() = checkByCode("""
-//        module 0x1::m {
-//            fun main() {
-//                let select_f = |s|;
-//                      //X
-//                select_f(1);
-//                //^
-//            }
-//        }
-//    """)
+    fun `test resolve lambda from let stmt`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let select_f = |s|;
+                      //X
+                select_f(1);
+                //^
+            }
+        }
+    """)
+
+    fun `test resolve call expr to variable even if not lambda`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                let select_f = 1;
+                      //X
+                select_f(1);
+                //^
+            }
+        }
+    """)
+
+    fun `test if there is non lambda function prioritize it over variables`() = checkByCode("""
+        module 0x1::m {
+            fun select_f(val: u8) {}
+                 //X
+            fun main() {
+                let select_f = 1;
+                select_f(1);
+                //^
+            }
+        }
+    """)
+
+    fun `test lambda variable does not shadow function with the same name`() = checkByCode(
+        """
+module 0x1::mod {
+    fun name() {}
+       //X
+    fun main() {
+        let name = || 1;
+        name();
+         //^
+    }
+}        
+    """
+    )
 }

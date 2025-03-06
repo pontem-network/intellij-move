@@ -25,7 +25,7 @@ private fun nsFromString(s: String): NsSet {
 
 class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
     override fun getName(): ID<String, String> = INDEX_ID
-    override fun getVersion(): Int = 2
+    override fun getVersion(): Int = 3
 
     override fun getValueExternalizer(): DataExternalizer<String> = EnumeratorStringDescriptor.INSTANCE
 

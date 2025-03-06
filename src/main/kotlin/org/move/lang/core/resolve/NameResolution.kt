@@ -171,7 +171,7 @@ fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEnt
         return allModules.asEntries()
     }
 
-    val targetModuleName = ctx.path?.referenceName ?: return emptyList()
+    val targetModuleName = ctx.path.referenceName ?: return emptyList()
     val modules =
         MvModuleFileIndex.getModulesForId(moveProject, address, targetModuleName).asEntries()
     return modules

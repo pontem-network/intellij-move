@@ -9,13 +9,13 @@ import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.impl.MvNamedFieldDeclImpl
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.resolve.ref.resolveAliases
-import org.move.lang.core.resolve.ref.resolvePathRaw
+import org.move.lang.core.resolve.ref.resolvePath
 import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
 import org.move.lang.core.types.infer.Expectation.NoExpectation
 import org.move.lang.core.types.ty.*
@@ -346,7 +346,8 @@ class TypeInferenceWalker(
         path: MvPath,
         expectedType: Ty?
     ): MvNamedElement? {
-        val entries = resolvePathRaw(path, expectedType)
+        val resolutionCtx = ResolutionContext(path, false)
+        val entries = resolvePath(resolutionCtx, expectedType)
             .filter {
                 val namedElement = it.element()
                 if (namedElement is MvPatBinding) {

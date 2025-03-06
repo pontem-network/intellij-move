@@ -57,6 +57,7 @@ val MODULES = nsset(Ns.MODULE)
 val SCHEMAS = nsset(Ns.SCHEMA)
 val TYPES = nsset(Ns.TYPE)
 val ENUMS = nsset(Ns.ENUM)
+val FUNCTIONS = nsset(Ns.FUNCTION)
 
 val ENUMS_N_MODULES = nsset(Ns.ENUM, Ns.MODULE)
 val TYPES_N_ENUMS_N_MODULES = nsset(Ns.TYPE, Ns.ENUM, Ns.MODULE)
@@ -65,17 +66,18 @@ val TYPES_N_ENUMS = nsset(Ns.TYPE, Ns.ENUM)
 val TYPES_N_ENUMS_N_ENUM_VARIANTS = nsset(Ns.TYPE, Ns.ENUM, Ns.ENUM_VARIANT)
 val TYPES_N_ENUMS_N_ENUM_VARIANTS_N_MODULES = nsset(Ns.TYPE, Ns.ENUM, Ns.ENUM_VARIANT, Ns.MODULE)
 val NAMES_N_ENUM_VARIANTS = nsset(Ns.NAME, Ns.ENUM_VARIANT)
+val NAMES_N_FUNCTIONS = nsset(Ns.NAME, Ns.FUNCTION)
+val NAMES_N_FUNCTIONS_N_ENUM_VARIANTS = nsset(Ns.NAME, Ns.FUNCTION, Ns.ENUM_VARIANT)
 val TYPES_N_NAMES = nsset(Ns.TYPE, Ns.NAME)
 val TYPES_N_ENUMS_N_NAMES = nsset(Ns.TYPE, Ns.ENUM, Ns.NAME)
 
 val ALL_NS = Ns.all()
-val IMPORTABLE_NS = nsset(Ns.NAME, Ns.TYPE, Ns.SCHEMA, Ns.ENUM)
-val IMPORTABLE_NS_N_MODULES: NsSet = EnumSet.of(Ns.NAME, Ns.TYPE, Ns.SCHEMA, Ns.ENUM, Ns.MODULE)
+val IMPORTABLE_NS: NsSet = EnumSet.of(Ns.NAME, Ns.FUNCTION, Ns.TYPE, Ns.SCHEMA, Ns.ENUM)
 
 val MvNamedElement.itemNs
     get() = when (this) {
         is MvModule -> MODULES
-        is MvFunctionLike -> NAMES
+        is MvFunctionLike -> FUNCTIONS
         is MvTypeParameter -> TYPES
         is MvStruct -> TYPES
         is MvEnum -> ENUMS

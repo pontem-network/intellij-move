@@ -98,7 +98,8 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): NsSet {
         // a: foo::bar
         //         ^
         parent is MvPathType && qualifier != null -> TYPES_N_ENUMS
-        parent is MvCallExpr -> NAMES_N_ENUM_VARIANTS
+//        parent is MvCallExpr -> NAMES_N_ENUM_VARIANTS
+        parent is MvCallExpr -> NAMES_N_FUNCTIONS_N_ENUM_VARIANTS
         // all ns allowed in attributes
         parent is MvPathExpr
                 && this.hasAncestor<MvAttrItemInitializer>() -> ALL_NS
@@ -107,6 +108,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): NsSet {
                 && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
 
         // can be anything in completion
+//        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_FUNCTIONS_N_ENUM_VARIANTS
         parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_ENUM_VARIANTS
 
         parent is MvSchemaLit
