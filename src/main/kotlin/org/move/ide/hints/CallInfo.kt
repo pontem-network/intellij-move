@@ -61,10 +61,12 @@ class CallInfo(
         private fun buildFunctionParameters(item: MvElement, ty: TyFunction): CallInfo? {
             return when (item) {
                 is MvFunction -> {
-                    val tys = ty.paramTypes.drop(if (item.isMethod) 1 else 0)
+                    val selfParam = item.selfParam
+                    val isMethod = selfParam != null
+                    val tys = ty.paramTypes.drop(if (isMethod) 1 else 0)
                     val params = item.parameters
-                        .drop(if (item.isMethod) 1 else 0).map { it.name to it.type }
-                    val self = item.selfParam?.let {
+                        .drop(if (isMethod) 1 else 0).map { it.name to it.type }
+                    val self = selfParam?.let {
                         ty.paramTypes.firstOrNull()?.let { "self: ${tyToString(it)}" } ?: "_"
                     }
                     CallInfo(self, buildParameters(tys, params))

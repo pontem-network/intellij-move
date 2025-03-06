@@ -68,18 +68,7 @@ val MvFunction.selfParam: MvFunctionParameter?
         if (!project.moveSettings.enableReceiverStyleFunctions) return null
         return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
     }
-
-fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
-
-val MvFunction.isMethod get() = selfParam != null
-
-val MvFunction.selfSignatureText: String
-    get() {
-        val paramsText = this.parameters.drop(1).joinToSignature()
-        val retType = this.returnType?.type?.text ?: ""
-        val retTypeSuffix = if (retType == "") "" else ": $retType"
-        return "$paramsText$retTypeSuffix"
-    }
+fun MvFunctionParameter.loweredTy(msl: Boolean): Ty? = this.type?.loweredType(msl)
 
 fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: MvCompletionContext?): Boolean {
     val msl = this.isMslOnlyItem

@@ -503,7 +503,7 @@ class TypeInferenceWalker(
             .toPathResolveResults(methodCall)
 
         val genericItem =
-            resolvedMethods.filter { it.isVisible }.mapNotNull { it.element as? MvNamedElement }.singleOrNull()
+            resolvedMethods.filter { it.isVisible }.map { it.element }.singleOrNull()
         ctx.resolvedMethodCalls[methodCall] = genericItem
 
         val baseTy =
