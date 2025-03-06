@@ -207,12 +207,26 @@ class ResolutionContext(val path: MvPath, val isCompletion: Boolean) {
     private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path.useSpeck }
     val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
     val isUseSpeck: Boolean get() = useSpeck != null
+
+    val isCallExpr: Boolean get() = path.rootPath().parent is MvCallExpr
 }
 
 fun resolvePath(ctx: ResolutionContext, expectedType: Ty? = null): List<ScopeEntry> {
     val referenceName = ctx.path.referenceName ?: return emptyList()
     val kind = ctx.path.pathKind(ctx.isCompletion)
-    return getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
+    val entries = getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
         .filterByName(referenceName)
+    // There's a bug in the current Aptos compiler, where it resolves to the module function if available,
+    // even if there's a variable with the same name. This code is meant to copy this behaviour.
+    // todo: drop it when the bug is fixed
+    if (ctx.isCallExpr) {
+        val functionEntries = entries.filterByNs(FUNCTIONS)
+        if (functionEntries.isNotEmpty()) {
+            return functionEntries
+        } else {
+            return entries
+        }
+    }
+    return entries
 }
 

@@ -32,20 +32,6 @@ abstract class ResolveTestCase : MvTestBase() {
             }
             return
         }
-        if (data == "multiple") {
-            val multiResolve = (refElement.reference as? MvPolyVariantReference)?.multiResolve().orEmpty()
-            check(multiResolve.size >= 2) {
-                if (multiResolve.size == 1) {
-                    "$refElement `${refElement.text}`should be resolved to multiple items, " +
-                            "was resolved to\n${multiResolve.first()} `${multiResolve.first().text}`"
-                }
-                if (multiResolve.isEmpty()) {
-                    "$refElement `${refElement.text}`should be resolved to multiple items, " +
-                            "was unresolved"
-                }
-            }
-            return
-        }
 
         val resolved = refElement.checkedResolve(offset)
 
