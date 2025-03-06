@@ -11,7 +11,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil.pluralize
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
-import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.inspections.fixes.EnableMoveV2Fix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -118,27 +117,6 @@ sealed class Diagnostic(
                             "declared in the current module. Found: `$itemName`",
                 )
             }
-        }
-    }
-
-
-    class FunctionSignatureMismatch(itemSpec: MvItemSpec):
-        Diagnostic(
-            itemSpec,
-            TextRange(
-                itemSpec.itemSpecRef?.startOffset ?: itemSpec.startOffset,
-                itemSpec.itemSpecSignature?.endOffset
-                    ?: itemSpec.itemSpecBlock?.startOffset?.dec()
-                    ?: itemSpec.endOffset
-            )
-        ) {
-
-        override fun prepare(): PreparedAnnotation {
-            return PreparedAnnotation(
-                WARN,
-                "Function signature mismatch",
-                fixes = listOf(ItemSpecSignatureFix(element as MvItemSpec))
-            )
         }
     }
 

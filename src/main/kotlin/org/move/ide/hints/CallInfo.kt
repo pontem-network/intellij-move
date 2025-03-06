@@ -2,6 +2,7 @@ package org.move.ide.hints
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.infer.inference
@@ -22,25 +23,39 @@ class CallInfo(
     }
 
     companion object {
-        fun resolve(callExpr: MvCallExpr): CallInfo? {
-            val msl = callExpr.isMsl()
-            val callTy = callExpr.inference(msl)?.getCallableType(callExpr) as? TyFunction ?: return null
-            val item = callExpr.path.reference?.resolveFollowingAliases() ?: return null
-            return buildFunctionParameters(item, callTy)
+        fun resolve(callable: MvCallable): CallInfo? {
+            val callInfo = when (callable) {
+                is MvCallExpr -> resolveCallExpr(callable)
+                is MvMethodCall -> resolveMethodCall(callable)
+                is MvAssertMacroExpr -> resolveAssertExpr()
+                else -> error("exhaustive")
+            }
+            return callInfo
         }
 
-        fun resolve(assertMacroExpr: MvAssertMacroExpr): CallInfo {
+        private fun resolveCallExpr(callExpr: MvCallExpr): CallInfo? {
+            val msl = callExpr.isMsl()
+            val callTy = callExpr.inference(msl)?.getCallableType(callExpr) as? TyFunction
+                ?: return null
+            var callItem: MvElement = callTy.item
+            if (callItem is MvEnum) {
+                callItem = callExpr.path.reference?.resolveFollowingAliases() ?: return null
+            }
+            return buildFunctionParameters(callItem, callTy)
+        }
+
+        private fun resolveMethodCall(methodCall: MvMethodCall): CallInfo? {
+            val msl = methodCall.isMsl()
+            val callTy = methodCall.inference(msl)?.getCallableType(methodCall) as? TyFunction
+                ?: return null
+            return buildFunctionParameters(callTy.item, callTy)
+        }
+
+        private fun resolveAssertExpr(): CallInfo {
             return CallInfo(null, buildList {
                 add(Parameter("_", null, TyBool))
                 add(Parameter("err", null, TyInteger(TyInteger.Kind.u64)))
             })
-        }
-
-        fun resolve(methodCall: MvMethodCall): CallInfo? {
-            val fn = methodCall.reference.resolveFollowingAliases() as? MvFunction ?: return null
-            val msl = methodCall.isMsl()
-            val callTy = methodCall.inference(msl)?.getCallableType(methodCall) as? TyFunction ?: return null
-            return buildFunctionParameters(fn, callTy)
         }
 
         private fun buildFunctionParameters(item: MvElement, ty: TyFunction): CallInfo? {

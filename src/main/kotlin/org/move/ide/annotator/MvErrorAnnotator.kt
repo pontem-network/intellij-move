@@ -4,8 +4,6 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.fullname
-import org.move.ide.utils.functionSignature
-import org.move.ide.utils.getSignature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -80,19 +78,6 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             moduleQualTypeName.split("::").drop(1).joinToString("::")
                     }
                     Diagnostic.StorageAccessError.WrongModule(path, itemModuleName, moduleQualTypeName)
-                        .addToHolder(moveHolder)
-                }
-            }
-
-            override fun visitItemSpec(itemSpec: MvItemSpec) {
-                val funcItem = itemSpec.funcItem ?: return
-                val funcSignature = funcItem.getSignature() ?: return
-                val itemSpecSignature = itemSpec.itemSpecSignature ?: return
-
-                val specSignature = itemSpecSignature.functionSignature
-                if (funcSignature != specSignature) {
-                    Diagnostic
-                        .FunctionSignatureMismatch(itemSpec)
                         .addToHolder(moveHolder)
                 }
             }

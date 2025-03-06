@@ -29,12 +29,7 @@ class FunctionParameterInfoProvider: ParameterInfoProvider {
     override fun findParameterInfo(listElement: PsiElement): FunctionParametersInfo? {
         val argumentList = listElement as MvValueArgumentList
         val call = argumentList.parent as? MvCallable ?: return null
-        val callInfo = when (call) {
-            is MvCallExpr -> CallInfo.resolve(call)
-            is MvMethodCall -> CallInfo.resolve(call)
-            is MvAssertMacroExpr -> CallInfo.resolve(call)
-            else -> null
-        } ?: return null
+        val callInfo = CallInfo.resolve(call) ?: return null
         val parameters = buildList {
             // self parameter with non-dot-expr call
             if (callInfo.selfParameter != null && call is MvCallExpr) {
