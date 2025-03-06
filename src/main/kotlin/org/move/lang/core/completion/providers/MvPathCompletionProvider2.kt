@@ -18,11 +18,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.isVisibleInContext
 import org.move.lang.core.resolve.pathKind
-import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.Ns
-import org.move.lang.core.resolve.ref.NsSet
-import org.move.lang.core.resolve.ref.ResolutionContext
-import org.move.lang.core.resolve.ref.getPathResolveVariantsWithExpectedType
+import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.types.infer.inferExpectedTy

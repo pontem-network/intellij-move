@@ -78,8 +78,10 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
         override fun invoke(path: MvElement): List<RsPathResolveResult> {
             // should not really happen
             if (path !is MvPath) return emptyList()
-            val resolutionCtx = ResolutionContext(path, isCompletion = false)
-            return resolvePath(resolutionCtx, path)
+
+            val ctx = ResolutionContext(path, isCompletion = false)
+            val entries = resolvePath(ctx, expectedType = null)
+            return entries.toPathResolveResults(contextElement = path)
         }
     }
 }
@@ -141,7 +143,7 @@ fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<Sco
                 }
                 // local
                 addAll(
-                    getEntriesFromWalkingScopes(ctx.element, pathKind.ns)
+                    getEntriesFromWalkingScopes(ctx.path, pathKind.ns)
                 )
             }
             is PathKind.QualifiedPath.Module -> {
@@ -191,45 +193,26 @@ fun getQualifiedPathEntries(
     }
 }
 
-class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
+class ResolutionContext(val path: MvPath, val isCompletion: Boolean) {
     private var lazyContainingMoveProject: Lazy<MoveProject?> = lazy(NONE) {
-        element.moveProject
+        path.moveProject
     }
     val moveProject: MoveProject? get() = lazyContainingMoveProject.value
 
     private var lazyContainingModule: Lazy<MvModule?> = lazy(NONE) {
-        element.containingModule
+        path.containingModule
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
 
-    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path?.useSpeck }
+    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path.useSpeck }
     val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
     val isUseSpeck: Boolean get() = useSpeck != null
-
-    val methodOrPath: MvMethodOrPath? get() = element as? MvMethodOrPath
-    val path: MvPath? get() = element as? MvPath
 }
 
-fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
-    val referenceName = path.referenceName ?: return emptyList()
-
-    val ctx = ResolutionContext(path, false)
-    val kind = path.pathKind()
+fun resolvePath(ctx: ResolutionContext, expectedType: Ty? = null): List<ScopeEntry> {
+    val referenceName = ctx.path.referenceName ?: return emptyList()
+    val kind = ctx.path.pathKind(ctx.isCompletion)
     return getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
         .filterByName(referenceName)
-}
-
-private fun resolvePath(
-    ctx: ResolutionContext,
-    path: MvPath,
-): List<RsPathResolveResult> {
-    val referenceName = path.referenceName ?: return emptyList()
-
-    val pathKind = path.pathKind()
-    val entries = getPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null)
-
-    val resolveResults = entries
-        .filterByName(referenceName).toPathResolveResults(ctx.methodOrPath)
-    return resolveResults
 }
 
