@@ -5,12 +5,12 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvModuleSpec
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.loweredTy
 import org.move.lang.core.psi.selfParam
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
-import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
@@ -32,11 +32,11 @@ fun getMethodResolveVariants(
         val functionEntries = itemModule.allNonTestFunctions().asEntries()
         for (functionEntry in functionEntries) {
             val f = functionEntry.element() as? MvFunction ?: continue
-            val selfParameter = f.selfParam ?: continue
-            val selfParameterTy = selfParameter.type?.loweredType(msl) ?: continue
+            val selfParam = f.selfParam ?: continue
+            val selfParamTy = selfParam.loweredTy(msl) ?: continue
             // need to use TyVar here, loweredType() erases them
             val selfTyWithTyVars =
-                selfParameterTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
+                selfParamTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             if (TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)) {
                 add(functionEntry)
             }
