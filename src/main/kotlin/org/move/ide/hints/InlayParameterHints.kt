@@ -2,8 +2,6 @@ package org.move.ide.hints
 
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.psi.PsiElement
-import org.move.ide.utils.FunctionSignature
-import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.MvPathExpr
 import org.move.lang.core.psi.MvStructLitExpr
 import org.move.lang.core.psi.ext.MvCallable
@@ -14,13 +12,10 @@ import org.move.lang.core.psi.ext.startOffset
 object InlayParameterHints {
     fun provideHints(element: PsiElement): List<InlayInfo> {
         if (element !is MvCallable) return emptyList()
-        val signature = FunctionSignature.resolve(element) ?: return emptyList()
-        val parameters = when (element) {
-            is MvMethodCall -> signature.parameters.drop(1)
-            else -> signature.parameters
-        }
+        val callInfo = CallInfo.resolve(element) ?: return emptyList()
+        val parameters = callInfo.parameters
         return parameters
-            .map { it.name }
+            .mapNotNull { it.name }
             .zip(element.argumentExprs)
             .asSequence()
             .filter { (_, arg) -> arg != null }

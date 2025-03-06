@@ -6,7 +6,6 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
 import org.intellij.lang.annotations.Language
 import org.move.cli.MvConstants
-import org.move.ide.utils.FunctionSignature
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.childOfType
@@ -17,17 +16,6 @@ import org.move.lang.core.psi.impl.MvFunctionParameterImpl
 val Project.psiFactory get() = MvPsiFactory(this)
 
 class MvPsiFactory(val project: Project) {
-    fun itemSpecSignature(signature: FunctionSignature): MvItemSpecSignature {
-        val typeParams = signature.typeParameters
-        val typeParamsText =
-            if (typeParams.isNotEmpty())
-                signature.typeParameters.joinToString(", ", "<", ">")
-            else ""
-        val paramsText = signature.parameters.joinToString(", ", "(", ")")
-        return createFromText("spec 0x1::_M { spec call$typeParamsText$paramsText }")
-            ?: error("Failed to create item spec signature")
-    }
-
     fun structLitField(fieldName: String, expr: String): MvStructLitField =
         createFromText("module 0x0::_M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
