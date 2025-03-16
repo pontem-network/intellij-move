@@ -6,7 +6,6 @@ import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_ADT_VI
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PARAMETER_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_UNKNOWN_VISITOR
-import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_SUBST
 import org.move.lang.core.types.ty.Ability.COPY
 
@@ -40,20 +39,20 @@ val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_
 val TypeFoldable<*>.hasTyAdt get() = visitWith(HAS_TY_ADT_VISITOR)
 val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
 
-val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
+//val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
 val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
 
 //fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
 
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
-    override fun foldWith(folder: TypeFolder): Ty = folder(this)
+    override fun foldWith(folder: TypeFolder): Ty = folder.fold(this)
 
-    override fun innerFoldWith(folder: TypeFolder): Ty = this
+    override fun deepFoldWith(folder: TypeFolder): Ty = this
 
-    override fun visitWith(visitor: TypeVisitor): Boolean = visitor(this)
+    override fun visitWith(visitor: TypeVisitor): Boolean = visitor.visit(this)
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean = false
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean = false
 
     /**
      * Bindings between formal type parameters and actual type arguments.

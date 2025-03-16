@@ -38,10 +38,10 @@ data class TyReference(
 
     fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, mutability, msl)
 
-    override fun innerFoldWith(folder: TypeFolder): Ty =
+    override fun deepFoldWith(folder: TypeFolder): Ty =
         TyReference(referenced.foldWith(folder), mutability, msl)
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean =
         referenced.visitWith(visitor)
 
     override fun toString(): String = tyToString(this)
@@ -50,7 +50,7 @@ data class TyReference(
         fun ref(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
             TyReference(ty, Mutability.valueOf(mut), msl)
 
-        fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
+        fun isCompatibleMut(inferred: TyReference, expected: TyReference): Boolean {
             return inferred.isMut || !expected.isMut
         }
 

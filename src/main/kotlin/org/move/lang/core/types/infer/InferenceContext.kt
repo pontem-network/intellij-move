@@ -9,7 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
-import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
+import org.move.lang.core.types.ty.TyReference.Companion.isCompatibleMut
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
@@ -38,15 +38,15 @@ fun isCompatible(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
     return inferenceCtx.combineTypes(expectedTy, actualTy).isOk
 }
 
-typealias RelateResult = RsResult<Unit, CombineTypeError>
+typealias CombineResult = RsResult<Unit, CombineTypeError>
 
-private inline fun RelateResult.and(rhs: () -> RelateResult): RelateResult = if (isOk) rhs() else this
+private inline fun CombineResult.and(rhs: () -> CombineResult): CombineResult = if (isOk) rhs() else this
 
 typealias CoerceResult = RsResult<CoerceOk, CombineTypeError>
 
 class CoerceOk()
 
-fun RelateResult.into(): CoerceResult = map { CoerceOk() }
+fun CombineResult.into(): CoerceResult = map { CoerceOk() }
 
 sealed class CombineTypeError {
     class TypeMismatch(val ty1: Ty, val ty2: Ty): CombineTypeError()
@@ -244,23 +244,9 @@ class InferenceContext(
         lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
     }
 
-//    private fun fallbackUnresolvedIntVarsToDefaultInteger() {
-//        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
-//        for (ty in allTypes) {
-//            ty.visitTyInfers { tyInfer ->
-//                val intVar = resolveTyInfer(tyInfer)
-//                if (intVar is TyInfer.IntVar) {
-//                    intUnificationTable.unifyVarValue(intVar, TyInteger.default())
-//                }
-//                false
-//            }
-//        }
-//    }
-
     private fun fallbackUnresolvedIntVars(tys: Collection<Ty>) {
-//        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
         for (ty in tys) {
-            ty.visitTyInfers { tyInfer ->
+            ty.deepVisitTyInfers { tyInfer ->
                 val intVar = resolveTyInfer(tyInfer)
                 if (intVar is TyInfer.IntVar) {
                     intVarUniTable.unifyVarValue(intVar, TyInteger.default())
@@ -269,14 +255,6 @@ class InferenceContext(
             }
         }
     }
-
-//    private fun fallbackUnresolvedIntVar(ty: TyInfer.IntVar) {
-//        intUnificationTable.unifyVarValue(ty, TyInteger.default())
-////        when (ty) {
-////            is TyInfer.IntVar -> intUnificationTable.unifyVarValue(ty, TyInteger.default())
-////            is TyInfer.TyVar -> Unit
-////        }
-//    }
 
     fun isTypeInferred(expr: MvExpr): Boolean {
         return exprTypes.containsKey(expr)
@@ -316,7 +294,7 @@ class InferenceContext(
         return exprTypes[expr] ?: inferenceErrorOrFallback(expr, TyUnknown)
     }
 
-    fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
+    fun combineTypes(ty1: Ty, ty2: Ty): CombineResult {
         val leftTy =
             (if (ty1 is TyInfer) this.resolveTyInfer(ty1) else ty1)
                 .refineForSpecs(this.msl)
@@ -326,7 +304,7 @@ class InferenceContext(
         return combineResolvedTypes(leftTy, rightTy)
     }
 
-    private fun combineResolvedTypes(leftTy: Ty, rightTy: Ty): RelateResult {
+    private fun combineResolvedTypes(leftTy: Ty, rightTy: Ty): CombineResult {
         return when {
             leftTy is TyInfer.TyVar -> combineTyVar(leftTy, rightTy)
             rightTy is TyInfer.TyVar -> combineTyVar(rightTy, leftTy)
@@ -338,15 +316,15 @@ class InferenceContext(
         }
     }
 
-    private fun <T: Ty> combineTypePairs(pairs: List<Pair<T, T>>): RelateResult {
-        var canUnify: RelateResult = Ok(Unit)
+    private fun <T: Ty> combineTypePairs(pairs: List<Pair<T, T>>): CombineResult {
+        var canUnify: CombineResult = Ok(Unit)
         for ((ty1, ty2) in pairs) {
             canUnify = combineTypes(ty1, ty2).and { canUnify }
         }
         return canUnify
     }
 
-    private fun combineTyVar(tyVar: TyInfer.TyVar, ty: Ty): RelateResult {
+    private fun combineTyVar(tyVar: TyInfer.TyVar, ty: Ty): CombineResult {
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
         when (ty) {
@@ -365,20 +343,13 @@ class InferenceContext(
     }
 
     private fun Ty.containsTyVar(tyVar: TyInfer.TyVar): Boolean {
-        return this.visitTyInfers { innerTyVar ->
+        return this.deepVisitTyInfers { innerTyVar ->
             innerTyVar is TyInfer.TyVar
                     && varUniTable.resolveToRootTyVar(innerTyVar) == tyVar
         }
-//        return this.visitWith(object: TypeVisitor {
-//            override fun invoke(ty: Ty): Boolean = when {
-//                ty is TyInfer.TyVar && varUniTable.resolveToRootTyVar(ty) == tyVar -> true
-//                ty.hasTyInfer -> ty.innerVisitWith(this)
-//                else -> false
-//            }
-//        })
     }
 
-    private fun combineIntVar(ty1: TyInfer.IntVar, ty2: Ty): RelateResult {
+    private fun combineIntVar(ty1: TyInfer.IntVar, ty2: Ty): CombineResult {
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
         when (ty2) {
@@ -392,55 +363,78 @@ class InferenceContext(
         return Ok(Unit)
     }
 
-    fun combineTypesNoTyInfers(ty1: Ty, ty2: Ty): RelateResult {
+    fun combineTypesNoTyInfers(ty1: Ty, ty2: Ty): CombineResult {
         return when {
             ty1 === ty2 -> Ok(Unit)
             ty1 is TyNever || ty2 is TyNever -> Ok(Unit)
 
             // assign TyUnknown to all TyVars if other type is unknown
-            ty1 is TyUnknown -> {
-                ty2.visitTyVarWith { combineTyVar(it, TyUnknown); false }
+            ty1 is TyUnknown || ty2 is TyUnknown -> {
+                listOfNotNull(ty1, ty2).forEach {
+                    it.deepVisitTyInfers { tyInfer ->
+                        if (tyInfer is TyInfer.TyVar) {
+                            combineTyVar(tyInfer, TyUnknown)
+                        }
+                        false
+                    }
+                }
                 Ok(Unit)
             }
-            ty2 is TyUnknown -> {
-                ty1.visitTyVarWith { combineTyVar(it, TyUnknown); false }
-                Ok(Unit)
-            }
+            ty1 is TyUnit && ty2 is TyUnit -> Ok(Unit)
 
             ty1 is TyTypeParameter && ty2 is TyTypeParameter && ty1 == ty2 -> Ok(Unit)
-            ty1 is TyUnit && ty2 is TyUnit -> Ok(Unit)
-            ty1 is TyInteger && ty2 is TyInteger
-                    && isCompatibleIntegers(ty1, ty2) -> Ok(Unit)
             ty1 is TyPrimitive && ty2 is TyPrimitive && ty1.name == ty2.name -> Ok(Unit)
 
+            ty1 is TyInteger && ty2 is TyInteger -> combineTyIntegers(ty1, ty2)
             ty1 is TyVector && ty2 is TyVector -> combineTypes(ty1.item, ty2.item)
             ty1 is TyRange && ty2 is TyRange -> Ok(Unit)
 
-            ty1 is TyReference && ty2 is TyReference
-                    // inferredTy permissions should be a superset of expectedTy permissions
-                    && coerceMutability(ty1, ty2) ->
-                combineTypes(ty1.referenced, ty2.referenced)
-
-            ty1 is TyAdt && ty2 is TyAdt
-                    && ty1.item == ty2.item ->
-                combineTypePairs(ty1.typeArguments.zip(ty2.typeArguments))
-
-            ty1 is TyTuple && ty2 is TyTuple
-                    && ty1.types.size == ty2.types.size ->
-                combineTypePairs(ty1.types.zip(ty2.types))
-
+            ty1 is TyReference && ty2 is TyReference -> combineTyRefs(ty1, ty2)
             ty1 is TyLambda && ty2 is TyLambda -> combineTyLambdas(ty1, ty2)
+
+            ty1 is TyAdt && ty2 is TyAdt -> combineTyAdts(ty1, ty2)
+            ty1 is TyTuple && ty2 is TyTuple -> combineTyTuples(ty1, ty2)
 
             else -> Err(CombineTypeError.TypeMismatch(ty1, ty2))
         }
     }
 
-    fun combineTyLambdas(ty1: TyLambda, ty2: TyLambda): RelateResult {
+    private fun combineTyIntegers(ty1: TyInteger, ty2: TyInteger): CombineResult {
+        if (!isCompatibleIntegers(ty1, ty2)) {
+            return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+        }
+        return Ok(Unit)
+    }
+
+    private fun combineTyRefs(ty1: TyReference, ty2: TyReference): CombineResult {
+        // inferredTy permissions should be a superset of expectedTy permissions
+        if (!isCompatibleMut(ty1, ty2)) {
+//        if (!coerceMutability(ty1, ty2)) {
+            return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+        }
+        return combineTypes(ty1.referenced, ty2.referenced)
+    }
+
+    private fun combineTyAdts(ty1: TyAdt, ty2: TyAdt): CombineResult {
+        if (ty1.item != ty2.item) {
+            return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+        }
+        return combineTypePairs(ty1.typeArguments.zip(ty2.typeArguments))
+    }
+
+    private fun combineTyTuples(ty1: TyTuple, ty2: TyTuple): CombineResult {
+        if (ty1.types.size != ty2.types.size) {
+            return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+        }
+        return combineTypePairs(ty1.types.zip(ty2.types))
+    }
+
+    private fun combineTyLambdas(ty1: TyLambda, ty2: TyLambda): CombineResult {
         // todo: error if lambdas has different number of parameters
         for ((ty1param, ty2param) in ty1.paramTypes.zip(ty2.paramTypes)) {
-            val res = combineTypes(ty1param, ty2param)
-            if (res.isErr) {
-                return res
+            val combineRes = combineTypes(ty1param, ty2param)
+            if (combineRes.isErr) {
+                return combineRes
             }
         }
         // todo: resolve variables
@@ -453,8 +447,6 @@ class InferenceContext(
         }
         return combineTypes(inferred, expected).into()
     }
-
-//    fun resolveTyIfPossible(ty: Ty) = if (ty is TyInfer) tryResolveTyInfer(ty) else ty
 
     // can return last `?T` if no value type found.
     fun resolveTyInfer(tyInfer: TyInfer): Ty {
@@ -490,7 +482,7 @@ class InferenceContext(
             // if still unresolved, return unknown type
             if (resTy is TyInfer) return TyUnknown
 
-            return resTy.innerFoldWith(this)
+            return resTy.deepFoldWith(this)
         }
     }
 
@@ -517,13 +509,11 @@ class InferenceContext(
                 is TyInfer.TyVar -> resTy.origin ?: TyUnknown
                 // replace integer with TyUnknown, todo: why?
                 is TyInfer.IntVar -> TyUnknown
-                else -> resTy.innerFoldWith(this)
+                else -> resTy.deepFoldWith(this)
             }
         }
     }
 
-    // Awful hack: check that inner expressions did not annotated as an error
-    // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
         typeErrors.add(typeError)
     }

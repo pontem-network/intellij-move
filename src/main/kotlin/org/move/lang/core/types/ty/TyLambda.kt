@@ -20,14 +20,14 @@ data class TyLambda(
 
     override fun toString(): String = tyToString(this)
 
-    override fun innerFoldWith(folder: TypeFolder): Ty {
+    override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyLambda(
             paramTypes.map { it.foldWith(folder) },
             returnType.foldWith(folder),
         )
     }
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean =
         paramTypes.any { it.visitWith(visitor) } || returnType.visitWith(visitor)
 
     companion object {

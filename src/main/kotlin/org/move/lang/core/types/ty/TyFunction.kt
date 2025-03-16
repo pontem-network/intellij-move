@@ -25,7 +25,7 @@ data class TyFunction(
 
     fun needsTypeAnnotation(): Boolean = this.substitution.hasTyInfer
 
-    override fun innerFoldWith(folder: TypeFolder): Ty {
+    override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,
             substitution.foldValues(folder),
@@ -35,7 +35,7 @@ data class TyFunction(
         )
     }
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean =
         substitution.visitValues(visitor)
                 || paramTypes.any { it.visitWith(visitor) }
                 || returnType.visitWith(visitor)

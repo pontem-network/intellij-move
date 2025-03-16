@@ -14,7 +14,7 @@ data class TyAdt(
 
     override fun abilities(): Set<Ability> = this.item.abilities
 
-    override fun innerFoldWith(folder: TypeFolder): Ty {
+    override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyAdt(
             item,
             substitution.foldValues(folder),
@@ -24,7 +24,7 @@ data class TyAdt(
 
     override fun toString(): String = tyToString(this)
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean {
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean {
         return typeArguments.any { it.visitWith(visitor) } || substitution.visitValues(visitor)
     }
 

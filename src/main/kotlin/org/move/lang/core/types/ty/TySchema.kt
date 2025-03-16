@@ -13,7 +13,7 @@ data class TySchema(
 
     override fun abilities(): Set<Ability> = Ability.all()
 
-    override fun innerFoldWith(folder: TypeFolder): Ty {
+    override fun deepFoldWith(folder: TypeFolder): Ty {
         return TySchema(
             item,
             substitution.foldValues(folder),

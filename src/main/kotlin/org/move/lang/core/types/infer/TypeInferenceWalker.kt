@@ -469,7 +469,7 @@ class TypeInferenceWalker(
             for ((i, paramType) in paramTypes.withIndex()) {
                 val argumentExpr = valueArguments.getOrNull(i)?.expr
                 if (argumentExpr == null) {
-                    paramType.visitTyInfers {
+                    paramType.deepVisitTyInfers {
                         ctx.combineTypes(it, TyUnknown); true
                     }
                 }
@@ -1268,3 +1268,10 @@ class TypeInferenceWalker(
         )
     }
 }
+
+private fun <T> TypeFoldable<T>.containsTyOfClass(classes: List<Class<*>>): Boolean =
+    visitWith(object : TypeVisitor() {
+        override fun visit(ty: Ty): Boolean =
+            if (classes.any { it.isInstance(ty) }) true else ty.deepVisitWith(this)
+    })
+

@@ -8,12 +8,12 @@ import org.move.lang.core.types.infer.TypeVisitor
 open class TyVector(val item: Ty) : Ty(item.flags) {
     override fun abilities() = item.abilities()
 
-    override fun innerFoldWith(folder: TypeFolder): Ty {
-        folder.depth += 1
+    override fun deepFoldWith(folder: TypeFolder): Ty {
+//        folder.foldDepth += 1
         return TyVector(item.foldWith(folder))
     }
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean = item.visitWith(visitor)
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean = item.visitWith(visitor)
 
     override fun toString(): String = tyToString(this)
 

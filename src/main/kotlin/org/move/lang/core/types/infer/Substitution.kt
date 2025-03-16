@@ -30,9 +30,9 @@ open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : 
             typeSubst.mapValues { (_, value) -> value.foldWith(folder) },
         )
 
-    override fun innerFoldWith(folder: TypeFolder): Substitution = foldValues(folder)
+    override fun deepFoldWith(folder: TypeFolder): Substitution = foldValues(folder)
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean {
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean {
         return typeSubst.values.any { it.visitWith(visitor) }
     }
 
@@ -69,7 +69,7 @@ fun <T : TypeFoldable<T>> T.substitute(subst: Substitution): T =
         override fun fold(ty: Ty): Ty {
             return when {
                 ty is TyTypeParameter -> subst[ty] ?: ty
-                ty.needsSubst -> ty.innerFoldWith(this)
+                ty.needsSubst -> ty.deepFoldWith(this)
                 else -> ty
             }
         }
@@ -79,16 +79,16 @@ fun <T : TypeFoldable<T>> TypeFoldable<T>.substituteOrUnknown(subst: Substitutio
     foldWith(object : TypeFolder() {
         override fun fold(ty: Ty): Ty = when {
             ty is TyTypeParameter -> subst[ty] ?: TyUnknown
-            ty.needsSubst -> ty.innerFoldWith(this)
+            ty.needsSubst -> ty.deepFoldWith(this)
             else -> ty
         }
     })
 
-fun <T> TypeFoldable<T>.visitTyInfers(visitor: (TyInfer) -> Boolean): Boolean {
-    return visitWith(object : TypeVisitor {
-        override fun invoke(ty: Ty): Boolean = when {
+fun <T> TypeFoldable<T>.deepVisitTyInfers(visitor: (TyInfer) -> Boolean): Boolean {
+    return visitWith(object : TypeVisitor() {
+        override fun visit(ty: Ty): Boolean = when {
             ty is TyInfer -> visitor(ty)
-            ty.hasTyInfer -> ty.innerVisitWith(this)
+            ty.hasTyInfer -> ty.deepVisitWith(this)
             else -> false
         }
     })

@@ -17,15 +17,15 @@ data class FuncSignature(
     private val retType: Ty,
 ): TypeFoldable<FuncSignature> {
 
-    override fun innerFoldWith(folder: TypeFolder): FuncSignature {
+    override fun deepFoldWith(folder: TypeFolder): FuncSignature {
         return FuncSignature(
             params = params.mapValues { (_, it) -> folder.fold(it) },
             retType = folder.fold(retType)
         )
     }
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
-        params.values.any { visitor(it) } || visitor(retType)
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean =
+        params.values.any { visitor.visit(it) } || visitor.visit(retType)
 
     fun paramsText(): String {
         return params.entries
@@ -45,9 +45,9 @@ data class FuncSignature(
 
     fun retTypeText(): String = retType.text(false)
 
-    fun retTypeSuffix(): String {
-        return if (retType is TyUnit) "" else ": ${retTypeText()}"
-    }
+//    fun retTypeSuffix(): String {
+//        return if (retType is TyUnit) "" else ": ${retTypeText()}"
+//    }
 
     companion object {
         fun fromFunction(function: MvFunction, msl: Boolean): FuncSignature {
