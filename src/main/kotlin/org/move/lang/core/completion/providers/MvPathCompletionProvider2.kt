@@ -21,6 +21,7 @@ import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntry
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -133,6 +134,7 @@ object MvPathCompletionProvider2: MvCompletionProvider() {
                 scopeEntry,
                 completions.ctx,
                 priority = UNIMPORTED_ITEM_PRIORITY,
+                applySubst = emptySubstitution,
                 insertHandler = ImportInsertHandler(parameters, candidate)
             )
             if (completionItem != null) {

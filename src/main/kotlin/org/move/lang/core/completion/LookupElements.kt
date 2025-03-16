@@ -73,7 +73,7 @@ data class Completions(
         val completionItem = createCompletionItem(
             entry,
             ctx,
-            subst = applySubst,
+            applySubst = applySubst,
             priority = entry.completionPriority
         )
         if (completionItem != null) {
@@ -88,7 +88,7 @@ data class Completions(
                     scopeEntry = it,
                     completionContext = ctx,
                     priority = it.completionPriority,
-                    subst = applySubst,
+                    applySubst = applySubst,
                 )
             }
         result.addAllElements(completionItems)
@@ -229,14 +229,14 @@ open class DefaultInsertHandler(val completionCtx: MvCompletionContext? = null):
     }
 }
 
-// When a user types `(` while completion,
-// `com.intellij.codeInsight.completion.DefaultCharFilter` invokes completion with selected item.
-// And if we insert `()` for the item (for example, function), a user get double parentheses
-private fun InsertionContext.doNotAddOpenParenCompletionChar() {
-    if (completionChar == '(') {
-        setAddCompletionChar(false)
-    }
-}
+//// When a user types `(` while completion,
+//// `com.intellij.codeInsight.completion.DefaultCharFilter` invokes completion with selected item.
+//// And if we insert `()` for the item (for example, function), a user get double parentheses
+//private fun InsertionContext.doNotAddOpenParenCompletionChar() {
+//    if (completionChar == '(') {
+//        setAddCompletionChar(false)
+//    }
+//}
 
 inline fun <reified T: PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
     PsiTreeUtil.findElementOfClassAtOffset(file, tailOffset - 1, T::class.java, strict)

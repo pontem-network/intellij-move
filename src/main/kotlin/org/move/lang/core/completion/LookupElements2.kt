@@ -5,24 +5,32 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.MvFieldDecl
+import org.move.lang.core.psi.ext.MvMethodOrField
+import org.move.lang.core.psi.ext.addressRef
+import org.move.lang.core.psi.ext.outerFileName
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.functionTy
+import org.move.utils.parametersSignatureText
+import org.move.utils.returnTypeLookupText
+import org.move.utils.signatureText
 
 fun createCompletionItem(
     scopeEntry: ScopeEntry,
     completionContext: MvCompletionContext,
-    subst: Substitution = emptySubstitution,
-    priority: Double = DEFAULT_PRIORITY,
+    applySubst: Substitution,
+    priority: Double,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext)
 ): CompletionItem? {
     val element = scopeEntry.element() ?: return null
     val lookup = element
-        .getLookupElementBuilder(completionContext, scopeEntry.name, subst)
+        .getLookupElementBuilder(completionContext, scopeEntry.name, applySubst)
         .withInsertHandler(insertHandler)
         .withPriority(priority)
-    val props = getLookupElementProperties(element, subst, completionContext)
+    val props = getLookupElementProperties(element, applySubst, completionContext)
     return lookup.toCompletionItem(properties = props)
 }
 
@@ -37,20 +45,23 @@ fun MvNamedElement.getLookupElementBuilder(
     val msl = completionCtx.msl
     return when (this) {
         is MvFunction -> {
-            val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
+            val functionTy = this.functionTy(msl).substitute(subst) as TyFunction
             if (completionCtx.contextElement is MvMethodOrField) {
                 base
-                    .withTailText(signature.paramsText())
-                    .withTypeText(signature.retTypeText())
+                    .withTailText(functionTy.parametersSignatureText())
+                    .withTypeText(functionTy.returnTypeLookupText())
             } else {
                 base
-                    .withTailText(this.signatureText)
+                    .withTailText(functionTy.signatureText())
                     .withTypeText(this.outerFileName)
             }
         }
-        is MvSpecFunction -> base
-            .withTailText(this.parameters.joinToSignature())
-            .withTypeText(this.returnType?.type?.text ?: "()")
+        is MvSpecFunction -> {
+            val functionTy = this.functionTy(msl).substitute(subst) as TyFunction
+            base
+                .withTailText(functionTy.parametersSignatureText())
+                .withTypeText(functionTy.returnTypeLookupText())
+        }
 
         is MvModule -> base
             .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
@@ -90,4 +101,3 @@ fun MvNamedElement.getLookupElementBuilder(
         else -> base
     }
 }
-

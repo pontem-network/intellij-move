@@ -9,7 +9,6 @@ import org.move.lang.core.types.infer.*
 import org.move.utils.PsiCachedValueProvider
 import org.move.utils.getResults
 import org.move.utils.moveStructureCacheResult
-import org.move.utils.psiCacheResult
 
 data class TyFunction(
     override val item: MvGenericDeclaration,

@@ -55,14 +55,6 @@ val MvFunctionLike.module: MvModule?
 
 val MvFunctionLike.script: MvScript? get() = this.parent as? MvScript
 
-val MvFunctionLike.signatureText: String
-    get() {
-        val paramsText = this.parameters.joinToSignature()
-        val retType = this.returnType?.type?.text ?: ""
-        val retTypeSuffix = if (retType == "") "" else ": $retType"
-        return "$paramsText$retTypeSuffix"
-    }
-
 val MvFunction.selfParam: MvFunctionParameter?
     get() {
         if (!project.moveSettings.enableReceiverStyleFunctions) return null

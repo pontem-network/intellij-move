@@ -141,7 +141,7 @@ class TypeInferenceWalker(
                 val pat = stmt.pat
                 val inferredTy =
                     if (expr != null) {
-                        val inferredTy = expr.inferType(Expectation.fromType(explicitTy))
+                        val inferredTy = expr.inferType(explicitTy)
                         val coercedTy = if (explicitTy != null && coerce(expr, inferredTy, explicitTy)) {
                             explicitTy
                         } else {
@@ -171,7 +171,7 @@ class TypeInferenceWalker(
         }
     }
 
-    private fun MvExpr.inferType(expected: Ty?): Ty = this.inferType(Expectation.fromType(expected))
+    private fun MvExpr.inferType(expectedTy: Ty?): Ty = this.inferType(Expectation.fromType(expectedTy))
 
     private fun MvExpr.inferType(expected: Expectation = NoExpectation): Ty {
         try {
@@ -190,9 +190,9 @@ class TypeInferenceWalker(
     }
 
     // returns inferred
-    private fun MvExpr.inferTypeCoercableTo(expected: Ty): Ty {
-        val inferred = this.inferType(expected)
-        coerce(this, inferred, expected)
+    private fun MvExpr.inferTypeCoercableTo(expectedTy: Ty): Ty {
+        val inferred = this.inferType(expectedTy)
+        coerce(this, inferred, expectedTy)
         return inferred
     }
 
@@ -275,7 +275,7 @@ class TypeInferenceWalker(
 
             is MvBinaryExpr -> inferBinaryExprTy(expr)
             is MvBangExpr -> {
-                expr.expr?.inferType(Expectation.fromType(TyBool))
+                expr.expr?.inferType(TyBool)
                 TyBool
             }
 

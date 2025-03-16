@@ -9,6 +9,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.completion.Completions
+import org.move.lang.core.completion.DEFAULT_PRIORITY
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.completion.createCompletionItem
 import org.move.lang.core.completion.providers.CommonCompletionProvider
@@ -16,10 +17,10 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.Ns
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
@@ -101,21 +102,6 @@ class LookupElementTest: MvTestBase() {
     """, typeText = "u8"
     )
 
-    @MoveV2(enabled = false)
-    fun `test self method without receiver style enabled`() = checkNamedItem(
-        """
-        module 0x1::main {
-            struct S<T> { field: T }
-            fun receiver<T>(self: S<T>): T {}
-                    //^ 
-            fun main() {
-                let s = S { field: 1u8 };
-                receiver(s);
-            }
-        }        
-    """, tailText = "(self: S<T>): T", typeText = "main.move"
-    )
-
     @MoveV2()
     fun `test generic method`() = checkMethodOrFieldProvider(
         """
@@ -173,12 +159,14 @@ class LookupElementTest: MvTestBase() {
         """, typeText = "u8"
     )
 
-    fun `test lookup for tuple struct`() = checkNamedItem("""
+    fun `test lookup for tuple struct`() = checkNamedItem(
+        """
         module 0x1::m {
             struct SS(u8, u16);
                  //^ 
         }        
-    """, tailText = "(u8, u16)", typeText = "main.move")
+    """, tailText = "(u8, u16)", typeText = "main.move"
+    )
 
     private fun checkNamedItem(
         @Language("Move") code: String,
@@ -204,7 +192,12 @@ class LookupElementTest: MvTestBase() {
         val scopeEntry = ScopeEntry(name, lazy { element }, Ns.NAME)
         val completionCtx = MvCompletionContext(element, false)
 
-        val lookup = createCompletionItem(scopeEntry, completionCtx)!!
+        val lookup = createCompletionItem(
+            scopeEntry,
+            completionCtx,
+            priority = DEFAULT_PRIORITY,
+            applySubst = emptySubstitution
+        )!!
         checkLookupPresentation(
             lookup,
             tailText = tailText,
