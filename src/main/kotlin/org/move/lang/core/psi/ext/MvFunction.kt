@@ -8,7 +8,6 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
@@ -31,7 +30,7 @@ val MvFunctionLike.modifiers: List<String>
             if (item is MvFunction) {
                 val vis = item.visibilityModifier
                 if (vis != null) {
-                    add(vis.stubVisKind.keyword)
+                    add(vis.visKind.keyword)
                 }
             }
             if (item is MvFunction && item.isEntry) add("entry")

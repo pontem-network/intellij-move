@@ -84,16 +84,7 @@ fun <T : TypeFoldable<T>> TypeFoldable<T>.substituteOrUnknown(subst: Substitutio
         }
     })
 
-fun <T> TypeFoldable<T>.collectInferTys(): List<TyInfer> {
-    val list = mutableListOf<TyInfer>()
-    visitInferTys {
-        list.add(it)
-        false
-    }
-    return list
-}
-
-fun <T> TypeFoldable<T>.visitInferTys(visitor: (TyInfer) -> Boolean): Boolean {
+fun <T> TypeFoldable<T>.visitTyInfers(visitor: (TyInfer) -> Boolean): Boolean {
     return visitWith(object : TypeVisitor {
         override fun invoke(ty: Ty): Boolean = when {
             ty is TyInfer -> visitor(ty)

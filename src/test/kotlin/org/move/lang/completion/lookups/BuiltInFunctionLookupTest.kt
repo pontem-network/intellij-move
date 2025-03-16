@@ -8,6 +8,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.builtinFunctions
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.NAMES
+import org.move.lang.core.resolve.ref.Ns
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
@@ -45,7 +46,7 @@ class BuiltInFunctionLookupTest: MvTestBase() {
         val moduleElement = myFixture.findElementInEditor<MvModule>()
         val lookup =
             moduleElement.builtinFunctions().single { it.name == name }.let {
-                val scopeEntry = ScopeEntry(name, lazy { it }, NAMES)
+                val scopeEntry = ScopeEntry(name, lazy { it }, Ns.NAME)
                 val completionCtx = MvCompletionContext(it, false)
                 createCompletionItem(scopeEntry, completionCtx)!!
             }

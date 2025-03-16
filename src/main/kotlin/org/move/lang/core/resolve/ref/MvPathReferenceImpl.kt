@@ -7,7 +7,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.PathKind.ValueAddress
-import org.move.lang.core.resolve.ref.Ns.MODULE
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
@@ -135,11 +134,11 @@ fun resolveAliases(element: MvNamedElement): MvNamedElement {
 fun getPathResolveVariants(ctx: ResolutionContext, pathKind: PathKind): List<ScopeEntry> {
     return buildList {
         when (pathKind) {
-            is PathKind.NamedAddress, is ValueAddress -> false
+            is PathKind.NamedAddress, is ValueAddress -> Unit
             is PathKind.NamedAddressOrUnqualifiedPath, is PathKind.UnqualifiedPath -> {
-                if (MODULE in pathKind.ns) {
+                if (Ns.MODULE in pathKind.ns) {
                     // Self::call() as an expression
-                    add(ScopeEntry("Self", lazy { ctx.containingModule }, MODULES))
+                    add(ScopeEntry("Self", lazy { ctx.containingModule }, Ns.MODULE))
                 }
                 // local
                 addAll(
@@ -173,7 +172,7 @@ fun getQualifiedPathEntries(
     return buildList {
         when (qualifierItem) {
             is MvModule -> {
-                add(ScopeEntry("Self", lazy { qualifierItem }, MODULES))
+                add(ScopeEntry("Self", lazy { qualifierItem }, Ns.MODULE))
                 addAll(qualifierItem.allScopesImportableEntries)
             }
             is MvEnum -> {

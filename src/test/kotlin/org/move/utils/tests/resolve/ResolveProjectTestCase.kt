@@ -4,13 +4,10 @@ import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.lang.LanguageCommenters
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.toPsiFile
@@ -22,76 +19,12 @@ import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import kotlin.math.min
 
 abstract class ResolveProjectTestCase: MvProjectTestBase() {
-    protected fun checkByFileTree(@Language("Move") code: String) {
-        checkByFileTree(
-            code,
-            MvReferenceElement::class.java,
-            MvNamedElement::class.java
-        )
-    }
-
     open fun checkByFileTree(fileTree: FileTreeBuilder.() -> Unit) {
         checkByFileTree(
             MvReferenceElement::class.java,
             MvNamedElement::class.java,
             fileTree
         )
-    }
-
-    protected fun stubOnlyResolve(fileTree: FileTreeBuilder.() -> Unit) {
-        val testProject = testProject(fileTree)
-
-        checkAstNotLoaded { file -> !file.path.endsWith(testProject.fileWithCaret) }
-
-        val refClass = MvReferenceElement::class.java
-        val targetClass = MvNamedElement::class.java
-//        checkByTestProject(testProject, MvReferenceElement::class.java, MvNamedElement::class.java)
-
-        val (refElement, data, offset) =
-            myFixture.findElementWithDataAndOffsetInEditor(refClass, "^")
-
-        if (data == "unresolved") {
-            val resolved = refElement.reference?.resolve()
-
-            // Turn off virtual file filter to show element text
-            // because it requires access to virtual file
-            checkAstNotLoaded(VirtualFileFilter.NONE)
-
-            check(resolved == null) {
-                "$refElement `${refElement.text}`should be unresolved, was resolved to\n$resolved `${resolved?.text}`"
-            }
-            return
-        }
-        val resolved = refElement.checkedResolve(offset)
-
-        // Turn off virtual file filter to show element text
-        // because it requires access to virtual file
-        checkAstNotLoaded(VirtualFileFilter.NONE)
-
-        val fileWithNamedElement =
-            testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithNamedElement).toVirtualFile()
-                ?.toPsiFile(this.project)
-                ?: error("No file with //X caret")
-
-        val target = findElementInFile(fileWithNamedElement, targetClass, "X")
-
-        // Turn off virtual file filter to show element text
-        // because it requires access to virtual file
-        checkAstNotLoaded(VirtualFileFilter.NONE)
-
-        check(resolved == target) {
-            "$refElement `${refElement.text}` should resolve to $target (${target.text}), was $resolved (${resolved.text}) instead"
-        }
-    }
-
-    protected fun <T: PsiElement, R: PsiElement> checkByFileTree(
-        @Language("Move") code: String,
-        refClass: Class<R>,
-        targetClass: Class<T>
-    ) {
-        val testProject = testProject(code)
-        checkByTestProject(testProject, refClass, targetClass)
     }
 
     protected fun <T: PsiElement, R: PsiElement> checkByFileTree(

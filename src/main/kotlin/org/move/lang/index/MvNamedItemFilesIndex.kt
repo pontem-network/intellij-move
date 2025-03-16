@@ -7,14 +7,13 @@ import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.util.indexing.FileContent
 import com.intellij.util.indexing.ID
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.ext.globalVariableEntries
 import org.move.lang.core.resolve.importableEntries
+import org.move.lang.core.resolve.ref.Ns
 import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.ref.filterByNs
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntry
 import org.move.lang.core.resolve.scopeEntry.filterByName
-import org.move.lang.core.resolve.scopeEntry.itemEntries
 import org.move.lang.toMoveFile
 
 class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
@@ -27,7 +26,7 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
                 val file = inputData.psiFile as MoveFile
                 // build a list of all modules for which there is module specs
                 val itemIndexIds = file.importableEntries()
-                    .flatMap { namedIndexIds(it.name, it.namespaces) }
+                    .map { namedIndexId(it.name, it.ns) }
                 return itemIndexIds.associate { it to null }
             }
         }
@@ -53,7 +52,7 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
             targetNames: List<String>,
             ns: NsSet
         ): List<ScopeEntry> {
-            val indexIds = targetNames.flatMap { namedIndexIds(it, ns) }.toHashSet()
+            val indexIds = targetNames.flatMap { name -> ns.map { namedIndexId(name, it) } }.toHashSet()
 
             val filesIndex = FileBasedIndex.getInstance()
             return buildList {
@@ -69,8 +68,8 @@ class MvNamedItemFilesIndex: MvScalarFileIndexExtension() {
             }
         }
 
-        private fun namedIndexIds(name: String, ns: NsSet): HashSet<String> {
-            return ns.map { "$name#${it.name}" }.toHashSet()
+        private fun namedIndexId(name: String, ns: Ns): String {
+            return "$name#${ns.name}"
         }
     }
 }

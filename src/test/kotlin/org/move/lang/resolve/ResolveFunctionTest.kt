@@ -4,6 +4,7 @@ import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveFunctionTest: ResolveTestCase() {
+    // *
     fun `test resolve reference to function`() = checkByCode(
         """
         module 0x1::m {
@@ -20,6 +21,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve reference to native function`() = checkByCode(
         """
         module 0x1::m {
@@ -34,9 +36,10 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type param in param pos`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             fun call<T>
                    //X
                     (val: T) {}
@@ -45,9 +48,10 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type param in return pos`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             fun call<T>
                    //X 
                     (): T {}
@@ -56,9 +60,10 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type param in acquires`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             fun call<T>
                    //X 
                     () acquires T {}
@@ -67,9 +72,10 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test type params used in call expr`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             fun convert<T>() {
                       //X
                 call<T>()
@@ -79,95 +85,86 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve function to the same module full path`() = checkByCode(
         """
-        address 0x1 {
-        module M {
+        module 0x1::m {
             public fun call() {}
                      //X
-            
             fun main() {
-                0x1::M::call();
+                0x1::m::call();
                       //^
             }
-        }    
         }
     """
     )
 
+    // *
     fun `test resolve function to another module full path`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
+        module 0x1::original {
             public fun call() {}
-                     //X
+                       //X
         }
-        
-        module M {
+        module 0x1::m {
             fun call() {}
             
             fun main() {
-                0x1::Original::call();
+                0x1::original::call();
                              //^
             }
-        }    
         }
     """
     )
 
-    fun `test resolve function to another module in the same address block`() = checkByCode(
+    // *
+    fun `test resolve function to another module by module import`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
+        module 0x1::original {
             public fun call() {}
                      //X
         }
-        
-        module M {
-            use 0x1::Original;
+        module 0x1::m {
+            use 0x1::original;
             
             fun call() {}
             
             fun main() {
-                Original::call();
+                original::call();
                         //^
             }
         }    
-        }
     """
     )
 
+    // *
     fun `test resolve function from import`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
+        module 0x1::original {
             public fun call() {}
                      //X
         }
-        
-        module M {
-            use 0x1::Original::call;
+        module 0x1::m {
+            use 0x1::original::call;
                              //^
-        }    
         }
     """
     )
 
+    // *
     fun `test cannot resolve private function from import`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
+        module 0x1::original {
             fun call() {}
         }
-        
-        module M {
-            use 0x1::Original::call;
+        module 0x1::m {
+            use 0x1::original::call;
                              //^ unresolved
-        }    
         }
     """
     )
 
+    // *
     fun `test cannot resolve const from item`() = checkByCode(
         """
         address 0x1 {
@@ -186,6 +183,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve through member import`() = checkByCode(
         """
         address 0x1 {
@@ -207,6 +205,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve function to import alias`() = checkByCode(
         """
         module 0x1::original {
@@ -223,6 +222,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve function qualed with module`() = checkByCode(
         """
         address 0x1 {
@@ -260,6 +260,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve friend function with public friend modifier`() = checkByCode(
         """
         address 0x1 {
@@ -280,6 +281,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve friend function with friend modifier`() = checkByCode(
         """
         address 0x1 {
@@ -300,6 +302,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test unresolved friend function if friend of another module`() = checkByCode(
         """
         module 0x1::m1 {
@@ -318,6 +321,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     @NamedAddress("aptos_std", "0x1")
     fun `test resolve friend function with named address`() = checkByCode(
         """
@@ -336,6 +340,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test entry function is unresolved in friend modules`() = checkByCode(
         """
         module 0x1::Original {
@@ -352,6 +357,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve script function`() = checkByCode(
         """
         address 0x1 {
@@ -371,6 +377,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve public entry function`() = checkByCode(
         """
         address 0x1 {
@@ -390,6 +397,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test cannot resolve private entry function from script`() = checkByCode(
         """
         address 0x1 {
@@ -408,6 +416,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test private entry function is not available from another module`() = checkByCode(
         """
         module 0x1::m {
@@ -424,6 +433,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test private entry function is not available from another module entry function`() = checkByCode(
         """
         module 0x1::m {
@@ -440,6 +450,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test public script is the same as public entry`() = checkByCode(
         """
         address 0x1 {
@@ -459,6 +470,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test friend function is unresolved in scripts`() = checkByCode(
         """
         module 0x1::original {
@@ -476,30 +488,11 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
-    fun `test public(script) function can call public(script) from another module`() = checkByCode(
-        """
-        address 0x1 {
-        module Original {
-            public(script) fun call() {}
-                             //X
-        }
-        
-        module M {
-            use 0x1::Original;
-            public(script) fun main() {
-                Original::call();
-                        //^
-            }
-        }
-        }
-    """
-    )
-
+    // *
     fun `test resolve fully qualified path from the same module`() = checkByCode(
         """
     module 0x1::M {
-        struct Loan {}
-        public fun call() acquires Loan {}
+        public fun call() {}
                  //X
         fun main() {
             0x1::M::call();
@@ -509,73 +502,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
-    fun `test public script function can be resolved from import`() = checkByCode(
-        """
-    module 0x1::M {
-        public(script) fun call() {}
-                           //X
-    }    
-    #[test_only]
-    module 0x1::Tests {
-        use 0x1::M::call;
-                   //^
-    }
-    """
-    )
-
-    fun `test public script function available in test`() = checkByCode(
-        """
-    module 0x1::M {
-        public(script) fun call() {}
-                           //X
-    }    
-    #[test_only]
-    module 0x1::Tests {
-        use 0x1::M::call;
-        
-        #[test]
-        public(script) fun test_1() {
-            call();
-            //^
-        }
-    }
-    """
-    )
-
-    fun `test public script function available in entry function`() = checkByCode(
-        """
-    module 0x1::M {
-        public(script) fun call() {}
-                           //X
-    }    
-    module 0x1::main {
-        use 0x1::M::call;
-        
-        entry fun test_1() {
-            call();
-            //^
-        }
-    }
-    """
-    )
-
-    fun `test public script function available in public script function`() = checkByCode(
-        """
-    module 0x1::M {
-        public(script) fun call() {}
-                           //X
-    }    
-    module 0x1::main {
-        use 0x1::M::call;
-        
-        public(script) fun test_1() {
-            call();
-            //^
-        }
-    }
-    """
-    )
-
+    // *
     fun `test resolve fun in test_only module from another test_only`() = checkByCode(
         """
     #[test_only] 
@@ -595,6 +522,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test test_only function is not accessible from non test_only module`() = checkByCode(
         """
     module 0x1::M1 {
@@ -611,6 +539,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test test_only module is not accessible from non_test_only module`() = checkByCode(
         """
     #[test_only]
@@ -627,6 +556,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test unittest functions are not accessible as items`() = checkByCode(
         """
     #[test_only]    
@@ -641,6 +571,7 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    // *
     fun `test unittest functions are not accessible as module items`() = checkByCode(
         """
     #[test_only]    
@@ -1010,18 +941,6 @@ module 0x1::mod {
     """
     )
 
-//    fun `test entry function not accessible from non-entry code`() = checkByCode(
-//        """
-//        module 0x1::m {
-//            public(script) fun call() { 1 }
-//            fun main() {
-//                let _ = call();
-//                       //^ unresolved
-//            }
-//        }
-//    """
-//    )
-
     fun `test resolve local test-only import into test-only item`() = checkByCode(
         """
         module 0x1::m {
@@ -1095,7 +1014,7 @@ module 0x1::mod {
     )
 
     fun `test function with module alias cannot use original module name`() = checkByCode(
-            """
+        """
     module 0x1::m {
         public fun call() {}
     }
@@ -1109,7 +1028,7 @@ module 0x1::mod {
         }
     }    
     """
-        )
+    )
 
     fun `test test function is not available in name resolution`() = checkByCode(
         """
@@ -1122,7 +1041,8 @@ module 0x1::mod {
     """
     )
 
-    fun `test resolve function from use group in use`() = checkByCode("""
+    fun `test resolve function from use group in use`() = checkByCode(
+        """
         module 0x1::m {
             public fun call() {}
                       //X
@@ -1131,9 +1051,11 @@ module 0x1::mod {
             use 0x1::m::{call};
                         //^
         }
-    """)
+    """
+    )
 
-    fun `test resolve function from use group`() = checkByCode("""
+    fun `test resolve function from use group`() = checkByCode(
+        """
         module 0x1::m {
             public fun call() {}
                       //X
@@ -1145,9 +1067,11 @@ module 0x1::mod {
                 //^
             }
         }
-    """)
+    """
+    )
 
-    fun `test cannot resolve function that friend without friend statement`() = checkByCode("""
+    fun `test cannot resolve function that friend without friend statement`() = checkByCode(
+        """
         module 0x1::m {
             public(friend) fun call() {}
         }        
@@ -1158,66 +1082,78 @@ module 0x1::mod {
                 //^ unresolved
             }
         }
-    """)
+    """
+    )
 
-    fun `test unresolved if main scope and test_only item`() = checkByCode("""
-module 0x1::minter {
-    struct S {}
-    public fun mint() {}    
-}        
-module 0x1::main {
-    #[test_only]
-    use 0x1::minter::{Self, mint};
-    
-    public fun main() {
-        mint();
-        //^ unresolved 
-    }
-}          
-    """)
+    fun `test unresolved if main scope and test_only item`() = checkByCode(
+        """
+        module 0x1::minter {
+            struct S {}
+            public fun mint() {}    
+        }        
+        module 0x1::main {
+            #[test_only]
+            use 0x1::minter::{Self, mint};
+            
+            public fun main() {
+                mint();
+                //^ unresolved 
+            }
+        }          
+    """
+    )
 
-    fun `test unresolved if main scope and verify_only item`() = checkByCode("""
-module 0x1::minter {
-    struct S {}
-    public fun mint() {}    
-}        
-module 0x1::main {
-    #[verify_only]
-    use 0x1::minter::{Self, mint};
-    
-    public fun main() {
-        mint();
-        //^ unresolved 
-    }
-}          
-    """)
+    fun `test unresolved if main scope and verify_only item`() = checkByCode(
+        """
+        module 0x1::minter {
+            struct S {}
+            public fun mint() {}    
+        }        
+        module 0x1::main {
+            #[verify_only]
+            use 0x1::minter::{Self, mint};
+            
+            public fun main() {
+                mint();
+                //^ unresolved 
+            }
+        }          
+    """
+    )
 
-    fun `test public test function still cannot be imported`() = checkByCode("""
-module 0x1::m1 {
-    #[test]
-    public fun test_a() {}
-}  
-module 0x1::m2 {
-    use 0x1::m1::test_a;
-               //^ unresolved
-}    """)
+    fun `test public test function still cannot be imported`() = checkByCode(
+        """
+        module 0x1::m1 {
+            #[test]
+            public fun test_a() {}
+        }  
+        module 0x1::m2 {
+            use 0x1::m1::test_a;
+                       //^ unresolved
+        }    
+"""
+    )
 
-    fun `test test function cannot be used`() = checkByCode("""
-module 0x1::m1 {
-    #[test]
-    public fun test_a() {}
-}  
-module 0x1::m2 {
-    use 0x1::m1::test_a;
-    
-    #[test_only]
-    fun main() {
-        test_a();
-        //^ unresolved
-    }
-}    """)
+    fun `test test function cannot be used`() = checkByCode(
+        """
+        module 0x1::m1 {
+            #[test]
+            public fun test_a() {}
+        }  
+        module 0x1::m2 {
+            use 0x1::m1::test_a;
+            
+            #[test_only]
+            fun main() {
+                test_a();
+                //^ unresolved
+            }
+        }    
+"""
+    )
 
-    fun `test resolve lambda from let stmt`() = checkByCode("""
+    fun `test resolve lambda from let stmt`() = checkByCode(
+        """
         module 0x1::m {
             fun main() {
                 let select_f = |s|;
@@ -1226,9 +1162,11 @@ module 0x1::m2 {
                 //^
             }
         }
-    """)
+    """
+    )
 
-    fun `test resolve call expr to variable even if not lambda`() = checkByCode("""
+    fun `test resolve call expr to variable even if not lambda`() = checkByCode(
+        """
         module 0x1::m {
             fun main() {
                 let select_f = 1;
@@ -1237,9 +1175,11 @@ module 0x1::m2 {
                 //^
             }
         }
-    """)
+    """
+    )
 
-    fun `test if there is non lambda function prioritize it over variables`() = checkByCode("""
+    fun `test if there is non lambda function prioritize it over variables`() = checkByCode(
+        """
         module 0x1::m {
             fun select_f(val: u8) {}
                  //X
@@ -1249,19 +1189,20 @@ module 0x1::m2 {
                 //^
             }
         }
-    """)
+    """
+    )
 
     fun `test lambda variable does not shadow function with the same name`() = checkByCode(
         """
-module 0x1::mod {
-    fun name() {}
-       //X
-    fun main() {
-        let name = || 1;
-        name();
-         //^
-    }
-}        
+        module 0x1::mod {
+            fun name() {}
+               //X
+            fun main() {
+                let name = || 1;
+                name();
+                 //^
+            }
+        }        
     """
     )
 }

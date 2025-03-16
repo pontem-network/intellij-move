@@ -6,7 +6,7 @@ import com.intellij.util.containers.addIfNotNull
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.scopeEntry.UseItem
-import org.move.lang.core.resolve.scopeEntry.UseItemType2
+import org.move.lang.core.resolve.scopeEntry.UseItemType
 import org.move.lang.core.resolve.scopeEntry.useItems
 
 class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
@@ -48,13 +48,13 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
                 val useItemHit =
                     when (basePathType) {
                         is BasePathType.Item -> {
-                            reachableUseItems.filter { it.type is UseItemType2.Item }
+                            reachableUseItems.filter { it.type is UseItemType.Item }
                                 // only hit first encountered to remove duplicates
                                 .firstOrNull { it.nameOrAlias == basePathType.itemName }
                         }
                         is BasePathType.Module -> {
                             reachableUseItems.filter {
-                                it.type is UseItemType2.Module || it.type is UseItemType2.SelfModule
+                                it.type is UseItemType.Module || it.type is UseItemType.SelfModule
                             }
                                 // only hit first encountered to remove duplicates
                                 .firstOrNull { it.nameOrAlias == basePathType.moduleName }
@@ -83,7 +83,7 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
 }
 
 fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<UseItem>) {
-    val moduleUseItems = useItems.filter { it.type is UseItemType2.Module }
+    val moduleUseItems = useItems.filter { it.type is UseItemType.Module }
     if (moduleUseItems.isNotEmpty()) {
         this.registerProblem(
             useStmt,

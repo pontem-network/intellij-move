@@ -13,7 +13,7 @@ interface MvStructOrEnumItemElement: MvItemElement,
     val abilitiesList: MvAbilitiesList?
 
     // it's public except for the lit/pat usages, which are checked separately
-    override val isPublic: Boolean get() = true
+//    override val isPublic: Boolean get() = true
 }
 
 val MvStructOrEnumItemElement.psiAbilities: List<MvAbility>

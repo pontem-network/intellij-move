@@ -291,7 +291,7 @@ class TypeInferenceWalker(
             else -> inferenceErrorOrFallback(expr, TyUnknown)
         }
 
-        val refinedExprTy = exprTy.mslScopeRefined(msl)
+        val refinedExprTy = exprTy.refineForSpecs(msl)
         ctx.writeExprTy(expr, refinedExprTy)
         return refinedExprTy
     }
@@ -464,7 +464,7 @@ class TypeInferenceWalker(
             for ((i, paramType) in paramTypes.withIndex()) {
                 val argumentExpr = valueArguments.getOrNull(i)?.expr
                 if (argumentExpr == null) {
-                    paramType.visitInferTys {
+                    paramType.visitTyInfers {
                         ctx.combineTypes(it, TyUnknown); true
                     }
                 }

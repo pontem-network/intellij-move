@@ -43,7 +43,7 @@ val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
 val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
 val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
 
-fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
+//fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
 
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
@@ -70,11 +70,7 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
     abstract fun abilities(): Set<Ability>
 }
 
-//val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
-
-//fun Ty.mslTy(msl: Boolean): Ty = if (this is TyReference && msl) this.innermostTy() else this
-
-fun Ty.mslScopeRefined(msl: Boolean): Ty {
+fun Ty.refineForSpecs(msl: Boolean): Ty {
     var ty = this
     if (!msl) return ty
 

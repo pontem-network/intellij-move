@@ -8,7 +8,6 @@ import com.intellij.util.io.DataExternalizer
 import com.intellij.util.io.EnumeratorStringDescriptor
 import org.move.cli.MoveProject
 import org.move.lang.MoveFile
-import org.move.lang.core.resolve.ref.NONE
 import org.move.lang.core.resolve.ref.Ns
 import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.types.ItemFQName
@@ -25,7 +24,7 @@ private fun nsFromString(s: String): NsSet {
 
 class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
     override fun getName(): ID<String, String> = INDEX_ID
-    override fun getVersion(): Int = 3
+    override fun getVersion(): Int = 4
 
     override fun getValueExternalizer(): DataExternalizer<String> = EnumeratorStringDescriptor.INSTANCE
 
@@ -39,7 +38,7 @@ class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
                     for (entry in entries) {
                         val fqName = entry.element()?.fqName() ?: continue
                         val indexId = fqName.indexId()
-                        set(indexId, nsToString(entry.namespaces))
+                        set(indexId, entry.ns.name)
                     }
                 }
             }
@@ -50,15 +49,16 @@ class MvItemNamespaceIndex: MvFileIndexExtension<String>() {
     companion object {
         val INDEX_ID: ID<String, String> = ID.create("org.move.index.MvItemNamespaceIndex")
 
-        fun getItemNs(moveProject: MoveProject, fqName: ItemFQName): NsSet {
+        fun getItemNs(moveProject: MoveProject, fqName: ItemFQName): Ns? {
             val filesIndex = FileBasedIndex.getInstance()
             val searchScope = moveProject.searchScope()
             val indexIds = fqName.searchIndexIds(moveProject)
-            val value =
+            val nsName =
                 filesIndex.getValuesForAnyKey(INDEX_ID, indexIds, searchScope)
                     // should be always a single value
                     .firstOrNull()
-            return if (value == null) NONE else nsFromString(value)
+            return nsName?.let { Ns.valueOf(it) }
+//            return if (nsName == null) NONE else Ns.valueOf(nsName)
         }
     }
 }

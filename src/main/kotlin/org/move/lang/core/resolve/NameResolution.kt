@@ -136,23 +136,21 @@ fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: NsSet): List<ScopeEnt
             // state between shadowing processors passed through prevScope
             val currScope = mutableMapOf<String, NsSet>()
             for (entry in entries) {
-                val entryNs = entry.namespaces
+                val entryNs = entry.ns
 
                 // filter entries by expected ns
-                if (!entryNs.intersects(ns)) {
+                if (!ns.contains(entryNs)) {
                     continue
                 }
 
-                // remove namespaces which are encountered before (shadowed by previous entries with this name)
-                val visitedNs = visitedScopes[entry.name] ?: NONE
-                val unprocessedNs = entryNs.sub(visitedNs)
-                if (unprocessedNs.isEmpty()) {
+                val visitedNs = visitedScopes.getOrDefault(entry.name, NONE)
+                if (visitedNs.contains(entryNs)) {
                     // all ns for this entry were shadowed
                     continue
                 }
-                add(entry.copyWithNs(ns = unprocessedNs))
+                add(entry)
                 // save encountered namespaces to the currScope
-                currScope[entry.name] = visitedNs.add(unprocessedNs)
+                currScope[entry.name] = NsSet.of(entryNs, *visitedNs.toTypedArray())
             }
             // at the end put all entries from the current scope into the `visitedScopes`
             visitedScopes.putAll(currScope)

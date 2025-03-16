@@ -19,6 +19,7 @@ import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.NAMES
+import org.move.lang.core.resolve.ref.Ns
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
@@ -200,7 +201,7 @@ class LookupElementTest: MvTestBase() {
             ?: error("Marker `^` should point to the MvNamedElement")
 
         val name = element.name ?: error("name == null")
-        val scopeEntry = ScopeEntry(name, lazy { element }, NAMES)
+        val scopeEntry = ScopeEntry(name, lazy { element }, Ns.NAME)
         val completionCtx = MvCompletionContext(element, false)
 
         val lookup = createCompletionItem(scopeEntry, completionCtx)!!

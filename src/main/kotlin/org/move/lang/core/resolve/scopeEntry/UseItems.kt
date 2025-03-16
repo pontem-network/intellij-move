@@ -10,17 +10,17 @@ import org.move.lang.core.resolve.PathKind
 import org.move.lang.core.resolve.pathKind
 import org.move.lang.core.types.ItemFQName
 
-sealed class UseItemType2 {
-    object Module: UseItemType2()
-    object SelfModule: UseItemType2()
-    data class Item(val fqName: ItemFQName): UseItemType2()
+sealed class UseItemType {
+    object Module: UseItemType()
+    object SelfModule: UseItemType()
+    data class Item(val fqName: ItemFQName): UseItemType()
 }
 
 data class UseItem(
     val useSpeck: MvUseSpeck,
     val alias: MvUseAlias?,
     val nameOrAlias: String,
-    val type: UseItemType2,
+    val type: UseItemType,
     val scope: NamedItemScope,
 )
 
@@ -50,7 +50,7 @@ val MvUseStmt.useItems: List<UseItem>
                             childUseSpeck,
                             childAlias,
                             childAliasName ?: moduleName,
-                            UseItemType2.SelfModule,
+                            UseItemType.SelfModule,
                             stmtUsageScope
                         )
                     )
@@ -73,7 +73,7 @@ val MvUseStmt.useItems: List<UseItem>
                         childUseSpeck,
                         childAlias,
                         childAliasName ?: childName,
-                        UseItemType2.Item(fqName),
+                        UseItemType.Item(fqName),
                         stmtUsageScope,
                     )
                 )
@@ -96,7 +96,7 @@ val MvUseStmt.useItems: List<UseItem>
                         rootUseSpeck,
                         rootUseSpeckAlias,
                         aliasName ?: rootName,
-                        UseItemType2.Module,
+                        UseItemType.Module,
                         stmtUsageScope
                     )
                 )
@@ -112,7 +112,7 @@ val MvUseStmt.useItems: List<UseItem>
                             rootUseSpeck,
                             rootUseSpeckAlias,
                             aliasName ?: moduleName,
-                            UseItemType2.SelfModule,
+                            UseItemType.SelfModule,
                             stmtUsageScope,
                         )
                     )
@@ -127,7 +127,7 @@ val MvUseStmt.useItems: List<UseItem>
                             rootUseSpeck,
                             rootUseSpeckAlias,
                             aliasName ?: rootName,
-                            UseItemType2.Item(fqName),
+                            UseItemType.Item(fqName),
                             stmtUsageScope,
                         )
                     )

@@ -10,9 +10,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.*
 
 /** For `Foo::bar::baz::quux` path returns `Foo` */
-tailrec fun <T: MvPath> T.basePath(): T {
-    @Suppress("UNCHECKED_CAST")
-    val qualifier = path as T?
+tailrec fun MvPath.basePath(): MvPath {
+    val qualifier = this.path
     return if (qualifier === null) this else qualifier.basePath()
 }
 

@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.resolve.ref.NAMES
+import org.move.lang.core.resolve.ref.Ns
 import org.move.lang.core.types.fqName
 import org.move.lang.index.MvNamedItemFilesIndex
 import org.move.lang.moveProject
