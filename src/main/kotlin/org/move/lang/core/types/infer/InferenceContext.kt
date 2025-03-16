@@ -9,7 +9,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.types.ty.*
-import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.RsResult
@@ -146,20 +145,16 @@ class InferenceContext(
 
     private val typeErrors = mutableListOf<TypeError>()
 
-    val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
-    val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
+    private val varUniTable = UnificationTable<TyInfer.TyVar>()
+    private val intVarUniTable = UnificationTable<TyInfer.IntVar>()
 
-    fun startSnapshot(): Snapshot = CombinedSnapshot(
-        intUnificationTable.startSnapshot(),
-        varUnificationTable.startSnapshot(),
-    )
-
-    inline fun <T> freezeUnification(action: () -> T): T {
-        val snapshot = startSnapshot()
+    fun <T> freezeUnification(action: () -> T): T {
+        val tableSnapshots =
+            listOf(varUniTable, intVarUniTable).map { it.startSnapshot() }
         try {
             return action()
         } finally {
-            snapshot.rollback()
+            tableSnapshots.forEach { it.rollback() }
         }
     }
 
@@ -210,8 +205,7 @@ class InferenceContext(
             }
         }
 
-        unifyUnresolvedIntVarsToDefaultInteger(exprTypes.values)
-        unifyUnresolvedIntVarsToDefaultInteger(patTypes.values)
+        fallbackUnresolvedIntVars(exprTypes.values + patTypes.values)
 
         exprTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
         patTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
@@ -263,13 +257,13 @@ class InferenceContext(
 //        }
 //    }
 
-    private fun unifyUnresolvedIntVarsToDefaultInteger(tys: Collection<Ty>) {
+    private fun fallbackUnresolvedIntVars(tys: Collection<Ty>) {
 //        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
         for (ty in tys) {
             ty.visitTyInfers { tyInfer ->
                 val intVar = resolveTyInfer(tyInfer)
                 if (intVar is TyInfer.IntVar) {
-                    intUnificationTable.unifyVarValue(intVar, TyInteger.default())
+                    intVarUniTable.unifyVarValue(intVar, TyInteger.default())
                 }
                 false
             }
@@ -332,14 +326,14 @@ class InferenceContext(
         return combineResolvedTypes(leftTy, rightTy)
     }
 
-    private fun combineResolvedTypes(ty1: Ty, ty2: Ty): RelateResult {
+    private fun combineResolvedTypes(leftTy: Ty, rightTy: Ty): RelateResult {
         return when {
-            ty1 is TyInfer.TyVar -> combineTyVar(ty1, ty2)
-            ty2 is TyInfer.TyVar -> combineTyVar(ty2, ty1)
+            leftTy is TyInfer.TyVar -> combineTyVar(leftTy, rightTy)
+            rightTy is TyInfer.TyVar -> combineTyVar(rightTy, leftTy)
             else -> when {
-                ty1 is TyInfer.IntVar -> combineIntVar(ty1, ty2)
-                ty2 is TyInfer.IntVar -> combineIntVar(ty2, ty1)
-                else -> combineTypesNoTyInfers(ty1, ty2)
+                leftTy is TyInfer.IntVar -> combineIntVar(leftTy, rightTy)
+                rightTy is TyInfer.IntVar -> combineIntVar(rightTy, leftTy)
+                else -> combineTypesNoTyInfers(leftTy, rightTy)
             }
         }
     }
@@ -356,33 +350,40 @@ class InferenceContext(
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
         when (ty) {
-            is TyInfer.TyVar -> varUnificationTable.unifyVarVar(tyVar, ty)
+            is TyInfer.TyVar -> varUniTable.unifyVarVar(tyVar, ty)
             else -> {
-                val ty1r = varUnificationTable.findRoot(tyVar)
-                val isTy2ContainsTy1 = ty.visitWith(object: TypeVisitor {
-                    override fun invoke(ty: Ty): Boolean = when {
-                        ty is TyInfer.TyVar && varUnificationTable.findRoot(ty) == ty1r -> true
-                        ty.hasTyInfer -> ty.innerVisitWith(this)
-                        else -> false
-                    }
-                })
-                if (isTy2ContainsTy1) {
+                val rootTyVar = varUniTable.resolveToRootTyVar(tyVar)
+                if (ty.containsTyVar(rootTyVar)) {
                     // "E0308 cyclic type of infinite size"
-                    varUnificationTable.unifyVarValue(ty1r, TyUnknown)
-                } else {
-                    varUnificationTable.unifyVarValue(ty1r, ty)
+                    varUniTable.unifyVarValue(rootTyVar, TyUnknown)
+                    return Ok(Unit)
                 }
+                varUniTable.unifyVarValue(rootTyVar, ty)
             }
         }
         return Ok(Unit)
+    }
+
+    private fun Ty.containsTyVar(tyVar: TyInfer.TyVar): Boolean {
+        return this.visitTyInfers { innerTyVar ->
+            innerTyVar is TyInfer.TyVar
+                    && varUniTable.resolveToRootTyVar(innerTyVar) == tyVar
+        }
+//        return this.visitWith(object: TypeVisitor {
+//            override fun invoke(ty: Ty): Boolean = when {
+//                ty is TyInfer.TyVar && varUniTable.resolveToRootTyVar(ty) == tyVar -> true
+//                ty.hasTyInfer -> ty.innerVisitWith(this)
+//                else -> false
+//            }
+//        })
     }
 
     private fun combineIntVar(ty1: TyInfer.IntVar, ty2: Ty): RelateResult {
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
         when (ty2) {
-            is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)
-            is TyInteger -> intUnificationTable.unifyVarValue(ty1, ty2)
+            is TyInfer.IntVar -> intVarUniTable.unifyVarVar(ty1, ty2)
+            is TyInteger -> intVarUniTable.unifyVarValue(ty1, ty2)
             is TyUnknown -> {
                 // do nothing, unknown should no influence IntVar
             }
@@ -455,26 +456,20 @@ class InferenceContext(
 
 //    fun resolveTyIfPossible(ty: Ty) = if (ty is TyInfer) tryResolveTyInfer(ty) else ty
 
-    // walks `?T => ?U, ?U => u8` chain until it finds a value type. Can return last ?U if no value type found.
+    // can return last `?T` if no value type found.
     fun resolveTyInfer(tyInfer: TyInfer): Ty {
         return when (tyInfer) {
-            is TyInfer.IntVar -> intUnificationTable.findValue(tyInfer) ?: tyInfer
+            is TyInfer.IntVar -> intVarUniTable.resolveTyInfer(tyInfer) ?: tyInfer
             is TyInfer.TyVar -> {
                 // check if variable is unified, or return untouched
-                val valueTy = varUnificationTable.findValue(tyInfer) ?: return tyInfer
-                if (valueTy is TyInfer) {
-                    // if variable value itself is TyVar, try to resolve it next
-                    resolveTyInfer(valueTy)
+                val varValueTy = varUniTable.resolveTyInfer(tyInfer) ?: return tyInfer
+                if (varValueTy is TyInfer.IntVar) {
+                    // value is always non-null Ty (not TyVar).
+                    // It can only be TyInfer.TyVar, in this case we resolve it as integer.
+                    intVarUniTable.resolveTyInfer(varValueTy) ?: varValueTy
                 } else {
-                    valueTy
+                    varValueTy
                 }
-//                if (valueTy != null) {
-//                    if (valueTy is TyInfer) resolveTyInfer(valueTy) else valueTy
-////                    this.resolveIfTyInfer(valueTy)
-//                } else {
-//                    tyInfer
-//                }
-//                varUnificationTable.findValue(tyInfer)?.let(this::resolveIfTyInfer) ?: tyInfer
             }
         }
     }

@@ -150,7 +150,7 @@ private fun render(
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
-            is TyInfer.IntVar -> integer
+            is TyInfer.IntVar -> "?${integer}"
         }
         is TyLambda -> {
             val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)

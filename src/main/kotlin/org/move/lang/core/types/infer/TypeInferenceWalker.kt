@@ -32,14 +32,19 @@ class TypeInferenceWalker(
 
     fun <T> mslScope(action: () -> T): T {
         if (ctx.msl) return action()
+
         ctx.msl = true
-        val snapshot = ctx.startSnapshot()
-        try {
-            return action()
-        } finally {
-            ctx.msl = false
-            snapshot.rollback()
-        }
+        val res = ctx.freezeUnification { action() }
+        ctx.msl = false
+
+//        val snapshot = ctx.startSnapshot()
+//        try {
+//            return action()
+//        } finally {
+//            ctx.msl = false
+//            snapshot.rollback()
+//        }
+        return res
     }
 
     fun extractParameterBindings(owner: MvInferenceContextOwner) {

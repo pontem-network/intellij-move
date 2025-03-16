@@ -11,18 +11,14 @@ import io.ktor.http.*
 import org.move.ide.formatter.impl.PsiLocation
 import org.move.ide.formatter.impl.elementLocation
 import org.move.lang.core.psi.MvTypeParameter
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.VarOrValue
+import org.move.lang.core.types.ty.VarValue
 import org.move.lang.toNioPathOrNull
 
-interface NodeOrValue
-interface Node: NodeOrValue {
-    var parent: NodeOrValue
-}
-
-data class VarValue<out V>(val value: V?, val rank: Int): NodeOrValue
-
 /**
- * [UnificationTable] is map from [K] to [V] with additional ability
+ * [UnificationTable] is map from [TyVar] to [Ty] with additional ability
  * to redirect certain K's to a single V en-masse with the help of
  * disjoint set union.
  *
@@ -36,141 +32,216 @@ data class VarValue<out V>(val value: V?, val rank: Int): NodeOrValue
  * <http://en.wikipedia.org/wiki/Disjoint-set_data_structure>.
  */
 @Suppress("UNCHECKED_CAST")
-class UnificationTable<K: Node, V> {
+class UnificationTable<TyVar: TyInfer> {
     private val undoLog: MutableList<UndoLogEntry> = mutableListOf()
 
-    @Suppress("UNCHECKED_CAST")
-    private data class Root<out K: Node, out V>(val key: K) {
-        private val varValue: VarValue<V> = key.parent as VarValue<V>
-        val rank: Int get() = varValue.rank
-        val value: V? get() = varValue.value
+    private data class Root<TyVar: TyInfer>(
+        val tyVar: TyVar,
+        val varValue: VarValue
+    ) {
     }
 
-    private fun get(key: Node): Root<K, V> {
-        val parent = key.parent
-        return if (parent is Node) {
-            val root = get(parent)
-            if (key.parent != root.key) {
-                logNodeState(key)
-                key.parent = root.key // Path compression
-            }
-            root
-        } else {
-            Root(key as K)
+//    @Suppress("UNCHECKED_CAST")
+//    private data class Root<out TyVarNode: Node>(
+//        val key: TyVarNode
+//    ) {
+//        val value: Ty? get() = (key.parent as VarValue<Ty>).value
+//    }
+
+//    private fun setValue(root: Root<TyVar>, value: Ty) {
+//        logNodeState(root.key)
+//        root.key.parent = VarValue(value)
+//    }
+
+//    private fun unify(rootA: Root<TyVar>, rootB: Root<TyVar>, newValue: Ty?): TyVar {
+//        logNodeState(rootA.key)
+//        logNodeState(rootB.key)
+//
+//        // redirect roots
+//        val oldRootKey = rootA.key
+//        val newRootKey = rootB.key
+//        oldRootKey.parent = newRootKey
+//        newRootKey.parent = VarValue(newValue)
+//        return newRootKey
+//
+////        return redirectRoot(rootA, rootB, newValue)
+//    }
+
+//    private fun redirectRoot(oldRoot: Root<TyVar>, newRoot: Root<TyVar>, newValue: Ty?): TyVar {
+//        val oldRootKey = oldRoot.key
+//        val newRootKey = newRoot.key
+//        logNodeState(newRootKey)
+//        logNodeState(oldRootKey)
+//        oldRootKey.parent = newRootKey
+//        newRootKey.parent = VarValue(newValue)
+//        return newRootKey
+//    }
+
+    // root ty var is the one which has `?T => VarValue`
+    fun resolveToRootTyVar(key: TyVar): TyVar = resolveToRoot(key).tyVar
+
+    fun resolveTyInfer(key: TyVar): Ty? = resolveToRoot(key).varValue.ty
+
+    fun unifyVarVar(leftVar: TyVar, rightVar: TyVar): TyVar {
+
+        val leftRoot = this.resolveToRoot(leftVar)
+        val rightRoot = this.resolveToRoot(rightVar)
+
+        if (leftRoot.tyVar == rightRoot.tyVar) {
+            // already unified
+            return leftRoot.tyVar
         }
-    }
 
-    private fun setValue(root: Root<K, V>, value: V) {
-        logNodeState(root.key)
-        root.key.parent = VarValue(value, root.rank)
-    }
+        logVarState(leftRoot.tyVar)
+        logVarState(rightRoot.tyVar)
 
-    private fun unify(rootA: Root<K, V>, rootB: Root<K, V>, newValue: V?): K {
-        return when {
-            // a has greater rank, so a should become b's parent,
-            // i.e., b should redirect to a.
-            rootA.rank > rootB.rank -> redirectRoot(rootA.rank, rootB, rootA, newValue)
-            // b has greater rank, so a should redirect to b.
-            rootA.rank < rootB.rank -> redirectRoot(rootB.rank, rootA, rootB, newValue)
-            // If equal, redirect one to the other and increment the
-            // other's rank.
-            else -> redirectRoot(rootA.rank + 1, rootA, rootB, newValue)
-        }
-    }
+        val leftTy = leftRoot.varValue.ty
+        val rightTy = rightRoot.varValue.ty
 
-    private fun redirectRoot(newRank: Int, oldRoot: Root<K, V>, newRoot: Root<K, V>, newValue: V?): K {
-        val oldRootKey = oldRoot.key
-        val newRootKey = newRoot.key
-        logNodeState(newRootKey)
-        logNodeState(oldRootKey)
-        oldRootKey.parent = newRootKey
-        newRootKey.parent = VarValue(newValue, newRank)
-        return newRootKey
-    }
-
-    fun findRoot(key: K): K = get(key).key
-
-    fun findValue(key: K): V? = get(key).value
-
-    fun unifyVarVar(key1: K, key2: K): K {
-        val node1 = get(key1)
-        val node2 = get(key2)
-
-        if (node1.key == node2.key) return node1.key // already unified
-
-        val val1 = node1.value
-        val val2 = node2.value
-
-        val newVal = if (val1 != null && val2 != null) {
-            if (val1 != val2) {
+        val newValueTy = if (leftTy != null && rightTy != null) {
+            // if  both vars are unified, their ty's must be the same
+            if (leftTy != rightTy) {
                 // must be solved on the upper level
-                unificationError("Unification error: unifying $key1 -> $key2")
+                unificationError("Unification error: unifying $leftVar -> $rightVar")
             }
-            val1
+            leftTy
         } else {
-            val1 ?: val2
+            // use any non-null
+            leftTy ?: rightTy
         }
 
-        return unify(node1, node2, newVal)
+        // redirect roots
+        return redirectRoots(leftRoot, rightRoot, newValueTy)
+//        val leftTyVar = leftRoot.tyVar
+//        val rightTyVar = rightRoot.tyVar
+//        leftTyVar.parent = rightTyVar
+//        rightTyVar.parent = VarValue(newValueTy)
+
+//        return rightRoot.tyVar
     }
 
-    fun unifyVarValue(key: K, value: V) {
-        val node = get(key)
-        if (node.value != null && node.value != value) {
-            // must be solved on the upper level
-            when (key) {
-                is TyInfer.TyVar -> {
-                    val origin = key.origin?.origin
-//                    val originFilePath = origin?.containingFile?.toNioPathOrNull()
-                    unificationError("unifying $key -> $value, node.value = ${node.value}",
-                                     origin = origin)
-//                    unificationError(
-//                        "TyVar unification error: unifying $key -> $value" +
-//                                " (with origin at $originFilePath ${origin?.location}), node.value = ${node.value}"
-//                    )
+    fun unifyVarValue(tyVar: TyVar, ty: Ty) {
+        val oldTy = this.resolveTyInfer(tyVar)
+        if (oldTy != null) {
+            // if already unified, value must be the same
+            if (oldTy != ty) {
+                // must be solved on the upper level
+                when (tyVar) {
+                    is TyInfer.TyVar -> {
+                        val origin = tyVar.origin?.origin
+                        unificationError(
+                            "unifying $tyVar -> $ty, old valueTy = $oldTy",
+                            origin = origin
+                        )
+                    }
+                    else -> unificationError("Unification error: unifying $tyVar -> $ty")
                 }
-                else -> unificationError("Unification error: unifying $key -> $value")
             }
         }
-        setValue(node, value)
+        val rootEntry = resolveToRoot(tyVar)
+        logVarState(rootEntry.tyVar)
+
+        // set value
+        setRootValueTy(rootEntry, ty)
+//        rootEntry.tyVar.parent = VarValue(value)
     }
 
-    private fun logNodeState(node: Node) {
-        if (isSnapshot()) undoLog.add(UndoLogEntry.SetParent(node, node.parent))
+    private fun resolveToRoot(key: TyVar): Root<TyVar> {
+        val keyParent = key.parent
+        return when (keyParent) {
+            is TyInfer -> {
+//                val parentTyVar = keyParent as TyVar
+//                val root = getRootEntry(parentTyVar)
+//                if (key.parent != root.key) {
+//                    logTyVarParent(key)
+//                    key.parent = root.key // Path compression
+//                }
+                resolveToRoot(keyParent as TyVar)
+            }
+            is VarValue -> Root(key, keyParent)
+        }
+    }
+
+    private fun setRootValueTy(rootEntry: Root<TyVar>, valueTy: Ty?) {
+        rootEntry.tyVar.parent = VarValue(valueTy)
+    }
+
+    private fun redirectRoots(leftRoot: Root<TyVar>, rightRoot: Root<TyVar>, valueTy: Ty?): TyVar {
+        // redirect roots
+        val leftTyVar = leftRoot.tyVar
+        val rightTyVar = rightRoot.tyVar
+        leftTyVar.parent = rightTyVar
+        rightTyVar.parent = VarValue(valueTy)
+        return rightTyVar
+    }
+
+    private fun logVarState(tyVar: TyVar) {
+        if (isSnapshot()) {
+            undoLog.add(UndoLogEntry.SetOldParent(tyVar, tyVar.parent))
+        }
     }
 
     private fun isSnapshot(): Boolean = undoLog.isNotEmpty()
 
     fun startSnapshot(): Snapshot {
         undoLog.add(UndoLogEntry.OpenSnapshot)
-        return SnapshotImpl(undoLog.size - 1)
+        return Snapshot(undoLog, undoLog.size - 1)
     }
 
-    private inner class SnapshotImpl(val position: Int): Snapshot {
-        override fun commit() {
-            assertOpenSnapshot(this)
-            if (position == 0) {
-                undoLog.clear()
-            } else {
-                undoLog[position] = UndoLogEntry.CommittedSnapshot
-            }
-        }
-
-        override fun rollback() {
-            val snapshotted = undoLog.subList(position + 1, undoLog.size)
-            snapshotted.reversed().forEach(UndoLogEntry::rollback)
-            snapshotted.clear()
-
-            val last = undoLog.removeAt(undoLog.size - 1)
-            check(last is UndoLogEntry.OpenSnapshot)
-            check(undoLog.size == position)
-        }
-
-        private fun assertOpenSnapshot(snapshot: SnapshotImpl) {
-            check(undoLog.getOrNull(snapshot.position) is UndoLogEntry.OpenSnapshot)
-        }
-    }
+//    private inner class SnapshotImpl(val position: Int): Snapshot {
+//        override fun commit() {
+//            assertOpenSnapshot(this)
+//            if (position == 0) {
+//                undoLog.clear()
+//            } else {
+//                undoLog[position] = UndoLogEntry.CommittedSnapshot
+//            }
+//        }
+//
+//        override fun rollback() {
+//            val snapshotted = undoLog.subList(position + 1, undoLog.size)
+//            snapshotted.reversed().forEach(UndoLogEntry::rollback)
+//            snapshotted.clear()
+//
+//            val last = undoLog.removeAt(undoLog.size - 1)
+//            check(last is UndoLogEntry.OpenSnapshot)
+//            check(undoLog.size == position)
+//        }
+//
+//        private fun assertOpenSnapshot(snapshot: SnapshotImpl) {
+//            check(undoLog.getOrNull(snapshot.position) is UndoLogEntry.OpenSnapshot)
+//        }
+//    }
 }
+
+class Snapshot(val undoLog: MutableList<UndoLogEntry>, val position: Int) {
+//    fun commit() {
+//        assertOpenSnapshot(this)
+//        if (position == 0) {
+//            undoLog.clear()
+//        } else {
+//            undoLog[position] = UndoLogEntry.CommittedSnapshot
+//        }
+//    }
+
+    fun rollback() {
+        val snapshotted = undoLog.subList(position + 1, undoLog.size)
+        snapshotted.reversed().forEach {
+            (it as UndoLogEntry.SetOldParent).rollback()
+        }
+//        snapshotted.reversed().forEach(UndoLogEntry::rollback)
+        snapshotted.clear()
+
+        val last = undoLog.removeAt(undoLog.size - 1)
+        check(last is UndoLogEntry.OpenSnapshot)
+        check(undoLog.size == position)
+    }
+
+//    private fun assertOpenSnapshot(snapshot: Snapshot) {
+//        check(undoLog.getOrNull(snapshot.position) is UndoLogEntry.OpenSnapshot)
+//    }
+}
+
 
 fun unificationError(message: String, origin: MvTypeParameter? = null): Nothing {
     if (origin == null) {
@@ -194,10 +265,10 @@ data class PsiErrorContext(val text: String, val file: PsiFile?, val location: P
         fun fromElement(element: PsiElement): PsiErrorContext {
             val elementText = element.text
             val file = element.containingFile
-            if (file != null) {
-                return PsiErrorContext(elementText, file, file.elementLocation(element))
+            return if (file != null) {
+                PsiErrorContext(elementText, file, file.elementLocation(element))
             } else {
-                return PsiErrorContext(elementText, null, null)
+                PsiErrorContext(elementText, null, null)
             }
         }
     }
@@ -211,6 +282,7 @@ class UnificationError(
     IllegalStateException(message) {
 
     override fun toString(): String {
+        @Suppress("DEPRECATION")
         var message = super.toString()
         val origin = origin
         if (origin != null) {
@@ -228,36 +300,29 @@ class UnificationError(
     }
 }
 
-interface Snapshot {
-    fun commit()
+//interface Snapshot {
+//    fun commit()
+//
+//    fun rollback()
+//}
 
-    fun rollback()
-}
-
-private sealed class UndoLogEntry {
-    abstract fun rollback()
+sealed class UndoLogEntry {
+//    abstract fun rollback()
 
     object OpenSnapshot: UndoLogEntry() {
-        override fun rollback() {
-            unificationError("Cannot rollback an uncommitted snapshot")
-        }
+//        override fun rollback() {
+//            unificationError("Cannot rollback an uncommitted snapshot")
+//        }
     }
 
-    object CommittedSnapshot: UndoLogEntry() {
-        override fun rollback() {
-            // This occurs when there are nested snapshots and
-            // the inner is committed but outer is rolled back.
-        }
-    }
-
-    data class SetParent(val node: Node, val oldParent: NodeOrValue): UndoLogEntry() {
-        override fun rollback() {
-            node.parent = oldParent
+    data class SetOldParent(val tyVar: TyInfer, val oldParent: VarOrValue): UndoLogEntry() {
+        fun rollback() {
+            tyVar.parent = oldParent
         }
     }
 }
 
-class CombinedSnapshot(private vararg val snapshots: Snapshot): Snapshot {
-    override fun rollback() = snapshots.forEach { it.rollback() }
-    override fun commit() = snapshots.forEach { it.commit() }
-}
+//class CombinedSnapshot(private vararg val snapshots: Snapshot) {
+//    fun rollback() = snapshots.forEach { it.rollback() }
+////    fun commit() = snapshots.forEach { it.commit() }
+//}
