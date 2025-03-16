@@ -9,14 +9,17 @@ import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.getFieldLookupResolveVariants
+import org.move.lang.core.resolve.getMethodResolveVariants
+import org.move.lang.core.resolve.getNamedFieldEntries
 import org.move.lang.core.resolve.ref.ResolutionContext
 import org.move.lang.core.resolve.ref.RsPathResolveResult
-import org.move.lang.core.resolve.scopeEntry.filterByName
-import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePath
+import org.move.lang.core.resolve.resolveBindingForFieldShorthand
+import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
+import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.types.infer.Expectation.NoExpectation
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
@@ -26,7 +29,7 @@ import org.move.stdext.chain
 class TypeInferenceWalker(
     val ctx: InferenceContext,
     val project: Project,
-    private val returnTy: Ty
+    private val expectedReturnTy: Ty
 ) {
     val msl: Boolean = ctx.msl
 
@@ -81,22 +84,22 @@ class TypeInferenceWalker(
         }
     }
 
-    fun inferFnBody(block: AnyBlock): Ty = block.inferBlockCoercableTo(returnTy)
+    fun inferFnBody(block: AnyBlock): Ty =
+        block.inferBlockType(Expectation.fromType(expectedReturnTy), coerce = true)
+
+    //        block.inferBlockCoercableTo(Expectation.fromType(returnTy))
     fun inferSpecBlock(block: AnyBlock): Ty =
-        mslScope { block.inferBlockType(NoExpectation) }
+        mslScope { block.inferBlockType(NoExpectation, coerce = false) }
 
-    private fun AnyBlock.inferBlockCoercableTo(expectedTy: Ty): Ty {
-        return this.inferBlockCoercableTo(Expectation.fromType(expectedTy))
-    }
+//    private fun AnyBlock.inferBlockCoercableTo(expectedTy: Ty): Ty {
+//        return this.inferBlockCoercableTo(Expectation.fromType(expectedTy))
+//    }
 
-    private fun AnyBlock.inferBlockCoercableTo(expected: Expectation): Ty {
-        return this.inferBlockType(expected, coerce = true)
-    }
+//    private fun AnyBlock.inferBlockCoercableTo(expected: Expectation): Ty {
+//        return this.inferBlockType(expected, coerce = true)
+//    }
 
-    private fun AnyBlock.inferBlockType(
-        expected: Expectation = NoExpectation,
-        coerce: Boolean = false
-    ): Ty {
+    private fun AnyBlock.inferBlockType(expected: Expectation, coerce: Boolean): Ty {
         val stmts = when (this) {
             is MvSpecCodeBlock, is MvModuleSpecBlock -> {
                 // reorder stmts, move let stmts to the top, then let post, then others
@@ -249,7 +252,7 @@ class TypeInferenceWalker(
 
             is MvDotExpr -> inferDotExprTy(expr, expected)
             is MvDerefExpr -> inferDerefExprTy(expr)
-            is MvLitExpr -> inferLitExprTy(expr, expected)
+            is MvLitExpr -> inferLitExprTy(expr)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
             is MvLambdaExpr -> inferLambdaExprTy(expr, expected)
 
@@ -281,7 +284,7 @@ class TypeInferenceWalker(
             is MvLoopExpr -> inferLoopExpr(expr)
             is MvForExpr -> inferForExpr(expr)
             is MvReturnExpr -> {
-                expr.expr?.inferTypeCoercableTo(returnTy)
+                expr.expr?.inferTypeCoercableTo(expectedReturnTy)
                 TyNever
             }
             is MvContinueExpr -> TyNever
@@ -1087,25 +1090,19 @@ class TypeInferenceWalker(
         return TyTuple(types)
     }
 
-    private fun inferLitExprTy(litExpr: MvLitExpr, expected: Expectation): Ty {
-        val litTy =
-            when {
-                litExpr.boolLiteral != null -> TyBool
-                litExpr.addressLit != null -> TyAddress
-                litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
-                    if (ctx.msl) return TyNum
-                    val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
-                    return TyInteger.fromSuffixedLiteral(literal) ?: TyInfer.IntVar()
-                }
-                litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
-                litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)
-                else -> TyUnknown
+    private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
+        return when {
+            litExpr.boolLiteral != null -> TyBool
+            litExpr.addressLit != null -> TyAddress
+            litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
+                if (ctx.msl) return TyNum
+                val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
+                return TyInteger.fromSuffixedLiteral(literal) ?: TyInfer.IntVar()
             }
-//        expected.onlyHasTy(this.ctx)
-//            ?.let {
-//                coerce(litExpr, litTy, it)
-//            }
-        return litTy
+            litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
+            litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)
+            else -> TyUnknown
+        }
     }
 
     private fun inferIfExprTy(ifExpr: MvIfExpr, expected: Expectation): Ty {
@@ -1202,7 +1199,7 @@ class TypeInferenceWalker(
         val inlineBlockExpr = loopLike.inlineBlock?.expr
         val expected = Expectation.fromType(TyUnit)
         when {
-            codeBlock != null -> codeBlock.inferBlockType(expected)
+            codeBlock != null -> codeBlock.inferBlockType(expected, coerce = false)
             inlineBlockExpr != null -> inlineBlockExpr.inferType(expected)
         }
         return TyNever
@@ -1283,7 +1280,7 @@ class TypeInferenceWalker(
 }
 
 private fun <T> TypeFoldable<T>.containsTyOfClass(classes: List<Class<*>>): Boolean =
-    visitWith(object : TypeVisitor() {
+    visitWith(object: TypeVisitor() {
         override fun visit(ty: Ty): Boolean =
             if (classes.any { it.isInstance(ty) }) true else ty.deepVisitWith(this)
     })

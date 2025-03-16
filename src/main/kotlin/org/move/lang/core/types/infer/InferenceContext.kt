@@ -176,7 +176,9 @@ class InferenceContext(
         }
 
         when (owner) {
-            is MvFunctionLike -> owner.anyBlock?.let { inference.inferFnBody(it) }
+            is MvFunctionLike -> owner.anyBlock?.let {
+                inference.inferFnBody(it)
+            }
             is MvItemSpec -> {
                 owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
             }
