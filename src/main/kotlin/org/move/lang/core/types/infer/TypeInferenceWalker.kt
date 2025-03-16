@@ -40,13 +40,6 @@ class TypeInferenceWalker(
         val res = ctx.freezeUnification { action() }
         ctx.msl = false
 
-//        val snapshot = ctx.startSnapshot()
-//        try {
-//            return action()
-//        } finally {
-//            ctx.msl = false
-//            snapshot.rollback()
-//        }
         return res
     }
 
@@ -119,7 +112,7 @@ class TypeInferenceWalker(
         val expectedTy = expected.ty(ctx)
         return if (tailExpr == null) {
             if (coerce && expectedTy != null) {
-                coerce(this.rBrace ?: this, TyUnit, expectedTy)
+                coerceTypes(this.rBrace ?: this, TyUnit, expectedTy)
             }
             TyUnit
         } else {
@@ -142,7 +135,7 @@ class TypeInferenceWalker(
                 val inferredTy =
                     if (expr != null) {
                         val inferredTy = expr.inferType(explicitTy)
-                        val coercedTy = if (explicitTy != null && coerce(expr, inferredTy, explicitTy)) {
+                        val coercedTy = if (explicitTy != null && coerceTypes(expr, inferredTy, explicitTy)) {
                             explicitTy
                         } else {
                             inferredTy
@@ -192,7 +185,7 @@ class TypeInferenceWalker(
     // returns inferred
     private fun MvExpr.inferTypeCoercableTo(expectedTy: Ty): Ty {
         val inferred = this.inferType(expectedTy)
-        coerce(this, inferred, expectedTy)
+        coerceTypes(this, inferred, expectedTy)
         return inferred
     }
 
@@ -209,7 +202,7 @@ class TypeInferenceWalker(
     // returns expected
     private fun MvExpr.inferTypeCoerceTo(expected: Ty): Ty {
         val inferred = this.inferType(expected)
-        return if (coerce(this, inferred, expected)) expected else inferred
+        return if (coerceTypes(this, inferred, expected)) expected else inferred
     }
 
     private fun inferExprTy(
@@ -435,7 +428,7 @@ class TypeInferenceWalker(
         val expectedTy = expected.ty(this.ctx)
         if (expectedTy != null) {
             // error if not TyLambda
-            coerce(lambdaExpr, lambdaTy, expectedTy)
+            coerceTypes(lambdaExpr, lambdaTy, expectedTy)
         }
 
         return lambdaTy
@@ -578,7 +571,7 @@ class TypeInferenceWalker(
                 is InferArg.ArgExpr -> {
                     val argExpr = inferArg.expr ?: continue
                     val argExprTy = argExpr.inferType(expected = expectation)
-                    coerce(argExpr, argExprTy, expectedTy)
+                    coerceTypes(argExpr, argExprTy, expectedTy)
                     // retrieve obligations
                     ctx.combineTypes(formalInputTy, expectedTy)
                 }
@@ -719,25 +712,40 @@ class TypeInferenceWalker(
     fun inferExprTypeCoercableTo(expr: MvExpr, expected: Ty): Ty = expr.inferTypeCoercableTo(expected)
 
     // combineTypes with errors
-    fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
-        coerceResolved(
-            element,
-            resolveTypeVarsIfPossible(inferred),
-            resolveTypeVarsIfPossible(expected)
-        )
-
-    private fun coerceResolved(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
-        val coerceResult = ctx.tryCoerce(inferred, expected)
-        return when (coerceResult) {
+    fun coerceTypes(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
+        val inferred = resolveTypeVarsIfPossible(inferred)
+        val expected = resolveTypeVarsIfPossible(expected)
+        if (inferred === expected) {
+            return true
+        }
+        val combineResult = ctx.combineTypes(inferred, expected)
+        return when (combineResult) {
             is RsResult.Ok -> true
-            is RsResult.Err -> when (val err = coerceResult.err) {
-                is CombineTypeError.TypeMismatch -> {
-                    checkTypeMismatch(err, element, inferred, expected)
-                    false
-                }
+            is RsResult.Err -> {
+                reportTypeMismatch(combineResult.err, element, inferred, expected)
+                false
             }
         }
+
+//        return coerceResolved(element, inferred, expected)
     }
+
+//    private fun coerceResolved(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
+//        if (inferred === expected) {
+//            return true
+//        }
+//        val combineResult = ctx.combineTypes(inferred, expected)
+////        val coerceResult = ctx.tryCoerce(inferred, expected)
+//        return when (combineResult) {
+//            is RsResult.Ok -> true
+//            is RsResult.Err -> when (val err = combineResult.err) {
+//                is CombineTypeError.TypeMismatch -> {
+//                    checkTypeMismatch(err, element, inferred, expected)
+//                    false
+//                }
+//            }
+//        }
+//    }
 
     private fun inferDotExprTy(dotExpr: MvDotExpr, expected: Expectation): Ty {
         val receiverTy = ctx.resolveTypeVarsIfPossible(dotExpr.expr.inferType())
@@ -786,7 +794,7 @@ class TypeInferenceWalker(
                 val binding = resolveBindingForFieldShorthand(field).singleItemOrNull()
                 val bindingTy = (binding as? MvPatBinding)
                     ?.let { ctx.getBindingType(it) } ?: TyUnknown
-                coerce(field, bindingTy, fieldTy)
+                coerceTypes(field, bindingTy, fieldTy)
             }
         }
         return tyAdt
@@ -811,7 +819,7 @@ class TypeInferenceWalker(
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
                 val bindingTy = field.resolveToBinding()?.let { ctx.getBindingType(it) } ?: TyUnknown
-                coerce(field, bindingTy, fieldTy)
+                coerceTypes(field, bindingTy, fieldTy)
             }
         }
         return schemaTy
@@ -858,13 +866,13 @@ class TypeInferenceWalker(
                     is TyRange -> derefTy
                     is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
                     else -> {
-                        coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
+                        coerceTypes(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
                         derefTy.item
                     }
                 }
             }
             receiverTy is TyAdt -> {
-                coerce(indexExpr.argExpr, argTy, TyAddress)
+                coerceTypes(indexExpr.argExpr, argTy, TyAddress)
                 receiverTy
             }
             else -> {
@@ -1008,7 +1016,7 @@ class TypeInferenceWalker(
                 typeErrorEncountered = true
             }
             if (!typeErrorEncountered) {
-                coerce(rightExpr, rightTy, expected = leftTy)
+                coerceTypes(rightExpr, rightTy, expected = leftTy)
             }
         }
         return TyBool
@@ -1124,9 +1132,9 @@ class TypeInferenceWalker(
             elseBlock.tailExpr?.let {
                 // special case: `if (true) &s else &mut s` shouldn't show type error
                 if (expectedElseTy is TyReference && actualElseTy is TyReference) {
-                    coerce(it, actualElseTy.referenced, expectedElseTy.referenced)
+                    coerceTypes(it, actualElseTy.referenced, expectedElseTy.referenced)
                 } else {
-                    coerce(it, actualElseTy, expectedElseTy)
+                    coerceTypes(it, actualElseTy, expectedElseTy)
                 }
             }
         }
@@ -1244,8 +1252,8 @@ class TypeInferenceWalker(
         this.extractBindings(this@TypeInferenceWalker, patTy)
     }
 
-    private fun checkTypeMismatch(
-        result: CombineTypeError.TypeMismatch,
+    private fun reportTypeMismatch(
+        result: TypeMismatchError,
         element: PsiElement,
         inferred: Ty,
         expected: Ty
@@ -1259,12 +1267,13 @@ class TypeInferenceWalker(
                 return
             }
         }
-        reportTypeMismatch(element, expected, inferred)
-    }
-
-    private fun reportTypeMismatch(element: PsiElement, expected: Ty, inferred: Ty) {
+//        reportTypeMismatch(element, expected, inferred)
         reportTypeError(TypeError.TypeMismatch(element, expected, inferred))
     }
+
+//    private fun reportTypeMismatch(element: PsiElement, expected: Ty, inferred: Ty) {
+//        reportTypeError(TypeError.TypeMismatch(element, expected, inferred))
+//    }
 
     fun reportTypeError(typeError: TypeError) = ctx.reportTypeError(typeError)
 

@@ -22,7 +22,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 is MvConst -> ty
                 else -> ty.stripReferences(defBm).first
             }
-            fcx.coerce(pathExpr, inferred, expected)
+            fcx.coerceTypes(pathExpr, inferred, expected)
             fcx.writePatTy(this, expected)
         }
         is MvPatBinding -> {
