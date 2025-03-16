@@ -14,6 +14,7 @@ import org.move.lang.core.psi.ext.receiverExpr
 import org.move.lang.core.types.infer.InferenceResult
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.infer.substituteOrUnknown
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
@@ -82,7 +83,9 @@ class AcquiresTypeContext {
                 }
             functionTypes
         } else {
-            callTy.acquiresTypes.asNamedTys()
+            functionItem.acquiredTys
+                .map { it.substitute(callTy.substitution) }
+                .asNamedTys()
         }
     }
 

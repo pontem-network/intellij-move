@@ -15,11 +15,10 @@ data class TyFunction(
     override val substitution: Substitution,
     override val paramTypes: List<Ty>,
     override val returnType: Ty,
-    val acquiresTypes: List<Ty>,
 ): TyCallable, GenericTy(
     item,
     substitution,
-    mergeFlags(paramTypes) or mergeFlags(acquiresTypes) or returnType.flags
+    mergeFlags(paramTypes) or returnType.flags
 ) {
 
     fun needsTypeAnnotation(): Boolean = this.substitution.hasTyInfer
@@ -30,7 +29,6 @@ data class TyFunction(
             substitution.foldValues(folder),
             paramTypes.map { it.foldWith(folder) },
             returnType.foldWith(folder),
-            acquiresTypes.map { it.foldWith(folder) },
         )
     }
 
@@ -38,7 +36,6 @@ data class TyFunction(
         substitution.visitValues(visitor)
                 || paramTypes.any { it.visitWith(visitor) }
                 || returnType.visitWith(visitor)
-                || acquiresTypes.any { it.visitWith(visitor) }
 
     override fun abilities(): Set<Ability> = Ability.all()
 
@@ -52,7 +49,6 @@ data class TyFunction(
                 emptySubstitution,
                 generateSequence { TyUnknown }.take(numParams).toList(),
                 TyUnknown,
-                acquiresTypes = emptyList(),
             )
         }
     }
@@ -82,16 +78,14 @@ class GetTyFunctionMsl(override val owner: MvFunctionLike): PsiCachedValueProvid
 }
 
 private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyFunction {
-    val typeParamsSubst = item.typeParamsToTypeParamsSubst
+    val typeParamsSubst = item.typeParamsSubst
     val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-    val acqTypes = item.acquiresPathTypes.map { it.loweredType(msl) }
     val retType = item.returnTypeTy(msl)
     return TyFunction(
         item,
         typeParamsSubst,
         paramTypes,
         retType,
-        acqTypes,
     )
 }
 

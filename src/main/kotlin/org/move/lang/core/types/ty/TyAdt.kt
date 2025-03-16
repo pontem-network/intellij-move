@@ -39,10 +39,10 @@ data class TyAdt(
 
     companion object {
         fun valueOf(struct: MvStructOrEnumItemElement): TyAdt {
-            val typeParameters = struct.typeParamsToTypeParamsSubst
+            val typeParamsSubst = struct.typeParamsSubst
             return TyAdt(
                 struct,
-                typeParameters,
+                typeParamsSubst,
                 struct.tyTypeParams
             )
         }

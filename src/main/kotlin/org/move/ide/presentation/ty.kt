@@ -106,9 +106,9 @@ private fun render(
         is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
             var s = if (ty.returnType is TyUnit) params else "$params -> ${r(ty.returnType)}"
-            if (ty.acquiresTypes.isNotEmpty()) {
-                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
-            }
+//            if (ty.acquiresTypes.isNotEmpty()) {
+//                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
+//            }
             s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)

@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.functionTy
 
@@ -65,7 +66,7 @@ fun getLookupElementProperties(
         val declaredTy =
             when (element) {
                 is MvFunctionLike -> element.functionTy(msl).returnType
-                is MvStruct -> element.declaredType(msl)
+                is MvStruct -> TyAdt.valueOf(element)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
                 is MvPatBinding -> {
                     val inference = element.inference(msl)

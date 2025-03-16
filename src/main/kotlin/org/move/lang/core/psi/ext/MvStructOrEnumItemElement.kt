@@ -7,7 +7,6 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.ty.Ability
 
 interface MvStructOrEnumItemElement: MvItemElement,
-                                     MvTypeDeclarationElement,
                                      MvGenericDeclaration {
 
     val abilitiesList: MvAbilitiesList?

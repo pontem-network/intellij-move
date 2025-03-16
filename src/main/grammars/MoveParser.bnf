@@ -660,7 +660,6 @@ private TypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER)
 fake TypeParameter ::= phantom? IDENTIFIER? TypeParamBound? {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.ext.MvTypeDeclarationElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvTypeParameterMixin"
@@ -1420,7 +1419,6 @@ Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
         "org.move.lang.core.psi.ext.MvItemElement"
-        "org.move.lang.core.psi.ext.MvTypeDeclarationElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]

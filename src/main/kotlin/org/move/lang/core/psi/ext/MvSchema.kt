@@ -4,11 +4,8 @@ import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.impl.MvNamedElementImpl
-import org.move.lang.core.types.MvPsiTypeImplUtil
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
 val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
@@ -44,6 +41,4 @@ abstract class MvSchemaMixin(node: ASTNode): MvNameIdentifierOwnerImpl(node),
                                              MvSchema {
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
-
-    override fun declaredType(msl: Boolean): Ty = MvPsiTypeImplUtil.declaredType(this)
 }

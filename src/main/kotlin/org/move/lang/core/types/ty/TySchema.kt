@@ -1,6 +1,8 @@
 package org.move.lang.core.types.ty
 
 import org.move.lang.core.psi.MvSchema
+import org.move.lang.core.psi.tyTypeParams
+import org.move.lang.core.psi.typeParamsSubst
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.mergeFlags
@@ -19,5 +21,16 @@ data class TySchema(
             substitution.foldValues(folder),
             typeArguments.map { it.foldWith(folder) }
         )
+    }
+
+    companion object {
+        fun valueOf(schema: MvSchema): TySchema {
+            val typeParameters = schema.typeParamsSubst
+            return TySchema(
+                schema,
+                typeParameters,
+                schema.tyTypeParams
+            )
+        }
     }
 }

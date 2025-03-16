@@ -16,7 +16,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
         is MvPatConst -> {
             // fills resolved paths
             val inferred = fcx.inferExprType(pathExpr)
-            val item = fcx.getResolvedPath(pathExpr.path).singleOrNull { it.isVisible }?.element
+            val item = fcx.ctx.resolvedPaths[pathExpr.path]?.singleOrNull { it.isVisible }?.element
             val expected = when (item) {
                 // copied from intellij-rust, don't know what it's about
                 is MvConst -> ty

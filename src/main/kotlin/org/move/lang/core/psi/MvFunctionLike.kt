@@ -35,6 +35,10 @@ val MvFunctionLike.acquiresPathTypes: List<MvPathType>
             else -> emptyList()
         }
 
+val MvFunctionLike.acquiredTys: List<Ty> get() {
+    return this.acquiresPathTypes.map { it.loweredType(false) }
+}
+
 val MvFunctionLike.anyBlock: AnyBlock?
     get() = when (this) {
         is MvFunction -> this.codeBlock
