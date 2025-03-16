@@ -467,7 +467,11 @@ class InferenceContext(
     }
 
     fun <T: TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
-        return if (ty.hasTyInfer) ty.deepFoldTyInferWith(this::resolveTyInfer) else ty
+        return if (ty.hasTyInfer) {
+            ty.deepFoldTyInferWith { this.resolveTyInfer(it) }
+        } else {
+            ty
+        }
     }
 
     /// every TyVar unresolved at the end of this function converted into TyUnknown
