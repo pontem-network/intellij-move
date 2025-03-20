@@ -12,6 +12,7 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.functionTy
+import org.move.lang.core.types.ty.hasTyInfer
 
 interface MvFunctionLike: MvNameIdentifierOwner,
                           MvGenericDeclaration,
@@ -81,5 +82,5 @@ fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: Mv
     }
     val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction
 
-    return resolvedCallTy.needsTypeAnnotation()
+    return resolvedCallTy.substitution.hasTyInfer
 }

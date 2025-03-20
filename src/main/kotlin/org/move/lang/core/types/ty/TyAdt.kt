@@ -7,10 +7,10 @@ import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.types.infer.*
 
 data class TyAdt(
-    override val item: MvStructOrEnumItemElement,
-    override val substitution: Substitution,
+    val item: MvStructOrEnumItemElement,
+    val substitution: Substitution,
     val typeArguments: List<Ty>,
-): GenericTy(item, substitution, mergeFlags(typeArguments) or HAS_TY_ADT_MASK) {
+): Ty(mergeFlags(substitution.valueTys) or mergeFlags(typeArguments) or HAS_TY_ADT_MASK) {
 
     override fun abilities(): Set<Ability> = this.item.abilities
 

@@ -559,7 +559,7 @@ class TypePsiWalker(
         }
     }
 
-    fun <T: GenericTy> instantiatePath(
+    fun <T: Ty> instantiatePath(
         methodOrPath: MvMethodOrPath,
         genericItem: MvGenericDeclaration
     ): T? {

@@ -8,10 +8,10 @@ import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.mergeFlags
 
 data class TySchema(
-    override val item: MvSchema,
-    override val substitution: Substitution,
+    val item: MvSchema,
+    val substitution: Substitution,
     val typeArguments: List<Ty>
-) : GenericTy(item, substitution, mergeFlags(typeArguments)) {
+) : Ty(mergeFlags(substitution.valueTys) or mergeFlags(typeArguments)) {
 
     override fun abilities(): Set<Ability> = Ability.all()
 

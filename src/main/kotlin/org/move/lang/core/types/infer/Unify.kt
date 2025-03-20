@@ -38,8 +38,7 @@ class UnificationTable<Var: TyInfer> {
     private data class Root<TyVar: TyInfer>(
         val tyVar: TyVar,
         val varValue: VarValue
-    ) {
-    }
+    )
 
 //    @Suppress("UNCHECKED_CAST")
 //    private data class Root<out TyVarNode: Node>(
@@ -90,7 +89,6 @@ class UnificationTable<Var: TyInfer> {
         if (leftRoot.tyVar == rightRoot.tyVar) {
             // already unified
             return
-//            return leftRoot.tyVar
         }
 
         logVarState(leftRoot.tyVar)
@@ -134,6 +132,7 @@ class UnificationTable<Var: TyInfer> {
             }
             return
         }
+
         val rootEntry = resolveToRoot(tyVar)
         logVarState(rootEntry.tyVar)
 

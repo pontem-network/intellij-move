@@ -18,6 +18,7 @@ import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.hasTyInfer
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 
@@ -222,7 +223,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     }
                     val callTy = inference.getCallableType(callable) as? TyFunction ?: return
                     // if no type args are passed, check whether all type params are inferrable
-                    if (callTy.needsTypeAnnotation()) {
+                    if (callTy.substitution.hasTyInfer) {
                         val annotatedItem =
                             if (methodOrPath is MvMethodCall) methodOrPath.identifier else methodOrPath
                         Diagnostic

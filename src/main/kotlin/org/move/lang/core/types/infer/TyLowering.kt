@@ -84,7 +84,6 @@ object TyLowering {
         if (namedItem is MvGenericDeclaration) {
             val typeArgsSubst = methodOrPath.typeArgsSubst(namedItem, msl)
             return pathTy.substitute(typeArgsSubst)
-//            return (pathTy as GenericTy).applyExplicitTypeArgs(methodOrPath, namedItem, msl)
         }
         return pathTy
     }

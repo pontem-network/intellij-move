@@ -11,17 +11,13 @@ import org.move.utils.getResults
 import org.move.utils.moveStructureCacheResult
 
 data class TyFunction(
-    override val item: MvGenericDeclaration,
-    override val substitution: Substitution,
+    val item: MvGenericDeclaration,
+    val substitution: Substitution,
     override val paramTypes: List<Ty>,
     override val returnType: Ty,
-): TyCallable, GenericTy(
-    item,
-    substitution,
-    mergeFlags(paramTypes) or returnType.flags
+): TyCallable, Ty(
+    mergeFlags(substitution.valueTys) or mergeFlags(paramTypes) or returnType.flags
 ) {
-
-    fun needsTypeAnnotation(): Boolean = this.substitution.hasTyInfer
 
     override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyFunction(

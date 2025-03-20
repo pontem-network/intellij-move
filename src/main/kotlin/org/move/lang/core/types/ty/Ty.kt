@@ -82,8 +82,8 @@ fun Ty.refineForSpecs(msl: Boolean): Ty {
     return ty
 }
 
-abstract class GenericTy(
-    open val item: MvGenericDeclaration,
-    open val substitution: Substitution,
-    flags: TypeFlags,
-) : Ty(mergeFlags(substitution.valueTys) or flags)
+//abstract class GenericTy(
+////    open val item: MvGenericDeclaration,
+////    open val substitution: Substitution,
+//    flags: TypeFlags,
+//) : Ty(/*mergeFlags(substitution.valueTys) or */flags)

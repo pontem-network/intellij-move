@@ -5,7 +5,6 @@ import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.infer.mergeFlags
 
-// TODO: inherit from GenericTy ?
 interface TyCallable {
     val paramTypes: List<Ty>
     val returnType: Ty
