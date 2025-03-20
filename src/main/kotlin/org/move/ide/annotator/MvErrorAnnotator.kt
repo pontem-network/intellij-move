@@ -14,6 +14,7 @@ import org.move.lang.core.types.fqName
 import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.hasTyInfer
@@ -219,7 +220,8 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     if (callable.descendantHasTypeError(inference.typeErrors)) {
                         return
                     }
-                    val callTyKind = inference.getCallableType(callable)?.genericKind() ?: return
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
+                    val callTyKind = callTy.genericKind() ?: return
                     // if no type args are passed, check whether all type params are inferrable
                     if (callTyKind.substitution.hasTyInfer) {
                         val annotatedItem =
@@ -310,6 +312,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val realCount = argumentExprs.size
 
         if (callable !is MvCallable) return
+
         val msl = callable.isMsl()
         val inference = callable.inference(msl) ?: return
 
@@ -317,13 +320,13 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val expectedRange =
             when (callable) {
                 is MvCallExpr -> {
-                    val callTy = inference.getCallableType(callable) ?: return
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
                     val count = callTy.paramTypes.size
                     IntRange(count, count)
                 }
                 is MvMethodCall -> {
                     // 1 for self
-                    val callTy = inference.getCallableType(callable) ?: return
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
                     val count = callTy.paramTypes.size - 1
                     IntRange(count, count)
                 }

@@ -112,7 +112,7 @@ private fun render(
                         r(ty.returnType)
                     "$params -> $retType"
                 }
-                is CallKind.GenericItem -> {
+                is CallKind.Function -> {
                     val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
                     if (ty.returnType is TyUnit) {
                         params

@@ -75,7 +75,7 @@ data class InferenceResult(
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
     private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
-    private val callableTypes2: Map<MvCallable, TyCallable>,
+    private val callableTypes: Map<MvCallable, Ty>,
 
 //    val lambdaExprTypes: Map<MvLambdaExpr, Ty>,
     val typeErrors: List<TypeError>
@@ -90,7 +90,7 @@ data class InferenceResult(
     fun getExprTypeOrNull(expr: MvExpr): Ty? = exprTypes[expr]
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
-    fun getCallableType(callable: MvCallable): TyCallable? = callableTypes2[callable]
+    fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
 
     fun getResolvedPath(path: MvPath): List<RsPathResolveResult>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
@@ -125,7 +125,7 @@ class InferenceContext(
     private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
 
-    val callableTypes = mutableMapOf<MvCallable, TyCallable>()
+    val callableTypes = mutableMapOf<MvCallable, Ty>()
 
     val lambdaExprTypes = mutableMapOf<MvLambdaExpr, TyCallable>()
     val lambdaExprs = mutableListOf<MvLambdaExpr>()
@@ -191,7 +191,6 @@ class InferenceContext(
             resolveAllTypeVarsIfPossible()
 
             val retTy = lambdaExprTypes[lambdaExpr]?.returnType
-//            val retTy = (lambdaExprTypes[lambdaExpr] as? TyLambda)?.returnType
             lambdaExpr.expr?.let {
                 if (retTy != null) {
                     inference.inferExprTypeCoercableTo(it, retTy)
@@ -385,7 +384,6 @@ class InferenceContext(
             ty1 is TyRange && ty2 is TyRange -> Ok(Unit)
 
             ty1 is TyReference && ty2 is TyReference -> combineTyRefs(ty1, ty2)
-//            ty1 is TyLambda && ty2 is TyLambda -> combineTyLambdas(ty1, ty2)
             ty1 is TyCallable && ty2 is TyCallable -> combineTyCallables(ty1, ty2)
 
             ty1 is TyAdt && ty2 is TyAdt -> combineTyAdts(ty1, ty2)

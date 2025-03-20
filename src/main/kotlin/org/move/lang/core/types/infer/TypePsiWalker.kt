@@ -328,7 +328,7 @@ class TypePsiWalker(
                 baseTy
             }
             is MvModule -> TyUnknown
-            // todo: when function values are landed, this thing should return TyFunction
+            // todo: when function values are landed, this thing should return TyCallable
             is MvFunctionLike -> TyUnknown
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
@@ -404,14 +404,14 @@ class TypePsiWalker(
         }
 
         val lambdaTy = TyCallable(paramTys, TyInfer.TyVar(), CallKind.Lambda)
-//        val lambdaTy = TyLambda(paramTys, TyInfer.TyVar())
+//        val lambdaTy = TyCallable(paramTys, TyInfer.TyVar())
 
         this.ctx.lambdaExprs.add(lambdaExpr)
         this.ctx.lambdaExprTypes[lambdaExpr] = lambdaTy
 
         val expectedTy = expected.ty(this.ctx)
         if (expectedTy != null) {
-            // error if not TyLambda
+            // error if not TyCallable
             coerceTypes(lambdaExpr, lambdaTy, expectedTy)
         }
 
@@ -424,12 +424,11 @@ class TypePsiWalker(
         val callableTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    instantiatePath<TyCallable>(path, namedItem)
-                        ?: return TyUnknown
+                    instantiatePath<TyCallable>(path, namedItem) ?: return TyUnknown
                 }
                 is MvFieldsOwner -> {
                     val tupleFields = namedItem.tupleFields ?: return TyUnknown
-                    instantiateTupleFuncTy2(tupleFields, path, namedItem) ?: return TyUnknown
+                    instantiateTupleFuncTy(tupleFields, path, namedItem) ?: return TyUnknown
                 }
                 is MvPatBinding -> {
                     ctx.getBindingType(namedItem) as? TyCallable
@@ -437,7 +436,7 @@ class TypePsiWalker(
                 }
                 else -> TyCallable.fake(
                     callExpr.valueArguments.size,
-                    CallKind.GenericItem.fake(callExpr.project)
+                    CallKind.Function.fake(callExpr.project)
                 )
             }
 
@@ -511,9 +510,8 @@ class TypePsiWalker(
                     // 1 for `self`
                     TyCallable.fake(
                         1 + methodCall.valueArguments.size,
-                        CallKind.GenericItem.fake(methodCall.project)
+                        CallKind.Function.fake(methodCall.project)
                     )
-//                    TyFunction.unknownTyFunction(methodCall.project, 1 + methodCall.valueArguments.size)
                 }
             }
         val methodTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
@@ -585,7 +583,7 @@ class TypePsiWalker(
         return pathTy.substitute(typeParamToTyVarSubst) as T
     }
 
-    private fun instantiateTupleFuncTy2(
+    private fun instantiateTupleFuncTy(
         tupleFields: MvTupleFields,
         path: MvPath,
         positionalFieldsOwner: MvFieldsOwner
@@ -606,50 +604,14 @@ class TypePsiWalker(
             TyCallable(
                 parameterTypes,
                 returnType,
-                CallKind.GenericItem(genericItem, typeParamsSubst)
+                CallKind.Function(genericItem, typeParamsSubst)
             )
-//        val baseTupleTy = TyFunction(
-//            genericItem,
-//            typeParamsSubst,
-//            parameterTypes,
-//            returnType,
-//        )
         val typeArgsSubst = genericPath.typeArgsSubst(genericItem, msl)
         val tupleTy = baseTupleTy.substitute(typeArgsSubst)
 
         val tyVarsSubst = genericItem.tyVarsSubst
         return tupleTy.substitute(tyVarsSubst) as TyCallable
     }
-
-//    private fun instantiateTupleFuncTy(
-//        tupleFields: MvTupleFields,
-//        path: MvPath,
-//        positionalFieldsOwner: MvFieldsOwner
-//    ): TyFunction? {
-//        val (genericItem, genericPath) = when (positionalFieldsOwner) {
-//            is MvStruct -> positionalFieldsOwner to path
-//            is MvEnumVariant -> {
-//                val qualifierPath = path.qualifier ?: return null
-//                positionalFieldsOwner.enumItem to qualifierPath
-//            }
-//            else -> error("exhaustive")
-//        }
-//        val parameterTypes = tupleFields.tupleFieldDeclList.map { it.type.loweredType(msl) }
-//        val returnType = TyAdt.valueOf(genericItem)
-//
-//        val typeParamsSubst = genericItem.typeParamsSubst
-//        val baseTupleTy = TyFunction(
-//            genericItem,
-//            typeParamsSubst,
-//            parameterTypes,
-//            returnType,
-//        )
-//        val typeArgsSubst = genericPath.typeArgsSubst(genericItem, msl)
-//        val tupleTy = baseTupleTy.substitute(typeArgsSubst)
-//
-//        val tyVarsSubst = genericItem.tyVarsSubst
-//        return tupleTy.substitute(tyVarsSubst) as TyFunction
-//    }
 
     fun inferMacroCallExprTy(macroExpr: MvAssertMacroExpr): Ty {
         val ident = macroExpr.identifier

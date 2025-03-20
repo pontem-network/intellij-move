@@ -13,7 +13,7 @@ import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.core.types.ty.callableTy
+import org.move.lang.core.types.ty.functionTy
 import org.move.utils.parametersSignatureText
 import org.move.utils.returnTypeLookupText
 import org.move.utils.signatureText
@@ -45,7 +45,7 @@ fun MvNamedElement.getLookupElementBuilder(
     val msl = completionCtx.msl
     return when (this) {
         is MvFunction -> {
-            val functionTy = this.callableTy(msl).substitute(subst) as TyCallable
+            val functionTy = this.functionTy(msl).substitute(subst) as TyCallable
             if (completionCtx.contextElement is MvMethodOrField) {
                 base
                     .withTailText(functionTy.parametersSignatureText())
@@ -57,7 +57,7 @@ fun MvNamedElement.getLookupElementBuilder(
             }
         }
         is MvSpecFunction -> {
-            val functionTy = this.callableTy(msl).substitute(subst) as TyCallable
+            val functionTy = this.functionTy(msl).substitute(subst) as TyCallable
             base
                 .withTailText(functionTy.parametersSignatureText())
                 .withTypeText(functionTy.returnTypeLookupText())

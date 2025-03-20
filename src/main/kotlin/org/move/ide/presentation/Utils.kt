@@ -9,7 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fqName
-import org.move.lang.core.types.ty.callableTy
+import org.move.lang.core.types.ty.functionTy
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.rootPath
 import org.move.utils.signatureText
@@ -37,11 +37,11 @@ fun getPresentationForStructure(psi: PsiElement): ItemPresentation {
         append(presentableName(psi))
         when (psi) {
             is MvFunction -> {
-                val functionTy = psi.callableTy(false)
+                val functionTy = psi.functionTy(false)
                 append(functionTy.signatureText())
             }
             is MvSpecFunction, is MvSpecInlineFunction -> {
-                val functionTy = psi.callableTy(true)
+                val functionTy = psi.functionTy(true)
                 append(functionTy.signatureText())
             }
             is MvConst -> {

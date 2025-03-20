@@ -8,10 +8,11 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.CallKind
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.core.types.ty.callableTy
+import org.move.lang.core.types.ty.functionTy
 import org.move.lang.core.types.ty.hasTyInfer
 
 interface MvFunctionLike: MvNameIdentifierOwner,
@@ -71,7 +72,8 @@ fun MvFunctionParameter.loweredTy(msl: Boolean): Ty? = this.type?.loweredType(ms
 
 fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: MvCompletionContext?): Boolean {
     val msl = this.isMslOnlyItem
-    val callTy = this.callableTy(msl).substitute(this.tyVarsSubst) as TyCallable
+    @Suppress("UNCHECKED_CAST")
+    val callTy = this.functionTy(msl).substitute(this.tyVarsSubst) as TyCallable
 
     val inferenceCtx = InferenceContext(msl)
     callTy.paramTypes.forEach {
@@ -82,8 +84,9 @@ fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: Mv
     if (expectedTy != null && expectedTy !is TyUnknown) {
         inferenceCtx.combineTypes(callTy.returnType, expectedTy)
     }
-    val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyCallable
-    val itemKind = resolvedCallTy.genericKind() ?: return false
 
-    return itemKind.substitution.hasTyInfer
+    val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyCallable
+    val callKind = resolvedCallTy.genericKind() as CallKind.Function
+
+    return callKind.substitution.hasTyInfer
 }
