@@ -18,7 +18,7 @@ import org.move.lang.core.types.ty.VarValue
 import org.move.lang.toNioPathOrNull
 
 /**
- * [UnificationTable] is map from [TyVar] to [Ty] with additional ability
+ * [UnificationTable] is map from [Var] to [Ty] with additional ability
  * to redirect certain K's to a single V en-masse with the help of
  * disjoint set union.
  *
@@ -32,7 +32,7 @@ import org.move.lang.toNioPathOrNull
  * <http://en.wikipedia.org/wiki/Disjoint-set_data_structure>.
  */
 @Suppress("UNCHECKED_CAST")
-class UnificationTable<TyVar: TyInfer> {
+class UnificationTable<Var: TyInfer> {
     private val undoLog: MutableList<UndoLogEntry> = mutableListOf()
 
     private data class Root<TyVar: TyInfer>(
@@ -78,18 +78,19 @@ class UnificationTable<TyVar: TyInfer> {
 //    }
 
     // root ty var is the one which has `?T => VarValue`
-    fun resolveToRootTyVar(key: TyVar): TyVar = resolveToRoot(key).tyVar
+    fun resolveToRootTyVar(key: Var): Var = resolveToRoot(key).tyVar
 
-    fun resolveTyInfer(key: TyVar): Ty? = resolveToRoot(key).varValue.ty
+    fun resolveVar(key: Var): Ty? = resolveToRoot(key).varValue.ty
 
-    fun unifyVarVar(leftVar: TyVar, rightVar: TyVar): TyVar {
+    fun unifyVarVar(leftVar: Var, rightVar: Var) {
 
         val leftRoot = this.resolveToRoot(leftVar)
         val rightRoot = this.resolveToRoot(rightVar)
 
         if (leftRoot.tyVar == rightRoot.tyVar) {
             // already unified
-            return leftRoot.tyVar
+            return
+//            return leftRoot.tyVar
         }
 
         logVarState(leftRoot.tyVar)
@@ -111,17 +112,11 @@ class UnificationTable<TyVar: TyInfer> {
         }
 
         // redirect roots
-        return redirectRoots(leftRoot, rightRoot, newValueTy)
-//        val leftTyVar = leftRoot.tyVar
-//        val rightTyVar = rightRoot.tyVar
-//        leftTyVar.parent = rightTyVar
-//        rightTyVar.parent = VarValue(newValueTy)
-
-//        return rightRoot.tyVar
+        redirectRoots(leftRoot, rightRoot, newValueTy)
     }
 
-    fun unifyVarValue(tyVar: TyVar, ty: Ty) {
-        val oldTy = this.resolveTyInfer(tyVar)
+    fun unifyVarValue(tyVar: Var, ty: Ty) {
+        val oldTy = this.resolveVar(tyVar)
         if (oldTy != null) {
             // if already unified, value must be the same
             if (oldTy != ty) {
@@ -137,16 +132,16 @@ class UnificationTable<TyVar: TyInfer> {
                     else -> unificationError("Unification error: unifying $tyVar -> $ty")
                 }
             }
+            return
         }
         val rootEntry = resolveToRoot(tyVar)
         logVarState(rootEntry.tyVar)
 
         // set value
         setRootValueTy(rootEntry, ty)
-//        rootEntry.tyVar.parent = VarValue(value)
     }
 
-    private fun resolveToRoot(key: TyVar): Root<TyVar> {
+    private fun resolveToRoot(key: Var): Root<Var> {
         val keyParent = key.parent
         return when (keyParent) {
             is TyInfer -> {
@@ -156,26 +151,25 @@ class UnificationTable<TyVar: TyInfer> {
 //                    logTyVarParent(key)
 //                    key.parent = root.key // Path compression
 //                }
-                resolveToRoot(keyParent as TyVar)
+                resolveToRoot(keyParent as Var)
             }
             is VarValue -> Root(key, keyParent)
         }
     }
 
-    private fun setRootValueTy(rootEntry: Root<TyVar>, valueTy: Ty?) {
+    private fun setRootValueTy(rootEntry: Root<Var>, valueTy: Ty?) {
         rootEntry.tyVar.parent = VarValue(valueTy)
     }
 
-    private fun redirectRoots(leftRoot: Root<TyVar>, rightRoot: Root<TyVar>, valueTy: Ty?): TyVar {
+    private fun redirectRoots(leftRoot: Root<Var>, rightRoot: Root<Var>, valueTy: Ty?) {
         // redirect roots
         val leftTyVar = leftRoot.tyVar
         val rightTyVar = rightRoot.tyVar
         leftTyVar.parent = rightTyVar
         rightTyVar.parent = VarValue(valueTy)
-        return rightTyVar
     }
 
-    private fun logVarState(tyVar: TyVar) {
+    private fun logVarState(tyVar: Var) {
         if (isSnapshot()) {
             undoLog.add(UndoLogEntry.SetOldParent(tyVar, tyVar.parent))
         }

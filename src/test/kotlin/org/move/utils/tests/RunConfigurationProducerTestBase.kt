@@ -69,7 +69,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
         }
         val transformedXml = root.toXmlString().replace(testId, "unitTest_ID")
 
-        val testDataPath = "${TestCase.testResourcesPath}/org/move/cli/producers.fixtures/$testDir"
+        val testDataPath = "${TestCase.TEST_RESOURCES}/org/move/cli/producers.fixtures/$testDir"
         assertSameLinesWithFile(
             "$testDataPath/${getTestName(true)}.xml", transformedXml
         )

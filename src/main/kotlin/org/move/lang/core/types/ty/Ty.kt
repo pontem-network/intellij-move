@@ -57,9 +57,9 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
     /**
      * Bindings between formal type parameters and actual type arguments.
      */
-    open val typeParameterValues: Substitution get() = emptySubstitution
+    open val typeParamsToTypeArgsSubst: Substitution get() = emptySubstitution
 
-    fun derefIfNeeded(): Ty = if (this is TyReference) this.referenced.derefIfNeeded() else this
+    fun unwrapRefs(): Ty = if (this is TyReference) this.referenced.unwrapRefs() else this
 
     /**
      * User visible string representation of a type
@@ -74,7 +74,7 @@ fun Ty.refineForSpecs(msl: Boolean): Ty {
     if (!msl) return ty
 
     if (this is TyReference) {
-        ty = this.innermostTy()
+        ty = this.unwrapRefs()
     }
     if (ty is TyInteger || ty is TyInfer.IntVar) {
         ty = TyNum
@@ -86,4 +86,4 @@ abstract class GenericTy(
     open val item: MvGenericDeclaration,
     open val substitution: Substitution,
     flags: TypeFlags,
-) : Ty(mergeFlags(substitution.types) or flags)
+) : Ty(mergeFlags(substitution.valueTys) or flags)

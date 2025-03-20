@@ -85,13 +85,15 @@ interface TypeFoldable<out Self> {
 }
 
 /** Deeply replace any [TyInfer] with the function [folder] */
-fun <T> TypeFoldable<T>.deepFoldTyInferWith(folder: (TyInfer) -> Ty): T =
-    foldWith(object : TypeFolder() {
+fun <T> TypeFoldable<T>.foldTyInferWith(folder: (TyInfer) -> Ty): T {
+    val folder = object : TypeFolder() {
         override fun fold(ty: Ty): Ty {
             val foldedTy = if (ty is TyInfer) folder(ty) else ty
             return foldedTy.deepFoldWith(this)
         }
-    })
+    }
+    return foldWith(folder)
+}
 
 /** Deeply replace any [TyTypeParameter] with the function [folder] */
 fun <T> TypeFoldable<T>.deepFoldTyTypeParameterWith(folder: (TyTypeParameter) -> Ty): T =

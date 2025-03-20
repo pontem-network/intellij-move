@@ -2,17 +2,17 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.ext.RsBindingModeKind.BindByReference
-import org.move.lang.core.psi.ext.RsBindingModeKind.BindByValue
 import org.move.lang.core.resolve.ref.resolvePatBindingRaw
 import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
+import org.move.lang.core.types.infer.RsBindingModeKind.BindByReference
+import org.move.lang.core.types.infer.RsBindingModeKind.BindByValue
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
-fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
+fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
     val msl = this.isMsl()
     when (this) {
-        is MvPatWild -> fcx.writePatTy(this, ty)
+        is MvPatWild -> fcx.ctx.writePatTy(this, ty)
         is MvPatConst -> {
             // fills resolved paths
             val inferred = fcx.inferExprType(pathExpr)
@@ -62,12 +62,12 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 val fieldType = namedField
                     ?.type
                     ?.loweredType(fcx.msl)
-                    ?.substituteOrUnknown(ty.typeParameterValues)
+                    ?.substituteOrUnknown(ty.typeParamsToTypeArgsSubst)
                     ?: TyUnknown
 
                 when (kind) {
                     is PatFieldKind.Full -> {
-                        kind.pat.extractBindings(fcx, fieldType, patBm)
+                        kind.pat.collectBindings(fcx, fieldType, patBm)
                         fcx.ctx.writeFieldPatTy(fieldPat, fieldType)
                     }
                     is PatFieldKind.Shorthand -> {
@@ -84,7 +84,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
             if (item == null) {
-                patList.forEach { it.extractBindings(fcx, TyUnknown) }
+                patList.forEach { it.collectBindings(fcx, TyUnknown) }
                 return
             }
             val tupleFields = item.positionalFields
@@ -93,7 +93,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
                     .getOrNull(indx)
                     ?.type
                     ?.loweredType(fcx.msl)
-                    ?.substituteOrUnknown(ty.typeParameterValues)
+                    ?.substituteOrUnknown(ty.typeParamsToTypeArgsSubst)
                     ?: TyUnknown
 
             }
@@ -102,7 +102,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
             if (patList.size == 1 && ty !is TyTuple) {
                 // let (a) = 1;
                 // let (a,) = 1;
-                patList.single().extractBindings(fcx, ty)
+                patList.single().collectBindings(fcx, ty)
                 return
             }
 
@@ -118,7 +118,7 @@ fun MvPat.extractBindings(fcx: TypeInferenceWalker, ty: Ty, defBm: RsBindingMode
 }
 
 private fun inferTupleFieldsTypes(
-    fcx: TypeInferenceWalker,
+    fcx: TypePsiWalker,
     patList: List<MvPat>,
     bm: RsBindingModeKind,
     tupleSize: Int,
@@ -143,12 +143,13 @@ private fun inferTupleFieldsTypes(
             idx > lastPatRestIndex -> type(tupleSize - (patList.size - idx))
             else -> TyUnknown
         }
-        p.extractBindings(fcx, fieldType, bm)
+        p.collectBindings(fcx, fieldType, bm)
     }
 }
 
-private fun Ty.applyBm(defBm: RsBindingModeKind, msl: Boolean): Ty =
-    if (defBm is BindByReference) TyReference(this, defBm.mutability, msl) else this
+private fun Ty.applyBm(defBm: RsBindingModeKind, msl: Boolean): Ty {
+    return if (defBm is BindByReference) TyReference(this, defBm.mutability, msl) else this
+}
 
 private fun Ty.stripReferences(defBm: RsBindingModeKind): Pair<Ty, RsBindingModeKind> {
     var bm = defBm
@@ -171,4 +172,9 @@ fun MvPat.anonymousTyVar(): Ty {
         is MvPatTuple -> TyTuple(this.patList.map { TyInfer.TyVar() })
         else -> TyUnknown
     }
+}
+
+sealed class RsBindingModeKind {
+    data object BindByValue: RsBindingModeKind()
+    class BindByReference(val mutability: Mutability): RsBindingModeKind()
 }

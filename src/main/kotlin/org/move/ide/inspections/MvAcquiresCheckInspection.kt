@@ -47,7 +47,8 @@ fun getFunctionAcquiresTypes(owner: MvFunction): List<NamedTy> {
         }
         else -> {
             // parse from MvAcquiresType
-            owner.acquiresPathTypes.map { it.loweredType(false) }.asNamedTys()
+            owner.acquiredTys.asNamedTys()
+//            owner.acquiresPathTypes.map { it.loweredType(false) }.asNamedTys()
         }
     }
     return tys
@@ -76,16 +77,15 @@ class AcquiresTypeContext {
         val callTy = inference.getCallableType(callable) as? TyFunction ?: return emptyList()
         val functionItem = callTy.item as? MvFunction ?: return emptyList()
         return if (functionItem.isInline) {
-            val functionTypes = getFunctionAcquiresTypes(functionItem)
-            functionTypes
-                .forEach {
-                    it.ty = it.ty.substituteOrUnknown(callTy.substitution)
+            val inlineFunctionTys = getFunctionAcquiresTypes(functionItem)
+            inlineFunctionTys
+                .map {
+                    NamedTy(it.ty.substituteOrUnknown(callTy.substitution))
                 }
-            functionTypes
         } else {
             functionItem.acquiredTys
-                .map { it.substitute(callTy.substitution) }
                 .asNamedTys()
+                .map { NamedTy(it.ty.substitute(callTy.substitution)) }
         }
     }
 

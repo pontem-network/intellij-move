@@ -18,7 +18,7 @@ data class TySchema(
     override fun deepFoldWith(folder: TypeFolder): Ty {
         return TySchema(
             item,
-            substitution.foldValues(folder),
+            substitution.foldWith(folder),
             typeArguments.map { it.foldWith(folder) }
         )
     }

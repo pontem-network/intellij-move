@@ -26,14 +26,14 @@ data class TyFunction(
     override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,
-            substitution.foldValues(folder),
+            substitution.foldWith(folder),
             paramTypes.map { it.foldWith(folder) },
             returnType.foldWith(folder),
         )
     }
 
     override fun deepVisitWith(visitor: TypeVisitor): Boolean =
-        substitution.visitValues(visitor)
+        substitution.visitWith(visitor)
                 || paramTypes.any { it.visitWith(visitor) }
                 || returnType.visitWith(visitor)
 

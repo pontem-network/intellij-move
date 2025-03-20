@@ -111,7 +111,7 @@ fun List<ScopeEntry>.filterEntriesByExpectedType(expectedType: Ty?): List<ScopeE
         val entryElement = it.element()
         if (entryElement !is MvEnumVariant) return@filter true
 
-        val expectedEnumItem = (expectedType?.derefIfNeeded() as? TyAdt)?.item as? MvEnum
+        val expectedEnumItem = (expectedType?.unwrapRefs() as? TyAdt)?.item as? MvEnum
         // if expected type is unknown, or not a enum, then we cannot infer enum variants
             ?: return@filter false
 

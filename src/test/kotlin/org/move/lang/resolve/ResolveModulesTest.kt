@@ -4,7 +4,6 @@ import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveModulesTest : ResolveTestCase() {
-    // *
     fun `test use module Self`() = checkByCode(
         """
     module 0x1::transaction {
@@ -17,7 +16,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test use module Self in use group`() = checkByCode(
         """
     module 0x1::transaction {
@@ -30,7 +28,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test import module itself with Self import`() = checkByCode(
         """
         module 0x1::m {
@@ -47,27 +44,22 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test import module itself with Self group import`() = checkByCode(
         """
-    address 0x1 {
-        module Transaction {
-             //X
+        module 0x1::m {
+                  //X
             fun create() {}
-        }
-        
-        module M {
-            use 0x1::Transaction::{Self};
+        }         
+        module 0x1::main {
+            use 0x1::m::{Self};
             fun main() {
-                let a = Transaction::create();
+                let a = m::create();
                       //^
             }
         }
-    }        
     """
     )
 
-    // *
     fun `test resolve Self to current module`() = checkByCode(
         """
         module 0x1::transaction {
@@ -81,7 +73,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test resolve module to imported module with alias`() = checkByCode(
         """
         module 0x1::Transaction {}
@@ -96,7 +87,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // !
     fun `test unresolved if alias points to unresolved item`() = checkByCode(
         """
         module 0x1::m {
@@ -110,7 +100,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test cannot resolve module if imported one has different address`() = checkByCode(
         """
     module 0x1::transaction {}
@@ -123,23 +112,19 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
-    fun `test resolve module to different one from import`() = checkByCode(
+    fun `test resolve module from import`() = checkByCode(
         """
-        address 0x1 {
-            module A {
-                 //X
-            }
+        module 0x1::A {
+                  //X
+        }
 
-            module B {
-                use 0x1::A;
-                       //^
-            }
+        module 0x1::B {
+            use 0x1::A;
+                   //^
         }
     """
     )
 
-    // *
     fun `test resolve module to different one in same address block`() = checkByCode(
         """
         address 0x1 {
@@ -159,8 +144,7 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
-    fun `test module in the same address block cannot be resolved without use`() = checkByCode(
+    fun `test module cannot be resolved without use`() = checkByCode(
         """
         module 0x1::A {
             public fun create() {}
@@ -174,7 +158,6 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
     fun `test resolve module with different address`() = checkByCode(
         """
         module 0x2::A {}
@@ -190,15 +173,10 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
-    fun `test resolve module to address block from script`() = checkByCode(
+    fun `test resolve module from script`() = checkByCode(
         """
-        address 0x2 {
-            module A {
-                 //X
-            }
-        }
-        
+        module 0x2::A {}
+                  //X
         script {
             use 0x2::A;
             
@@ -210,49 +188,36 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    // *
-    fun `test resolve to address block fully qualified`() = checkByCode(
+    fun `test resolve fully qualified`() = checkByCode(
         """
-        address 0x2 {
-            module A {
-                 //X
-            }
+        module 0x2::A {
+                  //X
         }
-        
-        address 0x1 {
-            module B {
-                fun main() {
-                    let a = 0x2::A::create();
-                               //^
-                }
+        module 0x1::B {
+            fun main() {
+                let a = 0x2::A::create();
+                           //^
             }
         }
     """
     )
 
-    // *
-    fun `test resolve to address block import with address normalization`() = checkByCode(
+    fun `test resolve with address normalization`() = checkByCode(
         """
-        address 0x0002 {
-            module A {
-                 //X
-            }
+        module 0x0002::A {
+                     //X
         }
-        
-        address 0x1 {
-            module B {
-                use 0x02::A;
-                
-                fun main() {
-                    let a = A::create();
-                          //^
-                }
+        module 0x1::B {
+            use 0x02::A;
+            
+            fun main() {
+                let a = A::create();
+                      //^
             }
         }
     """
     )
 
-    // *
     fun `test resolve module from Self`() = checkByCode("""
         module 0x1::M {
                   //X
@@ -264,7 +229,6 @@ class ResolveModulesTest : ResolveTestCase() {
         }
     """)
 
-    // *
     fun `test resolve module from Self with alias`() = checkByCode("""
         module 0x1::M {
                   //X
@@ -391,9 +355,9 @@ class ResolveModulesTest : ResolveTestCase() {
     """)
 
     fun `test cannot resolve module with unknown named address`() = checkByCode("""
-        module aptos_framework::m1 {}
+        module unknown_address::m1 {}
         module 0x1::m {
-            use aptos_framework::m1;
+            use unknown_address::m1;
                                //^ unresolved
         }        
     """)

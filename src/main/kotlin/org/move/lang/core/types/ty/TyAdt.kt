@@ -17,7 +17,7 @@ data class TyAdt(
     override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyAdt(
             item,
-            substitution.foldValues(folder),
+            substitution.foldWith(folder),
             typeArguments.map { it.foldWith(folder) }
         )
     }
@@ -25,16 +25,18 @@ data class TyAdt(
     override fun toString(): String = tyToString(this)
 
     override fun deepVisitWith(visitor: TypeVisitor): Boolean {
-        return typeArguments.any { it.visitWith(visitor) } || substitution.visitValues(visitor)
+        return typeArguments.any { it.visitWith(visitor) } || substitution.deepVisitWith(visitor)
     }
 
     // This method is rarely called (in comparison with folding), so we can implement it in a such inefficient way.
-    override val typeParameterValues: Substitution
+    override val typeParamsToTypeArgsSubst: Substitution
         get() {
-            val typeSubst = item.typeParameters.withIndex().associate { (i, param) ->
-                TyTypeParameter.named(param) to typeArguments.getOrElse(i) { TyUnknown }
+            val typeParamMapping = item.typeParameters.withIndex().associate { (i, typeParam) ->
+                val tyTypeParam = TyTypeParameter.named(typeParam)
+                val typeArg = typeArguments.getOrElse(i) { TyUnknown }
+                tyTypeParam to typeArg
             }
-            return Substitution(typeSubst)
+            return Substitution(typeParamMapping)
         }
 
     companion object {

@@ -20,23 +20,23 @@ data class TyReference(
 
     val isMut: Boolean get() = this.mutability.isMut
 
-    fun innerTy(): Ty {
-        return if (referenced is TyReference) {
-            referenced.innerTy()
-        } else {
-            referenced
-        }
-    }
+//    fun innerTy(): Ty {
+//        return if (referenced is TyReference) {
+//            referenced.innerTy()
+//        } else {
+//            referenced
+//        }
+//    }
 
-    fun innermostTy(): Ty {
-        var ty: Ty = this
-        while (ty is TyReference) {
-            ty = ty.innerTy()
-        }
-        return ty
-    }
+//    fun innermostTy(): Ty {
+//        var ty: Ty = this
+//        while (ty is TyReference) {
+//            ty = ty.innerTy()
+//        }
+//        return ty
+//    }
 
-    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, mutability, msl)
+//    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, mutability, msl)
 
     override fun deepFoldWith(folder: TypeFolder): Ty =
         TyReference(referenced.foldWith(folder), mutability, msl)
@@ -47,7 +47,7 @@ data class TyReference(
     override fun toString(): String = tyToString(this)
 
     companion object {
-        fun ref(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
+        fun reference(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
             TyReference(ty, Mutability.valueOf(mut), msl)
 
         fun isCompatibleMut(inferred: TyReference, expected: TyReference): Boolean {
@@ -61,19 +61,28 @@ data class TyReference(
         }
 
         fun autoborrow(ty: Ty, intoTy: Ty): Ty? {
-            return if (intoTy is TyReference) coerceAutoborrow(ty, intoTy.isMut) else ty
-        }
-
-        fun coerceAutoborrow(ty: Ty, mut: Boolean): Ty? {
+            if (intoTy !is TyReference) return ty
+            val intoMut = intoTy.isMut
             return when {
-                ty !is TyReference -> ref(ty, mut)
-                mut && ty.isMut -> ty
-                mut && !ty.isMut -> null
-                !mut && ty.isMut -> ref(ty.innerTy(), false)
-                !mut && !ty.isMut -> ty
-                else -> null
+                ty is TyReference -> {
+                    when {
+                        // &mut -> &mut
+                        ty.isMut && intoMut -> ty
+                        // & -> &mut (cannot)
+                        !ty.isMut && intoMut -> null
+                        // &mut -> &
+                        ty.isMut && !intoMut -> reference(ty.referenced, false)
+                        // & -> &
+                        !ty.isMut && !intoMut -> ty
+                        else -> null
+                    }
+                }
+                else -> reference(ty, intoMut)
             }
         }
+
+//        fun coerceAutoborrow(ty: Ty, toMut: Boolean): Ty? {
+//        }
     }
 }
 

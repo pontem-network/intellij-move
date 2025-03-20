@@ -15,7 +15,7 @@ import org.move.lang.core.types.ty.TyVector
 import org.move.lang.index.MvModuleFileIndex
 
 fun Ty.itemModule(moveProject: MoveProject): MvModule? {
-    val norefTy = this.derefIfNeeded()
+    val norefTy = this.unwrapRefs()
     return when (norefTy) {
         is TyVector -> {
             MvModuleFileIndex

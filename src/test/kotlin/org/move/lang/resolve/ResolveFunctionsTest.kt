@@ -3,7 +3,7 @@ package org.move.lang.resolve
 import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveFunctionTest: ResolveTestCase() {
+class ResolveFunctionsTest: ResolveTestCase() {
     // *
     fun `test resolve reference to function`() = checkByCode(
         """

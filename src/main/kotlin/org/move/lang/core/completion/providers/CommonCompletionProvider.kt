@@ -84,9 +84,9 @@ object CommonCompletionProvider: MvCompletionProvider() {
         val msl = completions.ctx.msl
         val receiverTy = element.inferReceiverTy(msl)
         // unknown, &unknown, &mut unknown
-        if (receiverTy.derefIfNeeded() is TyUnknown) return
+        if (receiverTy.unwrapRefs() is TyUnknown) return
 
-        val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
+        val tyAdt = receiverTy.unwrapRefs() as? TyAdt
         if (tyAdt != null) {
             val fieldEntries = getFieldLookupResolveVariants(element, tyAdt.item, msl)
             completions.addEntries(

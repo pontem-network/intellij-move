@@ -86,7 +86,7 @@ abstract class MvTestBase: MvLightTestBase(),
         }
     }
 
-    override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"
+    override fun getTestDataPath(): String = "${TestCase.TEST_RESOURCES}/$dataPath"
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
         return TestCase.camelOrWordsToSnake(camelCase)

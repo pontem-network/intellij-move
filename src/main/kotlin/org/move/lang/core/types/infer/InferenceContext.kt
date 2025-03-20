@@ -156,9 +156,9 @@ class InferenceContext(
             is MvFunctionLike -> owner.returnTypeTy(msl)
             else -> TyUnknown
         }
-        val inference = TypeInferenceWalker(this, owner.project, returnTy)
+        val inference = TypePsiWalker(this, owner.project, returnTy)
 
-        inference.extractParameterBindings(owner)
+        inference.collectParameterBindings(owner)
 
         if (owner is MvDocAndAttributeOwner) {
             for (attr in owner.attrList) {
@@ -170,7 +170,7 @@ class InferenceContext(
 
         when (owner) {
             is MvFunctionLike -> owner.anyBlock?.let {
-                inference.inferFnBody(it)
+                inference.inferCodeBlock(it)
             }
             is MvItemSpec -> {
                 owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
@@ -209,7 +209,6 @@ class InferenceContext(
         // to determine whether an explicit type annotation required
         callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
-//        lambdaExprTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
 
@@ -289,22 +288,27 @@ class InferenceContext(
             (if (ty1 is TyInfer) this.resolveTyInfer(ty1) else ty1)
         val rightTy =
             (if (ty2 is TyInfer) this.resolveTyInfer(ty2) else ty2)
+
         return combineResolvedTypes(leftTy, rightTy)
     }
 
     private fun combineResolvedTypes(leftTy: Ty, rightTy: Ty): CombineResult {
         return when {
-            leftTy is TyInfer.TyVar -> combineTyVar(leftTy, rightTy)
-            rightTy is TyInfer.TyVar -> combineTyVar(rightTy, leftTy)
-            else -> when {
-                leftTy is TyInfer.IntVar -> combineIntVar(leftTy, rightTy)
-                rightTy is TyInfer.IntVar -> combineIntVar(rightTy, leftTy)
-                else -> combineTypesNoTyInfers(leftTy, rightTy)
+            leftTy is TyInfer.TyVar -> {
+                unifyTyVar(leftTy, rightTy)
+                Ok(Unit)
             }
+            rightTy is TyInfer.TyVar -> {
+                unifyTyVar(rightTy, leftTy)
+                Ok(Unit)
+            }
+            leftTy is TyInfer.IntVar -> combineIntVar(leftTy, rightTy)
+            rightTy is TyInfer.IntVar -> combineIntVar(rightTy, leftTy)
+            else -> combineTypesNoTyInfers(leftTy, rightTy)
         }
     }
 
-    private fun <T: Ty> combineTypePairs(pairs: List<Pair<T, T>>): CombineResult {
+    private fun combineTypePairs(pairs: List<Pair<Ty, Ty>>): CombineResult {
         var canUnify: CombineResult = Ok(Unit)
         for ((ty1, ty2) in pairs) {
             canUnify = combineTypes(ty1, ty2).and { canUnify }
@@ -312,9 +316,9 @@ class InferenceContext(
         return canUnify
     }
 
-    private fun combineTyVar(tyVar: TyInfer.TyVar, ty: Ty): CombineResult {
+    private fun unifyTyVar(tyVar: TyInfer.TyVar, ty: Ty) {
         // skip unification for isCompatible check to prevent bugs
-        if (skipUnification) return Ok(Unit)
+        if (skipUnification) return
         when (ty) {
             is TyInfer.TyVar -> varUniTable.unifyVarVar(tyVar, ty)
             else -> {
@@ -322,12 +326,11 @@ class InferenceContext(
                 if (ty.containsTyVar(rootTyVar)) {
                     // "E0308 cyclic type of infinite size"
                     varUniTable.unifyVarValue(rootTyVar, TyUnknown)
-                    return Ok(Unit)
+                    return
                 }
                 varUniTable.unifyVarValue(rootTyVar, ty)
             }
         }
-        return Ok(Unit)
     }
 
     private fun Ty.containsTyVar(tyVar: TyInfer.TyVar): Boolean {
@@ -337,16 +340,18 @@ class InferenceContext(
         }
     }
 
-    private fun combineIntVar(ty1: TyInfer.IntVar, ty2: Ty): CombineResult {
+    private fun combineIntVar(intVar: TyInfer.IntVar, ty: Ty): CombineResult {
         // skip unification for isCompatible check to prevent bugs
         if (skipUnification) return Ok(Unit)
-        when (ty2) {
-            is TyInfer.IntVar -> intVarUniTable.unifyVarVar(ty1, ty2)
-            is TyInteger -> intVarUniTable.unifyVarValue(ty1, ty2)
+        when (ty) {
+            is TyInfer.IntVar -> intVarUniTable.unifyVarVar(intVar, ty)
+            is TyInteger -> intVarUniTable.unifyVarValue(intVar, ty)
             is TyUnknown -> {
-                // do nothing, unknown should no influence IntVar
+                // do nothing, unknown should not influence IntVar
             }
-            else -> return Err(TypeMismatchError(ty1, ty2))
+            else -> {
+                return Err(TypeMismatchError(intVar, ty))
+            }
         }
         return Ok(Unit)
     }
@@ -363,7 +368,7 @@ class InferenceContext(
                 listOfNotNull(ty1, ty2).forEach {
                     it.deepVisitTyInfers { tyInfer ->
                         if (tyInfer is TyInfer.TyVar) {
-                            combineTyVar(tyInfer, TyUnknown)
+                            unifyTyVar(tyInfer, TyUnknown)
                         }
                         false
                     }
@@ -436,14 +441,14 @@ class InferenceContext(
     // can return last `?T` if no value type found.
     fun resolveTyInfer(tyInfer: TyInfer): Ty {
         return when (tyInfer) {
-            is TyInfer.IntVar -> intVarUniTable.resolveTyInfer(tyInfer) ?: tyInfer
+            is TyInfer.IntVar -> intVarUniTable.resolveVar(tyInfer) ?: tyInfer
             is TyInfer.TyVar -> {
                 // check if variable is unified, or return untouched
-                val varValueTy = varUniTable.resolveTyInfer(tyInfer) ?: return tyInfer
+                val varValueTy = varUniTable.resolveVar(tyInfer) ?: return tyInfer
                 if (varValueTy is TyInfer.IntVar) {
                     // value is always non-null Ty (not TyVar).
                     // It can only be TyInfer.TyVar, in this case we resolve it as integer.
-                    intVarUniTable.resolveTyInfer(varValueTy) ?: varValueTy
+                    intVarUniTable.resolveVar(varValueTy) ?: varValueTy
                 } else {
                     varValueTy
                 }
@@ -452,15 +457,14 @@ class InferenceContext(
     }
 
     fun <T: TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
-        return if (ty.hasTyInfer) {
-            ty.deepFoldTyInferWith { this.resolveTyInfer(it) }
-        } else {
-            ty
+        if (!ty.hasTyInfer) {
+            return ty
         }
+        return ty.foldTyInferWith { this.resolveTyInfer(it) }
     }
 
     /// every TyVar unresolved at the end of this function converted into TyUnknown
-    fun <T: TypeFoldable<T>> fullyResolveTypeVars(value: T): T = value.foldWith(fullTypeResolver)
+    fun fullyResolveTypeVars(value: Ty): Ty = value.foldWith(fullTypeResolver)
 
     private val fullTypeResolver: FullTypeResolver = FullTypeResolver(this, ResolverFallback.Unknown)
 

@@ -1617,4 +1617,40 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test struct lit with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R> { val: R }
+            fun main() {
+                let s: S<u8> = <error descr="Incompatible type 'S<u16>', expected 'S<u8>'">S<u16> { val: 1 }</error>;
+            }
+        }        
+    """)
+
+    fun `test tuple struct lit with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R>(R);
+            fun main() {
+                let s: S<u8> = <error descr="Incompatible type 'S<u16>', expected 'S<u8>'">S<u16>(1)</error>;
+            }
+        }        
+    """)
+
+    fun `test struct lit field with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R> { val: R }
+            fun main() {
+                let s: S<u8> = S { val: <error descr="Incompatible type 'u16', expected 'u8'">1u16</error> };
+            }
+        }        
+    """)
+
+    fun `test tuple struct lit field with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R>(R);
+            fun main() {
+                let s: S<u8> = S(<error descr="Incompatible type 'u16', expected 'u8'">1u16</error>);
+            }
+        }        
+    """)
 }

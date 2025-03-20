@@ -10,10 +10,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MvBindingPatReferenceImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.types.ty.Mutability
 import javax.swing.Icon
 
-// todo: replace with bindingTypeOwner later
 val MvPatBinding.bindingOwner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
@@ -32,15 +30,10 @@ val MvPatBinding.bindingTypeOwner: PsiElement?
         return owner
     }
 
-sealed class RsBindingModeKind {
-    data object BindByValue : RsBindingModeKind()
-    class BindByReference(val mutability: Mutability) : RsBindingModeKind()
-}
-
 //val MvPatBinding.kind get() = RsBindingModeKind.BindByValue
 
-abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
-                                                  MvPatBinding {
+abstract class MvPatBindingMixin(node: ASTNode): MvMandatoryNameIdentifierOwnerImpl(node),
+                                                 MvPatBinding {
 
     // XXX: RsPatBinding is both a name element and a reference element:
     //
