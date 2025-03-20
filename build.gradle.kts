@@ -8,6 +8,7 @@ import java.util.*
 
 @Suppress("USELESS_ELVIS_RIGHT_IS_NULL")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
+val isCI = System.getenv("CI") != null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
@@ -123,7 +124,9 @@ allprojects {
 
         pluginVerification {
             ides {
-                recommended()
+                if (isCI) {
+                    recommended()
+                }
             }
             failureLevel.set(
                 EnumSet.complementOf(

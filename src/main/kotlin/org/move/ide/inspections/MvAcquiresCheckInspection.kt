@@ -11,14 +11,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.psi.ext.receiverExpr
-import org.move.lang.core.types.infer.InferenceResult
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.infer.substitute
-import org.move.lang.core.types.infer.substituteOrUnknown
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
 data class NamedTy(var ty: Ty) {
@@ -74,18 +69,19 @@ class AcquiresTypeContext {
     }
 
     fun getAcquiredTypesInCall(callable: MvCallable, inference: InferenceResult): List<NamedTy> {
-        val callTy = inference.getCallableType(callable) as? TyFunction ?: return emptyList()
-        val functionItem = callTy.item as? MvFunction ?: return emptyList()
+        val callTy = inference.getCallableType(callable) ?: return emptyList()
+        val callItem = callTy.genericKind() ?: return emptyList()
+        val functionItem = callItem.item as? MvFunction ?: return emptyList()
         return if (functionItem.isInline) {
             val inlineFunctionTys = getFunctionAcquiresTypes(functionItem)
             inlineFunctionTys
                 .map {
-                    NamedTy(it.ty.substituteOrUnknown(callTy.substitution))
+                    NamedTy(it.ty.substituteOrUnknown(callItem.substitution))
                 }
         } else {
             functionItem.acquiredTys
                 .asNamedTys()
-                .map { NamedTy(it.ty.substitute(callTy.substitution)) }
+                .map { NamedTy(it.ty.substitute(callItem.substitution)) }
         }
     }
 

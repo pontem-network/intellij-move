@@ -6,7 +6,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.core.types.ty.functionTy
+import org.move.lang.core.types.ty.callableTy
 
 fun LookupElement.toCompletionItem(properties: LookupElementProperties): CompletionItem =
     CompletionItem(this, properties)
@@ -65,7 +65,7 @@ fun getLookupElementProperties(
         val msl = context.msl
         val declaredItemTy =
             when (element) {
-                is MvFunctionLike -> element.functionTy(msl).returnType
+                is MvFunctionLike -> element.callableTy(msl).returnType
                 is MvStruct -> TyAdt.valueOf(element)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
                 is MvPatBinding -> {

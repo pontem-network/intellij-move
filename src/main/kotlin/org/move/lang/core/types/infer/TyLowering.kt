@@ -52,7 +52,7 @@ object TyLowering {
                 } else {
                     lowerType(returnType, msl)
                 }
-                TyLambda(paramTys, retTy)
+                TyCallable(paramTys, retTy, CallKind.Lambda)
             }
             else -> debugErrorOrFallback(
                 "${type.elementType} type is not inferred",
@@ -67,7 +67,8 @@ object TyLowering {
             is MvTypeParameter -> TyTypeParameter.named(namedItem)
             is MvSchema -> TySchema.valueOf(namedItem)
             is MvStructOrEnumItemElement -> TyAdt.valueOf(namedItem)
-            is MvFunctionLike -> namedItem.functionTy(msl)
+            is MvFunctionLike -> namedItem.callableTy(msl)
+//            is MvFunctionLike -> namedItem.functionTy(msl)
             is MvEnumVariant -> {
                 // has to be MvPath of form `ENUM_NAME::ENUM_VARIANT_NAME`
                 val enumPath = (methodOrPath as? MvPath)?.qualifier ?: return TyUnknown

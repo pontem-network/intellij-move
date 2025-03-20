@@ -99,7 +99,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
         for (methodEntry in methodEntries) {
             val f = methodEntry.element() as? MvFunction ?: continue
             val subst = f.tyVarsSubst
-            val funcTy = f.functionTy(msl).substitute(subst) as TyFunction
+            val funcTy = f.callableTy(msl).substitute(subst) as TyCallable
             val selfTy = funcTy.paramTypes.first()
 
             val autoborrowedReceiverTy =

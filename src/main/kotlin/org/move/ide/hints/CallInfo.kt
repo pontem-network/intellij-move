@@ -35,9 +35,11 @@ class CallInfo(
 
         private fun resolveCallExpr(callExpr: MvCallExpr): CallInfo? {
             val msl = callExpr.isMsl()
-            val callTy = callExpr.inference(msl)?.getCallableType(callExpr) as? TyFunction
+            val callTy = callExpr.inference(msl)?.getCallableType(callExpr)
                 ?: return null
-            var callItem: MvElement = callTy.item
+            val callKind = callTy.genericKind() ?: return null
+
+            var callItem: MvElement = callKind.item
             if (callItem is MvEnum) {
                 callItem = callExpr.path.reference?.resolveFollowingAliases() ?: return null
             }
@@ -46,9 +48,10 @@ class CallInfo(
 
         private fun resolveMethodCall(methodCall: MvMethodCall): CallInfo? {
             val msl = methodCall.isMsl()
-            val callTy = methodCall.inference(msl)?.getCallableType(methodCall) as? TyFunction
+            val callTy = methodCall.inference(msl)?.getCallableType(methodCall)
                 ?: return null
-            return buildFunctionParameters(callTy.item, callTy)
+            val callKind = callTy.genericKind() ?: return null
+            return buildFunctionParameters(callKind.item, callTy)
         }
 
         private fun resolveAssertExpr(): CallInfo {
@@ -58,7 +61,7 @@ class CallInfo(
             })
         }
 
-        private fun buildFunctionParameters(item: MvElement, ty: TyFunction): CallInfo? {
+        private fun buildFunctionParameters(item: MvElement, ty: TyCallable): CallInfo? {
             return when (item) {
                 is MvFunction -> {
                     val selfParam = item.selfParam

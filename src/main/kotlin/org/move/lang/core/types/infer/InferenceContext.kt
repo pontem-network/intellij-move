@@ -75,7 +75,7 @@ data class InferenceResult(
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     private val resolvedBindings: Map<MvPatBinding, MvNamedElement?>,
     private val resolvedLitFields: Map<MvStructLitField, List<MvNamedElement>>,
-    private val callableTypes: Map<MvCallable, Ty>,
+    private val callableTypes2: Map<MvCallable, TyCallable>,
 
 //    val lambdaExprTypes: Map<MvLambdaExpr, Ty>,
     val typeErrors: List<TypeError>
@@ -90,7 +90,7 @@ data class InferenceResult(
     fun getExprTypeOrNull(expr: MvExpr): Ty? = exprTypes[expr]
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
-    fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
+    fun getCallableType(callable: MvCallable): TyCallable? = callableTypes2[callable]
 
     fun getResolvedPath(path: MvPath): List<RsPathResolveResult>? =
         resolvedPaths[path] ?: inferenceErrorOrFallback(path, null)
@@ -124,9 +124,10 @@ class InferenceContext(
 
     private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
-    private val callableTypes = mutableMapOf<MvCallable, Ty>()
 
-    val lambdaExprTypes = mutableMapOf<MvLambdaExpr, Ty>()
+    val callableTypes = mutableMapOf<MvCallable, TyCallable>()
+
+    val lambdaExprTypes = mutableMapOf<MvLambdaExpr, TyCallable>()
     val lambdaExprs = mutableListOf<MvLambdaExpr>()
 
     val resolvedPaths = mutableMapOf<MvPath, List<RsPathResolveResult>>()
@@ -189,7 +190,8 @@ class InferenceContext(
 
             resolveAllTypeVarsIfPossible()
 
-            val retTy = (lambdaExprTypes[lambdaExpr] as? TyLambda)?.returnType
+            val retTy = lambdaExprTypes[lambdaExpr]?.returnType
+//            val retTy = (lambdaExprTypes[lambdaExpr] as? TyLambda)?.returnType
             lambdaExpr.expr?.let {
                 if (retTy != null) {
                     inference.inferExprTypeCoercableTo(it, retTy)
@@ -207,7 +209,8 @@ class InferenceContext(
 
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
-        callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) as TyCallable }
+
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveTypeVarsWithOrigins(ty) }
 
         typeErrors.replaceAll { err -> fullyResolveTypeVarsWithOrigins(err) }
@@ -233,7 +236,7 @@ class InferenceContext(
         patFieldTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
 //        callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
 //        exprExpectedTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
-        lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) as TyCallable }
     }
 
     private fun fallbackUnresolvedIntVars(tys: Collection<Ty>) {
@@ -270,10 +273,6 @@ class InferenceContext(
 
     fun writeExprExpectedTy(expr: MvExpr, ty: Ty) {
         this.exprExpectedTypes[expr] = ty
-    }
-
-    fun writeCallableType(callable: MvCallable, ty: Ty) {
-        this.callableTypes[callable] = ty
     }
 
     override fun getPatFieldType(patField: MvPatField): Ty =
@@ -386,7 +385,8 @@ class InferenceContext(
             ty1 is TyRange && ty2 is TyRange -> Ok(Unit)
 
             ty1 is TyReference && ty2 is TyReference -> combineTyRefs(ty1, ty2)
-            ty1 is TyLambda && ty2 is TyLambda -> combineTyLambdas(ty1, ty2)
+//            ty1 is TyLambda && ty2 is TyLambda -> combineTyLambdas(ty1, ty2)
+            ty1 is TyCallable && ty2 is TyCallable -> combineTyCallables(ty1, ty2)
 
             ty1 is TyAdt && ty2 is TyAdt -> combineTyAdts(ty1, ty2)
             ty1 is TyTuple && ty2 is TyTuple -> combineTyTuples(ty1, ty2)
@@ -426,7 +426,7 @@ class InferenceContext(
         return combineTypePairs(ty1.types.zip(ty2.types))
     }
 
-    private fun combineTyLambdas(ty1: TyLambda, ty2: TyLambda): CombineResult {
+    private fun combineTyCallables(ty1: TyCallable, ty2: TyCallable): CombineResult {
         // todo: error if lambdas has different number of parameters
         for ((ty1param, ty2param) in ty1.paramTypes.zip(ty2.paramTypes)) {
             val combineRes = combineTypes(ty1param, ty2param)

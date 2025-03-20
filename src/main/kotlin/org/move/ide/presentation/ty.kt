@@ -102,12 +102,24 @@ private fun render(
     val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, fq, toHtml, typeParam, tyVar) }
 
     return when (ty) {
-        is TyFunction -> {
-            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            if (ty.returnType is TyUnit) {
-                params
-            } else {
-                "$params -> ${r(ty.returnType)}"
+        is TyCallable -> {
+            when (ty.kind) {
+                is CallKind.Lambda -> {
+                    val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
+                    val retType = if (ty.returnType is TyUnit)
+                        "()"
+                    else
+                        r(ty.returnType)
+                    "$params -> $retType"
+                }
+                is CallKind.GenericItem -> {
+                    val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
+                    if (ty.returnType is TyUnit) {
+                        params
+                    } else {
+                        "$params -> ${r(ty.returnType)}"
+                    }
+                }
             }
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
@@ -150,14 +162,6 @@ private fun render(
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
             is TyInfer.IntVar -> "?integer"
-        }
-        is TyLambda -> {
-            val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
-            val retType = if (ty.returnType is TyUnit)
-                "()"
-            else
-                r(ty.returnType)
-            "$params -> $retType"
         }
         is TySchema -> {
             val name = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
