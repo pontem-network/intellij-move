@@ -40,7 +40,7 @@ class MvBindingPatReferenceImpl(
     }
 
     private fun rawCachedMultiResolve(): List<MvNamedElement> =
-        resolvePatBindingRaw(element, expectedType = null).namedElements()
+        resolvePatBindingWithExpectedType(element, expectedType = null).namedElements()
 
     override fun handleElementRename(newName: String): PsiElement {
         if (element.parent !is MvPatField) return super.handleElementRename(newName)
@@ -49,7 +49,7 @@ class MvBindingPatReferenceImpl(
     }
 }
 
-fun resolvePatBindingRaw(binding: MvPatBinding, expectedType: Ty? = null): List<ScopeEntry> {
+fun resolvePatBindingWithExpectedType(binding: MvPatBinding, expectedType: Ty? = null): List<ScopeEntry> {
     val entries = getPatBindingsResolveVariants(binding, false)
         .filterEntriesByExpectedType(expectedType)
 

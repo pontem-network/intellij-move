@@ -3,13 +3,11 @@ package org.move.utils.tests.types
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.MvUnresolvedReferenceInspection
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.psi.MvPathExpr
+import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.isMsl
@@ -18,9 +16,10 @@ import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
+import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementAndDataInEditor
 
-abstract class TypificationTestCase : MvTestBase() {
+abstract class TypificationTestCase: MvTestBase() {
     protected fun testExpectedTyExpr(@Language("Move") code: String) {
         testExpectedType<MvExpr>(code)
     }
@@ -29,7 +28,7 @@ abstract class TypificationTestCase : MvTestBase() {
         testExpectedType<MvType>(code)
     }
 
-    protected inline fun <reified T : MvElement> testExpectedType(@Language("Move") code: String) {
+    protected inline fun <reified T: MvElement> testExpectedType(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
@@ -46,18 +45,25 @@ abstract class TypificationTestCase : MvTestBase() {
     }
 
     protected fun testExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
+//        val testClass = this.javaClass.simpleName
+//        val testClassDir =
+//            TestCase.camelOrWordsToSnake(
+//                testClass.removeSuffix("Test")
+//            ).trimStart('_')
+//        createTestMoveFileFromCode("types", testClassDir, code)
+
         InlineFile(myFixture, code, "main.move")
         checkExpr<MvExpr>()
         if (!allowErrors) checkNoInferenceErrors()
         checkAllExpressionsTypified()
     }
 
-    protected fun testRefExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
-        InlineFile(myFixture, code, "main.move")
-        checkExpr<MvPathExpr>()
-        if (!allowErrors) checkNoInferenceErrors()
-        checkAllExpressionsTypified()
-    }
+//    protected fun testRefExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
+//        InlineFile(myFixture, code, "main.move")
+//        checkExpr<MvPathExpr>()
+//        if (!allowErrors) checkNoInferenceErrors()
+//        checkAllExpressionsTypified()
+//    }
 
     protected fun testExprsTypified(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
@@ -106,7 +112,7 @@ abstract class TypificationTestCase : MvTestBase() {
 //        checkAllExpressionsTypified()
 //    }
 
-    private inline fun <reified T : MvExpr> checkExpr() {
+    private inline fun <reified T: MvExpr> checkExpr() {
         val (expr, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 

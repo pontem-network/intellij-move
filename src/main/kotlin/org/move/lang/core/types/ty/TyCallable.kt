@@ -79,7 +79,7 @@ fun MvFunctionLike.functionTy(msl: Boolean): TyCallable {
 private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyCallable {
     val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
     val retType = item.returnTypeTy(msl)
-    val kind = CallKind.Function(item, item.typeParamsSubst)
+    val kind = CallKind.Function(item, item.tyTypeParamsSubst)
     return TyCallable(paramTypes, retType, kind)
 }
 

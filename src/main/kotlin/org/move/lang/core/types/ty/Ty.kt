@@ -1,6 +1,5 @@
 package org.move.lang.core.types.ty
 
-import org.move.lang.core.psi.MvGenericDeclaration
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_ADT_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
@@ -39,7 +38,6 @@ val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_
 val TypeFoldable<*>.hasTyAdt get() = visitWith(HAS_TY_ADT_VISITOR)
 val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
 
-//val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
 val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
 
 //fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
@@ -54,10 +52,10 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
     override fun deepVisitWith(visitor: TypeVisitor): Boolean = false
 
-    /**
-     * Bindings between formal type parameters and actual type arguments.
-     */
-    open val typeParamsToTypeArgsSubst: Substitution get() = emptySubstitution
+//    /**
+//     * Bindings between formal type parameters and actual type arguments.
+//     */
+//    open val typeParamsToTypeArgsSubst: Substitution get() = emptySubstitution
 
     fun unwrapRefs(): Ty = if (this is TyReference) this.referenced.unwrapRefs() else this
 

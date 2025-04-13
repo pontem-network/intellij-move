@@ -23,7 +23,7 @@ class MvUnusedVariableInspection: MvLocalInspectionTool() {
 
             override fun visitFunctionParameter(o: MvFunctionParameter) {
                 val functionLike = o.containingFunctionLike ?: return
-                if (functionLike.anyBlock == null) return
+                if (functionLike.anyCodeBlock == null) return
 
                 val binding = o.patBinding
                 checkUnused(binding, "Unused function parameter")

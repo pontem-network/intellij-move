@@ -8,6 +8,7 @@ package org.move.lang.core.types.infer
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
+import org.move.lang.core.types.ty.hasTyTypeParameters
 
 abstract class TypeFolder {
 //    val cache = mutableMapOf<Ty, Ty>()
@@ -86,7 +87,7 @@ interface TypeFoldable<out Self> {
 
 /** Deeply replace any [TyInfer] with the function [folder] */
 fun <T> TypeFoldable<T>.foldTyInferWith(folder: (TyInfer) -> Ty): T {
-    val folder = object : TypeFolder() {
+    val folder = object: TypeFolder() {
         override fun fold(ty: Ty): Ty {
             val foldedTy = if (ty is TyInfer) folder(ty) else ty
             return foldedTy.deepFoldWith(this)
@@ -99,7 +100,11 @@ fun <T> TypeFoldable<T>.foldTyInferWith(folder: (TyInfer) -> Ty): T {
 fun <T> TypeFoldable<T>.deepFoldTyTypeParameterWith(folder: (TyTypeParameter) -> Ty): T =
     foldWith(object : TypeFolder() {
         override fun fold(ty: Ty): Ty =
-            if (ty is TyTypeParameter) folder(ty) else ty.deepFoldWith(this)
+            when {
+                ty is TyTypeParameter -> folder(ty)
+                ty.hasTyTypeParameters -> ty.deepFoldWith(this)
+                else -> ty
+            }
     })
 //
 

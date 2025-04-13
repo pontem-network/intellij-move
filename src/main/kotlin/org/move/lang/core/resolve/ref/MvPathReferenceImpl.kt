@@ -78,8 +78,8 @@ class MvPathReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(e
             // should not really happen
             if (path !is MvPath) return emptyList()
 
-            val ctx = ResolutionContext(path, isCompletion = false)
-            val entries = resolvePath(ctx, expectedType = null)
+//            val ctx = ResolutionContext(path, isCompletion = false)
+            val entries = resolvePath(path, expectedType = null)
             return entries.toPathResolveResults(contextElement = path)
         }
     }
@@ -210,7 +210,9 @@ class ResolutionContext(val path: MvPath, val isCompletion: Boolean) {
     val isCallExpr: Boolean get() = path.rootPath().parent is MvCallExpr
 }
 
-fun resolvePath(ctx: ResolutionContext, expectedType: Ty? = null): List<ScopeEntry> {
+fun resolvePath(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
+    val ctx = ResolutionContext(path, false)
+
     val referenceName = ctx.path.referenceName ?: return emptyList()
     val kind = ctx.path.pathKind(ctx.isCompletion)
     val entries = getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
@@ -220,10 +222,10 @@ fun resolvePath(ctx: ResolutionContext, expectedType: Ty? = null): List<ScopeEnt
     // todo: drop it when the bug is fixed
     if (ctx.isCallExpr) {
         val functionEntries = entries.filterByNs(FUNCTIONS)
-        if (functionEntries.isNotEmpty()) {
-            return functionEntries
+        return if (functionEntries.isNotEmpty()) {
+            functionEntries
         } else {
-            return entries
+            entries
         }
     }
     return entries

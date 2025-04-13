@@ -42,7 +42,7 @@ val MvFunctionLike.acquiredTys: List<Ty>
         return this.acquiresPathTypes.map { it.loweredType(false) }
     }
 
-val MvFunctionLike.anyBlock: AnyBlock?
+val MvFunctionLike.anyCodeBlock: AnyCodeBlock?
     get() = when (this) {
         is MvFunction -> this.codeBlock
         is MvSpecFunction -> this.specCodeBlock

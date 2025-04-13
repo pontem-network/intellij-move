@@ -839,7 +839,7 @@ CodeBlock ::= '{' CodeBlock_items '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.ext.MvItemsOwner"
-        "org.move.lang.core.psi.AnyBlock"
+        "org.move.lang.core.psi.AnyCodeBlock"
     ]
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
 }
@@ -1334,7 +1334,7 @@ ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
     implements = [
         "org.move.lang.core.psi.ext.MvItemsOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
-        "org.move.lang.core.psi.AnyBlock"
+//        "org.move.lang.core.psi.AnyBlock"
     ]
 }
 
@@ -1435,7 +1435,7 @@ SpecCodeBlock ::= '{' ItemSpecBlock_items '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.ext.MvItemsOwner"
-        "org.move.lang.core.psi.AnyBlock"
+        "org.move.lang.core.psi.AnyCodeBlock"
         "org.move.lang.core.psi.MslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecCodeBlockMixin"

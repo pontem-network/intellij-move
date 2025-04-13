@@ -88,11 +88,17 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
         val tyAdt = receiverTy.unwrapRefs() as? TyAdt
         if (tyAdt != null) {
-            val fieldEntries = getFieldLookupResolveVariants(element, tyAdt.item, msl)
-            completions.addEntries(
-                fieldEntries,
-                applySubst = tyAdt.substitution
-            )
+            run {
+                if (!msl && !element.isDeclaredInModule(tyAdt.item.module)) {
+                    // fields invisible outside module they're declared in
+                    return@run
+                }
+                val fieldEntries = getFieldLookupResolveVariants(tyAdt.item)
+                completions.addEntries(
+                    fieldEntries,
+                    applySubst = tyAdt.substitution
+                )
+            }
         }
 
         val methodEntries = getMethodResolveVariants(element, receiverTy, msl)
@@ -110,7 +116,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
             completions.addEntry(
                 methodEntry,
-                applySubst = inferenceCtx.resolveTypeVarsIfPossible(subst)
+                applySubst = inferenceCtx.fullyResolveTypeVarsWithOrigins(subst)
             )
         }
     }

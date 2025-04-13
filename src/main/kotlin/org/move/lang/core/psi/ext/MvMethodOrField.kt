@@ -2,6 +2,8 @@ package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvDotExpr
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 import org.move.lang.core.types.infer.MvInferenceContextOwner
 import org.move.lang.core.types.infer.inferTypesIn
@@ -32,3 +34,8 @@ fun MvMethodOrField.inferReceiverTy(msl: Boolean): Ty {
     return receiverTy
 }
 
+fun MvMethodOrField.isDeclaredInModule(module: MvModule): Boolean {
+    val currentModule = this.containingModule ?: return false
+    // cannot access field if not in the same module as `receiverItem` definition
+    return currentModule == module
+}

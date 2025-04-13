@@ -140,4 +140,14 @@ class NeedsTypeAnnotationTest: AnnotatorTestCase(MvErrorAnnotator::class) {
             }
         }        
     """)
+
+    fun `test parameter only no required type annotation`() = checkByText("""
+        module 0x1::m {
+            native public fun to_bytes<MoveValue>(v: &MoveValue): vector<u8>;
+            fun main(account_address: address) {}
+            spec main(account_address: address) {
+                let a = to_bytes(account_address);
+            }
+        }        
+    """)
 }

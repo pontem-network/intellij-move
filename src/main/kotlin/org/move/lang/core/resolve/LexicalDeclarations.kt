@@ -192,7 +192,7 @@ private fun getVisibleLetPatBindingsWithShadowing(
     return bindings to visited
 }
 
-class BlockLetStmts(override val owner: AnyBlock): PsiCachedValueProvider<List<Pair<MvLetStmt, List<ScopeEntry>>>> {
+class BlockLetStmts(override val owner: AnyCodeBlock): PsiCachedValueProvider<List<Pair<MvLetStmt, List<ScopeEntry>>>> {
     override fun compute(): CachedValueProvider.Result<List<Pair<MvLetStmt, List<ScopeEntry>>>> {
         val letStmts = owner.stmtList.filterIsInstance<MvLetStmt>()
             .map {

@@ -1,13 +1,16 @@
 package org.move.utils.tests.resolve
 
+import com.intellij.testFramework.VfsTestUtil
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.MvTestBase
+import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
+import kotlin.io.path.Path
 
 abstract class ResolveTestCase: MvTestBase() {
 
@@ -16,20 +19,11 @@ abstract class ResolveTestCase: MvTestBase() {
     ) {
 //        val testClass = this.javaClass.simpleName
 //        if (!testClass.endsWith("ProjectTest")) {
-//            val resolveDir = Path(TestCase.TEST_RESOURCES).resolve("org/move/lang/resolve")
 //            val testClassDir =
 //                TestCase.camelOrWordsToSnake(
 //                    testClass.removePrefix("Resolve").removeSuffix("Test")
 //                ).trimStart('_')
-//            val resolveClassDir = resolveDir.resolve(testClassDir)
-//
-//            val testName = getTestName(true)
-//            val testFile = resolveClassDir.resolve("${testName}.move")
-////            val testFile = resolveClassDir.resolve("${testMethodIndex}_${testName}.move")
-//
-//            VfsTestUtil.overwriteTestData(testFile.toString(), code.trimIndent())
-//
-//            testMethodIndex += 1
+//            createTestMoveFileFromCode("resolve", testClassDir, code)
 //        }
 
         InlineFile(code, "main.move")

@@ -68,7 +68,6 @@ object TyLowering {
             is MvSchema -> TySchema.valueOf(namedItem)
             is MvStructOrEnumItemElement -> TyAdt.valueOf(namedItem)
             is MvFunctionLike -> namedItem.functionTy(msl)
-//            is MvFunctionLike -> namedItem.functionTy(msl)
             is MvEnumVariant -> {
                 // has to be MvPath of form `ENUM_NAME::ENUM_VARIANT_NAME`
                 val enumPath = (methodOrPath as? MvPath)?.qualifier ?: return TyUnknown

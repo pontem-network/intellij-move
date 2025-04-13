@@ -7,16 +7,19 @@ import org.move.cli.settings.debugErrorOrFallback
 import org.move.cli.settings.isDebugModeEnabled
 import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
+import org.move.lang.core.completion.providers.dropInvisibleEntries
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.namedFields
+import org.move.lang.core.resolve.getEntriesFromWalkingScopes
 import org.move.lang.core.resolve.getFieldLookupResolveVariants
 import org.move.lang.core.resolve.getMethodResolveVariants
-import org.move.lang.core.resolve.getNamedFieldEntries
-import org.move.lang.core.resolve.ref.ResolutionContext
+import org.move.lang.core.resolve.ref.NAMES
 import org.move.lang.core.resolve.ref.resolveAliases
 import org.move.lang.core.resolve.ref.resolvePath
-import org.move.lang.core.resolve.resolveBindingForFieldShorthand
+import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.resolve.scopeEntry.filterByName
+import org.move.lang.core.resolve.scopeEntry.namedElements
 import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
 import org.move.lang.core.resolve.scopeEntry.toPathResolveResults
 import org.move.lang.core.types.infer.Expectation.NoExpectation
@@ -30,7 +33,7 @@ class TypePsiWalker(
     val project: Project,
     private val expectedReturnTy: Ty
 ) {
-    val msl: Boolean = ctx.msl
+    val msl: Boolean get() = ctx.msl
 
     fun <T> mslScope(action: () -> T): T {
         if (ctx.msl) return action()
@@ -76,13 +79,13 @@ class TypePsiWalker(
         }
     }
 
-    fun inferCodeBlock(block: AnyBlock): Ty =
+    fun inferCodeBlock(block: AnyCodeBlock): Ty =
         block.inferBlockType(Expectation.fromType(expectedReturnTy), coerce = true)
 
-    fun inferSpecBlock(block: AnyBlock): Ty =
+    fun inferSpecBlock(block: AnyCodeBlock): Ty =
         mslScope { block.inferBlockType(NoExpectation, coerce = false) }
 
-    private fun AnyBlock.inferBlockType(expected: Expectation, coerce: Boolean): Ty {
+    private fun AnyCodeBlock.inferBlockType(expected: Expectation, coerce: Boolean): Ty {
         val stmts = when (this) {
             is MvSpecCodeBlock, is MvModuleSpecBlock -> {
                 // reorder stmts, move let stmts to the top, then let post, then others
@@ -127,6 +130,8 @@ class TypePsiWalker(
                         val initializerTy = expr.inferType(explicitTy)
                         when {
                             explicitTy != null -> {
+//                                coerceTypes(expr, initializerTy, explicitTy);
+//                                explicitTy
                                 if (coerceTypes(expr, initializerTy, explicitTy)) {
                                     explicitTy
                                 } else {
@@ -195,8 +200,8 @@ class TypePsiWalker(
 
     // returns expected
     private fun MvExpr.inferTypeCoerceTo(expected: Ty): Ty {
-        val inferred = this.inferType(expected)
-        return if (coerceTypes(this, inferred, expected)) expected else inferred
+        val actualTy = this.inferType(expected)
+        return if (coerceTypes(this, actualTy, expected)) expected else actualTy
     }
 
     private fun inferExprTy(
@@ -290,7 +295,9 @@ class TypePsiWalker(
 
         val refinedExprTy = exprTy.refineForSpecs(msl)
         ctx.writeExprTy(expr, refinedExprTy)
-        return refinedExprTy
+
+        return this.resolveTypeVarsIfPossible(refinedExprTy)
+//        return refinedExprTy
     }
 
     private fun inferBoolSpecExpr(expr: MvBoolSpecExpr): Ty {
@@ -306,7 +313,7 @@ class TypePsiWalker(
         val expectedType = expected.ty(ctx)
         val item = resolvePathCached(pathExpr.path, expectedType) ?: return TyUnknown
 
-        val ty = when (item) {
+        return when (item) {
             is MvPatBinding -> ctx.getBindingType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
@@ -336,15 +343,13 @@ class TypePsiWalker(
                 TyUnknown
             )
         }
-        return ty
     }
 
     fun resolvePathCached(
         path: MvPath,
         expectedType: Ty?
     ): MvNamedElement? {
-        val resolutionCtx = ResolutionContext(path, false)
-        val entries = resolvePath(resolutionCtx, expectedType)
+        val entries = resolvePath(path, expectedType)
             .filter {
                 val namedElement = it.element()
                 if (namedElement is MvPatBinding) {
@@ -355,7 +360,7 @@ class TypePsiWalker(
                 }
                 true
             }
-        val resolveResults = entries.toPathResolveResults(path)
+        val resolveResults = entries.toPathResolveResults(contextElement = path)
         ctx.writePath(path, resolveResults)
 
         return resolveResults.singleOrNull { it.isVisible }
@@ -404,7 +409,6 @@ class TypePsiWalker(
         }
 
         val lambdaTy = TyCallable(paramTys, TyInfer.TyVar(), CallKind.Lambda)
-//        val lambdaTy = TyCallable(paramTys, TyInfer.TyVar())
 
         this.ctx.lambdaExprs.add(lambdaExpr)
         this.ctx.lambdaExprTypes[lambdaExpr] = lambdaTy
@@ -419,38 +423,43 @@ class TypePsiWalker(
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
+        val callTy = instantiateCallableTy(callExpr) ?: return TyUnknown
+
+        val expectedArgTys = inferExpectedArgsTys(callTy, expected)
+        coerceArgumentTypes(
+            callExpr.argumentExprs.map { CallArg.Arg(it) },
+            callTy.paramTypes,
+            expectedArgTys,
+        )
+
+        writeCallableType(callExpr, callTy, method = false)
+
+        return callTy.returnType
+    }
+
+    private fun instantiateCallableTy(callExpr: MvCallExpr): TyCallable? {
         val path = callExpr.path
         val namedItem = resolvePathCached(path, expectedType = null)
         val callableTy =
             when (namedItem) {
                 is MvFunctionLike -> {
-                    instantiatePath<TyCallable>(path, namedItem) ?: return TyUnknown
+                    instantiatePath<TyCallable>(path, namedItem) ?: return null
                 }
                 is MvFieldsOwner -> {
-                    val tupleFields = namedItem.tupleFields ?: return TyUnknown
-                    instantiateTupleFuncTy(tupleFields, path, namedItem) ?: return TyUnknown
+                    val tupleFields = namedItem.tupleFields ?: return null
+                    instantiateTupleFuncTy(tupleFields, path, namedItem) ?: return null
                 }
+                // lambdas
                 is MvPatBinding -> {
                     ctx.getBindingType(namedItem) as? TyCallable
                         ?: TyCallable.fake(callExpr.valueArguments.size, CallKind.Lambda)
                 }
                 else -> TyCallable.fake(
                     callExpr.valueArguments.size,
-                    CallKind.Function.fake(callExpr.project)
+                    CallKind.Function.fake(path.project)
                 )
             }
-
-        val expectedInputTys =
-            expectedInputsForExpectedOutput(expected, callableTy.returnType, callableTy.paramTypes)
-
-        inferArgumentTypes(
-            callableTy.paramTypes,
-            expectedInputTys,
-            callExpr.argumentExprs.map { InferArg.ArgExpr(it) })
-
-        writeCallableType(callExpr, callableTy, method = false)
-
-        return callableTy.returnType
+        return callableTy
     }
 
     private fun writeCallableType(callable: MvCallable, funcTy: TyCallable, method: Boolean) {
@@ -479,30 +488,34 @@ class TypePsiWalker(
         val tyAdt =
             receiverTy.unwrapRefs() as? TyAdt ?: return TyUnknown
 
-        val fieldEntry = getFieldLookupResolveVariants(fieldLookup, tyAdt.item, msl)
+        if (!msl && fieldLookup.containingModule != tyAdt.item.module) {
+//        if (!msl && !fieldLookup.isDeclaredInModule(tyAdt.adtItem.module)) {
+            // fields invisible outside module they're declared in
+            return TyUnknown
+        }
+
+        val fieldEntry = getFieldLookupResolveVariants(tyAdt.item)
             .filterByName(fieldLookup.referenceName)
             .singleOrNull()
         val field = fieldEntry?.element() as? MvFieldDecl
         ctx.resolvedFields[fieldLookup] = field
 
         val fieldType = field?.type ?: return TyUnknown
-        return fieldType.loweredType(msl).substitute(tyAdt.typeParamsToTypeArgsSubst)
+        return fieldType.loweredType(msl).substitute(tyAdt.substitution)
     }
 
-    fun inferMethodCallTy(receiverTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
-        val methodEntries = getMethodResolveVariants(methodCall, receiverTy, msl)
+    fun inferMethodCallTy(selfTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
+        val methodEntries = getMethodResolveVariants(methodCall, selfTy, msl)
             .filterByName(methodCall.referenceName)
-        val resolvedMethods = methodEntries
-            .toPathResolveResults(methodCall)
+            .dropInvisibleEntries(contextElement = methodCall)
 
-        val genericItem =
-            resolvedMethods.filter { it.isVisible }.map { it.element }.singleOrNull()
-        ctx.resolvedMethodCalls[methodCall] = genericItem
+        val functionItem = methodEntries.namedElements().singleOrNull()
+        ctx.resolvedMethodCalls[methodCall] = functionItem
 
         val baseTy =
-            when (genericItem) {
+            when (functionItem) {
                 is MvFunction -> {
-                    val itemTy = instantiatePath<TyCallable>(methodCall, genericItem)
+                    val itemTy = instantiatePath<TyCallable>(methodCall, functionItem)
                         ?: return TyUnknown
                     itemTy
                 }
@@ -516,54 +529,46 @@ class TypePsiWalker(
             }
         val methodTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
 
-        val expectedInputTys =
-            expectedInputsForExpectedOutput(expected, methodTy.returnType, methodTy.paramTypes)
+        val expectedInputTys = inferExpectedArgsTys(methodTy, expected)
 
-        inferArgumentTypes(
+        val args = listOf(CallArg.Self(selfTy)) + methodCall.argumentExprs.map { CallArg.Arg(it) }
+        coerceArgumentTypes(
+            args,
             methodTy.paramTypes,
             expectedInputTys,
-            listOf(InferArg.SelfType(receiverTy))
-                    + methodCall.argumentExprs.map { InferArg.ArgExpr(it) }
         )
 
         writeCallableType(methodCall, methodTy, method = true)
-//        writeCallableType(methodCall, methodTy, method = true)
 
         return methodTy.returnType
     }
 
-    sealed class InferArg {
-        data class SelfType(val selfTy: Ty): InferArg()
-        data class ArgExpr(val expr: MvExpr?): InferArg()
+    sealed class CallArg {
+        data class Self(val selfTy: Ty): CallArg()
+        data class Arg(val expr: MvExpr?): CallArg()
     }
 
-    private fun inferArgumentTypes(
-        formalInputTys: List<Ty>,
-        expectedInputTys: List<Ty>,
-        inferArgs: List<InferArg>,
-    ) {
-        for ((i, inferArg) in inferArgs.withIndex()) {
-            val formalInputTy = formalInputTys.getOrNull(i) ?: TyUnknown
-            val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
-            val expectation = Expectation.fromType(expectedInputTy)
-            val expectedTy =
-                resolveTypeVarsIfPossible(expectation.ty(ctx) ?: formalInputTy)
-            when (inferArg) {
-                is InferArg.ArgExpr -> {
-                    val argExpr = inferArg.expr ?: continue
-                    val argExprTy = argExpr.inferType(expected = expectation)
+    private fun coerceArgumentTypes(args: List<CallArg>, declaredTys: List<Ty>, expectedTys: List<Ty>) {
+        for ((i, arg) in args.withIndex()) {
+            val declaredTy = declaredTys.getOrNull(i) ?: TyUnknown
+//            val expectedArgTy = expectedTys.getOrNull(i) ?: declaredArgTy
+            val expectedTy = resolveTypeVarsIfPossible(
+                expectedTys.getOrNull(i) ?: declaredTy
+            )
+            when (arg) {
+                is CallArg.Arg -> {
+                    val argExpr = arg.expr ?: continue
+                    val argExprTy = argExpr.inferType(expected = Expectation.fromType(expectedTy))
                     coerceTypes(argExpr, argExprTy, expectedTy)
-                    // retrieve obligations
-                    ctx.combineTypes(formalInputTy, expectedTy)
                 }
-                is InferArg.SelfType -> {
+                is CallArg.Self -> {
                     // method already resolved, so autoborrow() should always succeed
-                    val actualSelfTy = autoborrow(inferArg.selfTy, expectedTy)
+                    val actualSelfTy = autoborrow(arg.selfTy, expectedTy)
                         ?: error("unreachable, as method call cannot be resolved if autoborrow fails")
                     ctx.combineTypes(actualSelfTy, expectedTy)
                 }
             }
-            ctx.combineTypes(formalInputTy, expectedTy)
+            ctx.combineTypes(declaredTy, expectedTy)
         }
     }
 
@@ -599,15 +604,16 @@ class TypePsiWalker(
         val parameterTypes = tupleFields.tupleFieldDeclList.map { it.type.loweredType(msl) }
         val returnType = TyAdt.valueOf(genericItem)
 
-        val typeParamsSubst = genericItem.typeParamsSubst
-        val baseTupleTy =
+        val typeParamsSubst = genericItem.tyTypeParamsSubst
+        val typeArgsSubst = genericPath.typeArgsSubst(genericItem, msl)
+        val tupleTy =
             TyCallable(
                 parameterTypes,
                 returnType,
                 CallKind.Function(genericItem, typeParamsSubst)
             )
-        val typeArgsSubst = genericPath.typeArgsSubst(genericItem, msl)
-        val tupleTy = baseTupleTy.substitute(typeArgsSubst)
+                .substitute(typeArgsSubst)
+//        val tupleTy = baseTupleTy.substitute(typeArgsSubst)
 
         val tyVarsSubst = genericItem.tyVarsSubst
         return tupleTy.substitute(tyVarsSubst) as TyCallable
@@ -617,10 +623,10 @@ class TypePsiWalker(
         val ident = macroExpr.identifier
         if (ident.text == "assert") {
             val formalInputTys = listOf(TyBool, TyInteger.default())
-            inferArgumentTypes(
+            coerceArgumentTypes(
+                macroExpr.valueArguments.map { it.expr }.map { CallArg.Arg(it) },
                 formalInputTys,
                 emptyList(),
-                macroExpr.valueArguments.map { it.expr }.map { InferArg.ArgExpr(it) }
             )
         }
         return TyUnit
@@ -638,20 +644,23 @@ class TypePsiWalker(
      * Unifies the output type with the expected type early, for more coercions
      * and forward type information on the input expressions
      */
-    private fun expectedInputsForExpectedOutput(
-        expectedRet: Expectation,
-        formalRet: Ty,
-        formalArgs: List<Ty>,
-    ): List<Ty> {
-        val resolvedFormalRet = resolveTypeVarsIfPossible(formalRet)
-        val expectedRetTy = expectedRet.ty(ctx) ?: return emptyList()
-        return ctx.freezeUnification {
-            if (ctx.combineTypes(expectedRetTy, resolvedFormalRet).isOk) {
-                formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
-            } else {
-                emptyList()
-            }
+    private fun inferExpectedArgsTys(callTy: TyCallable, expected: Expectation): List<Ty> {
+        val expectedTy = expected.ty(ctx) ?: return emptyList()
+        val declaredTy = resolveTypeVarsIfPossible(callTy.returnType)
+        return if (ctx.combineTypes(expectedTy, declaredTy).isOk) {
+            // resolve all arguments after every combine to check them based on one another
+            callTy.paramTypes.map { ctx.resolveTypeVarsIfPossible(it) }
+        } else {
+            emptyList()
         }
+//        return ctx.freezeUnification {
+//            if (ctx.combineTypes(expectedTy, declaredTy).isOk) {
+//                // resolve all arguments after every combine to check them based on one another
+//                callTy.paramTypes.map { ctx.resolveTypeVarsIfPossible(it) }
+//            } else {
+//                emptyList()
+//            }
+//        }
     }
 
     fun inferAttrItem(attrItem: MvAttrItem) {
@@ -667,17 +676,17 @@ class TypePsiWalker(
     fun inferExprTypeCoercableTo(expr: MvExpr, expected: Ty): Ty = expr.inferTypeCoercableTo(expected)
 
     // combineTypes with errors
-    fun coerceTypes(element: PsiElement, inferred: Ty, expected: Ty): Boolean {
-        val inferred = resolveTypeVarsIfPossible(inferred)
+    fun coerceTypes(element: PsiElement, actual: Ty, expected: Ty): Boolean {
+        val actual = resolveTypeVarsIfPossible(actual)
         val expected = resolveTypeVarsIfPossible(expected)
-        if (inferred === expected) {
+        if (actual === expected) {
             return true
         }
-        val combineResult = ctx.combineTypes(inferred, expected)
+        val combineResult = ctx.combineTypes(actual, expected)
         return when (combineResult) {
             is RsResult.Ok -> true
             is RsResult.Err -> {
-                reportTypeMismatch(combineResult.err, element, inferred, expected)
+                reportTypeMismatch(combineResult.err, element, actual, expected)
                 false
             }
         }
@@ -707,11 +716,11 @@ class TypePsiWalker(
             }
             return TyUnknown
         }
-        val genericItem = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
+        val structOrEnum = if (item is MvEnumVariant) item.enumItem else (item as MvStruct)
 
-        var tyAdt = instantiatePath<TyAdt>(path, genericItem) ?: return TyUnknown
+        var tyAdt = instantiatePath<TyAdt>(path, structOrEnum) ?: return TyUnknown
         if (expectedTy is TyAdt) {
-            val expectedTySubst = expectedTy.typeParamsToTypeArgsSubst
+            val expectedTySubst = expectedTy.substitution
             tyAdt.substitution.mapping.forEach { tyTypeParam, substTy ->
                 // skip type parameters as we have no ability check
                 if (substTy is TyTypeParameter) return@forEach
@@ -724,17 +733,20 @@ class TypePsiWalker(
             tyAdt = ctx.resolveTypeVarsIfPossible(tyAdt) as TyAdt
         }
 
-        val namedFieldEntries = getNamedFieldEntries(item)
+        val namedFieldEntries = item.namedFields.asEntries()
         litExpr.fields.forEach { field ->
+            val litFieldName = field.referenceName
             val namedField = namedFieldEntries
-                .filterByName(field.referenceName).singleItemOrNull() as? MvNamedFieldDecl
+                .filterByName(litFieldName).singleItemOrNull() as? MvNamedFieldDecl
             val declaredFieldTy = namedField?.type?.loweredType(msl)
             val fieldTy = declaredFieldTy?.substitute(tyAdt.substitution) ?: TyUnknown
             val expr = field.expr
             if (expr != null) {
                 expr.inferTypeCoercableTo(fieldTy)
             } else {
-                val binding = resolveBindingForFieldShorthand(field).singleItemOrNull()
+                val binding = getEntriesFromWalkingScopes(field, NAMES)
+                    .filterByName(litFieldName)
+                    .singleItemOrNull()
                 val bindingTy = (binding as? MvPatBinding)
                     ?.let { ctx.getBindingType(it) } ?: TyUnknown
                 coerceTypes(field, bindingTy, fieldTy)
@@ -778,14 +790,17 @@ class TypePsiWalker(
             ctx.combineTypes(tyVar, explicitTy)
         }
 
-        val exprs = litExpr.vectorLitItems.exprList
-        val formalInputs = generateSequence { ctx.resolveTypeVarsIfPossible(tyVar) }.take(exprs.size).toList()
-        val expectedInputTys =
-            expectedInputsForExpectedOutput(expected, TyVector(tyVar), formalInputs)
-        inferArgumentTypes(
-            formalInputs,
-            expectedInputTys,
-            exprs.map { InferArg.ArgExpr(it) }
+        val itemTy = ctx.resolveTypeVarsIfPossible(tyVar)
+        val argExprs = litExpr.vectorLitItems.exprList
+        val declaredArgTys = litExpr.vectorLitItems.exprList.map { itemTy }
+
+        val litTy = TyCallable(declaredArgTys, TyVector(tyVar), CallKind.Lambda)
+        val expectedArgTys =
+            inferExpectedArgsTys(litTy, expected)
+        coerceArgumentTypes(
+            argExprs.map { CallArg.Arg(it) },
+            declaredArgTys,
+            expectedArgTys,
         )
 
         val vectorTy = ctx.resolveTypeVarsIfPossible(TyVector(tyVar))
@@ -793,7 +808,7 @@ class TypePsiWalker(
     }
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
-        val receiverTy = indexExpr.receiverExpr.inferType()
+        val baseTy = indexExpr.receiverExpr.inferType()
         val argTy = indexExpr.argExpr.inferType()
 
         // compiler v2 only in non-msl
@@ -801,7 +816,7 @@ class TypePsiWalker(
             return TyUnknown
         }
 
-        val derefTy = this.resolveTypeVarsIfPossible(receiverTy).unwrapRefs()
+        val derefTy = this.resolveTypeVarsIfPossible(baseTy).unwrapRefs()
         return when {
             derefTy is TyVector -> {
                 // argExpr can be either TyInteger or TyRange
@@ -814,14 +829,14 @@ class TypePsiWalker(
                     }
                 }
             }
-            receiverTy is TyAdt -> {
+            baseTy is TyAdt -> {
                 coerceTypes(indexExpr.argExpr, argTy, TyAddress)
-                receiverTy
+                baseTy
             }
             else -> {
-                if (receiverTy !is TyUnknown) {
+                if (baseTy !is TyUnknown) {
                     // unresolved item
-                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, baseTy))
                 }
                 TyUnknown
             }
@@ -886,7 +901,6 @@ class TypePsiWalker(
 
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
-//        val leftTy = leftExpr.inferType()
         if (!leftTy.supportsArithmeticOp()) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
@@ -1010,7 +1024,8 @@ class TypePsiWalker(
     }
 
     private fun Ty.supportsOrdering(): Boolean {
-        val ty = resolveTypeVarsIfPossible(this)
+        val ty = this
+//        val ty = resolveTypeVarsIfPossible(this)
         return ty is TyInteger
                 || ty is TyNum
                 || ty is TyInfer.IntVar
@@ -1059,26 +1074,23 @@ class TypePsiWalker(
     private fun inferIfExprTy(ifExpr: MvIfExpr, expected: Expectation): Ty {
         ifExpr.condition?.expr?.inferTypeCoercableTo(TyBool)
         val actualIfTy =
-//            ifExpr.codeBlock?.inferBlockType(expected, coerce = false)
-//                ?: ifExpr.inlineBlock?.expr?.inferType(expected)
             ifExpr.codeBlock?.inferBlockType(expected, coerce = true)
                 ?: ifExpr.inlineBlock?.expr?.inferTypeCoercableTo(expected)
         val elseBlock = ifExpr.elseBlock ?: return TyUnit
         val actualElseTy =
-//            elseBlock.codeBlock?.inferBlockType(expected)
-//                ?: elseBlock.inlineBlock?.expr?.inferType(expected)
             elseBlock.codeBlock?.inferBlockType(expected, coerce = true)
                 ?: elseBlock.inlineBlock?.expr?.inferTypeCoercableTo(expected)
 
         val expectedElseTy = expected.ty(ctx) ?: actualIfTy ?: TyUnknown
         if (actualElseTy != null) {
             elseBlock.tailExpr?.let {
+                coerceTypes(it, actualElseTy.unwrapRefs(), expectedElseTy.unwrapRefs())
                 // special case: `if (true) &s else &mut s` shouldn't show type error
-                if (expectedElseTy is TyReference && actualElseTy is TyReference) {
-                    coerceTypes(it, actualElseTy.referenced, expectedElseTy.referenced)
-                } else {
-                    coerceTypes(it, actualElseTy, expectedElseTy)
-                }
+//                if (expectedElseTy is TyReference && actualElseTy is TyReference) {
+//                    coerceTypes(it, actualElseTy.referenced, expectedElseTy.referenced)
+//                } else {
+//                    coerceTypes(it, actualElseTy, expectedElseTy)
+//                }
             }
         }
 
@@ -1157,12 +1169,12 @@ class TypePsiWalker(
     private fun inferMatchExprTy(matchExpr: MvMatchExpr): Ty {
         val matchArgExpr = matchExpr.matchArgument.expr ?: return TyUnknown
         val matchArgTy = ctx.resolveTypeVarsIfPossible(matchArgExpr.inferType())
+
         val arms = matchExpr.arms
         for (arm in arms) {
             arm.pat.collectBindings(this@TypePsiWalker, matchArgTy)
-//            arm.pat.extractBindings(patTy = matchArgTy)
-            arm.expr?.inferType()
             arm.matchArmGuard?.expr?.inferType(TyBool)
+            arm.expr?.inferType()
         }
         val armTypes = arms.mapNotNull { it.expr?.let(ctx::getExprType) }
         return intersectTypes(armTypes)
@@ -1196,12 +1208,12 @@ class TypePsiWalker(
 //    }
 
     private fun reportTypeMismatch(
-        result: TypeMismatchError,
+        mismatchError: TypeMismatchError,
         element: PsiElement,
         inferred: Ty,
         expected: Ty
     ) {
-        if (result.ty1.javaClass in IGNORED_TYS || result.ty2.javaClass in IGNORED_TYS) return
+        if (mismatchError.ty1.javaClass in IGNORED_TYS || mismatchError.ty2.javaClass in IGNORED_TYS) return
         if (expected is TyReference && inferred is TyReference &&
             (expected.containsTyOfClass(IGNORED_TYS) || inferred.containsTyOfClass(IGNORED_TYS))
         ) {

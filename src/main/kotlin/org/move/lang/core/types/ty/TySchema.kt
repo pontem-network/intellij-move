@@ -2,7 +2,7 @@ package org.move.lang.core.types.ty
 
 import org.move.lang.core.psi.MvSchema
 import org.move.lang.core.psi.tyTypeParams
-import org.move.lang.core.psi.typeParamsSubst
+import org.move.lang.core.psi.tyTypeParamsSubst
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.mergeFlags
@@ -25,7 +25,7 @@ data class TySchema(
 
     companion object {
         fun valueOf(schema: MvSchema): TySchema {
-            val typeParameters = schema.typeParamsSubst
+            val typeParameters = schema.tyTypeParamsSubst
             return TySchema(
                 schema,
                 typeParameters,

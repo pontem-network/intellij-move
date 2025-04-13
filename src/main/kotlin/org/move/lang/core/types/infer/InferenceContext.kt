@@ -170,7 +170,7 @@ class InferenceContext(
         }
 
         when (owner) {
-            is MvFunctionLike -> owner.anyBlock?.let {
+            is MvFunctionLike -> owner.anyCodeBlock?.let {
                 inference.inferCodeBlock(it)
             }
             is MvItemSpec -> {
@@ -186,10 +186,9 @@ class InferenceContext(
         //     2. resolve all vars again in the InferenceContext
         //  3. resolve vars replacing unresolved vars with tyunknown
         while (lambdaExprs.isNotEmpty()) {
-            val lambdaExpr = lambdaExprs.removeFirst()
-
             resolveAllTypeVarsIfPossible()
 
+            val lambdaExpr = lambdaExprs.removeFirst()
             val retTy = lambdaExprTypes[lambdaExpr]?.returnType
             lambdaExpr.expr?.let {
                 if (retTy != null) {
@@ -200,7 +199,7 @@ class InferenceContext(
             }
         }
 
-        fallbackUnresolvedIntVars(exprTypes.values + patTypes.values)
+        unifyRemainingIntVarsIntoInteger(exprTypes.values + patTypes.values)
 
         exprTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
         patTypes.replaceAll { _, ty -> fullyResolveTypeVars(ty) }
@@ -238,7 +237,7 @@ class InferenceContext(
         lambdaExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) as TyCallable }
     }
 
-    private fun fallbackUnresolvedIntVars(tys: Collection<Ty>) {
+    private fun unifyRemainingIntVarsIntoInteger(tys: Collection<Ty>) {
         for (ty in tys) {
             ty.deepVisitTyInfers { tyInfer ->
                 val intVar = resolveTyInfer(tyInfer)
@@ -282,6 +281,9 @@ class InferenceContext(
     }
 
     fun combineTypes(ty1: Ty, ty2: Ty): CombineResult {
+        // spec type unwrap has to happen at the beginning, so all references would be dereferenced early
+        val ty1 = ty1.refineForSpecs(msl)
+        val ty2 = ty2.refineForSpecs(msl)
         val leftTy =
             (if (ty1 is TyInfer) this.resolveTyInfer(ty1) else ty1)
         val rightTy =
@@ -343,7 +345,7 @@ class InferenceContext(
         if (skipUnification) return Ok(Unit)
         when (ty) {
             is TyInfer.IntVar -> intVarUniTable.unifyVarVar(intVar, ty)
-            is TyInteger -> intVarUniTable.unifyVarValue(intVar, ty)
+            is TyInteger, is TyNum -> intVarUniTable.unifyVarValue(intVar, ty)
             is TyUnknown -> {
                 // do nothing, unknown should not influence IntVar
             }
@@ -355,8 +357,6 @@ class InferenceContext(
     }
 
     fun combineTypesNoTyInfers(ty1: Ty, ty2: Ty): CombineResult {
-        val ty1 = ty1.refineForSpecs(msl)
-        val ty2 = ty2.refineForSpecs(msl)
         return when {
             ty1 === ty2 -> Ok(Unit)
             ty1 is TyNever || ty2 is TyNever -> Ok(Unit)
@@ -404,7 +404,6 @@ class InferenceContext(
         // inferredTy permissions should be a superset of expectedTy permissions
         // in msl all references are equal
         if (!this.msl && !isCompatibleMut(ty1, ty2)) {
-//        if (!coerceMutability(ty1, ty2)) {
             return Err(TypeMismatchError(ty1, ty2))
         }
         return combineTypes(ty1.referenced, ty2.referenced)

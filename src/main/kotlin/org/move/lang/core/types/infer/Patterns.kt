@@ -2,7 +2,7 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.resolvePatBindingRaw
+import org.move.lang.core.resolve.ref.resolvePatBindingWithExpectedType
 import org.move.lang.core.resolve.scopeEntry.singleItemOrNull
 import org.move.lang.core.types.infer.RsBindingModeKind.BindByReference
 import org.move.lang.core.types.infer.RsBindingModeKind.BindByValue
@@ -15,18 +15,18 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
         is MvPatWild -> fcx.ctx.writePatTy(this, ty)
         is MvPatConst -> {
             // fills resolved paths
-            val inferred = fcx.inferExprType(pathExpr)
-            val item = fcx.ctx.resolvedPaths[pathExpr.path]?.singleOrNull { it.isVisible }?.element
-            val expected = when (item) {
+            val inferred = fcx.inferExprType(this.pathExpr)
+            val item = fcx.ctx.resolvedPaths[this.pathExpr.path]?.singleOrNull { it.isVisible }?.element
+            val pat_ty = when (item) {
                 // copied from intellij-rust, don't know what it's about
                 is MvConst -> ty
                 else -> ty.stripReferences(defBm).first
             }
-            fcx.coerceTypes(pathExpr, inferred, expected)
-            fcx.writePatTy(this, expected)
+            fcx.coerceTypes(pathExpr, inferred, pat_ty)
+            fcx.writePatTy(this, pat_ty)
         }
         is MvPatBinding -> {
-            val resolveVariants = resolvePatBindingRaw(this, expectedType = ty)
+            val resolveVariants = resolvePatBindingWithExpectedType(this, expectedType = ty)
             // todo: check visibility?
             val item = resolveVariants.singleItemOrNull()
             fcx.ctx.resolvedBindings[this] = item
@@ -47,7 +47,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
                     ?: (expected as? TyAdt)?.item as? MvStruct
 
-            if (item is MvGenericDeclaration) {
+            if (item is MvStruct) {
                 val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
                 if (!isCompatible(expected, patTy, fcx.msl)) {
                     fcx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
@@ -55,6 +55,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
             }
 
             val namedFields = item?.namedFields?.associateBy { it.name } ?: emptyMap()
+            val tyAdtSubst = if (ty is TyAdt) ty.substitution else emptySubstitution
             for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
                 // wil have TyUnknown on unresolved item
@@ -62,7 +63,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
                 val fieldType = namedField
                     ?.type
                     ?.loweredType(fcx.msl)
-                    ?.substituteOrUnknown(ty.typeParamsToTypeArgsSubst)
+                    ?.substituteOrUnknown(tyAdtSubst)
                     ?: TyUnknown
 
                 when (kind) {
@@ -88,12 +89,18 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
                 return
             }
             val tupleFields = item.positionalFields
-            inferTupleFieldsTypes(fcx, patList, patBm, tupleFields.size) { indx ->
+            val subst = if (expected is TyAdt) expected.substitution else emptySubstitution
+            inferTupleFieldsTypes(
+                fcx,
+                patList,
+                patBm,
+                tupleFields.size
+            ) { indx ->
                 tupleFields
                     .getOrNull(indx)
                     ?.type
                     ?.loweredType(fcx.msl)
-                    ?.substituteOrUnknown(ty.typeParamsToTypeArgsSubst)
+                    ?.substituteOrUnknown(subst)
                     ?: TyUnknown
 
             }
@@ -112,7 +119,12 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
             }
 
             val types = (ty as? TyTuple)?.types.orEmpty()
-            inferTupleFieldsTypes(fcx, patList, BindByValue, types.size) { types.getOrElse(it) { TyUnknown } }
+            inferTupleFieldsTypes(
+                fcx,
+                patList,
+                BindByValue,
+                types.size
+            ) { types.getOrElse(it) { TyUnknown } }
         }
     }
 }
@@ -124,26 +136,25 @@ private fun inferTupleFieldsTypes(
     tupleSize: Int,
     type: (Int) -> Ty,
 ) {
-
     // In correct code, tuple or tuple struct patterns contain only one `..` pattern.
     // But it's pretty simple to support type inference for cases with multiple `..` patterns like `let (x, .., y, .., z) = tuple`
     // just ignoring all binding between first and last `..` patterns
     var firstPatRestIndex = Int.MAX_VALUE
     var lastPatRestIndex = -1
-    for ((index, pat) in patList.withIndex()) {
+    for ((idx, pat) in patList.withIndex()) {
         if (pat is MvPatRest) {
-            firstPatRestIndex = minOf(firstPatRestIndex, index)
-            lastPatRestIndex = maxOf(lastPatRestIndex, index)
+            firstPatRestIndex = minOf(firstPatRestIndex, idx)
+            lastPatRestIndex = maxOf(lastPatRestIndex, idx)
         }
     }
 
-    for ((idx, p) in patList.withIndex()) {
-        val fieldType = when {
+    for ((idx, pat) in patList.withIndex()) {
+        val fieldTy = when {
             idx < firstPatRestIndex -> type(idx)
             idx > lastPatRestIndex -> type(tupleSize - (patList.size - idx))
             else -> TyUnknown
         }
-        p.collectBindings(fcx, fieldType, bm)
+        pat.collectBindings(fcx, fieldTy, bm)
     }
 }
 

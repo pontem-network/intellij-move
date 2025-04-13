@@ -28,20 +28,21 @@ data class TyAdt(
         return typeArguments.any { it.visitWith(visitor) } || substitution.deepVisitWith(visitor)
     }
 
-    // This method is rarely called (in comparison with folding), so we can implement it in a such inefficient way.
-    override val typeParamsToTypeArgsSubst: Substitution
-        get() {
-            val typeParamMapping = item.typeParameters.withIndex().associate { (i, typeParam) ->
-                val tyTypeParam = TyTypeParameter.named(typeParam)
-                val typeArg = typeArguments.getOrElse(i) { TyUnknown }
-                tyTypeParam to typeArg
-            }
-            return Substitution(typeParamMapping)
-        }
+//    // This method is rarely called (in comparison with folding), so we can implement it in a such inefficient way.
+//    override val typeParamsToTypeArgsSubst: Substitution
+//        get() {
+//            return this.substitution
+////            val typeParamMapping = adtItem.typeParameters.withIndex().associate { (i, typeParam) ->
+////                val tyTypeParam = TyTypeParameter.named(typeParam)
+////                val typeArg = typeArguments.getOrElse(i) { TyUnknown }
+////                tyTypeParam to typeArg
+////            }
+////            return Substitution(typeParamMapping)
+//        }
 
     companion object {
         fun valueOf(struct: MvStructOrEnumItemElement): TyAdt {
-            val typeParamsSubst = struct.typeParamsSubst
+            val typeParamsSubst = struct.tyTypeParamsSubst
             return TyAdt(
                 struct,
                 typeParamsSubst,
@@ -51,5 +52,5 @@ data class TyAdt(
     }
 }
 
-val TyAdt.enumItem: MvEnum? get() = this.item as? MvEnum
-val TyAdt.structItem: MvStruct? get() = this.item as? MvStruct
+//val TyAdt.enumItem: MvEnum? get() = this.adtItem as? MvEnum
+//val TyAdt.structItem: MvStruct? get() = this.adtItem as? MvStruct

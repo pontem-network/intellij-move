@@ -69,9 +69,10 @@ fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
     else -> containingFilePath(tryRelative)?.toString()
 }
 
-val MvDocAndAttributeOwner.presentableQualifiedName: String?
+val MvNamedElement.presentableQualifiedName: String?
     get() {
-        val fqName = (this as? MvNamedElement)?.fqName()?.identifierText()
+//        return this.fqName()?.identifierText()
+        val fqName = this.fqName()?.identifierText()
         if (fqName != null) return fqName
         return name
     }

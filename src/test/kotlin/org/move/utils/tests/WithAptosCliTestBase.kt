@@ -2,8 +2,6 @@ package org.move.utils.tests
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vcs.ex.ProjectLevelVcsManagerEx
-import com.intellij.openapi.vcs.impl.ProjectLevelVcsManagerImpl
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.common.runAll
 import com.intellij.util.ThrowableRunnable
@@ -69,10 +67,10 @@ abstract class WithAptosCliTestBase(val localAptosPath: Path? = null): MvProject
 
     override fun tearDown() {
         runAll(
-            {
-                // Fixes flaky tests
-                (ProjectLevelVcsManagerEx.getInstance(project) as ProjectLevelVcsManagerImpl).waitForInitialized()
-            },
+//            {
+//                // Fixes flaky tests
+//                (ProjectLevelVcsManagerEx.getInstance(project) as ProjectLevelVcsManagerImpl).waitForInitialized()
+//            },
             { Disposer.dispose(earlyTestRootDisposable) },
             { rustupFixture.tearDown() },
             { super.tearDown() },
