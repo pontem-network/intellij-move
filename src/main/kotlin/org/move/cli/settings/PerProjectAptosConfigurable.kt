@@ -38,8 +38,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                 row {
                     checkBox("Enable Move V2")
                         .comment(
-                            "Enables Move 2 language features, " +
-                                    "adds `--move-2 flag` to all generated Aptos CLI commands"
+                            "Enables Move 2 language features"
                         )
                         .bindSelected(state::enableMove2)
                 }

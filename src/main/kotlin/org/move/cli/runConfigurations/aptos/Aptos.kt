@@ -71,7 +71,10 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         val commandLine =
             AptosCommandLine(
                 subCommand = "move compile",
-                arguments = compilerArguments(project),
+                arguments = buildList {
+                    add("--fetch-deps-only")
+                    addAll(compilerArguments(project))
+                },
                 workingDirectory = packageRoot
             )
         return executeAptosCommandLine(commandLine, colored = true, runner = runner)
@@ -221,9 +224,6 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         val settings = project.moveSettings
         return buildList {
             addAll(extraArguments)
-            if (settings.enableMove2 && "--move-2" !in extraArguments) {
-                add("--move-2")
-            }
             if (settings.skipFetchLatestGitDeps && "--skip-fetch-latest-git-deps" !in extraArguments) {
                 add("--skip-fetch-latest-git-deps")
             }
