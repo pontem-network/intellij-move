@@ -52,12 +52,13 @@ class MvProjectSettingsService(
         var localAptosPath: String? by string()
 
         @AffectsMoveProjectsMetadata
-        var fetchAptosDeps: Boolean by property(false)
+        var fetchAptosDeps: Boolean by property(true)
 
         var disableTelemetry: Boolean by property(true)
 
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
+
         var dumpStateOnTestFailure: Boolean by property(false)
 
         @AffectsHighlighting

@@ -144,8 +144,5 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
             if (project.moveSettings.dumpStateOnTestFailure) {
                 add("--dump")
             }
-            if (project.moveSettings.enableMove2) {
-                add("--move-2")
-            }
         }
 }
