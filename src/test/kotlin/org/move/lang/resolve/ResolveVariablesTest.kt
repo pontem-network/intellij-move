@@ -202,93 +202,94 @@ class ResolveVariablesTest : ResolveTestCase() {
     """)
 
     fun `test test_only const in test function`() = checkByCode("""
-    module 0x1::M {
-        #[test_only]
-        const TEST_CONST: u64 = 1;
-              //X
-        #[test]
-        fun test_a() {
-            TEST_CONST;
-                //^
-        }
-    }    
+        module 0x1::M {
+            #[test_only]
+            const TEST_CONST: u64 = 1;
+                  //X
+            #[test]
+            fun test_a() {
+                TEST_CONST;
+                    //^
+            }
+        }    
     """)
 
     fun `test test_only function in test function`() = checkByCode("""
-    module 0x1::M {
-        #[test_only]
-        fun call() {}
-           //X
-        
-        #[test]
-        fun test_a() {
-            call();
-           //^
-        }
-    }    
+        module 0x1::M {
+            #[test_only]
+            fun call() {}
+               //X
+            
+            #[test]
+            fun test_a() {
+                call();
+               //^
+            }
+        }    
     """)
-//
-//    fun `test resolve function parameters in specs`() = checkByCode("""
-//    module 0x1::main {
-//        fun call(a: u8, b: u8) {}
-//               //X
-//    }
-//    spec 0x1::main {
-//        spec call(a: u8, b: u8) {}
-//                //^
-//    }
-//    """)
+
+    // !
+    fun `test resolve function parameters in specs`() = checkByCode("""
+        module 0x1::main {
+            fun call(a: u8, b: u8) {}
+                   //X
+        }
+        spec 0x1::main {
+            spec call(a: u8, b: u8) {}
+                    //^
+        }
+    """)
 
     fun `test resolve const expected failure`() = checkByCode("""
-module 0x1::string {
-    const ERR_ADMIN: u64 = 1;
-          //X
-}        
-#[test_only]
-module 0x1::string_tests {
-    use 0x1::string;
-    
-    #[test]
-    #[expected_failure(abort_code = string::ERR_ADMIN)]
-                                            //^
-    fun test_abort() {
-        
-    }
-}
+        module 0x1::string {
+            const ERR_ADMIN: u64 = 1;
+                  //X
+        }        
+        #[test_only]
+        module 0x1::string_tests {
+            use 0x1::string;
+            
+            #[test]
+            #[expected_failure(abort_code = string::ERR_ADMIN)]
+                                                    //^
+            fun test_abort() {
+                
+            }
+        }
     """)
 
     fun `test resolve fq const expected failure`() = checkByCode("""
-module 0x1::string {
-    const ERR_ADMIN: u64 = 1;
-          //X
-}        
-#[test_only]
-module 0x1::string_tests {
-    #[test]
-    #[expected_failure(abort_code = 0x1::string::ERR_ADMIN)]
-                                                //^
-    fun test_abort() {
-        
-    }
-}
+        module 0x1::string {
+            const ERR_ADMIN: u64 = 1;
+                  //X
+        }        
+        #[test_only]
+        module 0x1::string_tests {
+            #[test]
+            #[expected_failure(abort_code = 0x1::string::ERR_ADMIN)]
+                                                        //^
+            fun test_abort() {
+                
+            }
+        }
     """)
 
     fun `test resolve const item expected failure`() = checkByCode("""
-module 0x1::string {
-    const ERR_ADMIN: u64 = 1;
-          //X
-}        
-#[test_only]
-module 0x1::string_tests {
-    use 0x1::string::ERR_ADMIN;
-    
-    #[test]
-    #[expected_failure(abort_code = ERR_ADMIN)]
-                                     //^
-    fun test_abort() {
-        
-    }
-}
+        module 0x1::string {
+            const ERR_ADMIN: u64 = 1;
+                  //X
+        }        
+        #[test_only]
+        module 0x1::string_tests {
+            use 0x1::string::ERR_ADMIN;
+            
+            #[test]
+            #[expected_failure(abort_code = ERR_ADMIN)]
+                                             //^
+            fun test_abort() {
+                
+            }
+        }
     """)
 
 //    fun `test resolve const item with same name imported expected failure`() = checkByCode("""
@@ -312,30 +313,30 @@ module 0x1::string_tests {
 //    """)
 
     fun `test resolve const item same module expected failure`() = checkByCode("""
-#[test_only]
-module 0x1::string_tests {
-    const ERR_ADMIN: u64 = 1;
-        //X
-    
-    #[test]
-    #[expected_failure(abort_code = ERR_ADMIN)]
-                                     //^
-    fun test_abort() {
-        
-    }
-}
+        #[test_only]
+        module 0x1::string_tests {
+            const ERR_ADMIN: u64 = 1;
+                //X
+            
+            #[test]
+            #[expected_failure(abort_code = ERR_ADMIN)]
+                                             //^
+            fun test_abort() {
+                
+            }
+        }
     """)
 
     fun `test resolve const import expected failure`() = checkByCode("""
-module 0x1::string {
-    const ERR_ADMIN: u64 = 1;
-          //X
-}        
-#[test_only]
-module 0x1::string_tests {
-    use 0x1::string::ERR_ADMIN;
-                     //^
-}
+        module 0x1::string {
+            const ERR_ADMIN: u64 = 1;
+                  //X
+        }        
+        #[test_only]
+        module 0x1::string_tests {
+            use 0x1::string::ERR_ADMIN;
+                             //^
+        }
     """)
 
     fun `test for loop name resolution`() = checkByCode("""
@@ -372,6 +373,7 @@ module 0x1::string_tests {
         }        
     """)
 
+    // !
     @NamedAddress("aptos_std", "0x1")
     fun `test resolve attribute location for named address`() = checkByCode("""
         module aptos_std::m {
@@ -699,6 +701,7 @@ module 0x1::string_tests {
         }        
     """)
 
+    // !
     @NamedAddress("std", "0x1")
     fun `test function signer with the address name with existing named address`() = checkByCode("""
         module 0x1::m {
@@ -790,5 +793,8 @@ module 0x1::string_tests {
                 PERMISSIONED_SIGNER;
                 //^
             }
-        }    """)
+        }    
+        """)
+
+    // done
 }

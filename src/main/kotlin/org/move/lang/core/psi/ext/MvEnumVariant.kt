@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MvEnum
 import org.move.lang.core.psi.MvEnumBody
 import org.move.lang.core.psi.MvEnumVariant
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.impl.MvNamedElementImpl
 import javax.swing.Icon
 
 val MvEnumVariant.enumBody: MvEnumBody get() = this.parent as MvEnumBody

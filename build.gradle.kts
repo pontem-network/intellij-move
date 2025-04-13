@@ -8,6 +8,8 @@ import java.util.*
 
 @Suppress("USELESS_ELVIS_RIGHT_IS_NULL")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
+val isCI = System.getenv("CI") != null
+val isLocal = !isCI && System.getenv("MKURNIKOV_LOCAL") != null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
@@ -30,7 +32,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "2.1.10"
-    id("org.jetbrains.intellij.platform") version "2.1.0"
+    id("org.jetbrains.intellij.platform") version "2.5.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("de.undercouch.download") version "5.6.0"
@@ -67,12 +69,15 @@ allprojects {
         testImplementation("org.opentest4j:opentest4j:1.3.0")
 
         intellijPlatform {
-            create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+            if (isLocal) {
+                local("/snap/rustrover/current")
+            } else {
+                create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+            }
 
             pluginVerifier(Constraints.LATEST_VERSION)
             bundledPlugin("org.toml.lang")
             jetbrainsRuntime()
-//            jetbrainsRuntime("17.0.11b1207.30")
 
             testFramework(TestFrameworkType.Platform)
         }
@@ -123,7 +128,9 @@ allprojects {
 
         pluginVerification {
             ides {
-                recommended()
+                if (isCI) {
+                    recommended()
+                }
             }
             failureLevel.set(
                 EnumSet.complementOf(
@@ -139,6 +146,10 @@ allprojects {
     }
 
     tasks {
+        withType<Test> {
+            minHeapSize = "1024m"
+            maxHeapSize = "4096m"
+        }
         compileKotlin {
             compilerOptions {
 //                jvmTarget.set(JVM_21)
@@ -152,7 +163,10 @@ allprojects {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
 
-        task("downloadAptosBinaries") {
+//        register("downloadAptosBinaries") {
+//
+//        }
+        register("downloadAptosBinaries") {
             val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
             doLast {
                 // NOTE: MacOS is not supported anymore for pre-built CLI

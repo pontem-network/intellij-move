@@ -3,38 +3,26 @@ package org.move.lang.core.resolve
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.ext.getModuleSpecsFromIndex
-import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.scopeEntry.asEntries
-import org.move.lang.core.resolve.scopeEntry.filterByName
 import org.move.lang.core.types.Address
 import org.move.lang.index.MvModuleFileIndex
 import org.move.utils.PsiCachedValueProvider
 import org.move.utils.getResults
 import org.move.utils.psiCacheResult
 
-fun getFieldLookupResolveVariants(
-    fieldLookup: MvMethodOrField,
-    receiverItem: MvStructOrEnumItemElement,
-    msl: Boolean
-): List<ScopeEntry> {
-    if (!msl) {
-        // cannot access field if not in the same module as `receiverItem` definition
-        val currentModule = fieldLookup.containingModule ?: return emptyList()
-        if (receiverItem.definitionModule != currentModule) return emptyList()
-    }
+fun getFieldLookupResolveVariants(receiverItem: MvStructOrEnumItemElement): List<ScopeEntry> {
     return buildList {
         when (receiverItem) {
             is MvStruct -> {
-                addAll(getFieldEntries(receiverItem))
+                addAll(receiverItem.fields.asEntries())
             }
             is MvEnum -> {
                 val visitedFields = mutableSetOf<String>()
                 for (variant in receiverItem.variants) {
                     val visitedVariantFields = mutableSetOf<String>()
-                    for (fieldEntry in getFieldEntries(variant)) {
+                    for (fieldEntry in variant.fields.asEntries()) {
                         if (fieldEntry.name in visitedFields) continue
                         add(fieldEntry)
                         visitedVariantFields.add(fieldEntry.name)
@@ -55,7 +43,7 @@ fun getStructLitFieldResolveVariants(
     return buildList {
         val fieldsOwner = litField.parentStructLitExpr.path.maybeFieldsOwner
         if (fieldsOwner != null) {
-            addAll(getNamedFieldEntries(fieldsOwner))
+            addAll(fieldsOwner.namedFields.asEntries())
         }
         // if it's a shorthand, also try to resolve to the underlying binding pat
         if (!isCompletion && litField.expr == null) {
@@ -70,7 +58,7 @@ fun getStructPatFieldResolveVariants(patFieldFull: MvPatFieldFull): List<ScopeEn
     // used in completion
     val fieldsOwner =
         patFieldFull.patStruct.path.maybeFieldsOwner ?: return emptyList()
-    return getNamedFieldEntries(fieldsOwner)
+    return fieldsOwner.namedFields.asEntries()
 }
 
 fun getPatBindingsResolveVariants(
@@ -80,11 +68,11 @@ fun getPatBindingsResolveVariants(
     return buildList {
         // field pattern shorthand
         if (binding.parent is MvPatField) {
-            val parentPat = binding.parent.parent as MvPatStruct
-            val fieldsOwner = parentPat.path.maybeFieldsOwner
+            val patStruct = binding.parent.parent as MvPatStruct
+            val fieldsOwner = patStruct.path.maybeFieldsOwner
             // can be null if unresolved
             if (fieldsOwner != null) {
-                addAll(getNamedFieldEntries(fieldsOwner))
+                addAll(fieldsOwner.namedFields.asEntries())
                 if (isCompletion) {
                     return@buildList
                 }
@@ -111,19 +99,6 @@ fun getPatBindingsResolveVariants(
     }
 }
 
-fun resolveBindingForFieldShorthand(element: MvMandatoryReferenceElement): List<ScopeEntry> {
-    val entries = getEntriesFromWalkingScopes(element, NAMES)
-    return entries.filterByName(element.referenceName)
-}
-
-fun getFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.fields.asEntries()
-}
-
-fun getNamedFieldEntries(fieldsOwner: MvFieldsOwner): List<ScopeEntry> {
-    return fieldsOwner.namedFields.asEntries()
-}
-
 fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: NsSet): List<ScopeEntry> {
     val entries = buildList {
         val resolveScopes = getResolveScopes(scopeStart)
@@ -136,23 +111,21 @@ fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: NsSet): List<ScopeEnt
             // state between shadowing processors passed through prevScope
             val currScope = mutableMapOf<String, NsSet>()
             for (entry in entries) {
-                val entryNs = entry.namespaces
+                val entryNs = entry.ns
 
                 // filter entries by expected ns
-                if (!entryNs.intersects(ns)) {
+                if (!ns.contains(entryNs)) {
                     continue
                 }
 
-                // remove namespaces which are encountered before (shadowed by previous entries with this name)
-                val visitedNs = visitedScopes[entry.name] ?: NONE
-                val unprocessedNs = entryNs.sub(visitedNs)
-                if (unprocessedNs.isEmpty()) {
+                val visitedNs = visitedScopes.getOrDefault(entry.name, NONE)
+                if (visitedNs.contains(entryNs)) {
                     // all ns for this entry were shadowed
                     continue
                 }
-                add(entry.copyWithNs(ns = unprocessedNs))
+                add(entry)
                 // save encountered namespaces to the currScope
-                currScope[entry.name] = visitedNs.add(unprocessedNs)
+                currScope[entry.name] = NsSet.of(entryNs, *visitedNs.toTypedArray())
             }
             // at the end put all entries from the current scope into the `visitedScopes`
             visitedScopes.putAll(currScope)

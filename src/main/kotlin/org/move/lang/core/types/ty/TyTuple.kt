@@ -14,11 +14,9 @@ import org.move.lang.core.types.infer.mergeFlags
 data class TyTuple(val types: List<Ty>) : Ty(mergeFlags(types)) {
     override fun abilities() = Ability.all()
 
-    override fun innerFoldWith(folder: TypeFolder): Ty =
-        TyTuple(types.map { it.foldWith(folder) })
+    override fun deepFoldWith(folder: TypeFolder): Ty = TyTuple(types.map { it.foldWith(folder) })
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
-        types.any(visitor)
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean = types.any { visitor.visit(it) }
 
     override fun toString(): String = tyToString(this)
 

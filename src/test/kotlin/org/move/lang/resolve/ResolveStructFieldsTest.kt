@@ -3,6 +3,7 @@ package org.move.lang.resolve
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveStructFieldsTest : ResolveTestCase() {
+    // *
     fun `test resolve reference to field from constructor`() = checkByCode(
         """
         module 0x1::M {
@@ -19,6 +20,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve reference to field from pattern`() = checkByCode(
         """
         module 0x1::M {
@@ -35,6 +37,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve reference to field from pattern shorthand`() = checkByCode(
         """
         module 0x1::M {

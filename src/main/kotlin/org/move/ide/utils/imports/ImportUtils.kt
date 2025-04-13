@@ -12,7 +12,9 @@ import org.move.openapiext.checkWriteAccessAllowed
  */
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
-    val insertionScope = context.containingModule ?: context.containingScript ?: return
+    val insertionScope = context
+        .ancestorsOfType<MvItemsOwner>()
+        .filter { it !is MvCodeBlock && it !is MvSpecCodeBlock }.firstOrNull() ?: return
     val insertTestOnly =
         insertionScope.usageScope == NamedItemScope.MAIN
                 && context.usageScope == NamedItemScope.TEST
@@ -50,7 +52,7 @@ private fun tryGroupWithItemSpeck(
     if (useGroup == null && rootUseSpeck.path.length < 3) return false
 
     // searching for the statement with the same module qualifier
-    val itemModulePath = itemQualName.moduleText() ?: error("moduleName cannot be zero")
+    val itemModulePath = itemQualName.moduleIdentifierText() ?: error("moduleName cannot be zero")
     if (useGroup == null) {
         val modulePath = rootUseSpeck.path.qualifier ?: return false
         if (!modulePath.textMatches(itemModulePath)) return false

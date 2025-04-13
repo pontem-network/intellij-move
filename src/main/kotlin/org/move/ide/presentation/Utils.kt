@@ -9,8 +9,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.types.address
 import org.move.lang.core.types.fqName
+import org.move.lang.core.types.ty.functionTy
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.rootPath
+import org.move.utils.signatureText
 import java.nio.file.Path
 
 fun getPresentation(psi: PsiElement): ItemPresentation {
@@ -34,8 +36,13 @@ fun getPresentationForStructure(psi: PsiElement): ItemPresentation {
         }
         append(presentableName(psi))
         when (psi) {
-            is MvFunctionLike -> {
-                append(psi.signatureText)
+            is MvFunction -> {
+                val functionTy = psi.functionTy(false)
+                append(functionTy.signatureText())
+            }
+            is MvSpecFunction, is MvSpecInlineFunction -> {
+                val functionTy = psi.functionTy(true)
+                append(functionTy.signatureText())
             }
             is MvConst -> {
                 psi.type?.let { append(": ${it.text}") }
@@ -62,9 +69,10 @@ fun PsiElement.locationString(tryRelative: Boolean): String? = when (this) {
     else -> containingFilePath(tryRelative)?.toString()
 }
 
-val MvDocAndAttributeOwner.presentableQualifiedName: String?
+val MvNamedElement.presentableQualifiedName: String?
     get() {
-        val fqName = (this as? MvNamedElement)?.fqName()?.identifierText()
+//        return this.fqName()?.identifierText()
+        val fqName = this.fqName()?.identifierText()
         if (fqName != null) return fqName
         return name
     }

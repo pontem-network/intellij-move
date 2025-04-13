@@ -285,4 +285,28 @@ class ReceiverStyleFunctionTest: ResolveTestCase() {
             }
         }        
     """)
+
+    @MoveV2
+    fun `test enum receiver function as a field of another struct`() = checkByCode("""
+        module 0x1::m {
+            enum Node {
+                V1 {
+                    ordering: Ordering,
+                }
+            }
+            enum Ordering has copy, drop {
+                Less,
+                Equal,
+                Greater,
+            }
+            public fun is_eq(self: &Ordering): bool {
+                       //X
+                self is Ordering::Equal
+            }
+            fun main(node: &Node) {
+                node.ordering.is_eq()
+                               //^
+            }
+        }        
+    """)
 }

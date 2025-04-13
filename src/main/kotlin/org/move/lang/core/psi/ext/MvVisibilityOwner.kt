@@ -7,8 +7,6 @@ import org.move.lang.core.resolve.ref.Visibility
 
 interface MvVisibilityOwner: MvElement {
     val visibilityModifier: MvVisibilityModifier? get() = childOfType<MvVisibilityModifier>()
-    // restricted visibility considered as public
-    val isPublic: Boolean get() = visibilityModifier != null
 }
 
 // todo: add VisibilityModifier to stubs, rename this one to VisStubKind
@@ -19,7 +17,7 @@ enum class VisKind(val keyword: String) {
     SCRIPT("public(script)");
 }
 
-val MvVisibilityModifier.stubVisKind: VisKind
+val MvVisibilityModifier.visKind: VisKind
     get() = when {
         hasFriend -> FRIEND
         hasPackage -> PACKAGE
@@ -31,7 +29,7 @@ val MvVisibilityModifier.stubVisKind: VisKind
 
 val MvVisibilityOwner.visibility: Visibility
     get() {
-        val kind = this.visibilityModifier?.stubVisKind ?: return Visibility.Private
+        val kind = this.visibilityModifier?.visKind ?: return Visibility.Private
         return when (kind) {
             PACKAGE -> Visibility.Restricted.Package()
             FRIEND -> {

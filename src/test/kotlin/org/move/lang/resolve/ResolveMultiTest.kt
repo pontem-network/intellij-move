@@ -6,7 +6,7 @@ import org.move.utils.tests.InlineFile
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class MultiResolveTest: ResolveTestCase() {
+class ResolveMultiTest: ResolveTestCase() {
     fun `test struct literal shorthand`() = doTest("""
 module 0x1::M {
     struct S { val: u8 }

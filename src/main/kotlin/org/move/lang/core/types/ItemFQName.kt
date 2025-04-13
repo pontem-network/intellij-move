@@ -25,7 +25,8 @@ fun MvElement.fqName(): ItemFQName? {
         }
         is MvSpecFunction, is MvSpecInlineFunction, is MvSchema -> {
             val name = this.name ?: return null
-            val moduleFQName = this.parentModuleOrModuleSpec?.fqName() as? ItemFQName.Module ?: return null
+            val moduleFQName =
+                this.parentModuleOrModuleSpec?.fqName() as? ItemFQName.Module ?: return null
             ItemFQName.Item(moduleFQName, name)
         }
         is MvModuleSpec -> {
@@ -69,7 +70,7 @@ sealed class ItemFQName {
             is Item -> this.moduleFQName.identifierText()
         }
 
-    fun moduleText(): String? {
+    fun moduleIdentifierText(): String? {
         return when (this) {
             is Module -> this.identifierText()
             is Item -> this.moduleFQName.identifierText()
@@ -83,8 +84,8 @@ sealed class ItemFQName {
                 return "$addressText::${this.name}"
             }
             is Item -> {
-                val moduleDeclarationText = this.moduleFQName.identifierText()
-                return "$moduleDeclarationText::${this.name}"
+                val moduleText = this.moduleFQName.identifierText()
+                return "$moduleText::${this.name}"
             }
         }
     }

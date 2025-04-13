@@ -5,9 +5,10 @@ import org.move.utils.tests.NamedAddress
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveTypesTest : ResolveTestCase() {
+    // *
     fun `test resolve struct as function param type`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct {}
                  //X
             
@@ -17,21 +18,22 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct as return type`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct {}
                  //X
-            
             fun call(): MyStruct {}
                       //^
         }
     """
     )
 
+    // *
     fun `test resolve struct as acquires type`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct {}
                  //X
             
@@ -41,6 +43,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct for struct literal`() = checkByCode(
         """
         module 0x1::m {
@@ -55,6 +58,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test cannot resolve struct for struct literal from another module`() = checkByCode(
         """
         module 0x1::s {
@@ -70,6 +74,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct from another module for import`() = checkByCode(
         """
         module 0x1::s {
@@ -83,9 +88,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct as struct pattern destructuring`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct { val: u8 }
                  //X
             
@@ -97,11 +103,12 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve struct as type param`() = checkByCode(
+    // *
+    fun `test resolve struct as type argument`() = checkByCode(
         """
-        module M {
-            resource struct MyStruct {}
-                          //X
+        module 0x1::m {
+            struct MyStruct {}
+                     //X
             
             fun call() {
                 let a = move_from<MyStruct>();
@@ -111,9 +118,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct type param`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct<T> {
                           //X
                 val: T
@@ -123,9 +131,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve struct type param inside vector`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct MyStruct<T> {
                           //X
                 val: vector<T>
@@ -135,20 +144,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve struct type to struct`() = checkByCode(
-        """
-        module M {
-            struct Native {}
-                 //X
-            fun main(n: Native): u8 {}
-                      //^
-        }
-    """
-    )
-
+    // *
     fun `test resolve struct type with generics`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct Native<T> {}
                  //X
             fun main(n: Native<u8>): u8 {}
@@ -157,6 +156,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type from import`() = checkByCode(
         """
         address 0x1 {
@@ -172,6 +172,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type from usage`() = checkByCode(
         """
         address 0x1 {
@@ -189,6 +190,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve type to alias`() = checkByCode(
         """
         module 0x1::Transaction {
@@ -203,6 +205,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test unresolved for unresolved alias`() = checkByCode(
         """
         module 0x1::m {
@@ -213,6 +216,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test resolve return type to alias`() = checkByCode(
         """
         module 0x1::Transaction {
@@ -227,9 +231,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test function return type to type param`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             fun main<Token>()
                    //X
                 : Token {}
@@ -238,9 +243,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test function return type param to type param`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct Coin<Token> {}
             
             fun main<Token>()
@@ -251,9 +257,10 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test native function return type param to type param`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             struct Coin<Token> {}
             
             native fun main<Token>()
@@ -264,6 +271,7 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
+    // *
     fun `test struct unresolved in name expr`() = checkByCode("""
         address 0x1 {
             module A {
@@ -279,89 +287,94 @@ class ResolveTypesTest : ResolveTestCase() {
         }
     """)
 
+    // *
     fun `test resolve type param in native function in spec`() = checkByCode("""
-    module 0x1::M {
-        spec module {
-            /// Native function which is defined in the prover's prelude.
-            native fun serialize<MoveValue>(
-                                    //X
-                v: &MoveValue
-                    //^
-            ): vector<u8>;
-        }
-    }    
+        module 0x1::M {
+            spec module {
+                native fun serialize<MoveValue>(
+                                        //X
+                    v: &MoveValue
+                        //^
+                ): vector<u8>;
+            }
+        }    
     """)
 
+    // *
     fun `test resolve struct from use item`() = checkByCode("""
-    module 0x1::M {
-        struct MyStruct {}
-               //X
-    }    
-    module 0x1::Main {
-        use 0x1::M::{Self, MyStruct};
-                          //^
-    }
+        module 0x1::M {
+            struct MyStruct {}
+                   //X
+        }    
+        module 0x1::Main {
+            use 0x1::M::{Self, MyStruct};
+                              //^
+        }
     """)
 
-//    fun `test resolve type parameters in specs`() = checkByCode("""
-//    module 0x1::main {
-//        fun call<T>(a: u8, b: u8) {}
-//               //X
-//    }
-//    spec 0x1::main {
-//        spec call<T>(a: u8, b: u8) {}
-//                //^
-//    }
-//    """)
+    // !
+    fun `test resolve type parameters in specs`() = checkByCode("""
+        module 0x1::main {
+            fun call<T>(a: u8, b: u8) {}
+                   //X
+        }
+        spec 0x1::main {
+            spec call<T>(a: u8, b: u8) {}
+                    //^
+        }
+    """)
 
+    // *
     fun `test resolve type for local import`() = checkByCode("""
-module 0x1::table {
-    struct Table {}
-           //X
-}        
-module 0x1::main {
-    struct S<phantom T> has key {}
-    fun main() {
-        use 0x1::table::Table;
-        
-        assert!(exists<S<Table>>(@0x1), 1);
-                         //^
-    }
-}        
+        module 0x1::table {
+            struct Table {}
+                   //X
+        }        
+        module 0x1::main {
+            struct S<phantom T> has key {}
+            fun main() {
+                use 0x1::table::Table;
+                
+                assert!(exists<S<Table>>(@0x1), 1);
+                                 //^
+            }
+        }        
     """)
 
+    // *
     fun `test resolve type for local import in spec`() = checkByCode("""
-module 0x1::table {
-    struct Table {}
-           //X
-}        
-module 0x1::main {
-    struct S<phantom T> has key {}
-    fun main() {}
-}   
-spec 0x1::main {
-    spec main {
-        use 0x1::table::Table;
-        
-        assert!(exists<S<Table>>(@0x1), 1);
-                         //^
-    }
-}
+        module 0x1::table {
+            struct Table {}
+                   //X
+        }        
+        module 0x1::main {
+            struct S<phantom T> has key {}
+            fun main() {}
+        }   
+        spec 0x1::main {
+            spec main {
+                use 0x1::table::Table;
+                
+                assert!(exists<S<Table>>(@0x1), 1);
+                                 //^
+            }
+        }
     """)
 
+    // *
     fun `test type parameter in return`() = checkByCode("""
-module 0x1::m {
-    public fun remove<K: copy + drop, V>(
-                                    //X
-        val: V
-    ): V {
-     //^
-        val
-    }
-}        
+        module 0x1::m {
+            public fun remove<K: copy + drop, V>(
+                                            //X
+                val: V
+            ): V {
+             //^
+                val
+            }
+        }        
     """)
 
-    @MoveV2()
+    // *
     fun `test resource index expr`() = checkByCode("""
         module 0x1::m {
             struct S has key {}
@@ -373,6 +386,7 @@ module 0x1::m {
         }        
     """)
 
+    // *
     fun `test module resolution not available on type position`() = checkByCode("""
         module 0x1::Transaction {
             struct Type {
@@ -386,6 +400,7 @@ module 0x1::m {
         }
     """)
 
+    // *
     fun `test resolve enum as a qualifier of enum variant in type position`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
@@ -396,6 +411,7 @@ module 0x1::m {
         }        
     """)
 
+    // *
     fun `test cannot resolve enum variant in type position`() = checkByCode("""
         module 0x1::m {
             enum S { One, Two }
@@ -405,6 +421,7 @@ module 0x1::m {
         }        
     """)
 
+    // *
     fun `test resolve enum type from module`() = checkByCode("""
         module 0x1::m { 
             enum S { One, Two }

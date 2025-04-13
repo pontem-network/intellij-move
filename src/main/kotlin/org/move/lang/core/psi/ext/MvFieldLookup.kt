@@ -8,18 +8,18 @@ import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.infer.inference
 import org.move.stdext.wrapWithList
 
-fun isFieldsAccessible(
-    element: MvElement,
-    item: MvStructOrEnumItemElement,
-    msl: Boolean
-): Boolean {
-    if (!msl) {
-        // cannot resolve field if not in the same module as struct definition
-        val declModule = element.definitionModule ?: return false
-        if (item.containingModule != declModule) return false
-    }
-    return true
-}
+//fun isFieldsAccessible(
+//    element: MvElement,
+//    item: MvStructOrEnumItemElement,
+//    msl: Boolean
+//): Boolean {
+//    if (!msl) {
+//        // cannot resolve field if not in the same module as struct definition
+//        val declModule = element.definitionModule ?: return false
+//        if (item.containingModule != declModule) return false
+//    }
+//    return true
+//}
 
 class MvFieldLookupReferenceImpl(
     element: MvFieldLookup

@@ -9,19 +9,21 @@ interface TestCase {
     fun getTestName(lowercaseFirstLetter: Boolean): String
 
     companion object {
-        const val testResourcesPath = "src/test/resources"
+        const val TEST_RESOURCES = "src/test/resources"
 
         @JvmStatic
         fun camelOrWordsToSnake(name: String): String {
             if (' ' in name)
-                return name.trim().replace(" ", "_")
+                return name.trim()
+                    .replace(" ", "_")
+                    .replace("-", "_")
             return name.split("(?=[A-Z])".toRegex()).joinToString("_", transform = String::lowercase)
         }
     }
 }
 
 fun TestCase.pathToSourceTestFile(): Path =
-    Paths.get("${TestCase.testResourcesPath}/${getTestDataPath()}/${getTestName(true)}.$testFileExtension")
+    Paths.get("${TestCase.TEST_RESOURCES}/${getTestDataPath()}/${getTestName(true)}.$testFileExtension")
 
 fun TestCase.pathToGoldTestFile(): Path =
-    Paths.get("${TestCase.testResourcesPath}/${getTestDataPath()}/${getTestName(true)}.txt")
+    Paths.get("${TestCase.TEST_RESOURCES}/${getTestDataPath()}/${getTestName(true)}.txt")

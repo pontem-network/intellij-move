@@ -14,7 +14,7 @@ import org.move.lang.core.psi.MvPatBinding
 import org.move.lang.core.psi.MvPatField
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.getNamedFieldEntries
+import org.move.lang.core.resolve.scopeEntry.asEntries
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider: MvCompletionProvider() {
@@ -47,7 +47,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 val struct = patStruct.path.maybeFieldsOwner ?: return
                 val existingFields = patStruct.fieldNames.toSet()
                 val fieldEntries =
-                    getNamedFieldEntries(struct).filter { it.name !in existingFields }
+                    struct.namedFields.filter { it.name !in existingFields }.asEntries()
                 completions.addEntries(fieldEntries)
             }
             is MvStructLitField -> {
@@ -55,7 +55,7 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 val struct = structLit.path.maybeFieldsOwner ?: return
                 val existingFields = structLit.providedFieldNames.toSet()
                 val fieldEntries =
-                    getNamedFieldEntries(struct).filter { it.name !in existingFields }
+                    struct.namedFields.filter { it.name !in existingFields }.asEntries()
                 completions.addEntries(fieldEntries)
             }
         }

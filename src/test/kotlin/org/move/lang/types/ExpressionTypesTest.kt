@@ -952,7 +952,7 @@ module 0x1::main {
     """
     )
 
-    fun `test bit ^`() = testExpr(
+    fun `test bit xor`() = testExpr(
         """
 module 0x1::main {
     fun main() {
@@ -1787,7 +1787,7 @@ module 0x1::main {
             fun main() {
                 let vec = 1..10;
                 vec;
-                //^ range<integer>
+                //^ range<?integer>
             }
         }        
     """)
@@ -2440,4 +2440,50 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test struct of integer in spec block`() = testExpr("""
+        module 0x1::m {
+            struct Aggregator<IntElement> has store, drop {
+                value: IntElement,
+                max_value: IntElement,
+            }
+            fun main() {
+                let agg = Aggregator { value: 1, max_value: 1 };
+                spec {
+                    agg;
+                    //^ 0x1::m::Aggregator<num>
+                }
+            }
+        }        
+    """)
+
+    fun `test spec fun of integer in spec block`() = testExpr("""
+        module 0x1::m {
+            struct Aggregator<IntElement> has store, drop {
+                value: IntElement,
+                max_value: IntElement,
+            }
+            spec native fun spec_get_max_value<IntElement>(aggregator: Aggregator<IntElement>): IntElement;
+            fun main() {
+                let agg = Aggregator { value: 1, max_value: 1 };
+                spec {
+                    spec_get_max_value(agg);
+                    //^  num
+                }
+            }
+        }        
+    """)
+
+    fun `test integer in spec block`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let n = 1;
+                spec {
+                    n;
+                  //^  num
+                }
+            }
+        }        
+    """)
+
 }

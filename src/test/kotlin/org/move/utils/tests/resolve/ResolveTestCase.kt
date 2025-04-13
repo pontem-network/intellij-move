@@ -1,25 +1,31 @@
 package org.move.utils.tests.resolve
 
-import com.intellij.testFramework.IndexingTestUtil
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
+import com.intellij.testFramework.VfsTestUtil
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.types.fqName
 import org.move.utils.tests.MvTestBase
+import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
-import kotlin.collections.first
-import kotlin.collections.orEmpty
+import kotlin.io.path.Path
 
-abstract class ResolveTestCase : MvTestBase() {
+abstract class ResolveTestCase: MvTestBase() {
+
     protected fun checkByCode(
         @Language("Move") code: String,
     ) {
+//        val testClass = this.javaClass.simpleName
+//        if (!testClass.endsWith("ProjectTest")) {
+//            val testClassDir =
+//                TestCase.camelOrWordsToSnake(
+//                    testClass.removePrefix("Resolve").removeSuffix("Test")
+//                ).trimStart('_')
+//            createTestMoveFileFromCode("resolve", testClassDir, code)
+//        }
+
         InlineFile(code, "main.move")
 
         val (refElement, data, offset) =

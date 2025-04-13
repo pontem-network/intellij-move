@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.functionTy
 
@@ -48,24 +49,24 @@ data class LookupElementProperties(
      */
     val isReturnTypeConformsToExpectedType: Boolean = false,
 
-    val isCompatibleWithContext: Boolean = false,
+//    val isCompatibleWithContext: Boolean = false,
 
-    val typeHasAllRequiredAbilities: Boolean = false,
+//    val typeHasAllRequiredAbilities: Boolean = false,
 )
 
 fun getLookupElementProperties(
     element: MvNamedElement,
-    subst: Substitution,
+    applySubst: Substitution,
     context: MvCompletionContext
 ): LookupElementProperties {
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
         val msl = context.msl
-        val declaredTy =
+        val declaredItemTy =
             when (element) {
                 is MvFunctionLike -> element.functionTy(msl).returnType
-                is MvStruct -> element.declaredType(msl)
+                is MvStruct -> TyAdt.valueOf(element)
                 is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
                 is MvPatBinding -> {
                     val inference = element.inference(msl)
@@ -76,7 +77,7 @@ fun getLookupElementProperties(
                 is MvNamedFieldDecl -> element.type?.loweredType(msl) ?: TyUnknown
                 else -> TyUnknown
             }
-        val itemTy = declaredTy.substitute(subst)
+        val itemTy = declaredItemTy.substitute(applySubst)
 
         // NOTE: it is required for the TyInfer.TyVar to always have a different underlying unification table
         val isCompat = isCompatible(expectedTy, itemTy, msl) && compatAbilities(expectedTy, itemTy, msl)

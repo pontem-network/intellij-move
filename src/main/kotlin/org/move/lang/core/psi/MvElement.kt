@@ -38,12 +38,6 @@ val MvElement.containingModuleSpec: MvModuleSpec? get() = ancestorStrict()
 
 val MvElement.containingItemsOwner get() = ancestorOrSelf<MvItemsOwner>()
 
-//val MvElement.containingModuleOrScript: MvElement?
-//    get() {
-//        return this.findFirstParent(false) { it is MvScript || it is MvModule }
-//                as? MvElement
-//    }
-
 /**
  * Delete the element along with a neighbour comma.
  * If a comma follows the element, it will be deleted.
@@ -54,11 +48,11 @@ val MvElement.containingItemsOwner get() = ancestorOrSelf<MvItemsOwner>()
 fun MvElement.deleteWithSurroundingComma() {
     val followingComma = getNextNonCommentSibling()
     if (followingComma?.elementType == MvElementTypes.COMMA) {
-        followingComma?.delete()
+        followingComma.delete()
     } else {
         val precedingComma = getPrevNonCommentSibling()
         if (precedingComma?.elementType == MvElementTypes.COMMA) {
-            precedingComma?.delete()
+            precedingComma.delete()
         }
     }
     delete()

@@ -206,19 +206,19 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             itemTy is TyReference -> {
                 val referenced = itemTy.referenced
                 when {
-                    referenced is TyAdt && referenced.item.hasKey ->
+                    referenced is TyAdt && referenced.adtItem.hasKey ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_KEY_OBJECT else MvColor.REF_TO_KEY_OBJECT
-                    referenced is TyAdt && referenced.item.hasStore && !referenced.item.hasDrop ->
+                    referenced is TyAdt && referenced.adtItem.hasStore && !referenced.adtItem.hasDrop ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_NO_DROP_OBJECT else MvColor.REF_TO_STORE_NO_DROP_OBJECT
-                    referenced is TyAdt && referenced.item.hasStore && referenced.item.hasDrop ->
+                    referenced is TyAdt && referenced.adtItem.hasStore && referenced.adtItem.hasDrop ->
                         if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_OBJECT else MvColor.REF_TO_STORE_OBJECT
                     else ->
                         if (itemTy.isMut) MvColor.MUT_REF else MvColor.REF
                 }
             }
-            itemTy is TyAdt && itemTy.item.hasStore && !itemTy.item.hasDrop -> MvColor.STORE_NO_DROP_OBJECT
-            itemTy is TyAdt && itemTy.item.hasStore -> MvColor.STORE_OBJECT
-            itemTy is TyAdt && itemTy.item.hasKey -> MvColor.KEY_OBJECT
+            itemTy is TyAdt && itemTy.adtItem.hasStore && !itemTy.adtItem.hasDrop -> MvColor.STORE_NO_DROP_OBJECT
+            itemTy is TyAdt && itemTy.adtItem.hasStore -> MvColor.STORE_OBJECT
+            itemTy is TyAdt && itemTy.adtItem.hasKey -> MvColor.KEY_OBJECT
             else -> MvColor.VARIABLE
         }
 

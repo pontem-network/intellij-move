@@ -71,7 +71,7 @@ address 0x1 {
   call_entry()
   double(i: u8): u8
   main()
-  find(): u8
+  find(): num
     """
     )
 

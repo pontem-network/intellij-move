@@ -19,23 +19,26 @@ import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.joinToWithBuffer
 
 fun MvDocAndAttributeOwner.header(buffer: StringBuilder) {
-    val rawLines = when (this) {
-        is MvNamedFieldDecl -> listOfNotNull((fieldOwner as? MvDocAndAttributeOwner)?.presentableQualifiedName)
+    val headerLine = when (this) {
+        is MvNamedFieldDecl -> this.fieldOwner.fqName()?.identifierText()
         is MvStructOrEnumItemElement,
         is MvFunctionLike,
         is MvConst,
-        is MvSchema -> listOfNotNull(presentableQualifiedModName)
-        else -> emptyList()
+        is MvSchema -> this.fqName()?.moduleIdentifierText()
+        else -> null
     }
-    rawLines.joinTo(buffer, "<br>")
-    if (rawLines.isNotEmpty()) {
-        buffer += "\n"
-    }
+        ?: return
+
+    buffer += headerLine
+    buffer += "\n"
+//    rawLines.joinTo(buffer, "<br>")
+//    if (rawLines.isNotEmpty()) {
+//        buffer += "\n"
+//    }
 }
 
 fun MvDocAndAttributeOwner.signature(builder: StringBuilder) {
     // no need for msl type conversion in docs
-//    val msl = false
     val buffer = StringBuilder()
     when (this) {
         is MvFunction -> buffer.generateFunction(this)
@@ -177,6 +180,3 @@ private fun highlightWithLexer(context: PsiElement, text: String): String {
     return highlighed.trimEnd()
         .removeSurrounding("<pre>", "</pre>")
 }
-
-private val MvDocAndAttributeOwner.presentableQualifiedModName: String?
-    get() = presentableQualifiedName?.removeSuffix("::$name")

@@ -23,7 +23,7 @@ class MvStructureViewTreeElement(val psi: NavigatablePsiElement): StructureViewT
 
     val isPublicItem: Boolean =
         when (val psi = psi) {
-            is MvFunction -> psi.isPublic
+            is MvFunction -> psi.visibilityModifier != null
             is MvConst -> false
             else -> true
         }

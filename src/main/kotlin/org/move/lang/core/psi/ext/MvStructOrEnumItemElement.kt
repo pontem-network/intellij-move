@@ -7,13 +7,12 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.ty.Ability
 
 interface MvStructOrEnumItemElement: MvItemElement,
-                                     MvTypeDeclarationElement,
                                      MvGenericDeclaration {
 
     val abilitiesList: MvAbilitiesList?
 
     // it's public except for the lit/pat usages, which are checked separately
-    override val isPublic: Boolean get() = true
+//    override val isPublic: Boolean get() = true
 }
 
 val MvStructOrEnumItemElement.psiAbilities: List<MvAbility>

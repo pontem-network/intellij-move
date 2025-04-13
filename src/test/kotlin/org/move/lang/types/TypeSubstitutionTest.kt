@@ -108,9 +108,9 @@ class TypeSubstitutionTest: TypificationTestCase() {
     fun `test return type of generic function parametrized by field`() = testExpr(
         """
         module 0x1::M {
-            struct Option<Element> { element: Element }
-            struct S<Element> { id: Option<Element> }
-            native public fun borrow<Element>(v: &Option<Element>): &Element;
+            struct Option<OptElement> { element: OptElement }
+            struct S<SElement> { id: Option<SElement> }
+            native public fun borrow<BorrowElement>(v: &Option<BorrowElement>): &BorrowElement;
             fun m() {
                 let s = S { id: Option { element: 1u64 } };
                 let b = *borrow(&s.id);

@@ -66,34 +66,32 @@ val TYPES_N_ENUMS = nsset(Ns.TYPE, Ns.ENUM)
 val TYPES_N_ENUMS_N_ENUM_VARIANTS = nsset(Ns.TYPE, Ns.ENUM, Ns.ENUM_VARIANT)
 val TYPES_N_ENUMS_N_ENUM_VARIANTS_N_MODULES = nsset(Ns.TYPE, Ns.ENUM, Ns.ENUM_VARIANT, Ns.MODULE)
 val NAMES_N_ENUM_VARIANTS = nsset(Ns.NAME, Ns.ENUM_VARIANT)
-val NAMES_N_FUNCTIONS = nsset(Ns.NAME, Ns.FUNCTION)
 val NAMES_N_FUNCTIONS_N_ENUM_VARIANTS = nsset(Ns.NAME, Ns.FUNCTION, Ns.ENUM_VARIANT)
-val TYPES_N_NAMES = nsset(Ns.TYPE, Ns.NAME)
 val TYPES_N_ENUMS_N_NAMES = nsset(Ns.TYPE, Ns.ENUM, Ns.NAME)
 
 val ALL_NS = Ns.all()
 val IMPORTABLE_NS: NsSet = EnumSet.of(Ns.NAME, Ns.FUNCTION, Ns.TYPE, Ns.SCHEMA, Ns.ENUM)
 
-val MvNamedElement.itemNs
+val MvNamedElement.itemNs: Ns
     get() = when (this) {
-        is MvModule -> MODULES
-        is MvFunctionLike -> FUNCTIONS
-        is MvTypeParameter -> TYPES
-        is MvStruct -> TYPES
-        is MvEnum -> ENUMS
-        is MvEnumVariant -> ENUM_VARIANTS
-        is MvPatBinding -> NAMES
-        is MvFieldDecl -> NAMES
-        is MvConst -> NAMES
-        is MvSchema -> SCHEMAS
-        is MvGlobalVariableStmt -> NAMES
-        is MvLabelDecl -> NONE
+        is MvModule -> Ns.MODULE
+        is MvFunctionLike -> Ns.FUNCTION
+        is MvTypeParameter -> Ns.TYPE
+        is MvStruct -> Ns.TYPE
+        is MvEnum -> Ns.ENUM
+        is MvEnumVariant -> Ns.ENUM_VARIANT
+        is MvSchema -> Ns.SCHEMA
+        is MvPatBinding -> Ns.NAME
+        is MvFieldDecl -> Ns.NAME
+        is MvConst -> Ns.NAME
+        is MvGlobalVariableStmt -> Ns.NAME
+        is MvLabelDecl -> Ns.NAME
         else -> error("when should be exhaustive, $this is not covered")
     }
 
 fun List<ScopeEntry>.filterByNs(ns: NsSet): List<ScopeEntry> {
     return this.filter {
-        it.namespaces.intersects(ns)
+        ns.contains(it.ns)
     }
 
 }

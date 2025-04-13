@@ -6,10 +6,10 @@ import org.move.ide.inspections.imports.usageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
-import org.move.lang.core.resolve.ref.Ns.*
+import org.move.lang.core.resolve.ref.Ns.NAME
+import org.move.lang.core.resolve.ref.TYPES_N_ENUMS
 import org.move.lang.core.resolve.ref.Visibility.*
-import org.move.stdext.containsAny
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 
 fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boolean {
     // inside msl everything is visible
@@ -20,21 +20,23 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     if (attrItem != null) return true
 
     val item = scopeEntry.element() ?: return false
-    val itemNs = scopeEntry.namespaces
+    val itemNs = scopeEntry.ns
 
     val contextUsageScope = contextElement.usageScope
     val path = contextElement as? MvPath
     if (path != null) {
         val useSpeck = path.useSpeck
         if (useSpeck != null) {
-            // for use specks, items needs to be public to be visible, no other rules apply
-            if (item is MvModule || (item is MvItemElement && item.isPublic)) return true
+            if (item is MvModule) return true
+            // it is always public if we're inside the use speck
+            if (item is MvStructOrEnumItemElement) return true
+            if (item is MvVisibilityOwner && item.visibilityModifier != null) return true
 
             // msl-only items are available from imports
             if (item.isMslOnlyItem) return true
 
             // consts are importable in tests
-            if (contextUsageScope.isTest && itemNs.contains(NAME)) return true
+            if (contextUsageScope.isTest && itemNs == NAME) return true
         }
     }
 
@@ -66,7 +68,7 @@ fun isVisibleInContext(scopeEntry: ScopeEntry, contextElement: MvElement): Boole
     if (itemModule == pathModule) return true
 
     // item is type, check whether it's allowed in the context
-    if (itemNs.containsAny(TYPE, ENUM)) {
+    if (TYPES_N_ENUMS.contains(itemNs)) {
         val pathParent = path?.rootPath()?.parent
         when (pathParent) {
             // todo: when structs and enums can be public, conditions for struct lit/pat should be added here

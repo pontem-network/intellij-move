@@ -11,13 +11,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.psi.ext.receiverExpr
-import org.move.lang.core.types.infer.InferenceResult
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.infer.substituteOrUnknown
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
-import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyUnknown
 
 data class NamedTy(var ty: Ty) {
@@ -46,7 +43,8 @@ fun getFunctionAcquiresTypes(owner: MvFunction): List<NamedTy> {
         }
         else -> {
             // parse from MvAcquiresType
-            owner.acquiresPathTypes.map { it.loweredType(false) }.asNamedTys()
+            owner.acquiredTys.asNamedTys()
+//            owner.acquiresPathTypes.map { it.loweredType(false) }.asNamedTys()
         }
     }
     return tys
@@ -72,17 +70,19 @@ class AcquiresTypeContext {
     }
 
     fun getAcquiredTypesInCall(callable: MvCallable, inference: InferenceResult): List<NamedTy> {
-        val callTy = inference.getCallableType(callable) as? TyFunction ?: return emptyList()
-        val functionItem = callTy.item as? MvFunction ?: return emptyList()
+        val callTy = inference.getCallableType(callable) as? TyCallable ?: return emptyList()
+        val callKind = callTy.genericKind() ?: return emptyList()
+        val functionItem = callKind.item as? MvFunction ?: return emptyList()
         return if (functionItem.isInline) {
-            val functionTypes = getFunctionAcquiresTypes(functionItem)
-            functionTypes
-                .forEach {
-                    it.ty = it.ty.substituteOrUnknown(callTy.substitution)
+            val inlineFunctionTys = getFunctionAcquiresTypes(functionItem)
+            inlineFunctionTys
+                .map {
+                    NamedTy(it.ty.substituteOrUnknown(callKind.substitution))
                 }
-            functionTypes
         } else {
-            callTy.acquiresTypes.asNamedTys()
+            functionItem.acquiredTys
+                .asNamedTys()
+                .map { NamedTy(it.ty.substitute(callKind.substitution)) }
         }
     }
 
@@ -180,7 +180,7 @@ private class MvAcquiresCheckVisitor(val holder: ProblemsHolder): MvVisitor() {
                     if (elementAcqTy.declModule != outerModule) continue
 
                     if (elementAcqTy.fullname !in outerAcquiredTypeNames) {
-                        add(elementTy.item)
+                        add(elementTy.adtItem)
                     }
                 }
             }

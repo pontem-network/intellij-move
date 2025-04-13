@@ -23,11 +23,12 @@ data class NumericAddress(val value: String) {
     companion object {
         fun trimmedValue(text: String): String {
             if (!text.startsWith("0")) return text
-            val trimmed = if (!text.startsWith("0x")) {
-                text.substring(1 until text.length)
-            } else {
-                text.substring(2 until text.length)
-            }
+            val trimmed =
+                if (!text.startsWith("0x")) {
+                    text.substring(1 until text.length)
+                } else {
+                    text.substring(2 until text.length)
+                }
             var trimmedAddress = trimmed.trimStart('0')
             if (trimmedAddress.isBlank()) {
                 // 0x0
@@ -102,9 +103,9 @@ sealed class Address {
     }
 }
 
-fun MvModule.address(): Address? = this.addressRef()?.refAddress()
+fun MvModule.address(): Address? = this.addressRef()?.refToAddress()
 
-fun MvAddressRef.refAddress(): Address? {
+fun MvAddressRef.refToAddress(): Address? {
     val namedAddress = this.namedAddress
     if (namedAddress != null) {
         return Address.Named(namedAddress.referenceName)

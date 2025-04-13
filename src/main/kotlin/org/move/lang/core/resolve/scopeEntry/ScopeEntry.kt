@@ -6,6 +6,7 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.NamedItemScope
 import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.resolve.isVisibleInContext
+import org.move.lang.core.resolve.ref.Ns
 import org.move.lang.core.resolve.ref.NsSet
 import org.move.lang.core.resolve.ref.RsPathResolveResult
 import org.move.lang.core.resolve.ref.itemNs
@@ -14,14 +15,14 @@ import org.move.lang.core.resolve.ref.itemNs
 data class ScopeEntry(
     val name: String,
     private val element: Lazy<MvNamedElement?>,
-    val namespaces: NsSet,
+    val ns: Ns,
     val customItemScope: NamedItemScope? = null,
 ) {
     fun element(): MvNamedElement? = this.element.value
 
     val completionPriority: Double get() = this.element()?.completionPriority ?: LOCAL_ITEM_PRIORITY
 
-    fun copyWithNs(ns: NsSet): ScopeEntry = copy(namespaces = ns)
+    fun copyWithNs(ns: Ns): ScopeEntry = copy(ns = ns)
 }
 
 fun List<ScopeEntry>.filterByName(name: String): List<ScopeEntry> {

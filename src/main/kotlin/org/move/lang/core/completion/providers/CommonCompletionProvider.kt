@@ -13,9 +13,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.*
-import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.getVerifiableItemEntries
+import org.move.lang.core.resolve.scopeEntry.ScopeEntry
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.*
@@ -84,22 +84,28 @@ object CommonCompletionProvider: MvCompletionProvider() {
         val msl = completions.ctx.msl
         val receiverTy = element.inferReceiverTy(msl)
         // unknown, &unknown, &mut unknown
-        if (receiverTy.derefIfNeeded() is TyUnknown) return
+        if (receiverTy.unwrapTyRefs() is TyUnknown) return
 
-        val tyAdt = receiverTy.derefIfNeeded() as? TyAdt
+        val tyAdt = receiverTy.unwrapTyRefs() as? TyAdt
         if (tyAdt != null) {
-            val fieldEntries = getFieldLookupResolveVariants(element, tyAdt.item, msl)
-            completions.addEntries(
-                fieldEntries,
-                applySubst = tyAdt.substitution
-            )
+            run {
+                if (!msl && !element.isDeclaredInModule(tyAdt.adtItem.module)) {
+                    // fields invisible outside module they're declared in
+                    return@run
+                }
+                val fieldEntries = getFieldLookupResolveVariants(tyAdt.adtItem)
+                completions.addEntries(
+                    fieldEntries,
+                    applySubst = tyAdt.substitution
+                )
+            }
         }
 
         val methodEntries = getMethodResolveVariants(element, receiverTy, msl)
         for (methodEntry in methodEntries) {
             val f = methodEntry.element() as? MvFunction ?: continue
             val subst = f.tyVarsSubst
-            val funcTy = f.functionTy(msl).substitute(subst) as TyFunction
+            val funcTy = f.functionTy(msl).substitute(subst) as TyCallable
             val selfTy = funcTy.paramTypes.first()
 
             val autoborrowedReceiverTy =
@@ -110,7 +116,7 @@ object CommonCompletionProvider: MvCompletionProvider() {
 
             completions.addEntry(
                 methodEntry,
-                applySubst = inferenceCtx.resolveTypeVarsIfPossible(subst)
+                applySubst = inferenceCtx.fullyResolveTypeVarsWithOrigins(subst)
             )
         }
     }

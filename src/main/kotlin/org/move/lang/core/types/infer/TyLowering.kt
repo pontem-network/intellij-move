@@ -7,8 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
-fun MvType.loweredType(msl: Boolean): Ty = TyLowering().lowerType(this, msl)
-
+fun MvType.loweredType(msl: Boolean): Ty = TyLowering.lowerType(this, msl)
 
 /**
  * Returns type from the explicit instantiation of the item, like
@@ -21,59 +20,54 @@ fun MvType.loweredType(msl: Boolean): Ty = TyLowering().lowerType(this, msl)
  * ```
  * will return TyAdt(Option, Element -> u8)
  */
-class TyLowering {
-    fun lowerType(moveType: MvType, msl: Boolean): Ty {
-        return when (moveType) {
+object TyLowering {
+    fun lowerType(type: MvType, msl: Boolean): Ty {
+        return when (type) {
             is MvPathType -> {
-                val genericItem = moveType.path.reference?.resolveFollowingAliases()
-                lowerPath(moveType.path, genericItem, msl)
+                val namedItem = type.path.reference?.resolveFollowingAliases()
+                // namedItem can be null if it's a primitive type
+                if (namedItem == null) {
+                    return lowerPrimitiveTy(type.path, msl)
+                }
+                lowerPath(type.path, namedItem, msl)
             }
             is MvRefType -> {
-                val mutability = Mutability.valueOf(moveType.mutable)
-                val refInnerType = moveType.type ?: return TyReference(TyUnknown, mutability, msl)
-                val innerTy = lowerType(refInnerType, msl)
+                val mutability = Mutability.valueOf(type.mutable)
+                val innerType = type.type
+                    ?: return TyReference(TyUnknown, mutability, msl)
+                val innerTy = lowerType(innerType, msl)
                 TyReference(innerTy, mutability, msl)
             }
             is MvTupleType -> {
-                val innerTypes = moveType.typeList.map { lowerType(it, msl) }
+                val innerTypes = type.typeList.map { lowerType(it, msl) }
                 TyTuple(innerTypes)
             }
             is MvUnitType -> TyUnit
-            is MvParensType -> lowerType(moveType.type, msl)
+            is MvParensType -> lowerType(type.type, msl)
             is MvLambdaType -> {
-                val paramTys = moveType.paramTypes.map { lowerType(it, msl) }
-                val returnType = moveType.returnType
+                val paramTys = type.paramTypes.map { lowerType(it, msl) }
+                val returnType = type.returnType
                 val retTy = if (returnType == null) {
                     TyUnit
                 } else {
                     lowerType(returnType, msl)
                 }
-                TyLambda(paramTys, retTy)
+                TyCallable(paramTys, retTy, CallKind.Lambda)
             }
             else -> debugErrorOrFallback(
-                "${moveType.elementType} type is not inferred",
+                "${type.elementType} type is not inferred",
                 TyUnknown
             )
         }
     }
 
-    fun lowerPath(methodOrPath: MvMethodOrPath, namedItem: MvElement?, msl: Boolean): Ty {
+    fun lowerPath(methodOrPath: MvMethodOrPath, namedItem: MvNamedElement, msl: Boolean): Ty {
         // cannot do resolve() here due to circular caching for MethodCall, need to pass namedItem explicitly,
-        // namedItem can be null if it's a primitive type
-        if (namedItem == null) {
-            return if (methodOrPath is MvPath) lowerPrimitiveTy(methodOrPath, msl) else TyUnknown
-        }
-        return when (namedItem) {
-            is MvTypeDeclarationElement -> {
-                val baseItemTy = namedItem.declaredType(msl)
-                val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
-                baseItemTy.substitute(explicitTypeParams)
-            }
-            is MvFunctionLike -> {
-                val baseTy = namedItem.functionTy(msl)
-                val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
-                baseTy.substitute(explicitTypeParams)
-            }
+        val pathTy = when (namedItem) {
+            is MvTypeParameter -> TyTypeParameter.named(namedItem)
+            is MvSchema -> TySchema.valueOf(namedItem)
+            is MvStructOrEnumItemElement -> TyAdt.valueOf(namedItem)
+            is MvFunctionLike -> namedItem.functionTy(msl)
             is MvEnumVariant -> {
                 // has to be MvPath of form `ENUM_NAME::ENUM_VARIANT_NAME`
                 val enumPath = (methodOrPath as? MvPath)?.qualifier ?: return TyUnknown
@@ -84,22 +78,14 @@ class TyLowering {
                 TyUnknown
             )
         }
-    }
-
-    fun lowerCallable(
-        methodOrPath: MvMethodOrPath,
-        namedItem: MvGenericDeclaration,
-        parameterTypes: List<Ty>,
-        returnType: Ty,
-        msl: Boolean
-    ): TyFunction {
-        val acqTypes = (namedItem as? MvFunctionLike)?.acquiresPathTypes.orEmpty().map { it.loweredType(msl) }
-        val typeParamsSubst = namedItem.typeParamsToTypeParamsSubst
-
-        val baseTy = TyFunction(namedItem, typeParamsSubst, parameterTypes, returnType, acqTypes)
-
-        val explicitTypeParams = explicitTypeParamsSubst(methodOrPath, namedItem, msl)
-        return baseTy.substitute(explicitTypeParams) as TyFunction
+        // adds associations of ?Element -> (type of ?Element from explicitly set types)
+        // Option<u8>: ?Element -> u8
+        // Option: ?Element -> ?Element
+        if (namedItem is MvGenericDeclaration) {
+            val typeArgsSubst = methodOrPath.typeArgsSubst(namedItem, msl)
+            return pathTy.substitute(typeArgsSubst)
+        }
+        return pathTy
     }
 
     private fun lowerPrimitiveTy(path: MvPath, msl: Boolean): Ty {
@@ -120,27 +106,5 @@ class TyLowering {
             else -> TyUnknown
         }
         return ty
-    }
-
-    private fun explicitTypeParamsSubst(
-        methodOrPath: MvMethodOrPath,
-        genericItem: MvElement,
-        msl: Boolean
-    ): Substitution {
-        if (genericItem !is MvGenericDeclaration) return emptySubstitution
-
-        val explicitTypeParamsSubst = pathTypeParamsSubst(methodOrPath, genericItem)
-
-        val typeSubst = hashMapOf<TyTypeParameter, Ty>()
-        for ((param, value) in explicitTypeParamsSubst.typeSubst.entries) {
-            val paramTy = TyTypeParameter.named(param)
-            val valueTy = when (value) {
-                is RsPsiSubstitution.Value.Present -> lowerType(value.value, msl)
-                is RsPsiSubstitution.Value.OptionalAbsent -> paramTy
-                is RsPsiSubstitution.Value.RequiredAbsent -> TyUnknown
-            }
-            typeSubst[paramTy] = valueTy
-        }
-        return Substitution(typeSubst)
     }
 }

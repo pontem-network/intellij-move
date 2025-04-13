@@ -5,13 +5,15 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.completion.MvCompletionContext
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.deepFoldTyInferWith
+import org.move.lang.core.types.infer.foldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.CallKind
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.core.types.ty.functionTy
+import org.move.lang.core.types.ty.hasTyInfer
 
 interface MvFunctionLike: MvNameIdentifierOwner,
                           MvGenericDeclaration,
@@ -35,7 +37,12 @@ val MvFunctionLike.acquiresPathTypes: List<MvPathType>
             else -> emptyList()
         }
 
-val MvFunctionLike.anyBlock: AnyBlock?
+val MvFunctionLike.acquiredTys: List<Ty>
+    get() {
+        return this.acquiresPathTypes.map { it.loweredType(false) }
+    }
+
+val MvFunctionLike.anyCodeBlock: AnyCodeBlock?
     get() = when (this) {
         is MvFunction -> this.codeBlock
         is MvSpecFunction -> this.specCodeBlock
@@ -55,35 +62,31 @@ val MvFunctionLike.module: MvModule?
 
 val MvFunctionLike.script: MvScript? get() = this.parent as? MvScript
 
-val MvFunctionLike.signatureText: String
-    get() {
-        val paramsText = this.parameters.joinToSignature()
-        val retType = this.returnType?.type?.text ?: ""
-        val retTypeSuffix = if (retType == "") "" else ": $retType"
-        return "$paramsText$retTypeSuffix"
-    }
-
 val MvFunction.selfParam: MvFunctionParameter?
     get() {
         if (!project.moveSettings.enableReceiverStyleFunctions) return null
         return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
     }
+
 fun MvFunctionParameter.loweredTy(msl: Boolean): Ty? = this.type?.loweredType(msl)
 
 fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: MvCompletionContext?): Boolean {
     val msl = this.isMslOnlyItem
-    val callTy = this.functionTy(msl).substitute(this.tyVarsSubst) as TyFunction
+    @Suppress("UNCHECKED_CAST")
+    val callTy = this.functionTy(msl).substitute(this.tyVarsSubst) as TyCallable
 
     val inferenceCtx = InferenceContext(msl)
     callTy.paramTypes.forEach {
-        inferenceCtx.combineTypes(it, it.deepFoldTyInferWith { TyUnknown })
+        inferenceCtx.combineTypes(it, it.foldTyInferWith { TyUnknown })
     }
 
     val expectedTy = completionContext?.expectedTy
     if (expectedTy != null && expectedTy !is TyUnknown) {
         inferenceCtx.combineTypes(callTy.returnType, expectedTy)
     }
-    val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction
 
-    return resolvedCallTy.needsTypeAnnotation()
+    val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyCallable
+    val callKind = resolvedCallTy.genericKind() as CallKind.Function
+
+    return callKind.substitution.hasTyInfer
 }

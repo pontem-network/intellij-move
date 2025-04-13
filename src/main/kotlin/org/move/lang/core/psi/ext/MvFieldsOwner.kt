@@ -14,17 +14,6 @@ val MvFieldsOwner.itemElement: MvStructOrEnumItemElement
         else -> error("exhaustive")
     }
 
-//val MvFieldsOwner.toItemElement: MvModule get() {
-//    when (this) {
-//        is MvStruct -> (this as MvStructOrEnumItemElement).module
-//        is MvEnumVariant -> (this.enumItem as MvStructOrEnumItemElement).module
-//        else -> error("exhaustive")
-//    }
-//}
-
-//val MvFieldsOwner.fields: List<MvNamedFieldDecl>
-//    get() = namedFields //+ positionalFields
-
 val MvFieldsOwner.fields: List<MvFieldDecl>
     get() = namedFields + positionalFields
 

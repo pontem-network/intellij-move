@@ -16,7 +16,7 @@ import org.move.stdext.chainIf
 // null -> builtin module
 fun Ty.declaringModule(): MvModule? = when (this) {
     is TyReference -> this.referenced.declaringModule()
-    is TyAdt -> this.item.containingModule
+    is TyAdt -> this.adtItem.containingModule
     else -> null
 }
 
@@ -82,7 +82,6 @@ private fun render(
     level: Int,
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
-    integer: String = "integer",
     fq: Boolean = false,
     toHtml: Boolean = false,
     typeParam: (TyTypeParameter) -> String = {
@@ -96,20 +95,32 @@ private fun render(
 ): String {
     check(level >= 0)
     if (ty is TyUnknown) return unknown.chainIf(toHtml) { escapeForHtml() }
-    if (ty is TyPrimitive) return renderPrimitive(ty, integer, toHtml = toHtml)
+    if (ty is TyPrimitive) return renderPrimitive(ty, toHtml = toHtml)
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, fq, toHtml, typeParam, tyVar) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, fq, toHtml, typeParam, tyVar) }
 
     return when (ty) {
-        is TyFunction -> {
-            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            var s = if (ty.returnType is TyUnit) params else "$params -> ${r(ty.returnType)}"
-            if (ty.acquiresTypes.isNotEmpty()) {
-                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
+        is TyCallable -> {
+            when (ty.kind) {
+                is CallKind.Lambda -> {
+                    val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
+                    val retType = if (ty.returnType is TyUnit)
+                        "()"
+                    else
+                        r(ty.returnType)
+                    "$params -> $retType"
+                }
+                is CallKind.Function -> {
+                    val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
+                    if (ty.returnType is TyUnit) {
+                        params
+                    } else {
+                        "$params -> ${r(ty.returnType)}"
+                    }
+                }
             }
-            s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> {
@@ -127,7 +138,7 @@ private fun render(
         is TyReference -> {
             val buf = StringBuilder()
             // todo: escape?
-            buf += "&"
+            buf += "&".escapeIf(toHtml)
             if (ty.mutability.isMut) {
                 buf += colored("mut", asKeyword, toHtml)
                 buf += " "
@@ -137,7 +148,7 @@ private fun render(
         }
         is TyTypeParameter -> typeParam(ty)
         is TyAdt -> {
-            val itemName = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
+            val itemName = if (fq) ty.adtItem.fqName()?.identifierText() ?: anonymous else (ty.adtItem.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(
@@ -150,15 +161,7 @@ private fun render(
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> tyVar(ty)
-            is TyInfer.IntVar -> integer
-        }
-        is TyLambda -> {
-            val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
-            val retType = if (ty.returnType is TyUnit)
-                "()"
-            else
-                r(ty.returnType)
-            "$params -> $retType"
+            is TyInfer.IntVar -> "?integer"
         }
         is TySchema -> {
             val name = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
@@ -179,7 +182,7 @@ private fun render(
     }
 }
 
-private fun renderPrimitive(ty: TyPrimitive, integer: String = "integer", toHtml: Boolean = false): String {
+private fun renderPrimitive(ty: TyPrimitive, toHtml: Boolean = false): String {
     val tyText = when (ty) {
         is TyBool -> "bool"
         is TyAddress -> "address"
@@ -189,7 +192,7 @@ private fun renderPrimitive(ty: TyPrimitive, integer: String = "integer", toHtml
         is TySpecBv -> "bv"
         is TyInteger -> {
             if (ty.kind == TyInteger.DEFAULT_KIND) {
-                integer
+                "integer"
             } else {
                 ty.kind.toString()
             }

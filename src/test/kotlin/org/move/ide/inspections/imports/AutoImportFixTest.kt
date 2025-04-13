@@ -542,6 +542,34 @@ module 0x1::Main {
         """
     )
 
+    fun `test import fix in spec`() = checkAutoImportFixByText(
+        """
+            module 0x1::bcs {
+                native public fun to_bytes<MoveValue>(v: &MoveValue): vector<u8>;
+            }
+            module 0x1::m {
+            }
+            spec 0x1::m {
+                spec module {
+                    <error descr="Unresolved function: `to_bytes`">/*caret*/to_bytes</error>();
+                }
+            }
+        """,
+        """
+            module 0x1::bcs {
+                native public fun to_bytes<MoveValue>(v: &MoveValue): vector<u8>;
+            }
+            module 0x1::m {
+            }
+            spec 0x1::m {
+                use 0x1::bcs::to_bytes;
+                spec module {
+                    to_bytes();
+                }
+            }
+        """
+    )
+
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
         @Language("Move") after: String,

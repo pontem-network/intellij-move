@@ -15,9 +15,9 @@ import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyCallable
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.hasTyInfer
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 
@@ -220,9 +220,10 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     if (callable.descendantHasTypeError(inference.typeErrors)) {
                         return
                     }
-                    val callTy = inference.getCallableType(callable) as? TyFunction ?: return
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
+                    val callTyKind = callTy.genericKind() ?: return
                     // if no type args are passed, check whether all type params are inferrable
-                    if (callTy.needsTypeAnnotation()) {
+                    if (callTyKind.substitution.hasTyInfer) {
                         val annotatedItem =
                             if (methodOrPath is MvMethodCall) methodOrPath.identifier else methodOrPath
                         Diagnostic
@@ -310,23 +311,22 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val argumentExprs = valueArguments.map { it.expr!! }
         val realCount = argumentExprs.size
 
+        if (callable !is MvCallable) return
+
+        val msl = callable.isMsl()
+        val inference = callable.inference(msl) ?: return
+
         // use range, because assert! can have either 1 or 2 arguments
         val expectedRange =
             when (callable) {
                 is MvCallExpr -> {
-                    val msl = callable.path.isMslScope
-                    val callTy =
-                        callable.inference(msl)?.getCallableType(callable) as? TyCallable
-                            ?: return
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
                     val count = callTy.paramTypes.size
                     IntRange(count, count)
                 }
                 is MvMethodCall -> {
-                    val msl = callable.isMslScope
-                    val callTy =
-                        callable.inference(msl)?.getCallableType(callable) as? TyCallable
-                            ?: return
                     // 1 for self
+                    val callTy = inference.getCallableType(callable) as? TyCallable ?: return
                     val count = callTy.paramTypes.size - 1
                     IntRange(count, count)
                 }

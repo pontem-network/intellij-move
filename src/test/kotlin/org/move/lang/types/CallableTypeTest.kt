@@ -65,6 +65,16 @@ class CallableTypeTest: TypificationTestCase() {
         }        
     """)
 
+    fun `test return only call expr`() = testFunctionType("""
+        module 0x1::m {
+            native fun call<T>(): T;
+            fun main() {
+                let a: u8 = call();
+                           //^ fn() -> u8
+            }
+        }        
+    """)
+
     private fun testFunctionType(@Language("Move") code: String) = testCallableType<MvCallExpr>(code)
     private fun testMethodType(@Language("Move") code: String) = testCallableType<MvMethodCall>(code)
 

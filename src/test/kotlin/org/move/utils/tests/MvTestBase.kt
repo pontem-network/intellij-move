@@ -10,6 +10,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.UsefulTestCase
+import com.intellij.testFramework.VfsTestUtil
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
@@ -19,6 +20,7 @@ import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
 import java.lang.annotation.Inherited
+import kotlin.io.path.Path
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -86,7 +88,7 @@ abstract class MvTestBase: MvLightTestBase(),
         }
     }
 
-    override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"
+    override fun getTestDataPath(): String = "${TestCase.TEST_RESOURCES}/$dataPath"
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
         return TestCase.camelOrWordsToSnake(camelCase)
@@ -162,6 +164,16 @@ abstract class MvTestBase: MvLightTestBase(),
         checkByText(before.trimIndentIfNeeded(), after.trimIndentIfNeeded()) {
             myFixture.performEditorAction(actionId)
         }
+    }
+
+    protected fun createTestMoveFileFromCode(dirName: String, testClassDir: String, code: String) {
+        val resolveDir = Path(TestCase.TEST_RESOURCES).resolve("org/move/lang/$dirName")
+        val resolveClassDir = resolveDir.resolve(testClassDir)
+
+        val testName = getTestName(true).lowercase()
+        val testFile = resolveClassDir.resolve("${testName}.move")
+
+        VfsTestUtil.overwriteTestData(testFile.toString(), code.trimIndent())
     }
 
     companion object {

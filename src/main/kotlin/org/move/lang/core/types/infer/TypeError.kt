@@ -17,7 +17,7 @@ import org.move.lang.core.types.ty.TyTuple
 sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String
 
-    override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
+    override fun deepVisitWith(visitor: TypeVisitor): Boolean = true
 
     open fun range(): TextRange = element.textRange
 
@@ -35,8 +35,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             }
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return TypeMismatch(element, folder(expectedTy), folder(actualTy))
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
+            return TypeMismatch(element, folder.fold(expectedTy), folder.fold(actualTy))
         }
 
         override fun fix(): LocalQuickFix? {
@@ -75,8 +75,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
                     "expected integer type, but found '${ty.text()}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return UnsupportedBinaryOp(element, folder(ty), op)
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
+            return UnsupportedBinaryOp(element, folder.fold(ty), op)
         }
     }
 
@@ -91,8 +91,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
                     "'${leftTy.text()}' and '${rightTy.text()}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return IncompatibleArgumentsToBinaryExpr(element, folder(leftTy), folder(rightTy), op)
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
+            return IncompatibleArgumentsToBinaryExpr(element, folder.fold(leftTy), folder.fold(rightTy), op)
         }
     }
 
@@ -116,8 +116,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             }
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return InvalidUnpacking(element, folder(assignedTy))
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
+            return InvalidUnpacking(element, folder.fold(assignedTy))
         }
 
         private fun Ty.assignedTyFormText(): String {
@@ -140,7 +140,7 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             return "Circular reference of type '${itemElement.name}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError = this
+        override fun deepFoldWith(folder: TypeFolder): TypeError = this
     }
 
     data class ExpectedNonReferenceType(
@@ -152,7 +152,7 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             return "Expected a single non-reference type, but found: '${actualTy.text(fq = false)}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
             return ExpectedNonReferenceType(element, folder.fold(actualTy))
         }
     }
@@ -165,7 +165,7 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             return "Invalid dereference. Expected '&_' but found '${actualTy.text(fq = false)}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
             return InvalidDereference(element, folder.fold(actualTy))
         }
     }
@@ -178,7 +178,7 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             return "Indexing receiver type should be vector or resource, got '${actualTy.text(fq = false)}'"
         }
 
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
+        override fun deepFoldWith(folder: TypeFolder): TypeError {
             return IndexingIsNotAllowed(element, folder.fold(actualTy))
         }
     }

@@ -1617,4 +1617,92 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test struct lit with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R> { val: R }
+            fun main() {
+                let s: S<u8> = <error descr="Incompatible type 'S<u16>', expected 'S<u8>'">S<u16> { val: 1 }</error>;
+            }
+        }        
+    """)
+
+    fun `test tuple struct lit with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R>(R);
+            fun main() {
+                let s: S<u8> = <error descr="Incompatible type 'S<u16>', expected 'S<u8>'">S<u16>(1)</error>;
+            }
+        }        
+    """)
+
+    fun `test struct lit field with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R> { val: R }
+            fun main() {
+                let s: S<u8> = S { val: <error descr="Incompatible type 'u16', expected 'u8'">1u16</error> };
+            }
+        }        
+    """)
+
+    fun `test tuple struct lit field with expected type of different generic argument`() = checkByText("""
+        module 0x1::m {
+            struct S<R>(R);
+            fun main() {
+                let s: S<u8> = S(<error descr="Incompatible type 'u16', expected 'u8'">1u16</error>);
+            }
+        }        
+    """)
+
+    fun `test return only call expr`() = checkByText("""
+        module 0x1::m {
+            native fun call(): u16;
+            fun main() {
+                let a: u8 = <error descr="Incompatible type 'u16', expected 'u8'">call()</error>;
+            }
+        }        
+    """)
+
+    fun `test num and u64 in spec block from the outer scope`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let validator_index = 1;
+                spec {
+                    validator_index + 1;
+                }
+            }
+        }        
+    """)
+
+    fun `test num and integer returning spec fun for spec block`() = checkByText("""
+        module 0x1::m {
+            struct Aggregator<IntElement> has store, drop {
+                value: IntElement,
+                max_value: IntElement,
+            }
+            spec native fun spec_get_max_value<IntElement>(aggregator: Aggregator<IntElement>): IntElement;
+            fun main() {
+                let agg = Aggregator { value: 1, max_value: 1 };
+                spec {
+                    assert spec_get_max_value(agg) == 10;
+                }
+            }
+        }        
+    """)
+
+    fun `test compare two int generics from spec fun`() = checkByText("""
+        module 0x1::m {
+            struct Aggregator<IntElement> has store, drop {
+                value: IntElement,
+                max_value: IntElement,
+            }
+            spec native fun spec_get_max_value<IntElement>(aggregator: Aggregator<IntElement>): IntElement;
+            fun main() {
+                let agg = Aggregator { value: 1, max_value: 1 };
+                spec {
+                    assert spec_get_max_value(agg) < spec_get_max_value(agg);
+                }
+            }
+        }        
+    """)
 }
