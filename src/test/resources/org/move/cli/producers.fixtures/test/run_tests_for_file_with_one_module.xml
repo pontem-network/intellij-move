@@ -1,6 +1,6 @@
 <configurations>
   <configuration name="Test Main" type="AptosCommandConfiguration" factoryName="AnyCommand">
-    <option name="command" value="move test --filter Main --skip-fetch-latest-git-deps --move-2" />
+    <option name="command" value="move test --filter Main --skip-fetch-latest-git-deps" />
     <option name="workingDirectory" value="file:///mypackage" />
     <envs>
       <env name="APTOS_DISABLE_TELEMETRY" value="true" />
