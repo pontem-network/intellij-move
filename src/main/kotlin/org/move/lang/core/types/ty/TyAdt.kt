@@ -7,16 +7,16 @@ import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.types.infer.*
 
 data class TyAdt(
-    val item: MvStructOrEnumItemElement,
+    val adtItem: MvStructOrEnumItemElement,
     val substitution: Substitution,
     val typeArguments: List<Ty>,
 ): Ty(mergeFlags(substitution.valueTys) or mergeFlags(typeArguments) or HAS_TY_ADT_MASK) {
 
-    override fun abilities(): Set<Ability> = this.item.abilities
+    override fun abilities(): Set<Ability> = this.adtItem.abilities
 
     override fun deepFoldWith(folder: TypeFolder): Ty {
         return TyAdt(
-            item,
+            adtItem,
             substitution.foldWith(folder),
             typeArguments.map { it.foldWith(folder) }
         )

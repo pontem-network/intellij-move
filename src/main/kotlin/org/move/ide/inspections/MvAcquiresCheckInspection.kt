@@ -180,7 +180,7 @@ private class MvAcquiresCheckVisitor(val holder: ProblemsHolder): MvVisitor() {
                     if (elementAcqTy.declModule != outerModule) continue
 
                     if (elementAcqTy.fullname !in outerAcquiredTypeNames) {
-                        add(elementTy.item)
+                        add(elementTy.adtItem)
                     }
                 }
             }

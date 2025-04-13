@@ -84,16 +84,16 @@ object CommonCompletionProvider: MvCompletionProvider() {
         val msl = completions.ctx.msl
         val receiverTy = element.inferReceiverTy(msl)
         // unknown, &unknown, &mut unknown
-        if (receiverTy.unwrapRefs() is TyUnknown) return
+        if (receiverTy.unwrapTyRefs() is TyUnknown) return
 
-        val tyAdt = receiverTy.unwrapRefs() as? TyAdt
+        val tyAdt = receiverTy.unwrapTyRefs() as? TyAdt
         if (tyAdt != null) {
             run {
-                if (!msl && !element.isDeclaredInModule(tyAdt.item.module)) {
+                if (!msl && !element.isDeclaredInModule(tyAdt.adtItem.module)) {
                     // fields invisible outside module they're declared in
                     return@run
                 }
-                val fieldEntries = getFieldLookupResolveVariants(tyAdt.item)
+                val fieldEntries = getFieldLookupResolveVariants(tyAdt.adtItem)
                 completions.addEntries(
                     fieldEntries,
                     applySubst = tyAdt.substitution

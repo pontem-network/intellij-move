@@ -57,7 +57,7 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 //     */
 //    open val typeParamsToTypeArgsSubst: Substitution get() = emptySubstitution
 
-    fun unwrapRefs(): Ty = if (this is TyReference) this.referenced.unwrapRefs() else this
+    fun unwrapTyRefs(): Ty = if (this is TyReference) this.referenced.unwrapTyRefs() else this
 
     /**
      * User visible string representation of a type
@@ -72,7 +72,7 @@ fun Ty.refineForSpecs(msl: Boolean): Ty {
     if (!msl) return ty
 
     if (this is TyReference) {
-        ty = this.unwrapRefs()
+        ty = this.unwrapTyRefs()
     }
     if (ty is TyInteger || ty is TyInfer.IntVar) {
         ty = TyNum

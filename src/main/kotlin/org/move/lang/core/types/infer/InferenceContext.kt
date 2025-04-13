@@ -410,7 +410,7 @@ class InferenceContext(
     }
 
     private fun combineTyAdts(ty1: TyAdt, ty2: TyAdt): CombineResult {
-        if (ty1.item != ty2.item) {
+        if (ty1.adtItem != ty2.adtItem) {
             return Err(TypeMismatchError(ty1, ty2))
         }
         return combineTypePairs(ty1.typeArguments.zip(ty2.typeArguments))

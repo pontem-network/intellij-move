@@ -28,11 +28,11 @@ object MvTypeHintsFactory {
     }
 
     private fun PresentationTreeBuilder.adtTypeHint(level: Int, tyAdt: TyAdt) {
-        val itemName = tyAdt.item.name ?: ANONYMOUS_MARK
+        val itemName = tyAdt.adtItem.name ?: ANONYMOUS_MARK
         text(
             itemName,
             InlayActionData(
-                PsiPointerInlayActionPayload(tyAdt.item.createSmartPointer()),
+                PsiPointerInlayActionPayload(tyAdt.adtItem.createSmartPointer()),
                 PsiPointerInlayActionNavigationHandler.HANDLER_ID
             )
         )
@@ -116,7 +116,7 @@ object MvTypeHintsFactory {
         when (ty) {
             is TyAdt -> {
                 // check whether the name is too long, collapse the type arguments if so
-                val itemName = ty.item.name
+                val itemName = ty.adtItem.name
                 if (itemName != null) {
                     if (itemName.length > TY_ADT_NAME_LENGTH_COLLAPSE_LIMIT) {
                         return Collapsed

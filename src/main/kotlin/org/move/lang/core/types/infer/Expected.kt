@@ -9,12 +9,12 @@ import org.move.lang.core.types.ty.TyUnknown
  *
  * Follows https://github.com/rust-lang/rust/blob/master/compiler/rustc_typeck/src/check/expectation.rs#L11
  */
-sealed class Expectation {
+sealed class Expected {
     /** We know nothing about what type this expression should have */
-    object NoExpectation : Expectation()
+    object NoValue : Expected()
 
     /** This expression should have the type given (or some subtype) */
-    class ExpectType(val ty: Ty) : Expectation()
+    class ExpectType(val ty: Ty) : Expected()
 
     fun ty(ctx: InferenceContext): Ty? {
         return when (this) {
@@ -24,9 +24,9 @@ sealed class Expectation {
     }
 
     companion object {
-        fun fromType(ty: Ty?): Expectation {
+        fun fromType(ty: Ty?): Expected {
             return if (ty == null || ty is TyUnknown) {
-                NoExpectation
+                NoValue
             } else {
                 ExpectType(ty)
             }

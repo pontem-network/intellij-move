@@ -45,7 +45,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
 
             val item =
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
-                    ?: (expected as? TyAdt)?.item as? MvStruct
+                    ?: (expected as? TyAdt)?.adtItem as? MvStruct
 
             if (item is MvStruct) {
                 val patTy = fcx.instantiatePath<TyAdt>(this.path, item) ?: return
@@ -83,7 +83,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
             fcx.ctx.writePatTy(this, expected)
             val item =
                 fcx.resolvePathCached(this.path, expected) as? MvFieldsOwner
-                    ?: (expected as? TyAdt)?.item as? MvStruct
+                    ?: (expected as? TyAdt)?.adtItem as? MvStruct
             if (item == null) {
                 patList.forEach { it.collectBindings(fcx, TyUnknown) }
                 return

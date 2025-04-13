@@ -16,7 +16,7 @@ import org.move.stdext.chainIf
 // null -> builtin module
 fun Ty.declaringModule(): MvModule? = when (this) {
     is TyReference -> this.referenced.declaringModule()
-    is TyAdt -> this.item.containingModule
+    is TyAdt -> this.adtItem.containingModule
     else -> null
 }
 
@@ -148,7 +148,7 @@ private fun render(
         }
         is TyTypeParameter -> typeParam(ty)
         is TyAdt -> {
-            val itemName = if (fq) ty.item.fqName()?.identifierText() ?: anonymous else (ty.item.name ?: anonymous)
+            val itemName = if (fq) ty.adtItem.fqName()?.identifierText() ?: anonymous else (ty.adtItem.name ?: anonymous)
             val typeArgs =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(
