@@ -6,19 +6,15 @@ import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import org.move.lang.core.psi.MvNamedAddress
 
-class NamedAddressUsageTypeProvider : UsageTypeProviderEx {
-    override fun getUsageType(element: PsiElement?, targets: Array<out UsageTarget>): UsageType? {
+class NamedAddressUsageTypeProvider: UsageTypeProviderEx {
+    override fun getUsageType(element: PsiElement, targets: Array<out UsageTarget>): UsageType? {
         return when (element) {
-            is MvNamedAddress -> ADDRESS_REF_USAGE_TYPE
+            is MvNamedAddress -> UsageType { "address ref" }
             else -> null
         }
     }
 
     override fun getUsageType(element: PsiElement): UsageType? {
         return getUsageType(element, UsageTarget.EMPTY_ARRAY)
-    }
-
-    companion object {
-        val ADDRESS_REF_USAGE_TYPE = UsageType { "address ref" }
     }
 }
