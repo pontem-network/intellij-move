@@ -16,16 +16,16 @@ class MoveToml(
     val packageTable: MoveTomlPackageTable? = null,
 
     val addresses: RawAddressMap = mutableRawAddressMap(),
-    val dev_addresses: RawAddressMap = mutableRawAddressMap(),
+    val devAddresses: RawAddressMap = mutableRawAddressMap(),
 
     val deps: List<DepWithAddrSubst> = emptyList(),
-    val dev_deps: List<DepWithAddrSubst> = emptyList()
+    val devDeps: List<DepWithAddrSubst> = emptyList()
 ) {
     val packageName: String? get() = packageTable?.name
 
     fun declaredAddresses(): PackageAddresses {
         val packageName = this.packageName ?: ""
-        val raws = this.addresses
+        val raws = this.devAddresses + this.addresses
 
         val values = mutableAddressMap()
         val placeholders = placeholderMap()

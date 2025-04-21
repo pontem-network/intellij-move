@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
+class ResolveItemsTreeProjectTest: ResolveProjectTestCase() {
 
     fun `test resolve module from other file in sources folder`() = checkByFileTree {
         namedMoveToml("MyPackage")
@@ -528,66 +528,81 @@ class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
         dir("another") {
             namedMoveToml("Another")
             sources {
-                move("string.move", """
+                move(
+                    "string.move", """
 module 0x1::string {}                    
-                """)
+                """
+                )
             }
         }
         namedMoveToml("Main")
         sources {
-            main("""
+            main(
+                """
 module 0x1::main {
     use 0x1::string;
             //^ unresolved
 }                
-            """)
+            """
+            )
         }
     }
 
     fun `test resolve module that has the same name as address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [package]
         name = "Main"
         
         [dependencies]
         UQ64x64 = { local = "./uq64x64" }
-            """)
+            """
+        )
         sources {
-            main("""
+            main(
+                """
         module 0x1::m {
             use uq64x64::uq64x64;
                         //^            
         }
-            """)
+            """
+            )
         }
         dir("uq64x64") {
-            moveToml("""
+            moveToml(
+                """
         [package]
         name = "UQ64x64"
         
         [addresses]
         uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
-            """)
+            """
+            )
             sources {
-                move("uq64x64.move", """
+                move(
+                    "uq64x64.move", """
             module uq64x64::uq64x64 {
                             //X
             }
-                """)
+                """
+                )
             }
         }
     }
 
     fun `test resolve module in path from module that has the same name as address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [package]
         name = "Main"
         
         [dependencies]
         UQ64x64 = { local = "./uq64x64" }
-            """)
+            """
+        )
         sources {
-            main("""
+            main(
+                """
         module 0x1::m {
             use uq64x64::uq64x64;
             fun main() {
@@ -595,37 +610,45 @@ module 0x1::main {
                  //^
             }
         }
-            """)
+            """
+            )
         }
         dir("uq64x64") {
-            moveToml("""
+            moveToml(
+                """
         [package]
         name = "UQ64x64"
         
         [addresses]
         uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
-            """)
+            """
+            )
             sources {
-                move("uq64x64.move", """
+                move(
+                    "uq64x64.move", """
             module uq64x64::uq64x64 {
                            //X
                 public fun call() {}
             }
-                """)
+                """
+                )
             }
         }
     }
 
     fun `test resolve function from module that has the same name as address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [package]
         name = "Main"
         
         [dependencies]
         UQ64x64 = { local = "./uq64x64" }
-            """)
+            """
+        )
         sources {
-            main("""
+            main(
+                """
         module 0x1::m {
             use uq64x64::uq64x64;
             fun main() {
@@ -633,23 +656,107 @@ module 0x1::main {
                         //^     
             }
         }
-            """)
+            """
+            )
         }
         dir("uq64x64") {
-            moveToml("""
+            moveToml(
+                """
         [package]
         name = "UQ64x64"
         
         [addresses]
         uq64x64 = "0x4e9fce03284c0ce0b86c88dd5a46f050cad2f4f33c4cdd29d98f501868558c81"
-            """)
+            """
+            )
             sources {
-                move("uq64x64.move", """
+                move(
+                    "uq64x64.move", """
             module uq64x64::uq64x64 {
                 public fun call() {}
                            //X
             }
-                """)
+                """
+                )
+            }
+        }
+    }
+
+    fun `test resolve item from module with dev only address`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "Main"
+        
+        [dev-addresses]
+        dev = "0x3"
+            """
+        )
+        sources {
+            main(
+                """
+        module 0x1::m {
+            use dev::dev_module::call;
+            fun main() {
+                call();
+               //^     
+            }
+        }
+            """
+            )
+            move(
+                "dev_module.move", """
+        module dev::dev_module {
+            public fun call() {}
+                      //X
+        }
+            """
+            )
+        }
+    }
+
+    fun `test resolve item from dependency with dev only address`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "Main"
+        
+        [dependencies]
+        Local = { local = "./dev_dep" }
+            """
+        )
+        sources {
+            main(
+                """
+        module 0x1::m {
+            use dev::dev_module::call;
+            fun main() {
+                call();
+               //^     
+            }
+        }
+            """
+            )
+        }
+        dir("dev_dep") {
+            moveToml(
+                """
+        [package]
+        name = "DevDep"
+        
+        [dev-addresses]
+        dev = "0x3"
+            """
+            )
+            sources {
+                move(
+                    "dev_module.move", """
+        module dev::dev_module {
+            public fun call() {}
+                      //X
+        }
+            """
+                )
             }
         }
     }

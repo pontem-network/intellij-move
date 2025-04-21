@@ -369,7 +369,7 @@ class MoveProjectsSyncTask(
 
             var parsedDeps = rootMoveToml.deps
             if (isRoot) {
-                parsedDeps = parsedDeps.withExtended(rootMoveToml.dev_deps)
+                parsedDeps = parsedDeps.withExtended(rootMoveToml.devDeps)
             }
             for ((dep, addrSubst) in parsedDeps) {
                 val depRoot = dep.rootDirectory()
