@@ -4,10 +4,6 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.MoveFileType
 
 abstract class MvTypingTestCase : MvTestBase() {
-    protected fun doTest(c: Char = '\n') = checkByFile {
-        myFixture.type(c)
-    }
-
     protected fun doTest(@Language("Move") before: String, type: Char, @Language("Move") after: String) {
         val beforeText = replaceCaretMarker(before)
         val afterText = replaceCaretMarker(after)
