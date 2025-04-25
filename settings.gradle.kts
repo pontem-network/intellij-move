@@ -6,5 +6,3 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
-//include("ui-tests")
