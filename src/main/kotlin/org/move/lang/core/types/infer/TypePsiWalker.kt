@@ -438,7 +438,7 @@ class TypePsiWalker(
     }
 
     private fun instantiateCallableTy(callExpr: MvCallExpr): TyCallable? {
-        val path = callExpr.path
+        val path = callExpr.path ?: return null
         val namedItem = resolvePathCached(path, expectedType = null)
         val callableTy =
             when (namedItem) {

@@ -39,21 +39,21 @@ class MvErrorAnnotator: MvAnnotatorBase() {
             override fun visitMethodCall(o: MvMethodCall) = checkMethodOrPath(o, moveHolder)
 
             override fun visitCallExpr(callExpr: MvCallExpr) {
-                val msl = callExpr.path.isMslScope
+                val callPath = callExpr.path ?: return
+                val msl = callPath.isMslScope
                 if (msl) return
 
                 val outerFunction = callExpr.containingFunction ?: return
                 if (outerFunction.isInline) return
 
-                val path = callExpr.path
-                val item = path.reference?.resolve() ?: return
+                val item = callPath.reference?.resolve() ?: return
                 if (item !is MvFunction) return
 
-                val referenceName = path.referenceName ?: return
+                val referenceName = callPath.referenceName ?: return
                 if (referenceName !in GLOBAL_STORAGE_ACCESS_FUNCTIONS) return
 
                 val currentModule = callExpr.containingModule ?: return
-                val typeArg = path.typeArguments.singleOrNull() ?: return
+                val typeArg = callPath.typeArguments.singleOrNull() ?: return
 
                 val typeArgTy = typeArg.type.loweredType(false)
                 if (typeArgTy is TyUnknown) return
@@ -61,7 +61,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 when {
                     typeArgTy is TyTypeParameter -> {
                         val itemName = typeArgTy.origin.name ?: return
-                        Diagnostic.StorageAccessError.WrongItem(path, itemName)
+                        Diagnostic.StorageAccessError.WrongItem(callPath, itemName)
                             .addToHolder(moveHolder)
                         return
                     }
@@ -77,7 +77,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         moduleQualTypeName =
                             moduleQualTypeName.split("::").drop(1).joinToString("::")
                     }
-                    Diagnostic.StorageAccessError.WrongModule(path, itemModuleName, moduleQualTypeName)
+                    Diagnostic.StorageAccessError.WrongModule(callPath, itemModuleName, moduleQualTypeName)
                         .addToHolder(moveHolder)
                 }
             }

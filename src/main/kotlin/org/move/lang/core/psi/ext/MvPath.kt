@@ -49,7 +49,10 @@ val MvPath.isUpdateFieldArg2: Boolean
         if (!this.isMslScope) return false
         val ind = this
             .ancestorStrict<MvCallExpr>()
-            ?.let { if (it.path.textMatches("update_field")) it else null }
+            ?.let {
+                val path = it.path ?: return@let null
+                if (path.textMatches("update_field")) it else null
+            }
             ?.let {
                 val expr = this.ancestorStrict<MvPathExpr>() ?: return@let -1
                 it.argumentExprs.indexOf(expr)

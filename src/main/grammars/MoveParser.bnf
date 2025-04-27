@@ -642,8 +642,9 @@ PathType ::= PathImpl
 
 TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
 
-LambdaType ::= '|' !',' <<comma_separated_list LambdaTypeParam>>? '|' Type?
+LambdaType ::= '|' !',' <<comma_separated_list LambdaTypeParam>>? '|' Type? LambdaTypeAbilityList?
 LambdaTypeParam ::= Type
+LambdaTypeAbilityList ::= has TypeParamBound_items
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
@@ -675,9 +676,9 @@ TypeParamBound ::= ':' TypeParamBound_items
 }
 private TypeParamBound_items ::= Ability ( '+' Ability )*
 {
-    recoverWhile = TypeParamBound_items_recover
+//    recoverWhile = TypeParamBound_items_recover
 }
-private TypeParamBound_items_recover ::= !('>' | ',')
+//private TypeParamBound_items_recover ::= !('>' | ',')
 
 TypeArgumentList ::= TypeArgumentListImpl {
     name = "type arguments"
@@ -1094,12 +1095,12 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= PathImpl !'!' ValueArgumentList {
+CallExpr ::= Expr !'!' ValueArgumentList {
 //    pin = 2
     implements = [
         "org.move.lang.core.psi.ext.MvCallable"
         "org.move.lang.core.psi.MvAcquireTypesOwner"
-        "org.move.lang.core.resolve.ref.InferenceCachedPathElement"
+//        "org.move.lang.core.resolve.ref.InferenceCachedPathElement"
     ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
