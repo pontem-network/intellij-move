@@ -318,12 +318,7 @@ class TypePsiWalker(
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvNamedFieldDecl -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStruct, is MvEnum -> {
-                if (project.moveSettings.enableIndexExpr && pathExpr.parent is MvIndexExpr) {
-                    TyLowering.lowerPath(pathExpr.path, item, ctx.msl)
-                } else {
-                    // invalid statements
-                    TyUnknown
-                }
+                TyLowering.lowerPath(pathExpr.path, item, ctx.msl)
             }
             is MvEnumVariant -> {
                 // MyEnum<u8>::MyVariant
@@ -334,8 +329,10 @@ class TypePsiWalker(
                 baseTy
             }
             is MvModule -> TyUnknown
-            // todo: when function values are landed, this thing should return TyCallable
-            is MvFunctionLike -> TyUnknown
+            is MvFunctionLike -> {
+                instantiatePath<TyCallable>(pathExpr.path, item)
+                    ?: return TyUnknown
+            }
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${pathExpr.text}` at ${pathExpr.location} cannot be inferred into type",
@@ -422,7 +419,8 @@ class TypePsiWalker(
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expected): Ty {
-        val lhsTy = this.inferExprTy(callExpr.expr)
+        val lhsExpr = callExpr.expr
+        val lhsTy = this.inferExprTy(lhsExpr)
         val callTy = when (lhsTy) {
             is TyCallable -> lhsTy
             is TyAdt -> {
@@ -430,10 +428,12 @@ class TypePsiWalker(
                 instantiateAdtAsTyCallable(path, lhsTy) ?: return TyUnknown
             }
             else -> {
-                return TyUnknown
+                TyCallable.fake(
+                    callExpr.valueArguments.size,
+                    CallKind.Function.fake(this.project)
+                )
             }
         }
-//        val callTy = instantiateCallableTy(callExpr) ?: return TyUnknown
 
         val expectedArgTys = inferExpectedArgsTys(callTy, expected)
         coerceArgumentTypes(

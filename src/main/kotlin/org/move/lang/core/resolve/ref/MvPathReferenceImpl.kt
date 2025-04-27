@@ -228,6 +228,13 @@ fun resolvePath(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
             entries
         }
     }
+    if (entries.size > 1) {
+        // we're not at the callable, so drop function entries and see whether we'd get to a single entry
+        val nonFunctions = entries.filter { it.ns != Ns.FUNCTION }
+        if (nonFunctions.size == 1) {
+            return nonFunctions
+        }
+    }
     return entries
 }
 

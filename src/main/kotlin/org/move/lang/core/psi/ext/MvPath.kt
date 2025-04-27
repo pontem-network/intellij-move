@@ -110,8 +110,7 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): NsSet {
                 && parent.parent is MvIndexExpr -> TYPES_N_ENUMS_N_NAMES
 
         // can be anything in completion
-//        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_FUNCTIONS_N_ENUM_VARIANTS
-        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_ENUM_VARIANTS
+        parent is MvPathExpr -> if (isCompletion) ALL_NS else NAMES_N_FUNCTIONS_N_ENUM_VARIANTS
 
         parent is MvSchemaLit
                 || parent is MvSchemaRef -> SCHEMAS

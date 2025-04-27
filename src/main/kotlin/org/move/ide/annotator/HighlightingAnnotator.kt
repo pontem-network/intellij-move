@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.tree.TokenSet
+import org.jaxen.expr.PathExpr
 import org.move.cli.settings.moveSettings
 import org.move.ide.colors.MvColor
 import org.move.lang.MvElementTypes.*
@@ -158,25 +159,24 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                     }
                 }
             }
-            is MvCallExpr -> {
-                val item = path.reference?.resolveFollowingAliases()
-                when {
-                    item is MvSpecFunction
-                            && item.isNative
-                            && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
-                    item is MvFunction
-                            && item.isNative
-                            && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
-                    item is MvFunction && item.isEntry -> MvColor.ENTRY_FUNCTION_CALL
-                    item is MvFunction && item.isView -> MvColor.VIEW_FUNCTION_CALL
-                    item is MvFunction && item.isInline -> MvColor.INLINE_FUNCTION_CALL
-                    else -> MvColor.FUNCTION_CALL
-                }
-            }
             is MvStructLitExpr -> MvColor.STRUCT
             is MvPatStruct -> MvColor.STRUCT
             is MvPathExpr -> {
                 val item = path.reference?.resolveFollowingAliases() ?: return null
+                if (pathOwner.parent is MvCallExpr) {
+                    return when {
+                        item is MvSpecFunction
+                                && item.isNative
+                                && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        item is MvFunction
+                                && item.isNative
+                                && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        item is MvFunction && item.isEntry -> MvColor.ENTRY_FUNCTION_CALL
+                        item is MvFunction && item.isView -> MvColor.VIEW_FUNCTION_CALL
+                        item is MvFunction && item.isInline -> MvColor.INLINE_FUNCTION_CALL
+                        else -> MvColor.FUNCTION_CALL
+                    }
+                }
                 when {
                     item is MvConst -> MvColor.CONSTANT
                     else -> {
