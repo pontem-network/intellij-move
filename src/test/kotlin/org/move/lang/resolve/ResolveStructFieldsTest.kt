@@ -317,4 +317,21 @@ class ResolveStructFieldsTest : ResolveTestCase() {
         }        
     """
     )
+
+    fun `test resolve struct field with nested function value`() = checkByCode(
+        """
+        module 0x1::main {
+            struct S<T, U> { settle_trade_f: |T, U| T }
+            struct TT { val: u8 }
+                       //X
+            struct UU { val: u16 }
+            fun main(self: S<TT, UU>) {
+                let tt = TT { val: 1 };
+                let uu = UU { val: 1 };
+                (self.settle_trade_f)(tt, uu).val;
+                                             //^
+            }
+        }    
+"""
+    )
 }

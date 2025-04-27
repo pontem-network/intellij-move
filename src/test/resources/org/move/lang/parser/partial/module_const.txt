@@ -63,7 +63,7 @@ FILE
         PsiWhiteSpace(' ')
         MvLitExprImpl(LIT_EXPR)
           PsiElement(INTEGER_LITERAL)('1')
-      PsiErrorElement:'::', ';', <operator>, '=' or '[' expected, got 'const'
+      PsiErrorElement:'(', '::', ';', <operator>, '=' or '[' expected, got 'const'
         <empty list>
     PsiWhiteSpace('\n\n    ')
     MvConstImpl(CONST)

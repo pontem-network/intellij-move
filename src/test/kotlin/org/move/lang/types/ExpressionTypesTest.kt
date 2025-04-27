@@ -2486,4 +2486,25 @@ module 0x1::main {
         }        
     """)
 
+    fun `test fetch function value from struct and call it`() = testExpr("""
+        module 0x1::m {
+            struct R { val: u8 }
+            struct S { fn: |address| R }
+            fun main(s: &S) {
+                (s.fn)(@0x1).val;
+                           //^ u8
+            }
+        }
+    """)
+
+    fun `test function value named wrapper`() = testExpr("""
+        module 0x1::main {
+            struct Predicate<T>(|&T|bool) has copy;
+            fun main() {
+                let a = Predicate(&22);
+                a;
+              //^ bool
+            }
+        }
+    """)
 }

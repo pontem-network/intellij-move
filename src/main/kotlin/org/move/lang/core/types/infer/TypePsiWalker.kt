@@ -309,7 +309,6 @@ class TypePsiWalker(
     }
 
     private fun inferPathExprTy(pathExpr: MvPathExpr, expected: Expected): Ty {
-
         val expectedType = expected.ty(ctx)
         val item = resolvePathCached(pathExpr.path, expectedType) ?: return TyUnknown
 
@@ -423,7 +422,18 @@ class TypePsiWalker(
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expected): Ty {
-        val callTy = instantiateCallableTy(callExpr) ?: return TyUnknown
+        val lhsTy = this.inferExprTy(callExpr.expr)
+        val callTy = when (lhsTy) {
+            is TyCallable -> lhsTy
+            is TyAdt -> {
+                val path = callExpr.path ?: return TyUnknown
+                instantiateAdtAsTyCallable(path, lhsTy) ?: return TyUnknown
+            }
+            else -> {
+                return TyUnknown
+            }
+        }
+//        val callTy = instantiateCallableTy(callExpr) ?: return TyUnknown
 
         val expectedArgTys = inferExpectedArgsTys(callTy, expected)
         coerceArgumentTypes(
@@ -435,6 +445,46 @@ class TypePsiWalker(
         writeCallableType(callExpr, callTy, method = false)
 
         return callTy.returnType
+    }
+
+    private fun instantiateAdtAsTyCallable(path: MvPath, tyAdt: TyAdt): TyCallable? {
+        val adtItem = tyAdt.adtItem
+        val fieldsOwner: MvFieldsOwner = when (adtItem) {
+            is MvStruct -> {
+                adtItem
+//                val tupleFields = adtItem.tupleFields ?: return null
+//                instantiateTupleFuncTy(tupleFields, path, adtItem)
+            }
+            is MvEnum -> {
+                val variant = this.ctx.resolvedPaths[path]?.singleOrNull()?.element as? MvEnumVariant
+                variant ?: return null
+            }
+            else -> {
+                return null
+            }
+        }
+        val tupleFields = fieldsOwner.tupleFields ?: return null
+        val parameterTypes = tupleFields.tupleFieldDeclList.map { it.type.loweredType(msl) }
+        if (parameterTypes.size == 1) {
+            val firstParamTy = parameterTypes.first()
+            if (firstParamTy is TyCallable) {
+                return firstParamTy
+            }
+        }
+        val returnType = TyAdt.valueOf(adtItem)
+
+        val typeParamsSubst = adtItem.tyTypeParamsSubst
+//        val typeArgsSubst = path.typeArgsSubst(adtItem, msl)
+        val callTy =
+            TyCallable(
+                parameterTypes,
+                returnType,
+                CallKind.Function(adtItem, typeParamsSubst)
+            )
+                .substitute(tyAdt.substitution)
+
+        val tyVarsSubst = adtItem.tyVarsSubst
+        return callTy.substitute(tyVarsSubst) as TyCallable
     }
 
     private fun instantiateCallableTy(callExpr: MvCallExpr): TyCallable? {
