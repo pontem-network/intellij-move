@@ -27,7 +27,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
             // destructuring assignment like `Coin { val1: _ } = get_coin()`
             if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
             // assert macro
-            if (path.text == "assert") return
+//            if (path.text == "assert") return
             // attribute values are special case
             if (path.hasAncestor<MvAttrItem>()) return
 

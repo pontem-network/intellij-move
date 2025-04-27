@@ -25,7 +25,8 @@ class MoveToml(
 
     fun declaredAddresses(): PackageAddresses {
         val packageName = this.packageName ?: ""
-        val raws = this.devAddresses + this.addresses
+        // [dev-addresses] need to overwrite "_" placeholders from [addresses]
+        val raws = this.addresses + this.devAddresses
 
         val values = mutableAddressMap()
         val placeholders = placeholderMap()
