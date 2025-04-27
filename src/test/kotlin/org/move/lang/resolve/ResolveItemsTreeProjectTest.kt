@@ -715,6 +715,42 @@ module 0x1::main {
         }
     }
 
+    fun `test resolve item from module with dev address with placeholder`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "Main"
+        
+        [addresses]
+        dev = "_"
+        
+        [dev-addresses]
+        dev = "0x3"
+            """
+        )
+        sources {
+            main(
+                """
+        module 0x1::m {
+            use dev::dev_module::call;
+            fun main() {
+                call();
+               //^     
+            }
+        }
+            """
+            )
+            move(
+                "dev_module.move", """
+        module dev::dev_module {
+            public fun call() {}
+                      //X
+        }
+            """
+            )
+        }
+    }
+
     fun `test resolve item from dependency with dev only address`() = checkByFileTree {
         moveToml(
             """

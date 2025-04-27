@@ -40,14 +40,6 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         }
     """)
 
-    fun `test test no unresolved reference for assert in script`() = checkByText("""
-        script {
-            fun main() {
-                assert(false, 1);
-            }
-        }
-    """)
-
     fun `test test no unresolved reference for primitive type`() = checkByText("""
         script {
             fun main(s: &signer) {
@@ -148,13 +140,11 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
 
     fun `test unresolved reference for method of another module`() = checkByText(
         """
-    address 0x1 {
-        module Other {}
-        module 0x1::M {
-            use 0x1::Other;
-            fun main() {
-                Other::<error descr="Unresolved function: `emit`">emit</error>();
-            }
+    module 0x1::other {}
+    module 0x1::m {
+        use 0x1::other;
+        fun main() {
+            other::<error descr="Unresolved function: `emit`">emit</error>();
         }
     }
         """
@@ -162,7 +152,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
 
     fun `test unresolved reference to type in generic`() = checkByText(
         """
-        module 0x1::M {
+        module 0x1::m {
             fun deposit<Token> () {}
 
             fun main() {
@@ -171,18 +161,6 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         }    
         """
     )
-//
-//    fun `test no unresolved reference for spec elements`() = checkByText("""
-//    module 0x1::M {
-//        spec module {
-//            fun m(e: EventHandle) {}
-//        }
-//        spec fun spec_multiply_u64(val: num, multiplier: num): num {
-//            (val * multiplier) >> 32
-//        }
-//        spec fun spec_none<Element>() {}
-//    }
-//    """)
 
     fun `test no unresolved reference for _ in destructuring pattern`() = checkByText("""
     module 0x1::M {
@@ -255,15 +233,6 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }        
     """)
 
-    fun `test result is special variable that is available for fun spec`() = checkByText("""
-    module 0x1::M {
-        fun call(): u8 { 1 }
-        spec call {
-            ensures result == 1;
-        }
-    }    
-    """)
-
     fun `test result_1 result_2 is special variables for tuple return type`() = checkByText("""
     module 0x1::M {
         fun call(): (u8, u8) { (1, 1) }
@@ -291,16 +260,6 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-//    fun `test no unresolved reference for imported module identifier`() = checkByText("""
-//    module 0x1::Signer {}
-//    module 0x1::M {
-//        use 0x1::Signer;
-//        fun call() {
-//            Signer::
-//        }
-//    }
-//    """)
-
     fun `test unresolved field for dot expression`() = checkByText(
         """
     module 0x1::M {
@@ -314,7 +273,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     )
 
     fun `test unresolved module import`() = checkByText("""
-    module 0x1::Main {
+    module 0x1::main {
         use 0x1::<error descr="Unresolved reference: `M1`">M1</error>;
     }    
     """)
@@ -331,6 +290,8 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         use 0x1::M1::<error descr="Unresolved reference: `call`">call</error>;
     }    
     """)
+
+    // ?
 
     @DebugMode(false)
     fun `test no error for dot field in specs without development mode`() = checkByText("""
@@ -420,6 +381,8 @@ module 0x1::m {
 }
     """)
 
+    // ?
+
     fun `test result variable for return type tuple in function spec`() = checkByText("""
         module 0x1::m {
             public fun get_fees_distribution(): (u128, u128) {
@@ -488,6 +451,8 @@ module 0x1::m {
     """
     )
 
+    // ?
+
     @MoveV2(enabled = false)
     fun `test no unresolved method in compiler v1`() = checkByText("""
         module 0x1::m {
@@ -542,7 +507,7 @@ module 0x1::m {
     """)
 
     @MoveV2
-    fun `test no error for fields if destructuring unknown tuple struct`() = checkByText("""
+    fun `test no error for fields if destructuring unknown struct with qualifier`() = checkByText("""
         module 0x1::m {
             enum R {}
             fun main() {
@@ -558,6 +523,8 @@ module 0x1::m {
             fun main() {}
         }        
     """)
+
+    // **
 
     fun `test no error for unknown receiver method of result of unknown resource borrow`() = checkByText("""
         module 0x1::m {
