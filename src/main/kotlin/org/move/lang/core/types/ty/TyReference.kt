@@ -13,7 +13,7 @@ import org.move.lang.core.types.infer.isCompatible
 data class TyReference(
     val referenced: Ty,
     val mutability: Mutability,
-    val msl: Boolean
+//    val msl: Boolean
 ): Ty(referenced.flags) {
 
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
@@ -39,7 +39,7 @@ data class TyReference(
 //    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, mutability, msl)
 
     override fun deepFoldWith(folder: TypeFolder): Ty =
-        TyReference(referenced.foldWith(folder), mutability, msl)
+        TyReference(referenced.foldWith(folder), mutability)
 
     override fun deepVisitWith(visitor: TypeVisitor): Boolean =
         referenced.visitWith(visitor)
@@ -47,8 +47,8 @@ data class TyReference(
     override fun toString(): String = tyToString(this)
 
     companion object {
-        fun reference(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
-            TyReference(ty, Mutability.valueOf(mut), msl)
+        fun reference(ty: Ty, mut: Boolean): TyReference =
+            TyReference(ty, Mutability.valueOf(mut))
 
         fun isCompatibleMut(inferred: TyReference, expected: TyReference): Boolean {
             return inferred.isMut || !expected.isMut

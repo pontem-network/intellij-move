@@ -34,9 +34,9 @@ object TyLowering {
             is MvRefType -> {
                 val mutability = Mutability.valueOf(type.mutable)
                 val innerType = type.type
-                    ?: return TyReference(TyUnknown, mutability, msl)
+                    ?: return TyReference(TyUnknown, mutability)
                 val innerTy = lowerType(innerType, msl)
-                TyReference(innerTy, mutability, msl)
+                TyReference(innerTy, mutability)
             }
             is MvTupleType -> {
                 val innerTypes = type.typeList.map { lowerType(it, msl) }

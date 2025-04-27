@@ -245,48 +245,6 @@ allprojects {
     }
 }
 
-//project(":ui-tests") {
-//    dependencies {
-//        implementation("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
-//        implementation("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
-//        implementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-//
-//        implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-//
-//        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-//        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
-//
-//        implementation("com.automation-remarks:video-recorder-junit5:2.0")
-//    }
-//
-//    tasks.named<Test>("test") {
-//        useJUnitPlatform()
-//    }
-//
-//    tasks {
-//        ideaModule {
-//            enabled = false
-//        }
-//    }
-
-//        downloadRobotServerPlugin {
-//            version.set(remoteRobotVersion)
-//        }
-
-//        runIdeForUiTests {
-//            systemProperty("robot-server.port", "8082")
-////            systemProperty "ide.mac.message.dialogs.as.sheets", "false"
-////            systemProperty "jb.privacy.policy.text", "<!--999.999-->"
-////            systemProperty "jb.consents.confirmation.enabled", "false"
-////            systemProperty "ide.mac.file.chooser.native", "false"
-////            systemProperty "jbScreenMenuBar.enabled", "false"
-////            systemProperty "apple.laf.useScreenMenuBar", "false"
-//            systemProperty("idea.trust.all.projects", "true")
-//            systemProperty("ide.show.tips.on.startup.default.value", "false")
-//        }
-
-//}
-
 fun copyDownloadedAptosBinaries(copyTask: AbstractCopyTask) {
     copyTask.from("$rootDir/bin") {
         into("$pluginName/bin")

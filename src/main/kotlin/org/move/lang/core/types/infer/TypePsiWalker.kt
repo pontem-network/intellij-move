@@ -397,7 +397,7 @@ class TypePsiWalker(
         }
 
         val mutability = Mutability.valueOf(borrowExpr.isMut)
-        return TyReference(innerRefTy, mutability, ctx.msl)
+        return TyReference(innerRefTy, mutability)
     }
 
     private fun inferLambdaExprTy(lambdaExpr: MvLambdaExpr, expected: Expected): Ty {
@@ -1113,7 +1113,7 @@ class TypePsiWalker(
                     when {
                         ty1 is TyReference && ty2 is TyReference -> {
                             val minMut = ty1.mutability.intersect(ty2.mutability)
-                            TyReference(ty1.referenced, minMut, ty1.msl || ty2.msl)
+                            TyReference(ty1.referenced, minMut)
                         }
                         else -> ty1
                     }

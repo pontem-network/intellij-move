@@ -10,20 +10,19 @@ import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.Mutability.IMMUTABLE
 
 fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind = BindByValue) {
-    val msl = this.isMsl()
     when (this) {
         is MvPatWild -> fcx.ctx.writePatTy(this, ty)
         is MvPatConst -> {
             // fills resolved paths
             val inferred = fcx.inferExprType(this.pathExpr)
             val item = fcx.ctx.resolvedPaths[this.pathExpr.path]?.singleOrNull { it.isVisible }?.element
-            val pat_ty = when (item) {
+            val patTy = when (item) {
                 // copied from intellij-rust, don't know what it's about
                 is MvConst -> ty
                 else -> ty.stripReferences(defBm).first
             }
-            fcx.coerceTypes(pathExpr, inferred, pat_ty)
-            fcx.writePatTy(this, pat_ty)
+            fcx.coerceTypes(pathExpr, inferred, patTy)
+            fcx.writePatTy(this, patTy)
         }
         is MvPatBinding -> {
             val resolveVariants = resolvePatBindingWithExpectedType(this, expectedType = ty)
@@ -35,7 +34,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
                 if (item is MvEnumVariant) {
                     ty.stripReferences(defBm).first
                 } else {
-                    ty.applyBm(defBm, msl)
+                    ty.applyBm(defBm)
                 }
             fcx.writePatTy(this, bindingType)
         }
@@ -73,7 +72,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
                     }
                     is PatFieldKind.Shorthand -> {
                         fcx.ctx.resolvedBindings[kind.binding] = namedField
-                        fcx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm, msl))
+                        fcx.ctx.writeFieldPatTy(fieldPat, fieldType.applyBm(patBm))
                     }
                 }
             }
@@ -158,8 +157,8 @@ private fun inferTupleFieldsTypes(
     }
 }
 
-private fun Ty.applyBm(defBm: RsBindingModeKind, msl: Boolean): Ty {
-    return if (defBm is BindByReference) TyReference(this, defBm.mutability, msl) else this
+private fun Ty.applyBm(defBm: RsBindingModeKind): Ty {
+    return if (defBm is BindByReference) TyReference(this, defBm.mutability) else this
 }
 
 private fun Ty.stripReferences(defBm: RsBindingModeKind): Pair<Ty, RsBindingModeKind> {
