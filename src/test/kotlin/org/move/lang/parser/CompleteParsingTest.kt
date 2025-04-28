@@ -10,6 +10,8 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     // functions
     fun `test function declarations`() = doTest()
     fun `test function calls`() = doTest()
+    fun `test function values call expr`() = doTest()
+    fun `test function values lambda type`() = doTest()
 
     // expressions
     fun `test strings`() = doTest()

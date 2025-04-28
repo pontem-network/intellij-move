@@ -5,6 +5,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.name
+import org.move.lang.core.psi.ext.path
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.*
 
@@ -40,7 +41,7 @@ class CallInfo(
             val callKind = callTy.kind as? CallKind.Function ?: return null
             var callItem: MvElement = callKind.item
             if (callItem is MvEnum) {
-                callItem = callExpr.path.reference?.resolveFollowingAliases() ?: return null
+                callItem = callExpr.path?.reference?.resolveFollowingAliases() ?: return null
             }
             return buildFunctionParameters(callItem, callTy)
         }

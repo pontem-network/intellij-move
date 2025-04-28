@@ -1,7 +1,10 @@
 package org.move.lang.core.psi.ext
 
+import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.MvPathExpr
 import org.move.lang.core.psi.MvValueArgument
 import org.move.lang.core.psi.MvValueArgumentList
 
@@ -15,3 +18,4 @@ val MvCallable.valueArguments: List<MvValueArgument>
 
 val MvCallable.argumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
 
+val MvCallExpr.path: MvPath? get() = (this.expr as? MvPathExpr)?.path

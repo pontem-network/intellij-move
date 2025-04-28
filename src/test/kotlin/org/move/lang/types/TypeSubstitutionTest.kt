@@ -8,7 +8,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
         module 0x1::M {
             fun call<R>(): R {}
             fun main() {
-                call<u8>();
+                (call<u8>());
               //^ u8  
             }
         }    
@@ -20,7 +20,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
     module 0x1::M {
         struct MyToken has key {}
         fun main() acquires MyToken {
-            borrow_global_mut<MyToken>(@0x1);
+            (borrow_global_mut<MyToken>(@0x1));
           //^ &mut 0x1::M::MyToken  
         }
     }    
@@ -70,7 +70,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
             struct MyToken<Num> has key {}
             fun call<Token>(): Token {}
             fun main() {
-                call<MyToken<u8>>();
+                (call<MyToken<u8>>());
               //^ 0x1::M::MyToken<u8>
             }
         }    

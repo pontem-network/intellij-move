@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.path
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.psi.ext.valueArguments
 import org.move.stdext.notEmptyOrLet
@@ -38,13 +39,14 @@ class ReplaceWithMethodCallFix(callExpr: MvCallExpr): DiagnosticFix<MvCallExpr>(
             }
         }
 
+        val callPath = element.path ?: return
         val fakeTypeArgs =
-            element.path.typeArguments.map { "T" }.toList()
+            callPath.typeArguments.map { "T" }.toList()
                 .notEmptyOrLet { listOf("T") }.joinToString(", ")
-        val dotExpr = psiFactory.expr<MvDotExpr>("1.${element.path.referenceName}::<$fakeTypeArgs>()")
+        val dotExpr = psiFactory.expr<MvDotExpr>("1.${callPath.referenceName}::<$fakeTypeArgs>()")
         dotExpr.expr.replace(selfArgExpr)
 
-        val typeArgumentList = element.path.typeArgumentList
+        val typeArgumentList = callPath.typeArgumentList
         if (typeArgumentList != null) {
             val dotExprList = dotExpr.methodCall?.typeArgumentList?.typeArgumentList!!
             for ((dotExprTypeArgument, typeArgument) in dotExprList.zip(typeArgumentList.typeArgumentList)) {

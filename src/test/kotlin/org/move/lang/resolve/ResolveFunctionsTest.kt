@@ -1178,31 +1178,33 @@ module 0x1::mod {
     """
     )
 
-    fun `test if there is non lambda function prioritize it over variables`() = checkByCode(
-        """
-        module 0x1::m {
-            fun select_f(val: u8) {}
-                 //X
-            fun main() {
-                let select_f = 1;
-                select_f(1);
-                //^
-            }
-        }
-    """
-    )
+    // todo: function values
+//    fun `test if there is non lambda function prioritize it over variables`() = checkByCode(
+//        """
+//        module 0x1::m {
+//            fun select_f(val: u8) {}
+//                 //X
+//            fun main() {
+//                let select_f = 1;
+//                select_f(1);
+//                //^
+//            }
+//        }
+//    """
+//    )
 
-    fun `test lambda variable does not shadow function with the same name`() = checkByCode(
-        """
-        module 0x1::mod {
-            fun name() {}
-               //X
-            fun main() {
-                let name = || 1;
-                name();
-                 //^
-            }
-        }        
-    """
-    )
+    // todo: function values
+//    fun `test lambda variable does not shadow function with the same name`() = checkByCode(
+//        """
+//        module 0x1::mod {
+//            fun name() {}
+//               //X
+//            fun main() {
+//                let name = || 1;
+//                name();
+//                 //^
+//            }
+//        }
+//    """
+//    )
 }

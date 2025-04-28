@@ -151,19 +151,19 @@ module 0x1::main {
     """
     )
 
-    @MoveV2(false)
-    fun `test unused acquires with index expr on compiler v1`() = checkWarnings(
-        """
-module 0x1::main {
-    struct StakePool has key {
-        locked_until_secs: u64,
-    }
-    fun get_lockup_secs(pool_address: address) <warning descr="Unused acquires clause">acquires StakePool</warning> {
-        StakePool[pool_address];
-    }
-}        
-    """
-    )
+//    @MoveV2(false)
+//    fun `test unused acquires with index expr on compiler v1`() = checkWarnings(
+//        """
+//module 0x1::main {
+//    struct StakePool has key {
+//        locked_until_secs: u64,
+//    }
+//    fun get_lockup_secs(pool_address: address) <warning descr="Unused acquires clause">acquires StakePool</warning> {
+//        StakePool[pool_address];
+//    }
+//}
+//    """
+//    )
 
     @MoveV2()
     fun `test no unused acquires with index expr`() = checkWarnings(

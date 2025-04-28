@@ -310,7 +310,7 @@ class ExpressionTypesTest : TypificationTestCase() {
     module 0x1::M {
         fun call(): () {}
         fun m() {
-            call();
+            (call());
           //^ ()
         }
     }    
@@ -357,8 +357,8 @@ class ExpressionTypesTest : TypificationTestCase() {
     module 0x1::M {
         fun call(): u8 { 1 }
         spec module {
-            call();
-            //^ num
+            (call());
+          //^ num
         }
     }    
     """
@@ -422,7 +422,7 @@ class ExpressionTypesTest : TypificationTestCase() {
         struct S {}
         fun call(a: S) {}
         spec call {
-            old(a);
+            (old(a));
           //^ 0x1::M::S 
         }
     }    
@@ -1375,7 +1375,7 @@ module 0x1::main {
         """
         module 0x1::m {
             inline fun main<Element>(f: |Element|) {
-                f();
+                (f());
               //^ ()  
             }
         }        
@@ -1386,7 +1386,7 @@ module 0x1::main {
         """
         module 0x1::m {
             inline fun main<Element>(f: |Element| Element) {
-                f();
+                (f());
               //^ Element  
             }
         }        
@@ -1397,7 +1397,7 @@ module 0x1::main {
         """
         module 0x1::m {
             inline fun main<Element>(e: Element, f: |Element| u8) {
-                f(e);
+                (f(e));
               //^ u8  
             }
         }        
@@ -1612,7 +1612,7 @@ module 0x1::main {
             fun call() {}
             fun main() {
                 call;
-              //^ <unknown>  
+              //^ fn()  
             }
         }        
     """
@@ -1821,8 +1821,8 @@ module 0x1::main {
             fun main() {
                 let unknown/*: unknown*/ = unknown_variable;
                 let a2 = 1;
-                some(a2) == unknown;
-                //^ integer
+                (some(a2)) == unknown;
+              //^ integer
             }
         }        
     """)
@@ -1834,8 +1834,8 @@ module 0x1::main {
             fun main() {
                 let unknown/*: unknown*/ = unknown_variable;
                 let a2 = 1;
-                unknown == some(a2);
-                           //^ integer
+                unknown == (some(a2));
+                         //^ integer
             }
         }        
     """)
@@ -1852,8 +1852,8 @@ module 0x1::main {
                 let unknown/*: unknown*/ = unknown_variable;
                 let a2 = @0x1;
                 unknown != some(a2);
-                unknown == some(a2);
-                           //^ 0x1::option::Option<address>
+                unknown == (some(a2));
+                         //^ 0x1::option::Option<address>
             }
         }        
     """)
@@ -2272,8 +2272,8 @@ module 0x1::main {
             public native fun borrow<K: drop + copy + store, V: store>(self: &BigOrderedMap<K, V>, key: &K): &V;
             fun main() {
                 let map = BigOrderedMap<vector<u8>, vector<u8>>::BPlusTreeMap;
-                borrow(&map, &vector[1]);
-                //^ &vector<u8>
+                (borrow(&map, &vector[1]));
+              //^ &vector<u8>
             }
         }        
     """
@@ -2467,8 +2467,8 @@ module 0x1::main {
             fun main() {
                 let agg = Aggregator { value: 1, max_value: 1 };
                 spec {
-                    spec_get_max_value(agg);
-                    //^  num
+                    (spec_get_max_value(agg));
+                  //^  num
                 }
             }
         }        
@@ -2486,4 +2486,25 @@ module 0x1::main {
         }        
     """)
 
+    fun `test fetch function value from struct and call it`() = testExpr("""
+        module 0x1::m {
+            struct R { val: u8 }
+            struct S { fn: |address| R }
+            fun main(s: &S) {
+                (s.fn)(@0x1).val;
+                           //^ u8
+            }
+        }
+    """)
+
+    fun `test function value named wrapper`() = testExpr("""
+        module 0x1::main {
+            struct Predicate<T>(|&T|bool) has copy;
+            fun main() {
+                let a = Predicate(&22);
+                a;
+              //^ bool
+            }
+        }
+    """)
 }

@@ -104,7 +104,7 @@ FILE
           MvLitExprImpl(LIT_EXPR)
             PsiElement(INTEGER_LITERAL)('1')
           PsiWhiteSpace(' ')
-          PsiErrorElement:'::', <operator>, '=' or '[' expected, got '=='
+          PsiErrorElement:'(', '::', <operator>, '=' or '[' expected, got '=='
             PsiElement(==)('==')
           PsiElement(>)('>')
         PsiWhiteSpace(' ')

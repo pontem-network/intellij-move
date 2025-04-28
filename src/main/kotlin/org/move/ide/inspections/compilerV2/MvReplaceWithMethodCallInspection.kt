@@ -6,6 +6,7 @@ import org.move.ide.inspections.compilerV2.fixes.ReplaceWithMethodCallFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemModule
+import org.move.lang.core.psi.ext.path
 import org.move.lang.core.psi.ext.valueArguments
 import org.move.lang.core.types.infer.deepFoldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
@@ -18,7 +19,7 @@ class MvReplaceWithMethodCallInspection:
     Move2OnlyInspectionBase<MvCallExpr>(MvCallExpr::class.java) {
 
     override fun visitTargetElement(element: MvCallExpr, holder: ProblemsHolder, isOnTheFly: Boolean) {
-        val function = element.path.reference?.resolveFollowingAliases() as? MvFunction ?: return
+        val function = element.path?.reference?.resolveFollowingAliases() as? MvFunction ?: return
         val functionSelfParam = function.selfParam ?: return
 
         val msl = element.isMsl()

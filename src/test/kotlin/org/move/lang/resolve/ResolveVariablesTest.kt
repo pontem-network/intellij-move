@@ -796,5 +796,16 @@ class ResolveVariablesTest : ResolveTestCase() {
         }    
         """)
 
-    // done
+    fun `test prioritize variable in non-call context in multiple resolution`() = checkByCode(
+        """
+    module 0x1::main {
+        fun bytes() {}
+        fun main(bytes: vector<u8>) {
+                //X
+            bytes;
+             //^
+        }
+    }    
+"""
+    )
 }

@@ -538,7 +538,7 @@ FILE
           PsiElement(IDENTIFIER)('U')
           MvTypeParamBoundImpl(TYPE_PARAM_BOUND)
             PsiElement(:)(':')
-            PsiErrorElement:<ability> expected, got ','
+            PsiErrorElement:IDENTIFIER or copy expected, got ','
               <empty list>
         PsiElement(,)(',')
         PsiWhiteSpace(' ')
@@ -549,10 +549,9 @@ FILE
             PsiWhiteSpace(' ')
             MvAbilityImpl(ABILITY)
               PsiElement(IDENTIFIER)('store')
-            PsiElement(+)('+')
-            PsiErrorElement:<ability> expected, got ','
-              <empty list>
-        PsiElement(,)(',')
+        PsiElement(+)('+')
+        PsiErrorElement:<ability> expected, got ','
+          PsiElement(,)(',')
         PsiWhiteSpace(' ')
         MvTypeParameterImpl(TYPE_PARAMETER)
           PsiElement(IDENTIFIER)('T')
@@ -560,9 +559,9 @@ FILE
             PsiElement(:)(':')
             MvAbilityImpl(ABILITY)
               PsiElement(IDENTIFIER)('drop')
-            PsiElement(+)('+')
-            PsiErrorElement:<ability> expected, got '>'
-              <empty list>
+        PsiElement(+)('+')
+        PsiErrorElement:<ability> expected, got '>'
+          <empty list>
         PsiElement(>)('>')
       MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
         PsiElement(()('(')
