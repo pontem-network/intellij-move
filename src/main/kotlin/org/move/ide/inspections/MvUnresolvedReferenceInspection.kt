@@ -142,7 +142,7 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
         val parent = referenceElement.parent
         val itemType = when {
             parent is MvPathType -> "type"
-            parent is MvCallExpr -> "function"
+            parent is MvPathExpr && parent.parent is MvCallExpr -> "function"
             parent is MvPatField -> "field"
             referenceElement is MvFieldLookup -> "field"
             referenceElement is MvStructLitField -> "field"

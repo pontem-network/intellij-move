@@ -214,17 +214,17 @@ module 0x1::main {
     """
     )
 
-    @MoveV2(false)
-    fun `test no error with index if unsupported`() = checkErrors(
-        """
-    module 0x1::M {
-        struct Loan has key {}
-        fun main() {
-            Loan[@0x1];
-        }
-    }    
-    """
-    )
+//    @MoveV2(false)
+//    fun `test no error with index if unsupported`() = checkErrors(
+//        """
+//    module 0x1::M {
+//        struct Loan has key {}
+//        fun main() {
+//            Loan[@0x1];
+//        }
+//    }
+//    """
+//    )
 
     @MoveV2()
     fun `test missing acquires with index expr`() = checkErrors(

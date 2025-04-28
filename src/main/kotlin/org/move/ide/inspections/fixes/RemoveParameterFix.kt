@@ -39,8 +39,8 @@ private fun removeArguments(function: MvFunction, parameterIndex: Int) {
         .asSequence()
         .mapNotNull {
             val path = it.element
-            val pathExpr = path.parent
-            pathExpr as? MvCallExpr
+            val pathExpr = path.parent as? MvPathExpr
+            pathExpr?.parent as? MvCallExpr
         }
     calls.forEach { call ->
         call.valueArguments

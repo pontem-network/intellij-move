@@ -206,7 +206,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
             item is MvFunction -> {
                 val callable =
                     when (parent) {
-                        is MvCallExpr -> parent
+                        is MvPathExpr -> parent.parent as? MvCallExpr
                         is MvDotExpr -> parent.methodCall
                         else -> null
                     } ?: return
