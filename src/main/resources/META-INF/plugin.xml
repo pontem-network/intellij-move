@@ -277,7 +277,7 @@
                      implementationClass="org.move.ide.inspections.MvUnusedVariableInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused test signer"
-                     enabledByDefault="true" level="WARNING"
+                     enabledByDefault="false" level="WARNING"
                      implementationClass="org.move.ide.inspections.MvUnusedTestSignerInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Redundant type cast"
