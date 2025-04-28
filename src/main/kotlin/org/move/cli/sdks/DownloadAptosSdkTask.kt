@@ -10,6 +10,7 @@ import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.io.Decompressor
 import java.io.File
 import java.io.IOException
+import java.nio.file.Path
 
 class DownloadAptosSdkTask(
     private val aptosSdk: AptosSdk,
@@ -31,7 +32,7 @@ class DownloadAptosSdkTask(
 
         val url = aptosSdk.githubArchiveUrl
         try {
-            val tmpDownloadFile: File
+            val tmpDownloadFilePath: Path
             try {
                 val downloadService = DownloadableFileService.getInstance()
                 val downloader = downloadService.createDownloader(
@@ -41,7 +42,7 @@ class DownloadAptosSdkTask(
                     "Download Aptos SDK"
                 )
                 val (file, _) = downloader.download(tmpDownloadDir).first()
-                tmpDownloadFile = file
+                tmpDownloadFilePath = file.toPath()
             } catch (e: IOException) {
                 throw RuntimeException(
                     "Failed to download $archiveFileName from $url. ${e.message}",
@@ -55,13 +56,13 @@ class DownloadAptosSdkTask(
             indicator.text2 = "Unpacking $archiveFileName"
             try {
                 tmpExtractionDir.mkdir()
-                Decompressor.Zip(tmpDownloadFile).withZipExtensions()
+                Decompressor.Zip(tmpDownloadFilePath).withZipExtensions()
                     .entryFilter { indicator.checkCanceled(); true }
-                    .extract(tmpExtractionDir)
+                    .extract(tmpExtractionDir.toPath())
             } catch (t: Throwable) {
                 if (t is ControlFlowException) throw t
                 throw RuntimeException(
-                    "Failed to extract $tmpDownloadFile. ${t.message}",
+                    "Failed to extract $tmpDownloadFilePath. ${t.message}",
                     t
                 )
             }
