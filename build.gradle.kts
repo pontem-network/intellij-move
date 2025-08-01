@@ -23,15 +23,15 @@ val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 
-val kotlinReflectVersion = "2.0.21"
+val kotlinReflectVersion = "2.2.0"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.1.20"
-    id("org.jetbrains.intellij.platform") version "2.5.0"
+    kotlin("jvm") version "2.2.0"
+    id("org.jetbrains.intellij.platform") version "2.7.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("de.undercouch.download") version "5.6.0"
@@ -86,6 +86,10 @@ allprojects {
         main {
             java.srcDirs("src/main/gen")
         }
+    }
+
+    grammarKit {
+        grammarKitRelease.set("2023.3")
     }
 
     kotlin {
