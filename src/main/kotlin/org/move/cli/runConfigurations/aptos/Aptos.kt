@@ -73,6 +73,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 subCommand = "move compile",
                 arguments = buildList {
                     add("--fetch-deps-only")
+                    add("--dev")
                     addAll(compilerArguments(project))
                 },
                 workingDirectory = packageRoot

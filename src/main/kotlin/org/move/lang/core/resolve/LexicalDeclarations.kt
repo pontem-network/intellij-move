@@ -33,9 +33,9 @@ private fun getEntriesInBlocks(scope: MvElement, cameFrom: MvElement, ns: NsSet)
                     val (letBindings, visited) = getVisibleLetPatBindingsWithShadowing(scope, cameFrom)
                     addAll(letBindings)
 
-                    val globalEntries = SpecCodeBlockNonBindings(scope).getResults()
+                    val specBlockEntries = SpecCodeBlockNonBindings(scope).getResults()
                     addAll(
-                        globalEntries.filter { it.name !in visited }
+                        specBlockEntries.filter { it.name !in visited }
                     )
                 }
 

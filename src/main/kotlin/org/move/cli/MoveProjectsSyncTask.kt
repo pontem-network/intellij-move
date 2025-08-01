@@ -398,7 +398,6 @@ class MoveProjectsSyncTask(
                 visitedIds.add(depId)
                 loadDependencies(project, depMoveToml, deps, visitedIds, false, syncContext, gitRev)
                 deps.add(MovePackageWithAddrSubst(depPackage, addrSubst))
-//                deps.add(depPackage to addrSubst)
 
                 syncContext.syncProgress.output(
                     "${dep.name} dependency loaded successfully, " +

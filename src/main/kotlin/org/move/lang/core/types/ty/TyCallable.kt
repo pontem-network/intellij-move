@@ -76,13 +76,6 @@ fun MvFunctionLike.functionTy(msl: Boolean): TyCallable {
     return ty
 }
 
-private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyCallable {
-    val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-    val retType = item.returnTypeTy(msl)
-    val kind = CallKind.Function(item, item.tyTypeParamsSubst)
-    return TyCallable(paramTypes, retType, kind)
-}
-
 class GetTyCallable(override val owner: MvFunctionLike): PsiCachedValueProvider<TyCallable> {
     override fun compute(): CachedValueProvider.Result<TyCallable> {
         val ty = rawFunctionTy(owner, false)
@@ -95,4 +88,11 @@ class GetTyCallableMsl(override val owner: MvFunctionLike): PsiCachedValueProvid
         val ty = rawFunctionTy(owner, true)
         return owner.project.moveStructureCacheResult(ty)
     }
+}
+
+private fun rawFunctionTy(item: MvFunctionLike, msl: Boolean): TyCallable {
+    val paramTypes = item.parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+    val retType = item.returnTypeTy(msl)
+    val kind = CallKind.Function(item, item.tyTypeParamsSubst)
+    return TyCallable(paramTypes, retType, kind)
 }

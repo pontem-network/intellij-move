@@ -404,6 +404,8 @@ class InferenceContext(
         // inferredTy permissions should be a superset of expectedTy permissions
         // in msl all references are equal
         if (!this.msl && !isCompatibleMut(ty1, ty2)) {
+            // combine underlying types ignoring errors, for better error messages and later inference
+            combineTypes(ty1.referenced, ty2.referenced)
             return Err(TypeMismatchError(ty1, ty2))
         }
         return combineTypes(ty1.referenced, ty2.referenced)

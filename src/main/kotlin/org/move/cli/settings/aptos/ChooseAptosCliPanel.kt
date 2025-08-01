@@ -156,7 +156,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                     }
                     row {
                         comment(
-                            "Bundled version is not available for MacOS. Refer to the " +
+                            "Bundled version is not available for your OS. Refer to the " +
                                     "<a href=\"https://aptos.dev/tools/aptos-cli/install-cli/install-cli-mac\">Official Aptos CLI docs</a> " +
                                     "on how to install it on your platform."
                         )

@@ -1127,6 +1127,7 @@ class TypePsiWalker(
             ifExpr.codeBlock?.inferBlockType(expected, coerce = true)
                 ?: ifExpr.inlineBlock?.expr?.inferTypeCoercableTo(expected)
         val elseBlock = ifExpr.elseBlock ?: return TyUnit
+        // todo: this line should not coerce
         val actualElseTy =
             elseBlock.codeBlock?.inferBlockType(expected, coerce = true)
                 ?: elseBlock.inlineBlock?.expr?.inferTypeCoercableTo(expected)
