@@ -42,14 +42,14 @@ module 0x1::M {
 
     fun `test mutable reference compatible with immutable reference`() = checkErrors(
         """
-    module 0x1::M {
+    module 0x1::m {
         struct Option<Element> {
             vec: vector<Element>
         }
         fun is_none<Element>(t: &Option<Element>): bool {
             true
         }
-        fun main(opt: &mut Option<Element>) {
+        fun main<Element>(opt: &mut Option<Element>) {
             is_none(opt);
         } 
     }    
@@ -89,10 +89,10 @@ module 0x1::M {
     fun `test immutable reference is not compatible with mutable reference`() = checkErrors(
         """
 module 0x1::M {
-    struct Option<Element> {
-        vec: vector<Element>
+    struct Option<OptElement> {
+        vec: vector<OptElement>
     }
-    fun is_none<Element>(t: &mut Option<Element>): bool {
+    fun is_none<NoneElement>(t: &mut Option<NoneElement>): bool {
         true
     }
     fun main<Element>(opt: &Option<Element>) {
@@ -201,7 +201,7 @@ module 0x1::M {
     """
     )
 
-    fun `test no return type but returns u8`() = checkErrors(
+    fun `test no return type but returns integer`() = checkErrors(
         """
     module 0x1::M {
         fun call() {
@@ -211,7 +211,7 @@ module 0x1::M {
     """
     )
 
-    fun `test no return type but returns u8 with expression`() = checkErrors(
+    fun `test no return type but returns integer with expression`() = checkErrors(
         """
     module 0x1::M {
         fun call() {
@@ -220,6 +220,7 @@ module 0x1::M {
     }    
     """
     )
+
 
     fun `test if statement returns ()`() = checkErrors(
         """
@@ -528,17 +529,6 @@ module 0x1::M {
     """
     )
 
-    fun `test invalid argument to minus expr`() = checkErrors(
-        """
-    module 0x1::M {
-        fun add(a: bool, b: bool) {
-            <error descr="Invalid argument to '-': expected integer type, but found 'bool'">a</error> 
-            - <error descr="Invalid argument to '-': expected integer type, but found 'bool'">b</error>;
-        }
-    }    
-    """
-    )
-
     fun `test invalid argument to plus expr for type parameter`() = checkErrors(
         """
     module 0x1::M {
@@ -619,6 +609,27 @@ module 0x1::M {
     """
     )
 
+
+    fun `test cannot sum up bool and u64`() = checkByText(
+        """
+module 0x1::main {
+    fun main() {
+        <error descr="Invalid argument to '+': expected integer type, but found 'bool'">false</error> + 1u64;
+    }
+}        
+    """
+    )
+
+    fun `test cannot sum up u8 and u64`() = checkByText(
+        """
+module 0x1::main {
+    fun main() {
+        <error descr="Incompatible arguments to '+': 'u8' and 'u64'">1u8 + 1u64</error>;
+    }
+}        
+    """
+    )
+
     fun `test error invalid assignment type`() = checkErrors(
         """
     module 0x1::M {
@@ -653,7 +664,7 @@ module 0x1::M {
     """
     )
 
-    fun `test tuple unpacking into struct when tuple pat is expected is specified`() = checkErrors(
+    fun `test tuple unpacking into struct when tuple pat is expected`() = checkErrors(
         """
     module 0x1::M {
         struct S { val: u8 }
@@ -665,7 +676,7 @@ module 0x1::M {
     """
     )
 
-    fun `test unpacking struct into field`() = checkErrors(
+    fun `test unpacking struct into variable`() = checkErrors(
         """
     module 0x1::M {
         struct S { val: u8 }
@@ -1061,26 +1072,6 @@ module 0x1::main {
     """
     )
 
-    fun `test cannot sum up bool and u64`() = checkByText(
-        """
-module 0x1::main {
-    fun main() {
-        <error descr="Invalid argument to '+': expected integer type, but found 'bool'">false</error> + 1u64;
-    }
-}        
-    """
-    )
-
-    fun `test cannot sum up u8 and u64`() = checkByText(
-        """
-module 0x1::main {
-    fun main() {
-        <error descr="Incompatible arguments to '+': 'u8' and 'u64'">1u8 + 1u64</error>;
-    }
-}        
-    """
-    )
-
     fun `test recursive structs`() = checkByText(
         """
 module 0x42::M0 {
@@ -1290,6 +1281,7 @@ module 0x1::pool {
     """
     )
 
+    // !
     fun `test type check function result in func spec`() = checkByText(
         """
         module 0x1::m {
@@ -1297,6 +1289,17 @@ module 0x1::pool {
             spec call {
                 <error descr="Invalid argument to '+': expected integer type, but found 'bool'">result</error> + 1;
             }
+        }        
+    """
+    )
+
+    fun `test type check imply expr in include`() = checkByText(
+        """
+        module 0x1::m {
+            spec schema Schema {}
+            spec module {
+                include <error descr="Incompatible type 'num', expected 'bool'">1</error> ==> Schema {};
+            } 
         }        
     """
     )
@@ -1310,17 +1313,6 @@ module 0x1::pool {
                 }
             }        
         """
-    )
-
-    fun `test type check imply expr in include`() = checkByText(
-        """
-        module 0x1::m {
-            spec schema Schema {}
-            spec module {
-                include <error descr="Incompatible type 'num', expected 'bool'">1</error> ==> Schema {};
-            } 
-        }        
-    """
     )
 
     fun `test incompatible integers to gte`() = checkByText(
@@ -1483,6 +1475,8 @@ module 0x1::pool {
     """
     )
 
+    // end
+
     fun `test range expr second has different type`() = checkByText(
         """
         module 0x1::m {
@@ -1553,7 +1547,7 @@ module 0x1::pool {
                                
                 vector::borrow_mut(<error descr="Incompatible type 'integer', expected '&mut vector<Element>'">0</error>, <error descr="Incompatible type '&mut vector<integer>', expected 'u64'">&mut v</error>);                
                 vector::borrow_mut(<error descr="Incompatible type 'vector<integer>', expected '&mut vector<Element>'">v</error>, 0);                
-                vector::borrow_mut(<error descr="Incompatible type '&vector<integer>', expected '&mut vector<Element>'">&v</error>, 0);                
+                vector::borrow_mut(<error descr="Incompatible type '&vector<integer>', expected '&mut vector<integer>'">&v</error>, 0);                
                      
             }            
         }

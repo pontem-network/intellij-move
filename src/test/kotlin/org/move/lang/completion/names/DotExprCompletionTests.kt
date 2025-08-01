@@ -2,9 +2,9 @@ package org.move.lang.completion.names
 
 import org.move.utils.tests.completion.CompletionTestCase
 
-class DotAccessCompletionTest: CompletionTestCase() {
+class DotExprCompletionTests: CompletionTestCase() {
     fun `test dot access for struct reference`() = doSingleCompletion("""
-        module M {
+        module 0x1::m {
             struct Frobnicate {
                 vec: vector<u8>
             }
@@ -13,7 +13,7 @@ class DotAccessCompletionTest: CompletionTestCase() {
             }
         }
     """, """
-        module M {
+        module 0x1::m {
             struct Frobnicate {
                 vec: vector<u8>
             }
@@ -24,7 +24,7 @@ class DotAccessCompletionTest: CompletionTestCase() {
     """)
 
     fun `test dot access for mutable struct reference`() = doSingleCompletion("""
-        module M {
+        module 0x1::m {
             struct Frobnicate {
                 vec: vector<u8>
             }
@@ -33,7 +33,7 @@ class DotAccessCompletionTest: CompletionTestCase() {
             }
         }
     """, """
-        module M {
+        module 0x1::m {
             struct Frobnicate {
                 vec: vector<u8>
             }

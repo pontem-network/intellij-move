@@ -336,7 +336,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
         when {
             realCount < expectedRange.start -> {
-                val target = argumentList.findFirstChildByType(R_PAREN) ?: argumentList
+                val target = argumentList.rParen ?: argumentList
                 Diagnostic.ValueArgumentsNumberMismatch(target, expectedRange, realCount)
                     .addToHolder(holder)
                 return

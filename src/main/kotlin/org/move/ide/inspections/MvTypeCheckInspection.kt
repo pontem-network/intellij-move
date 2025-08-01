@@ -49,12 +49,12 @@ class MvTypeCheckInspection: MvLocalInspectionTool() {
     private fun checkInferenceOwner(inferenceOwner: MvInferenceContextOwner, holder: ProblemsHolder) {
         val msl = inferenceOwner.isMsl()
         val inference = inferenceOwner.inference(msl)
-        var remainingErrors = inference.typeErrors
+        var remainingErrors = inference.typeErrors.toMutableList()
         inference.typeErrors
             .forEach { currentError ->
                 val otherErrors = (remainingErrors - currentError)
                 val element = currentError.element
-                val skipError = otherErrors.any { filteredError ->
+                val dropError = otherErrors.any { filteredError ->
                     // todo: change to `withSelf = false` to deal with duplicate errors
                     val parents = filteredError.element.parents(withSelf = true)
                     // if any of the other errors contain deeper element, drop this one
@@ -62,10 +62,10 @@ class MvTypeCheckInspection: MvLocalInspectionTool() {
                     parents.contains(element)
                 }
                 // todo: drop this to deal with duplicate errors
-                if (skipError) {
+                if (dropError) {
                     remainingErrors -= currentError
                 }
-                if (!skipError) {
+                if (!dropError) {
                     holder.registerTypeError(currentError)
                 }
             }

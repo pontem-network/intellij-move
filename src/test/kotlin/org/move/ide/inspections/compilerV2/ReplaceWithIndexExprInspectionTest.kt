@@ -34,7 +34,7 @@ class ReplaceWithIndexExprInspectionTest: InspectionTestBase(MvReplaceWithIndexE
             native public fun borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
         }                
         module 0x1::m {
-            use 0x1::vector;
+            use 0x2::vector;
             
             fun main() {
                 let v = vector[1, 2];

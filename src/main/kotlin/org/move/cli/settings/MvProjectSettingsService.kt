@@ -52,7 +52,7 @@ class MvProjectSettingsService(
         var localAptosPath: String? by string()
 
         @AffectsMoveProjectsMetadata
-        var fetchAptosDeps: Boolean by property(true)
+        var fetchAptosDeps: Boolean by property(false)
 
         var disableTelemetry: Boolean by property(true)
 
