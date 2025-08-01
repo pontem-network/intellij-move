@@ -80,13 +80,11 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
             // saves values from Swing form back to configurable (OK / Apply)
             onApply {
                 settings.modify {
-                    it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
-
-                    val localAptosSdkPath = chooseAptosCliPanel.data.localAptosPath
+                    val localAptosSdkPath = chooseAptosCliPanel.data.aptosPath
                     if (localAptosSdkPath != null) {
                         chooseAptosCliPanel.updateAptosSdks(localAptosSdkPath)
                     }
-                    it.localAptosPath = localAptosSdkPath
+                    it.aptosPath = localAptosSdkPath
 
                     it.disableTelemetry = state.disableTelemetry
                     it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
@@ -98,15 +96,13 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
 
             // loads settings from configurable to swing form
             onReset {
-                chooseAptosCliPanel.data =
-                    ChooseAptosCliPanel.Data(state.aptosExecType, state.localAptosPath)
+                chooseAptosCliPanel.data = ChooseAptosCliPanel.Data(state.aptosPath)
             }
 
             /// checks whether any settings are modified (should be fast)
             onIsModified {
                 val aptosPanelData = chooseAptosCliPanel.data
-                aptosPanelData.aptosExecType != settings.aptosExecType
-                        || aptosPanelData.localAptosPath != settings.localAptosPath
+                aptosPanelData.aptosPath != settings.aptosPath
             }
         }
     }

@@ -21,10 +21,7 @@ import org.move.openapiext.computeWithCancelableProgress
 import org.move.openapiext.openFileInEditor
 import org.move.stdext.unwrapOrThrow
 
-data class AptosProjectConfig(
-    val aptosExecType: AptosExecType,
-    val localAptosPath: String?,
-)
+data class AptosProjectConfig(val aptosPath: String?)
 
 class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
                             CustomStepProjectGenerator<AptosProjectConfig> {
@@ -43,7 +40,7 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
     ) {
         val packageName = project.name
         val aptosPath =
-            AptosExecType.aptosCliPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
+            AptosExecType.aptosCliPath(projectConfig.aptosPath)
                 ?: error("validated before")
         val aptos = Aptos(aptosPath, disposable)
         val moveTomlFile =
@@ -59,8 +56,7 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
             }
         // update settings (and refresh Aptos projects too)
         project.moveSettings.modify {
-            it.aptosExecType = projectConfig.aptosExecType
-            it.localAptosPath = projectConfig.localAptosPath
+            it.aptosPath = projectConfig.aptosPath
         }
 
         // NOTE:

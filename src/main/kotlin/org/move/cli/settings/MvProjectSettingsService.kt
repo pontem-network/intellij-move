@@ -27,8 +27,7 @@ class MvProjectSettingsService(
 ):
     MvProjectSettingsServiceBase<MoveProjectSettings>(project, MoveProjectSettings()) {
 
-    val aptosExecType: AptosExecType get() = state.aptosExecType
-    val localAptosPath: String? get() = state.localAptosPath
+    val aptosPath: String? get() = state.aptosPath
 
     val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
 
@@ -46,10 +45,7 @@ class MvProjectSettingsService(
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
-        var aptosExecType: AptosExecType by enum(defaultAptosExecType)
-
-        @AffectsMoveProjectsMetadata
-        var localAptosPath: String? by string()
+        var aptosPath: String? by string()
 
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)
@@ -80,12 +76,6 @@ class MvProjectSettingsService(
         oldState: MoveProjectSettings,
         newState: MoveProjectSettings
     ): SettingsChangedEventBase<MoveProjectSettings>(oldState, newState)
-
-    companion object {
-        private val defaultAptosExecType
-            get() =
-                if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL
-    }
 }
 
 val Project.moveSettings: MvProjectSettingsService get() = service()
@@ -93,7 +83,7 @@ val Project.moveSettings: MvProjectSettingsService get() = service()
 val Project.aptosCliPath: Path?
     get() {
         val settings = this.moveSettings
-        return AptosExecType.aptosCliPath(settings.aptosExecType, settings.localAptosPath)
+        return AptosExecType.aptosCliPath(settings.aptosPath)
     }
 
 fun Project.getAptosCli(
