@@ -86,8 +86,6 @@
                        implementationClass="org.move.ide.typing.MvQuoteHandler" />
     <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                   id="MvAngleBracketsHandler" />
-    <typedHandler implementation="org.move.ide.typing.MoveTextFieldTypedHandler"
-                  id="MoveTextFieldTypedHandler" />
     <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
                   id="MvTypedHandler" />
     <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
@@ -131,8 +129,6 @@
                             implementationClass="org.move.lang.core.completion.KeywordCompletionContributor" />
     <completion.contributor language="Move"
                             implementationClass="org.move.lang.core.completion.CommonCompletionContributor" />
-    <completion.contributor language="Move"
-                            implementationClass="org.move.lang.core.completion.MoveTextFieldCompletionContributor" />
     <completion.contributor language="TOML"
                             implementationClass="org.move.toml.completion.MoveTomlCompletionContributor" />
     <weigher key="completion"
