@@ -3,12 +3,10 @@ package org.move.utils
 import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.moveStructureModificationTracker
 
@@ -62,12 +60,6 @@ fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValuePro
                 PsiModificationTracker.MODIFICATION_COUNT
             )
         }
-
-        // Invalidate cached value of code fragment on any PSI change
-        this is MvCodeFragment -> CachedValueProvider.Result.create(
-            value,
-            PsiModificationTracker.MODIFICATION_COUNT
-        )
 
         else -> CachedValueProvider.Result.create(value, dependencies)
     }
