@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.PerProjectAptosConfigurable
-import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.aptosCliPath
 import org.move.cli.settings.isValidExecutable
 import org.move.cli.settings.moveSettings
@@ -28,8 +27,7 @@ class InvalidAptosCliConfigurationNotification(project: Project): MvAptosEditorN
             if (aptosCliFromPATH != null) {
                 createActionLabel("Set to \"$aptosCliFromPATH\"") {
                     project.moveSettings.modify {
-                        it.aptosExecType = LOCAL
-                        it.localAptosPath = aptosCliFromPATH
+                        it.aptosPath = aptosCliFromPATH
                     }
                 }
             }

@@ -3,7 +3,6 @@ package org.move.utils.tests
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.aptosCliPath
 import org.move.cli.settings.moveSettings
 import org.move.stdext.getCliFromPATH
@@ -24,8 +23,7 @@ class AptosCliTestFixture(
         if (aptosSdkPath == null) {
             aptosSdkPath = getCliFromPATH("aptos")
             project.moveSettings.modifyTemporary(testRootDisposable) {
-                it.aptosExecType = LOCAL
-                it.localAptosPath = aptosSdkPath.toString()
+                it.aptosPath = aptosSdkPath.toString()
             }
         }
         this.aptosPath = aptosSdkPath
@@ -35,20 +33,11 @@ class AptosCliTestFixture(
 
     private fun setUpAllowedRoots() {
         val aptosPath = aptosPath ?: return
-//        stdlib?.let { VfsRootAccess.allowRootAccess(testRootDisposable, it.path) }
-
-//        val toolchain = toolchain!!
-//        val cargoPath = (EnvironmentUtil.getValue("CARGO_HOME") ?: "~/.cargo")
-//            .let { toolchain.expandUserHome(it) }
-//            .let { toolchain.toLocalPath(it) }
-//            .toPath()
-
         VfsRootAccess.allowRootAccess(testRootDisposable, aptosPath.toString())
         // actions-rs/toolchain on CI creates symlink at `~/.cargo` while setting up of Rust toolchain
         val canonicalCargoPath = aptosPath.toRealPath()
         if (aptosPath != canonicalCargoPath) {
             VfsRootAccess.allowRootAccess(testRootDisposable, canonicalCargoPath.toString())
         }
-//        VfsRootAccess.allowRootAccess(testRootDisposable, RsPathManager.stdlibDependenciesDir().toString())
     }
 }

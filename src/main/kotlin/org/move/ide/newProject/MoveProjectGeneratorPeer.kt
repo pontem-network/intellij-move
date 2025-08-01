@@ -30,22 +30,18 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
             ProjectManager.getInstance().defaultProject.getService(MvProjectSettingsService::class.java)
 
         val localAptosPath =
-            defaultProjectSettings.localAptosPath ?: getCliFromPATH("aptos")?.toString()
-        chooseAptosCliPanel.data =
-            ChooseAptosCliPanel.Data(defaultProjectSettings.aptosExecType, localAptosPath)
+            defaultProjectSettings.aptosPath ?: getCliFromPATH("aptos")?.toString()
+        chooseAptosCliPanel.data = ChooseAptosCliPanel.Data(localAptosPath)
     }
 
     private var checkValid: Runnable? = null
 
     override fun getSettings(): AptosProjectConfig {
-        val localAptosPath = this.chooseAptosCliPanel.data.localAptosPath
-        if (localAptosPath != null) {
-            this.chooseAptosCliPanel.updateAptosSdks(localAptosPath)
+        val aptosPath = this.chooseAptosCliPanel.data.aptosPath
+        if (aptosPath != null) {
+            this.chooseAptosCliPanel.updateAptosSdks(aptosPath)
         }
-        return AptosProjectConfig(
-            aptosExecType = this.chooseAptosCliPanel.data.aptosExecType,
-            localAptosPath = localAptosPath,
-        )
+        return AptosProjectConfig(aptosPath)
     }
 
     override fun getComponent(myLocationField: TextFieldWithBrowseButton, checkValid: Runnable): JComponent {
@@ -58,7 +54,7 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
     override fun validate(): ValidationInfo? {
         val panelData = this.chooseAptosCliPanel.data
         val aptosExecPath =
-            AptosExecType.aptosCliPath(panelData.aptosExecType, panelData.localAptosPath)
+            AptosExecType.aptosCliPath(panelData.aptosPath)
         if (aptosExecPath == null) {
             return ValidationInfo("Invalid path to Aptos executable")
         }

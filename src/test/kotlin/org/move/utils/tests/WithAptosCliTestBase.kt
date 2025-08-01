@@ -5,50 +5,23 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.common.runAll
 import com.intellij.util.ThrowableRunnable
-import com.intellij.util.ui.UIUtil
-import org.move.cli.settings.aptos.AptosExecType
 import org.move.cli.settings.moveSettings
 import java.nio.file.Path
 
 abstract class WithAptosCliTestBase(val localAptosPath: Path? = null): MvProjectTestBase() {
 
-    protected lateinit var rustupFixture: AptosCliTestFixture
+    protected lateinit var aptosCliFixture: AptosCliTestFixture
 
     protected val cargoProjectDirectory: VirtualFile get() = myFixture.findFileInTempDir(".")
 
     private val earlyTestRootDisposable = Disposer.newDisposable()
 
-//    protected fun FileTree.create(): TestProject =
-//        create(project, cargoProjectDirectory)
-//            .apply {
-////            rustupFixture.toolchain
-////                ?.rustc()
-////                ?.getStdlibPathFromSysroot(cargoProjectDirectory.pathAsPath)
-////                ?.let { VfsRootAccess.allowRootAccess(testRootDisposable, it) }
-//
-////                refreshWorkspace()
-//            }
-
-//    protected fun refreshWorkspace() {
-//        project.moveProjectsService.scheduleProjectsRefresh("from test")
-////        project.testCargoProjects.discoverAndRefreshSync()
-//    }
-
     override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {
-        val aptosPath = rustupFixture.aptosPath
+        val aptosPath = aptosCliFixture.aptosPath
         if (aptosPath == null) {
             System.err.println("SKIP \"$name\": Aptos SDK not available")
             return
         }
-
-//        val reason = checkRustcVersionRequirements {
-//            val rustcVersion = rustupFixture.toolchain!!.rustc().queryVersion()?.semver
-//            if (rustcVersion != null) RsResult.Ok(rustcVersion) else RsResult.Err("\"$name\": failed to query Rust version")
-//        }
-//        if (reason != null) {
-//            System.err.println("SKIP $reason")
-//            return
-//        }
         super.runTestRunnable(testRunnable)
     }
 
@@ -57,50 +30,22 @@ abstract class WithAptosCliTestBase(val localAptosPath: Path? = null): MvProject
 
         if (localAptosPath != null) {
             project.moveSettings.modifyTemporary(testRootDisposable) {
-                it.aptosExecType = AptosExecType.LOCAL
-                it.localAptosPath = localAptosPath.toString()            }
+                it.aptosPath = localAptosPath.toString()            }
         }
 
-        rustupFixture = AptosCliTestFixture(project)
-        rustupFixture.setUp()
+        aptosCliFixture = AptosCliTestFixture(project)
+        aptosCliFixture.setUp()
     }
 
     override fun tearDown() {
         runAll(
-//            {
-//                // Fixes flaky tests
-//                (ProjectLevelVcsManagerEx.getInstance(project) as ProjectLevelVcsManagerImpl).waitForInitialized()
-//            },
             { Disposer.dispose(earlyTestRootDisposable) },
-            { rustupFixture.tearDown() },
+            { aptosCliFixture.tearDown() },
             { super.tearDown() },
         )
     }
 
     override fun getTestRootDisposable(): Disposable {
-        return if (myFixture != null) myFixture.testRootDisposable else super.getTestRootDisposable()
+        return myFixture?.testRootDisposable ?: super.getTestRootDisposable()
     }
-
-//    protected fun buildProject(builder: FileTreeBuilder.() -> Unit): TestProject =
-//        fileTree { builder() }.create()
-
-    /**
-     * Tries to launches [action]. If it returns `false`, invokes [UIUtil.dispatchAllInvocationEvents] and tries again
-     *
-     * Can be used to wait file system refresh, for example
-     */
-//    protected fun runWithInvocationEventsDispatching(
-//        errorMessage: String = "Failed to invoke `action` successfully",
-//        retries: Int = 1000,
-//        action: () -> Boolean
-//    ) {
-//        repeat(retries) {
-//            UIUtil.dispatchAllInvocationEvents()
-//            if (action()) {
-//                return
-//            }
-//            Thread.sleep(10)
-//        }
-//        error(errorMessage)
-//    }
 }

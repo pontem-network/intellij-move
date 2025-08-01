@@ -24,7 +24,6 @@ val pluginGroup = "org.move"
 val pluginName = "intellij-move"
 
 val kotlinReflectVersion = "2.0.21"
-val aptosVersion = "7.3.0"
 
 group = pluginGroup
 version = pluginVersion
@@ -163,42 +162,6 @@ allprojects {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
 
-        register("downloadAptosBinaries") {
-            val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
-            doLast {
-                // NOTE: MacOS is not supported anymore for pre-built CLI
-                for (releasePlatform in listOf(/*"MacOSX",*/ "Linux-aarch64", "Linux-x86_64", "Windows-x86_64")) {
-                    val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform.zip"
-                    val zipFileUrl = "$baseUrl/$zipFileName"
-                    val buildRoot = rootProject.layout.buildDirectory.get()
-                    val zipRoot = "$buildRoot/zip"
-                    val zipFile = file("$zipRoot/$zipFileName")
-                    if (!zipFile.exists()) {
-                        download.run {
-                            src(zipFileUrl)
-                            dest(zipFile)
-                            overwrite(false)
-                        }
-                    }
-                    val platformName =
-                        when (releasePlatform) {
-//                            "MacOSX" -> "macos"
-                            "Linux-aarch64" -> "linux-arm64"
-                            "Linux-x86_64" -> "linux-x86"
-                            "Windows-x86_64" -> "windows"
-                            else -> error("unreachable")
-                        }
-                    val platformRoot = file("${rootProject.rootDir}/bin/$platformName")
-                    copy {
-                        from(
-                            zipTree(zipFile)
-                        )
-                        into(platformRoot)
-                    }
-                }
-            }
-        }
-
         generateLexer {
             sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
             targetOutputDir.set(file("src/main/gen/org/move/lang"))
@@ -214,11 +177,6 @@ allprojects {
         }
         withType<KotlinCompile> {
             dependsOn(generateLexer, generateParser)
-        }
-
-        prepareSandbox {
-            dependsOn("downloadAptosBinaries")
-            copyDownloadedAptosBinaries(this)
         }
     }
 
@@ -237,18 +195,6 @@ allprojects {
 //            systemProperty("org.move.aptos.bundled.force.unsupported", true)
 //            systemProperty("idea.log.debug.categories", "org.move.cli")
         }
-
-        prepareSandboxTask {
-            dependsOn("downloadAptosBinaries")
-            copyDownloadedAptosBinaries(this)
-        }
-    }
-}
-
-fun copyDownloadedAptosBinaries(copyTask: AbstractCopyTask) {
-    copyTask.from("$rootDir/bin") {
-        into("$pluginName/bin")
-        include("**")
     }
 }
 
