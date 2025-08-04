@@ -12,7 +12,7 @@ data class AptosExternalLinterArgs(
     val extraArguments: String,
     val envs: Map<String, String>,
     val enableMove2: Boolean,
-    val skipLatestGitDeps: Boolean,
+//    val skipLatestGitDeps: Boolean,
 ) {
     companion object {
         fun forMoveProject(moveProject: MoveProject): AptosExternalLinterArgs {
@@ -29,7 +29,7 @@ data class AptosExternalLinterArgs(
                 additionalArguments,
                 enviroment,
                 enableMove2 = moveSettings.enableMove2,
-                skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
+//                skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
             )
         }
     }

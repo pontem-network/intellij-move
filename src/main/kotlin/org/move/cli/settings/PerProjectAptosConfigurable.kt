@@ -6,14 +6,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.toMutableProperty
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
+import org.move.openapiext.fullWidthCell
 import org.move.openapiext.showSettingsDialog
 
 // panels needs not to be bound to the Configurable itself, as it's sometimes created without calling the `createPanel()`
 class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Aptos") {
+
+    private val extraTextArgsField = ExpandableTextField()
 
     override fun createPanel(): DialogPanel {
         val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
@@ -42,28 +47,25 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         )
                         .bindSelected(state::enableMove2)
                 }
-                group("Command Line Options") {
+                group("Extra CLI arguments") {
+                    row {
+                        fullWidthCell(extraTextArgsField)
+                            .resizableColumn()
+                            .comment(
+                                "Additional arguments to pass to <b>aptos move test</b>"
+                            )
+                            .bind(
+                                componentGet = { it.text },
+                                componentSet = { component, value -> component.text = value },
+                                prop = state::extraTestArgs.toMutableProperty()
+                            )
+                    }
                     row {
                         checkBox("Disable telemetry for new Run Configurations")
                             .comment(
                                 "Adds APTOS_DISABLE_TELEMETRY=true to every generated Aptos command."
                             )
                             .bindSelected(state::disableTelemetry)
-                    }
-                    row {
-                        checkBox("Skip updating to the latest git dependencies")
-                            .comment(
-                                "Adds --skip-fetch-latest-git-deps to the sync and test runs."
-                            )
-                            .bindSelected(state::skipFetchLatestGitDeps)
-
-                    }
-                    row {
-                        checkBox("Dump storage to console on test failures")
-                            .comment(
-                                "Adds --dump to generated test runs."
-                            )
-                            .bindSelected(state::dumpStateOnTestFailure)
                     }
                 }
             }
@@ -87,8 +89,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                     it.aptosPath = localAptosSdkPath
 
                     it.disableTelemetry = state.disableTelemetry
-                    it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
-                    it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
+                    it.extraTestArgs = state.extraTestArgs
                     it.enableMove2 = state.enableMove2
                     it.fetchAptosDeps = state.fetchAptosDeps
                 }

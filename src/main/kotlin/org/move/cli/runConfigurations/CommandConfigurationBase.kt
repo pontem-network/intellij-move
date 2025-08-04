@@ -13,6 +13,7 @@ import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration.Companion.configurationError
+import org.move.cli.runConfigurations.aptos.AptosArgs
 import org.move.cli.runConfigurations.test.AptosTestConsoleProperties.Companion.TEST_TOOL_WINDOW_SETTING_KEY
 import org.move.cli.runConfigurations.test.AptosTestRunState
 import org.move.cli.settings.aptosCliPath
@@ -49,14 +50,14 @@ abstract class CommandConfigurationBase(
 
     @Throws(RuntimeConfigurationException::class)
     override fun checkConfiguration() {
-        val config = clean()
+        val config = validateConfiguration()
         if (config is CleanConfiguration.Err) {
             throw config.error
         }
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosRunStateBase? {
-        val config = clean().ok ?: return null
+        val config = validateConfiguration().ok ?: return null
 
         // environment is disposable to which all internal RunState disposables are connected
         // todo: find shorter living disposable?
@@ -69,7 +70,7 @@ abstract class CommandConfigurationBase(
         }
     }
 
-    fun clean(): CleanConfiguration {
+    fun validateConfiguration(): CleanConfiguration {
         val (subcommand, arguments) = parseAptosCommand(command)
             ?: return configurationError("No subcommand specified")
         val workingDirectory = workingDirectory
@@ -82,12 +83,11 @@ abstract class CommandConfigurationBase(
         val commandLine =
             AptosCommandLine(
                 subcommand,
-                arguments,
+                AptosArgs().applyExtra(arguments),
                 workingDirectory,
                 environmentVariables
             )
-        return CleanConfiguration.
-        Ok(aptosPath, commandLine)
+        return CleanConfiguration.Ok(aptosPath, commandLine)
     }
 
     protected fun showTestToolWindow(commandLine: AptosCommandLine): Boolean =

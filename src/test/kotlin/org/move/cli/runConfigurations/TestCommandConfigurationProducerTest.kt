@@ -52,10 +52,10 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
                 )
             }
         }
-        this.project.moveSettings
-            .modifyTemporary(this.testRootDisposable) {
-                it.skipFetchLatestGitDeps = true
-            }
+//        this.project.moveSettings
+//            .modifyTemporary(this.testRootDisposable) {
+//                it.extraTestArgs = "--dev --skip-fetch-latest-git-deps"
+//            }
         checkOnElement<MvFunction>()
     }
 
@@ -82,7 +82,7 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
         }
         this.project.moveSettings
             .modifyTemporary(this.testRootDisposable) {
-                it.dumpStateOnTestFailure = true
+                it.extraTestArgs = "--dev --dump"
             }
         checkOnElement<MvFunction>()
     }
@@ -317,7 +317,8 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
             }
         }
         project.moveSettings.modifyTemporary(this.testRootDisposable) {
-            it.skipFetchLatestGitDeps = false
+            it.extraTestArgs = "--dev"
+
         }
         checkOnElement<MvFunction>()
     }
@@ -344,7 +345,7 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
             }
         }
         project.moveSettings.modifyTemporary(this.testRootDisposable) {
-            it.skipFetchLatestGitDeps = false
+            it.extraTestArgs = "--dev"
             it.enableMove2 = true
         }
         checkOnElement<MvFunction>()
