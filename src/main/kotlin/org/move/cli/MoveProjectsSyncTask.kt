@@ -140,7 +140,6 @@ class MoveProjectsSyncTask(
         projects: MutableList<MoveProject>,
         context: SyncContext
     ) {
-        val packageRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
         var (moveProject, rootMoveToml) =
             runReadAction {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
@@ -150,36 +149,6 @@ class MoveProjectsSyncTask(
                 rootProject to rootMoveToml
             }
 
-        if (!project.moveSettings.fetchAptosDeps) {
-            context.syncProgress.info(
-                "Fetching dependencies (disabled)",
-                "Fetching dependencies disabled in the plugin settings",
-            )
-        } else {
-            context.runWithChildProgress("Fetch dependencies") { childContext ->
-                val taskResult = fetchDependencyPackages(childContext, packageRoot)
-                if (taskResult is TaskResult.Err) {
-                    moveProject = moveProject.copy(
-                        fetchDepsStatus = UpdateStatus.UpdateFailed("Failed to fetch dependency packages")
-                    )
-                }
-                childContext.checkCanceled()
-                // fetched any dependencies
-                if (taskResult is TaskResult.Ok) {
-                    val output = taskResult.value
-                    if (output.stdout.contains("FETCHING GIT DEPENDENCY")) {
-                        childContext.withProgressText("Preparing filesystem")
-                        VfsUtil.markDirtyAndRefresh(
-                            false,
-                            true,
-                            false,
-                            moveHome().toFile()
-                        )
-                    }
-                }
-                taskResult
-            }
-        }
         context.checkCanceled()
 
         val deps =
@@ -203,72 +172,6 @@ class MoveProjectsSyncTask(
             } as TaskResult.Ok).value
 
         projects.add(moveProject.copy(dependencies = deps))
-    }
-
-    private fun fetchDependencyPackages(
-        childContext: SyncContext, packageRoot: Path
-    ): TaskResult<ProcessOutput> {
-        val aptos = project.getAptosCli(parentDisposable = this)
-        return when {
-            aptos == null -> TaskResult.Err("Invalid Aptos CLI configuration")
-            else -> {
-                val aptosProcessOutput =
-                    aptos.fetchPackageDependencies(
-                        project,
-                        packageRoot,
-                        runner = {
-                            // populate progress bar
-                            addProcessListener(object: AnsiEscapedProcessAdapter() {
-                                override fun onColoredTextAvailable(text: String) {
-                                    // show progress bars for the long operations
-                                    val line = text.trim()
-                                    if (line.startsWith("FETCHING GIT DEPENDENCY")) {
-                                        val gitRepo = line.substring("FETCHING GIT DEPENDENCY".length)
-                                        childContext.withProgressText("Fetching $gitRepo")
-                                    }
-                                    if (line.startsWith("UPDATING GIT DEPENDENCY")) {
-                                        val gitRepo = line.substring("UPDATING GIT DEPENDENCY".length)
-                                        childContext.withProgressText("Updating $gitRepo")
-                                    }
-                                }
-                            })
-                            addProcessListener(object: ProcessListener {
-                                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                                    childContext.syncProgress.output(event.text, true)
-                                }
-                            })
-                            runProcessWithGlobalProgress()
-                        }
-                    ).unwrapOrElse {
-                        return TaskResult.Err(
-                            "Failed to fetch / update dependencies",
-                            it.message
-                        )
-                    }
-                val output = aptosProcessOutput.output
-                when (val exitStatus = aptosProcessOutput.exitStatus) {
-                    is AptosExitStatus.Result -> {
-                        TaskResult.Ok(output)
-                    }
-                    is AptosExitStatus.Error -> {
-                        if (exitStatus.message.contains("Unable to resolve packages for package")) {
-                            return TaskResult.Err(
-                                "Unable to resolve packages",
-                                exitStatus.message.split(": ").joinToString(": \n")
-                            )
-                        }
-                        if (!exitStatus.message.contains("Compilation error")) {
-                            return TaskResult.Err(
-                                "Error occurred",
-                                exitStatus.message.split(": ").joinToString(": \n")
-                            )
-                        }
-                        TaskResult.Ok(output)
-                    }
-                    is AptosExitStatus.Malformed -> TaskResult.Ok(output)
-                }
-            }
-        }
     }
 
     private fun createSyncProgressDescriptor(progress: ProgressIndicator): BuildProgressDescriptor {
@@ -306,7 +209,6 @@ class MoveProjectsSyncTask(
 
     data class SyncContext(
         val project: Project,
-//        val toolchain: RsToolchainBase,
         val progress: ProgressIndicator,
         val buildId: Any,
         val syncProgress: BuildProgress<BuildProgressDescriptor>

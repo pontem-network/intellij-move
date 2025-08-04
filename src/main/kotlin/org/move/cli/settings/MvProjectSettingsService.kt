@@ -29,11 +29,13 @@ class MvProjectSettingsService(
 
     val aptosPath: String? get() = state.aptosPath
 
-    val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
+//    val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
 
     val disableTelemetry: Boolean get() = state.disableTelemetry
-    val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
-    val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
+    val testsExtraArgs: List<String>
+        get() {
+            return state.extraTestArgs.orEmpty().split(" ")
+        }
 
     val enableMove2: Boolean get() = state.enableMove2
     val disabledMove2: Boolean get() = !state.enableMove2
@@ -52,10 +54,7 @@ class MvProjectSettingsService(
 
         var disableTelemetry: Boolean by property(true)
 
-        // change to true here to not annoy the users with constant updates
-        var skipFetchLatestGitDeps: Boolean by property(true)
-
-        var dumpStateOnTestFailure: Boolean by property(false)
+        var extraTestArgs: String? by string("--dev --skip-fetch-latest-git-deps")
 
         @AffectsHighlighting
         var enableMove2: Boolean by property(true)

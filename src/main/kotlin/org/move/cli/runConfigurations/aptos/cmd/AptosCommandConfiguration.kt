@@ -27,7 +27,7 @@ class AptosCommandConfiguration(
     override fun getConfigurationEditor() = AptosCommandConfigurationEditor()
 
     override fun createTestConsoleProperties(executor: Executor): TestConsoleProperties? {
-        val config = clean().ok ?: return null
+        val config = validateConfiguration().ok ?: return null
         return if (showTestToolWindow(config.cmd)) {
             AptosTestConsoleProperties(this, executor)
         } else {

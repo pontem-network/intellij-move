@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.AptosCommandLine
+import org.move.cli.runConfigurations.aptos.AptosArgs
 import org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType
 import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
 import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
@@ -61,10 +62,8 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
 
         val confName = "Test $modName::$functionName"
 
-        val arguments = buildList {
-            addAll(arrayOf("--filter", "$modName::$functionName"))
-            addAll(cliFlagsFromProjectSettings(psi.project))
-        }
+        val testArgs = testArgsFromProjectSettings(psi.project)
+        testArgs.applyExtra(listOf("--filter", "$modName::$functionName"))
 
         val moveProject = fn.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
@@ -73,7 +72,7 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
             confName,
             AptosCommandLine(
                 "move test",
-                arguments,
+                testArgs,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(psi.project)
             )
@@ -87,10 +86,12 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
         val modName = mod.name ?: return null
         val confName = "Test $modName"
 
-        val arguments = buildList {
-            addAll(arrayOf("--filter", modName))
-            addAll(cliFlagsFromProjectSettings(psi.project))
-        }
+        val testArgs = testArgsFromProjectSettings(psi.project)
+        testArgs.applyExtra(listOf("--filter", modName))
+//        val arguments = buildList {
+//            addAll(arrayOf("--filter", modName))
+//            addAll(testArgsFromProjectSettings(psi.project))
+//        }
 
         val moveProject = mod.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
@@ -99,7 +100,7 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
             confName,
             AptosCommandLine(
                 "move test",
-                arguments,
+                testArgs,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(psi.project)
             )
@@ -114,14 +115,14 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
         val rootPath = moveProject.contentRootPath ?: return null
 
         val confName = "Test $packageName"
-        val arguments = cliFlagsFromProjectSettings(location.project)
+        val testArgs = testArgsFromProjectSettings(location.project)
 
         return AptosCommandLineFromContext(
             location,
             confName,
             AptosCommandLine(
                 "move test",
-                arguments,
+                testArgs,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(location.project)
             )
@@ -136,13 +137,14 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
         return EnvironmentVariablesData.create(mapOf(), true)
     }
 
-    private fun cliFlagsFromProjectSettings(project: Project): List<String> =
-        buildList {
-            if (project.moveSettings.skipFetchLatestGitDeps) {
-                add("--skip-fetch-latest-git-deps")
-            }
-            if (project.moveSettings.dumpStateOnTestFailure) {
-                add("--dump")
-            }
-        }
+    private fun testArgsFromProjectSettings(project: Project): AptosArgs =
+        AptosArgs().apply { applyExtra(project.moveSettings.testsExtraArgs) }
+//        buildList {
+//            if (project.moveSettings.skipFetchLatestGitDeps) {
+//                add("--skip-fetch-latest-git-deps")
+//            }
+//            if (project.moveSettings.dumpStateOnTestFailure) {
+//                add("--dump")
+//            }
+//        }
 }
