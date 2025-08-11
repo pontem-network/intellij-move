@@ -491,19 +491,18 @@ module 0x1::main {
 }        
     """)
 
-    // TODO: test
-//    fun `test unused top import with local present`() = checkWarnings("""
-//        module 0x1::string {
-//            public fun call() {}
-//        }
-//        module 0x1::main {
-//            <warning descr="Unused use item">use 0x1::string;</warning>
-//            fun main() {
-//                use 0x1::string;
-//                string::call();
-//            }
-//        }
-//    """)
+    fun `test unused top import with local present`() = checkWarnings("""
+        module 0x1::string {
+            public fun call() {}
+        }
+        module 0x1::main {
+            <warning descr="Unused use item">use 0x1::string;</warning>
+            fun main() {
+                use 0x1::string;
+                string::call();
+            }
+        }
+    """)
 
     fun `test unused local import`() = checkWarnings("""
         module 0x1::string {

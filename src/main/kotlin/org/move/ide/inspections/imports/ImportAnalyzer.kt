@@ -38,6 +38,7 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
                 .flatMap { it.descendantsOfType<MvPath>() }
                 .filter { it.basePath() == it }
                 .filter { it.usageScope == itemScope }
+                // remove paths inside the use stmts
                 .filter { !it.hasAncestor<MvUseSpeck>() }
 
         for (path in reachablePaths) {
@@ -75,15 +76,15 @@ class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
         for (itemsOwner in reachableItemsOwners) {
             val scopeUseStmts = itemsOwner.useStmtList.filter { it.usageScope == itemScope }
             for (useStmt in scopeUseStmts) {
-                val unusedUseItems = useStmt.useItems.toSet() - allUseItemsHit
-                holder.registerStmtSpeckError2(useStmt, unusedUseItems)
+                holder.registerStmtSpeckError(useStmt, allUseItemsHit)
             }
         }
     }
 }
 
-fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<UseItem>) {
-    val moduleUseItems = useItems.filter { it.type is UseItemType.Module }
+fun ProblemsHolder.registerStmtSpeckError(useStmt: MvUseStmt, allUseItemsHit: Set<UseItem>) {
+    val unusedUseItems = useStmt.useItems.toSet() - allUseItemsHit
+    val moduleUseItems = unusedUseItems.filter { it.type is UseItemType.Module }
     if (moduleUseItems.isNotEmpty()) {
         this.registerProblem(
             useStmt,
@@ -93,7 +94,7 @@ fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<Use
         return
     }
 
-    if (useStmt.useItems.size == useItems.size) {
+    if (useStmt.useItems.size == unusedUseItems.size) {
         // all inner speck types are covered, highlight complete useStmt
         this.registerProblem(
             useStmt,
@@ -101,7 +102,7 @@ fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<Use
             ProblemHighlightType.LIKE_UNUSED_SYMBOL
         )
     } else {
-        for (useItem in useItems) {
+        for (useItem in unusedUseItems) {
             this.registerProblem(
                 useItem.useSpeck,
                 "Unused use item",
