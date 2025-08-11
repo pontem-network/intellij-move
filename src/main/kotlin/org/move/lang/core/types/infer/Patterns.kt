@@ -54,7 +54,7 @@ fun MvPat.collectBindings(fcx: TypePsiWalker, ty: Ty, defBm: RsBindingModeKind =
             }
 
             val namedFields = item?.namedFields?.associateBy { it.name } ?: emptyMap()
-            val tyAdtSubst = if (ty is TyAdt) ty.substitution else emptySubstitution
+            val tyAdtSubst = if (expected is TyAdt) expected.substitution else emptySubstitution
             for (fieldPat in this.patFieldList) {
                 val kind = fieldPat.kind
                 // wil have TyUnknown on unresolved item
