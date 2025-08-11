@@ -113,7 +113,7 @@ data class MoveProject(
     fun getNumericAddressByName(name: String): NumericAddress? {
         val numericValue = this.getAddressValueByName(name)
         return numericValue
-            ?.takeIf { it != "_" }
+//            ?.takeIf { it != "_" }
             ?.let {
                 NumericAddress(it)
             }

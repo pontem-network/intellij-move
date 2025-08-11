@@ -796,4 +796,50 @@ module 0x1::main {
             }
         }
     }
+
+    fun `test resolve item from dependency with placeholder address only`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "Main"
+        
+        [dependencies]
+        Local = { local = "./dev_dep" }
+            """
+        )
+        sources {
+            main(
+                """
+        module 0x1::m {
+            use dev::dev_module::call;
+            fun main() {
+                call();
+               //^     
+            }
+        }
+            """
+            )
+        }
+        dir("dev_dep") {
+            moveToml(
+                """
+        [package]
+        name = "DevDep"
+        
+        [addresses]
+        dev = "_"
+            """
+            )
+            sources {
+                move(
+                    "dev_module.move", """
+        module dev::dev_module {
+            public fun call() {}
+                      //X
+        }
+            """
+                )
+            }
+        }
+    }
 }
