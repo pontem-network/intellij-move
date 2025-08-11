@@ -257,7 +257,7 @@
                      implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Acquires checking"
-                     enabledByDefault="false" level="WARNING"
+                     enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.MvAcquiresCheckInspection" />
     <localInspection language="Move" groupName="Move"
                      displayName="Unused struct type parameter"

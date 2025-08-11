@@ -1699,4 +1699,22 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test match expr should use generic substitution of unreferenced object`() = checkByText("""
+        module 0x1::mod {
+            struct Object<T> {
+                val: T
+            }
+            enum Relationship<phantom RelSource> {
+                V1 {
+                    source: Object<RelSource>
+                }
+            }
+            // This function triggers the false positive error
+            public fun get_source<FunSource: key>(relationship: Relationship<FunSource>): Object<FunSource> {
+                match(&relationship) {
+                    Relationship::V1 { source,.. } => *source
+                }
+            }
+        }    """)
 }
