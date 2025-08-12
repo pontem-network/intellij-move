@@ -152,12 +152,12 @@ class MoveProjectsSyncTask(
         context.checkCanceled()
 
         val deps =
-            (context.runWithChildProgress("Load modules") { childContext ->
+            (context.runWithChildProgress("Load dependencies") { childContext ->
                 // Blocks till completed or cancelled by the toml / file change
                 runReadAction {
                     val rootPackage = moveProject.currentPackage
                     val deps = mutableListOf<MovePackageWithAddrSubst>()
-                    val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
+                    val visitedDepIds = mutableSetOf(DepId(rootPackage.packageName))
                     loadDependencies(
                         project,
                         rootMoveToml,
@@ -254,7 +254,7 @@ class MoveProjectsSyncTask(
     companion object {
         private val LOG = logger<MoveProjectsSyncTask>()
 
-        private data class DepId(val rootPath: String)
+        private data class DepId(val packageName: String)
 
         @RequiresReadLock
         private fun loadDependencies(
@@ -285,7 +285,7 @@ class MoveProjectsSyncTask(
                         null
                     } ?: continue
 
-                val depId = DepId(depRoot.path)
+                val depId = DepId(dep.name)
                 if (depId in visitedIds) continue
 
                 val depTomlFile =
