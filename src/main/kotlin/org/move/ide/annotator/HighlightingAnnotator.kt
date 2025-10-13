@@ -18,7 +18,10 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyAdt
 import org.move.lang.core.types.ty.TyReference
 
-val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u16", "u32", "u64", "u128", "u256")
+val INTEGER_TYPE_IDENTIFIERS = setOf(
+    "u8", "u16", "u32", "u64", "u128", "u256",
+    "i8", "i16", "i32", "i64", "i128", "i256"
+)
 val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
 val SPEC_ONLY_PRIMITIVE_TYPES = setOf("num")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")

@@ -1717,4 +1717,31 @@ module 0x1::pool {
                 }
             }
         }    """)
+
+    fun `test signed integers`() = checkByText("""
+        module 0x1::mod {
+            fun call(_a: i8, _b: i8, _c: i8) {}
+            fun main() {
+                let _a: i8 = 1;
+                let _a: i8 = 1i8;
+                let _a: i8 = -1i8;
+                let _a: i8 = <error descr="Incompatible type 'i64', expected 'i8'">1i64</error>;
+                let _a: i8 = <error descr="Incompatible type 'i64', expected 'i8'">-1i64</error>;
+                1i8 + 1i8;
+                <error descr="Incompatible arguments to '+': 'i8' and 'i64'">1i8 + 1i64</error>;
+                call(-1, 1i8, <error descr="Incompatible type 'i64', expected 'i8'">1i64</error>);
+            }
+        }        
+        """)
+
+    fun `test minus expr`() = checkByText("""
+        module 0x1::mod {
+            fun main() {
+                let _a = -1;
+                let _a: i8 = -1;
+                -<error descr="Incompatible type 'bool', expected 'integer'">true</error>;
+                --1;
+            }
+        }       
+        """)
 }

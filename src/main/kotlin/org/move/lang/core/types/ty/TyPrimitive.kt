@@ -4,34 +4,34 @@ import com.intellij.psi.PsiElement
 import org.move.ide.presentation.tyToString
 
 
-abstract class TyPrimitive(val name: String) : Ty() {
+abstract class TyPrimitive(val name: String): Ty() {
     override fun abilities() = setOf(Ability.DROP, Ability.COPY, Ability.STORE)
 }
 
-object TyBool : TyPrimitive("bool") {
+object TyBool: TyPrimitive("bool") {
     override fun toString(): String = tyToString(this)
 }
 
-object TyAddress : TyPrimitive("address") {
+object TyAddress: TyPrimitive("address") {
     override fun toString(): String = tyToString(this)
 }
 
-object TySigner : TyPrimitive("signer") {
+object TySigner: TyPrimitive("signer") {
     override fun abilities() = setOf(Ability.DROP)
     override fun toString(): String = tyToString(this)
 }
 
-object TyUnit : TyPrimitive("()") {
+object TyUnit: TyPrimitive("()") {
     override fun abilities() = Ability.none()
     override fun toString(): String = tyToString(this)
 }
 
-object TyNever : TyPrimitive("()") {
+object TyNever: TyPrimitive("()") {
     override fun abilities() = Ability.none()
     override fun toString(): String = "<never>"
 }
 
-object TyNum : TyPrimitive("num") {
+object TyNum: TyPrimitive("num") {
     override fun abilities() = Ability.all()
     override fun toString(): String = tyToString(this)
 }
@@ -42,7 +42,7 @@ object TySpecBv: TyPrimitive("bv") {
 
 }
 
-data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
+data class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
 //    fun ulongRange(): ULongRange? {
@@ -59,10 +59,10 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
 
     companion object {
         fun fromName(name: String): TyInteger =
-            Kind.values().find { it.name == name }?.let(::TyInteger)!!
+            Kind.entries.find { it.name == name }?.let(::TyInteger)!!
 
         fun fromSuffixedLiteral(literal: PsiElement): TyInteger? =
-            Kind.values().find { literal.text.endsWith(it.name) }?.let(::TyInteger)
+            Kind.entries.find { literal.text.endsWith(it.name) }?.let(::TyInteger)
 
         val DEFAULT_KIND = Kind.NoPrecision
         val DEFAULT = default()
@@ -73,7 +73,9 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
 
     @Suppress("EnumEntryName")
     enum class Kind {
-        NoPrecision, u8, u16, u32, u64, u128, u256, num
+        NoPrecision, num,
+        u8, u16, u32, u64, u128, u256,
+        i8, i16, i32, i64, i128, i256
     }
 
     override fun toString(): String = tyToString(this)
