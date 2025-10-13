@@ -1,6 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -17,7 +18,7 @@ fun prop(name: String): String =
 
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.46.2"
+val codeVersion = "1.47.0"
 
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
@@ -30,11 +31,10 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.7.0"
+    kotlin("jvm") version "2.2.20"
+    id("org.jetbrains.intellij.platform") version "2.9.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
-    id("de.undercouch.download") version "5.6.0"
 }
 
 allprojects {
@@ -42,7 +42,6 @@ allprojects {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
         plugin("org.jetbrains.intellij.platform")
-        plugin("de.undercouch.download")
     }
 
     repositories {
@@ -71,7 +70,9 @@ allprojects {
             if (isLocal) {
                 local("/snap/rustrover/current")
             } else {
-                create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+                create(prop("platformType"), prop("platformVersion")) {
+                    this.useInstaller = useInstaller
+                }
             }
 
             pluginVerifier(Constraints.LATEST_VERSION)
@@ -155,9 +156,8 @@ allprojects {
         }
         compileKotlin {
             compilerOptions {
-//                jvmTarget.set(JVM_21)
-                languageVersion.set(KOTLIN_2_0)
-                apiVersion.set(KOTLIN_1_9)
+                languageVersion.set(KotlinVersion.KOTLIN_2_1)
+                apiVersion.set(KotlinVersion.KOTLIN_2_1)
                 freeCompilerArgs.add("-Xjvm-default=all")
             }
         }
