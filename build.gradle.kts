@@ -70,9 +70,7 @@ allprojects {
             if (isLocal) {
                 local("/snap/rustrover/current")
             } else {
-                create(prop("platformType"), prop("platformVersion")) {
-                    this.useInstaller = useInstaller
-                }
+                create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
             }
 
             pluginVerifier(Constraints.LATEST_VERSION)
