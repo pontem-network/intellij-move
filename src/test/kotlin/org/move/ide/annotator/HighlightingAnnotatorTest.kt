@@ -60,6 +60,7 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
         script {
             fun main(s: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>,
                      val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>,
+                     val_i8: <PRIMITIVE_TYPE>i8</PRIMITIVE_TYPE>,
                      val2: <PRIMITIVE_TYPE>u64</PRIMITIVE_TYPE>,
                      val3: <PRIMITIVE_TYPE>u128</PRIMITIVE_TYPE>,
                      val4: <PRIMITIVE_TYPE>u16</PRIMITIVE_TYPE>,

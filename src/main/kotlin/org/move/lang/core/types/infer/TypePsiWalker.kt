@@ -259,6 +259,10 @@ class TypePsiWalker(
                 expr.expr?.inferType(TyBool)
                 TyBool
             }
+            is MvMinusExpr -> {
+                expr.expr?.inferTypeCoercableTo(TyInteger(TyInteger.Kind.NoPrecision))
+                    ?: TyInteger(TyInteger.Kind.NoPrecision)
+            }
 
             is MvIfExpr -> inferIfExprTy(expr, expected)
             is MvWhileExpr -> inferWhileExpr(expr)

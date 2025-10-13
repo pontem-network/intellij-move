@@ -2507,4 +2507,43 @@ module 0x1::main {
             }
         }
     """)
+
+    fun `test signed integer i8`() = testExpr("""
+        module 0x1::main {
+            fun main(a: i8) {
+                a;
+              //^ i8
+            }
+        }
+    """)
+
+    fun `test signed integer i8 from expr`() = testExpr("""
+        module 0x1::main {
+            fun main() {
+                let a = 1i8;
+                a;
+              //^ i8
+            }
+        }
+    """)
+
+    fun `test signed integer i8 from plus expr`() = testExpr("""
+        module 0x1::main {
+            fun main() {
+                let a = 1i8 + 1i8;
+                a;
+              //^ i8
+            }
+        }
+    """)
+
+    fun `test signed integer i8 from unary minus expr`() = testExpr("""
+        module 0x1::main {
+            fun main() {
+                let a = -1i8;
+                a;
+              //^ i8
+            }
+        }
+    """)
 }

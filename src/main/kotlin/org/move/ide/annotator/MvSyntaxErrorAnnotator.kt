@@ -213,13 +213,16 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
     @Suppress("CompanionObjectInExtension")
     companion object {
         private val INTEGER_WITH_SUFFIX_REGEX =
-            Regex("([0-9a-zA-Z_]+)(u[0-9]{1,4})")
+            Regex("([0-9a-zA-Z_]+)([ui][0-9]{1,4})")
         private val ACCEPTABLE_INTEGER_SYMBOLS =
             setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_')
         private val ACCEPTABLE_INTEGER_SUFFIXES =
-            setOf("u8", "u16", "u32", "u64", "u128", "u256")
+            setOf(
+                "u8", "u16", "u32", "u64", "u128", "u256",
+                "i8", "i16", "i32", "i64", "i128", "i256",
+            )
         private val HEX_INTEGER_WITH_SUFFIX_REGEX =
-            Regex("([0-9a-zA-Z_]+)*(u[0-9]{1,4})")
+            Regex("([0-9a-zA-Z_]+)*([ui][0-9]{1,4})")
         private val ACCEPTABLE_HEX_SYMBOLS =
             setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
         private val ACCEPTABLE_HEX_INTEGER_SYMBOLS = ACCEPTABLE_HEX_SYMBOLS + setOf('_')
