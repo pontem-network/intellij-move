@@ -1,9 +1,8 @@
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -17,7 +16,7 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val useInstaller = prop("useInstaller").toBooleanStrict()
+val createUseInstaller = prop("useInstaller").toBooleanStrict()
 val codeVersion = "1.47.0"
 
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
@@ -70,7 +69,9 @@ allprojects {
             if (isLocal) {
                 local("/snap/rustrover/current")
             } else {
-                create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+                create(prop("platformType"), prop("platformVersion")) {
+                    this.useInstaller = createUseInstaller
+                }
             }
 
             pluginVerifier(Constraints.LATEST_VERSION)
