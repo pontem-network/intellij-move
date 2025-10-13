@@ -1,8 +1,8 @@
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -16,8 +16,8 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val useInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.46.2"
+val createUseInstaller = prop("useInstaller").toBooleanStrict()
+val codeVersion = "1.47.0"
 
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
@@ -30,11 +30,10 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.7.0"
+    kotlin("jvm") version "2.2.20"
+    id("org.jetbrains.intellij.platform") version "2.9.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
-    id("de.undercouch.download") version "5.6.0"
 }
 
 allprojects {
@@ -42,7 +41,6 @@ allprojects {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
         plugin("org.jetbrains.intellij.platform")
-        plugin("de.undercouch.download")
     }
 
     repositories {
@@ -71,7 +69,9 @@ allprojects {
             if (isLocal) {
                 local("/snap/rustrover/current")
             } else {
-                create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
+                create(prop("platformType"), prop("platformVersion")) {
+                    this.useInstaller = createUseInstaller
+                }
             }
 
             pluginVerifier(Constraints.LATEST_VERSION)
@@ -111,11 +111,11 @@ allprojects {
                 untilBuild.set("$shortPlatformVersion.*")
             }
 
-            val codeVersionForUrl = codeVersion.replace('.', '-')
+//            val codeVersionForUrl = codeVersion.replace('.', '-')
             changeNotes.set(
                 """
     <body>
-        <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
+        <p><a href="https://github.com/pontem-network/intellij-move/releases/tag/v$codeVersion">
             Changelog for the Intellij-Move $codeVersion
             </a></p>
     </body>
@@ -155,9 +155,8 @@ allprojects {
         }
         compileKotlin {
             compilerOptions {
-//                jvmTarget.set(JVM_21)
-                languageVersion.set(KOTLIN_2_0)
-                apiVersion.set(KOTLIN_1_9)
+                languageVersion.set(KotlinVersion.KOTLIN_2_1)
+                apiVersion.set(KotlinVersion.KOTLIN_2_1)
                 freeCompilerArgs.add("-Xjvm-default=all")
             }
         }
