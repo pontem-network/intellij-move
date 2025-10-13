@@ -10,6 +10,7 @@ class InvalidIntegerTest : AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
             fun main() {
                 1;
                 1u8; 1u16; 1u32; 1u64; 1u128; 1u256;
+                1i8; 1i16; 1i32; 1i64; 1i128; 1i256;
                 0x123456789abcdef;
                 0x1; 0xff; 0xFFF; 0xACACAFFF;
                 0x1f1fu128;
