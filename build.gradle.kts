@@ -112,11 +112,11 @@ allprojects {
                 untilBuild.set("$shortPlatformVersion.*")
             }
 
-            val codeVersionForUrl = codeVersion.replace('.', '-')
+//            val codeVersionForUrl = codeVersion.replace('.', '-')
             changeNotes.set(
                 """
     <body>
-        <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
+        <p><a href="https://github.com/pontem-network/intellij-move/releases/tag/v$codeVersion">
             Changelog for the Intellij-Move $codeVersion
             </a></p>
     </body>
