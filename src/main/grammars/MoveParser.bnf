@@ -909,7 +909,7 @@ private LogicalEqExpr_items ::=
         | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
 private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
-private UnaryExpr_items ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
+private UnaryExpr_items ::= CopyExpr | MoveExpr | DerefExpr | BangExpr | MinusExpr
                             | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::= AnnotatedExpr
                     | TupleLitOrParenExpr
@@ -999,6 +999,7 @@ PartialImplyBinOp ::= <<mslOnly lt_eqeq_gt>>
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
+MinusExpr ::= '-' Expr
 
 CopyExpr ::= copy Expr
 MoveExpr ::= move Expr

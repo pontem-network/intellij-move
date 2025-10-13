@@ -63,6 +63,7 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test assign bin expr`() = doTest()
     fun `test lambdas`() = doTest()
 //    fun `test new lambdas`() = doTest()
+    fun `test signed integers`() = doTest()
 
     fun doTest() {
         super.doTest(true, true)
