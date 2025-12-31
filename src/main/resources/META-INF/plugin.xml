@@ -1,7 +1,7 @@
 <idea-plugin
     require-restart="true"
 >
-  <id>org.move.lang</id>
+  <id>org.endless.move.lang</id>
   <name>Move on Endless</name>
 
   <vendor url="https://www.endless.link/" email="support@endless.link">Endless Labs</vendor>

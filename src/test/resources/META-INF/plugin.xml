@@ -1,4 +1,4 @@
 <idea-plugin package="org.move" xmlns:xi="http://www.w3.org/2001/XInclude">
-  <id>org.move.lang</id>
+  <id>org.endless.move.lang</id>
   <xi:include href="/META-INF/intellij-move-core.xml" xpointer="xpointer(/idea-plugin/*)" />
 </idea-plugin>

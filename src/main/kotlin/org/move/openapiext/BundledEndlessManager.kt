@@ -11,7 +11,7 @@ import org.move.ide.notifications.logOrShowBalloon
 import java.nio.file.Files
 import java.nio.file.Path
 
-const val PLUGIN_ID: String = "org.move.lang"
+const val PLUGIN_ID: String = "org.endless.move.lang"
 
 fun plugin(): IdeaPluginDescriptor = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))!!
 
