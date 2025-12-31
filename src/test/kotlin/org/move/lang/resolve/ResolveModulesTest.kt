@@ -260,12 +260,12 @@ class ResolveModulesTest : ResolveTestCase() {
         }    
     """)
 
-    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
     fun `test resolve friend module with named address`() = checkByCode("""
-        module aptos_std::myfriend {}
+        module endless_stdlib::myfriend {}
                           //X
-        module aptos_std::main {
-            friend aptos_std::myfriend;
+        module endless_stdlib::main {
+            friend endless_stdlib::myfriend;
                                //^ 
         }    
     """)
@@ -322,7 +322,7 @@ class ResolveModulesTest : ResolveTestCase() {
 
     fun `test unresolved named address`() = checkByCode("""
         module 0x1::m {
-            use aptos_framework::account;
+            use endless_framework::account;
                 //^ unresolved
         }        
     """)
@@ -334,19 +334,19 @@ class ResolveModulesTest : ResolveTestCase() {
         }        
     """)
 
-    @NamedAddress("aptos_framework", "0x1")
+    @NamedAddress("endless_framework", "0x1")
     fun `test resolve module from import with named address`() = checkByCode("""
-        module aptos_framework::m1 {}
+        module endless_framework::m1 {}
                               //X
         module 0x1::m {
-            use aptos_framework::m1;
+            use endless_framework::m1;
                                //^
         }        
     """)
 
-    @NamedAddress("aptos_framework", "0x1")
+    @NamedAddress("endless_framework", "0x1")
     fun `test resolve module from import with value address`() = checkByCode("""
-        module aptos_framework::m1 {}
+        module endless_framework::m1 {}
                               //X
         module 0x1::m {
             use 0x1::m1;
@@ -364,7 +364,7 @@ class ResolveModulesTest : ResolveTestCase() {
 
     fun `test cannot resolve named address in incomplete path use stmt`() = checkByCode("""
         module 0x1::m {
-            use aptos_framework
+            use endless_framework
                //^ unresolved
         }        
     """)

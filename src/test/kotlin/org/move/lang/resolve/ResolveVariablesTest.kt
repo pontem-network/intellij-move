@@ -374,13 +374,13 @@ class ResolveVariablesTest : ResolveTestCase() {
     """)
 
     // !
-    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
     fun `test resolve attribute location for named address`() = checkByCode("""
-        module aptos_std::m {
+        module endless_stdlib::m {
                   //X  
             fun main() {
             }
-            #[test(location=aptos_std::m)]
+            #[test(location=endless_stdlib::m)]
                                      //^
             fun test_main() {
                 

@@ -153,7 +153,7 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "Index operator is not supported in Aptos Move V1 outside specs",
+                "Index operator is not supported in Endless Move V1 outside specs",
                 fixes = listOf(EnableMoveV2Fix(element))
             )
         }
@@ -164,7 +164,7 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "Enums are not supported in Aptos Move V1",
+                "Enums are not supported in Endless Move V1",
                 fixes = listOf(EnableMoveV2Fix(element))
             )
         }
@@ -175,7 +175,7 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "Match expressions are not supported in Aptos Move V1",
+                "Match expressions are not supported in Endless Move V1",
                 fixes = listOf(EnableMoveV2Fix(element))
             )
         }
@@ -186,7 +186,7 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "public(package) is not supported in Aptos Move V1",
+                "public(package) is not supported in Endless Move V1",
                 fixes = listOf(EnableMoveV2Fix(element))
             )
         }
@@ -197,7 +197,7 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "receiver-style functions are not supported in Aptos Move V1",
+                "receiver-style functions are not supported in Endless Move V1",
                 fixes = listOf(EnableMoveV2Fix(element))
             )
         }

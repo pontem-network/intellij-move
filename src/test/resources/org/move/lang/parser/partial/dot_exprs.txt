@@ -117,7 +117,7 @@ FILE
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('bin')
             PsiElement(.)('.')
-            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'aptos_token'
+            PsiErrorElement:<field lookup> or IDENTIFIER expected, got 'endless_token'
               <empty list>
         PsiWhiteSpace(' ')
         MvExprStmtImpl(EXPR_STMT)
@@ -125,7 +125,7 @@ FILE
             MvPathExprImpl(PATH_EXPR)
               MvPathImpl(PATH)
                 MvPathImpl(PATH)
-                  PsiElement(IDENTIFIER)('aptos_token')
+                  PsiElement(IDENTIFIER)('endless_token')
                 PsiElement(::)('::')
                 PsiElement(IDENTIFIER)('get_token')
             MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)

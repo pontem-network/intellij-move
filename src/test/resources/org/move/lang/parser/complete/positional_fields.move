@@ -1,12 +1,12 @@
 module 0x1::positional_fields {
     struct S1(u8);
-    struct S2<T>(u8, bool, aptos_framework::option::Option<T>);
+    struct S2<T>(u8, bool, endless_framework::option::Option<T>);
 
     struct S0() has copy;
     struct S0 { val: u8 } has copy;
 
     enum E<T> {
-        V(bool, aptos_framework::option::Option<T>)
+        V(bool, endless_framework::option::Option<T>)
     }
 
     // value construction with anonymous fields

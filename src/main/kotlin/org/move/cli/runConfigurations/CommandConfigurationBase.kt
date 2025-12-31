@@ -13,10 +13,10 @@ import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration.Companion.configurationError
-import org.move.cli.runConfigurations.aptos.AptosArgs
-import org.move.cli.runConfigurations.test.AptosTestConsoleProperties.Companion.TEST_TOOL_WINDOW_SETTING_KEY
-import org.move.cli.runConfigurations.test.AptosTestRunState
-import org.move.cli.settings.aptosCliPath
+import org.move.cli.runConfigurations.endless.EndlessArgs
+import org.move.cli.runConfigurations.test.EndlessTestConsoleProperties.Companion.TEST_TOOL_WINDOW_SETTING_KEY
+import org.move.cli.runConfigurations.test.EndlessTestRunState
+import org.move.cli.settings.endlessCliPath
 import org.move.cli.writePath
 import org.move.cli.writeString
 import org.move.openapiext.rootPluginDisposable
@@ -27,7 +27,7 @@ abstract class CommandConfigurationBase(
     project: Project,
     factory: ConfigurationFactory
 ):
-    LocatableConfigurationBase<AptosRunState>(project, factory),
+    LocatableConfigurationBase<EndlessRunState>(project, factory),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
     var command: String = ""
@@ -56,7 +56,7 @@ abstract class CommandConfigurationBase(
         }
     }
 
-    override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosRunStateBase? {
+    override fun getState(executor: Executor, environment: ExecutionEnvironment): EndlessRunStateBase? {
         val config = validateConfiguration().ok ?: return null
 
         // environment is disposable to which all internal RunState disposables are connected
@@ -64,33 +64,33 @@ abstract class CommandConfigurationBase(
         Disposer.register(project.rootPluginDisposable, environment)
 
         return if (showTestToolWindow(config.cmd)) {
-            AptosTestRunState(environment, config)
+            EndlessTestRunState(environment, config)
         } else {
-            AptosRunState(environment, config)
+            EndlessRunState(environment, config)
         }
     }
 
     fun validateConfiguration(): CleanConfiguration {
-        val (subcommand, arguments) = parseAptosCommand(command)
+        val (subcommand, arguments) = parseEndlessCommand(command)
             ?: return configurationError("No subcommand specified")
         val workingDirectory = workingDirectory
             ?: return configurationError("No working directory specified")
 
-        val aptosPath = project.aptosCliPath ?: return configurationError("No Aptos CLI specified")
-        if (!aptosPath.exists()) {
-            return configurationError("Invalid Aptos CLI location: $aptosPath")
+        val endlessPath = project.endlessCliPath ?: return configurationError("No Endless CLI specified")
+        if (!endlessPath.exists()) {
+            return configurationError("Invalid Endless CLI location: $endlessPath")
         }
         val commandLine =
-            AptosCommandLine(
+            EndlessCommandLine(
                 subcommand,
-                AptosArgs().applyExtra(arguments),
+                EndlessArgs().applyExtra(arguments),
                 workingDirectory,
                 environmentVariables
             )
-        return CleanConfiguration.Ok(aptosPath, commandLine)
+        return CleanConfiguration.Ok(endlessPath, commandLine)
     }
 
-    protected fun showTestToolWindow(commandLine: AptosCommandLine): Boolean =
+    protected fun showTestToolWindow(commandLine: EndlessCommandLine): Boolean =
         when {
             !AdvancedSettings.getBoolean(TEST_TOOL_WINDOW_SETTING_KEY) -> false
             commandLine.subCommand != "move test" -> false
@@ -98,7 +98,7 @@ abstract class CommandConfigurationBase(
         }
 
     sealed class CleanConfiguration {
-        class Ok(val aptosPath: Path, val cmd: AptosCommandLine): CleanConfiguration()
+        class Ok(val endlessPath: Path, val cmd: EndlessCommandLine): CleanConfiguration()
         class Err(val error: RuntimeConfigurationError): CleanConfiguration()
 
         val ok: Ok? get() = this as? Ok
@@ -111,8 +111,8 @@ abstract class CommandConfigurationBase(
     }
 
     companion object {
-        fun parseAptosCommand(rawAptosCommand: String): Pair<String, List<String>>? {
-            val args = ParametersListUtil.parse(rawAptosCommand)
+        fun parseEndlessCommand(rawEndlessCommand: String): Pair<String, List<String>>? {
+            val args = ParametersListUtil.parse(rawEndlessCommand)
             val rootCommand = args.firstOrNull() ?: return null
             return if (rootCommand == "move") {
                 val subcommand = args.drop(1).firstOrNull() ?: return null

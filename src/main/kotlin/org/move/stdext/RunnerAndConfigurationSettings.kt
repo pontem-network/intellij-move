@@ -13,7 +13,7 @@ fun RunnerAndConfigurationSettings.execute() {
     val executor = DefaultRunExecutor.getRunExecutorInstance()
     val runner = ProgramRunner.getRunner(executor.id, configuration)
     val finalExecutor = if (runner == null) {
-        val executableName = executableName("aptos")
+        val executableName = executableName("endless")
         MvNotifications.pluginNotifications()
             .createNotification(
                 "${executor.actionName} action is not available for `$executableName`",

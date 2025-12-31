@@ -86,7 +86,7 @@ class SentryErrorReporter: ErrorReportSubmitter() {
 
         if (project != null) {
             val settings = project.moveSettings.state.asMap().toMutableMap()
-            settings.remove("aptosPath")
+            settings.remove("endlessPath")
             sentryEvent.contexts["Settings"] = settings
             // TODO: serialization doesn't work for some reason
 //            sentryEvent.contexts["Projects"] =

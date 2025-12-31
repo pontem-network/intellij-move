@@ -60,8 +60,8 @@ sealed class TomlDependency {
 
             fun dependencyDirName(repo: String, rev: String): String {
                 val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
-                val aptosRevName = rev.replace("/", "_")
-                return "${sanitizedRepoName}_$aptosRevName"
+                val endlessRevName = rev.replace("/", "_")
+                return "${sanitizedRepoName}_$endlessRevName"
             }
         }
     }

@@ -8,5 +8,5 @@ class PluginApplicationDisposable: Disposable {
     override fun dispose() {
     }
 
-    override fun toString(): String = "APTOS_PLUGIN_DISPOSABLE"
+    override fun toString(): String = "ENDLESS_PLUGIN_DISPOSABLE"
 }

@@ -33,9 +33,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
-import org.move.cli.runConfigurations.aptos.workingDirectory
-import org.move.cli.settings.getAptosCli
+import org.move.cli.runConfigurations.endless.EndlessExternalLinterArgs
+import org.move.cli.runConfigurations.endless.workingDirectory
+import org.move.cli.settings.getEndlessCli
 import org.move.ide.notifications.RsExternalLinterSlowRunNotifier
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.findMoveProject
@@ -65,10 +65,10 @@ class RsExternalLinterPass(
         disposable = myProject.messageBus.createDisposableOnAnyPsiChange()
             .also { Disposer.register(moduleOrProject, it) }
 
-        val aptos = myProject.getAptosCli(parentDisposable = disposable) ?: return
-        val args = AptosExternalLinterArgs.forMoveProject(moveProject)
+        val endless = myProject.getEndlessCli(parentDisposable = disposable) ?: return
+        val args = EndlessExternalLinterArgs.forMoveProject(moveProject)
         annotationInfo = RsExternalLinterUtils.checkLazily(
-            aptos,
+            endless,
             myProject,
             moveProject.workingDirectory,
             args

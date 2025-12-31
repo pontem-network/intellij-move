@@ -26,11 +26,11 @@ import org.apache.commons.text.StringEscapeUtils
 import org.jetbrains.annotations.Nls
 import org.move.cli.externalLinter.RsExternalLinterWidget
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.runConfigurations.aptos.AptosExternalLinterArgs
-import org.move.cli.runConfigurations.aptos.isCompilerJsonOutputEnabled
+import org.move.cli.runConfigurations.endless.Endless
+import org.move.cli.runConfigurations.endless.EndlessExternalLinterArgs
+import org.move.cli.runConfigurations.endless.isCompilerJsonOutputEnabled
 import org.move.ide.annotator.externalLinter.RsExternalLinterFilteredMessage.Companion.filterMessage
-import org.move.ide.annotator.externalLinter.RsExternalLinterUtils.APTOS_TEST_MESSAGE
+import org.move.ide.annotator.externalLinter.RsExternalLinterUtils.EXTERNAL_LINTER_TEST_MESSAGE
 import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.MoveFile
 import org.move.openapiext.ProjectCache
@@ -47,7 +47,7 @@ import java.util.concurrent.CompletableFuture
 
 object RsExternalLinterUtils {
     private val LOG: Logger = logger<RsExternalLinterUtils>()
-    const val APTOS_TEST_MESSAGE: String = "MvExternalLint"
+    const val EXTERNAL_LINTER_TEST_MESSAGE: String = "MvExternalLint"
 
     /**
      * Returns (and caches if absent) lazily computed messages from external linter.
@@ -58,15 +58,15 @@ object RsExternalLinterUtils {
      * @see PsiModificationTracker.MODIFICATION_COUNT
      */
     fun checkLazily(
-        aptosCli: Aptos,
+        endlessCli: Endless,
         project: Project,
         workingDirectory: Path,
-        linterArgs: AptosExternalLinterArgs
+        linterArgs: EndlessExternalLinterArgs
     ): Lazy<RsExternalLinterResult?> {
         checkReadAccessAllowed()
         return externalLinterLazyResultCache.getOrPut(
             project,
-            Key(aptosCli, workingDirectory, linterArgs)
+            Key(endlessCli, workingDirectory, linterArgs)
         ) {
             // We want to run external linter in background thread and *without* read action.
             // And also we want to cache result of external linter because it is cargo package-global,
@@ -86,15 +86,15 @@ object RsExternalLinterUtils {
             lazy {
                 // This code will be executed out of read action in background thread
                 if (!isUnitTestMode) checkReadAccessNotAllowed()
-                checkWrapped(aptosCli, project, linterArgs)
+                checkWrapped(endlessCli, project, linterArgs)
             }
         }
     }
 
     private fun checkWrapped(
-        aptosCli: Aptos,
+        endlessCli: Endless,
         project: Project,
-        linterArgs: AptosExternalLinterArgs
+        linterArgs: EndlessExternalLinterArgs
     ): RsExternalLinterResult? {
         val widget = WriteAction.computeAndWait<RsExternalLinterWidget?, Throwable> {
             saveAllDocumentsAsTheyAre()
@@ -112,7 +112,7 @@ object RsExternalLinterUtils {
 
                 override fun run(indicator: ProgressIndicator) {
                     widget?.inProgress = true
-                    future.complete(check(project, aptosCli, linterArgs))
+                    future.complete(check(project, endlessCli, linterArgs))
                 }
 
                 override fun onFinished() {
@@ -125,12 +125,12 @@ object RsExternalLinterUtils {
 
     private fun check(
         project: Project,
-        aptos: Aptos,
-        linterArgs: AptosExternalLinterArgs
+        endless: Endless,
+        linterArgs: EndlessExternalLinterArgs
     ): RsExternalLinterResult? {
         ProgressManager.checkCanceled()
         val started = Instant.now()
-        val output = aptos.checkProject(project, linterArgs)
+        val output = endless.checkProject(project, linterArgs)
             .unwrapOrElse { e ->
                 LOG.error(e)
                 return null
@@ -145,9 +145,9 @@ object RsExternalLinterUtils {
     }
 
     private data class Key(
-        val aptosCli: Aptos,
+        val endlessCli: Endless,
         val workingDirectory: Path,
-        val args: AptosExternalLinterArgs
+        val args: EndlessExternalLinterArgs
     )
 
     private val externalLinterLazyResultCache =
@@ -197,7 +197,7 @@ fun MutableList<HighlightInfo>.addHighlightsForFile(
             .severity(compilerError.severity)
             // We can't control what messages cargo generates, so we can't test them well.
             // Let's use the special message for tests to distinguish annotation from external linter
-            .description(if (isUnitTestMode) APTOS_TEST_MESSAGE else compilerError.message)
+            .description(if (isUnitTestMode) EXTERNAL_LINTER_TEST_MESSAGE else compilerError.message)
             .escapedToolTip(compilerError.htmlTooltip)
             .range(compilerError.textRange)
             .needsUpdateOnTyping(true)
@@ -218,8 +218,8 @@ class RsExternalLinterResult(
     val outputLines: List<String>,
     val executionTime: Long
 ) {
-    val humanCompilerErrors: List<HumanAptosCompilerError> get() = parseHumanCompilerErrors(outputLines)
-    val jsonCompilerErrors: List<JsonAptosCompilerError> get() = parseJsonCompilerErrors(outputLines)
+    val humanCompilerErrors: List<HumanEndlessCompilerError> get() = parseHumanCompilerErrors(outputLines)
+    val jsonCompilerErrors: List<JsonEndlessCompilerError> get() = parseJsonCompilerErrors(outputLines)
 }
 
 private data class RsExternalLinterFilteredMessage(
@@ -233,7 +233,7 @@ private data class RsExternalLinterFilteredMessage(
 
         fun filterMessage(
             file: PsiFile,
-            compilerError: JsonAptosCompilerError,
+            compilerError: JsonEndlessCompilerError,
             skipErrorsKnownToIde: Boolean,
         ): RsExternalLinterFilteredMessage? {
             val highlightSeverity = when (compilerError.severity) {

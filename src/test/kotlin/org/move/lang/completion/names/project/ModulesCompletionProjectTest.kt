@@ -258,14 +258,14 @@ class ModulesCompletionProjectTest: CompletionProjectTestCase() {
         name = "MyPackage"
         [addresses]
         std = "0x1"
-        aptos_std = "0x1"
+        endless_std = "0x1"
         """
         )
         sources {
             main(
                 """
             module 0x1::M {
-                use aptos_std::de/*caret*/;
+                use endless_stdlib::de/*caret*/;
             }    
             """
             )

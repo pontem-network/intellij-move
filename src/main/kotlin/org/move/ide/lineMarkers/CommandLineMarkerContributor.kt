@@ -4,7 +4,7 @@ import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
-import org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer
+import org.move.cli.runConfigurations.producers.endless.EndlessTestCommandConfigurationProducer
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MvFunction
@@ -25,7 +25,7 @@ class CommandLineMarkerContributor: RunLineMarkerContributor() {
             when {
                 parent.queryAttributes.isTest -> {
                     val config =
-                        AptosTestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
+                        EndlessTestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TEST_ITEM,
@@ -37,7 +37,7 @@ class CommandLineMarkerContributor: RunLineMarkerContributor() {
         }
         if (parent is MvModule) {
             val testConfig =
-                AptosTestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
+                EndlessTestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
             if (testConfig != null) {
                 return Info(
                     MoveIcons.RUN_ALL_TESTS_IN_ITEM,

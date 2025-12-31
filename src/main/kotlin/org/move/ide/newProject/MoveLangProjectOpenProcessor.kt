@@ -24,14 +24,14 @@ class MoveLangProjectOpenProcessor: ProjectOpenProcessor() {
         return canBeOpened
     }
 
-    override fun doOpenProject(
+    override suspend fun openProjectAsync(
         virtualFile: VirtualFile,
         projectToClose: Project?,
         forceOpenInNewFrame: Boolean,
     ): Project? {
         val platformOpenProcessor = PlatformProjectOpenProcessor.getInstance()
         val basedir = if (virtualFile.isDirectory) virtualFile else virtualFile.parent
-        return platformOpenProcessor.doOpenProject(basedir, projectToClose, forceOpenInNewFrame)
+        return platformOpenProcessor.openProjectAsync(basedir, projectToClose, forceOpenInNewFrame)
             ?.also { project ->
                 @Suppress("DEPRECATION")
                 StartupManager.getInstance(project)

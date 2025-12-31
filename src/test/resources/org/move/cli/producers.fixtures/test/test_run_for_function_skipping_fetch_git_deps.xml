@@ -1,9 +1,9 @@
 <configurations>
-  <configuration name="Test MoveTests::test_add" type="AptosCommandConfiguration" factoryName="AnyCommand">
+  <configuration name="Test MoveTests::test_add" type="EndlessCommandConfiguration" factoryName="AnyCommand">
     <option name="command" value="move test --dev --skip-fetch-latest-git-deps --filter MoveTests::test_add" />
     <option name="workingDirectory" value="file://" />
     <envs>
-      <env name="APTOS_DISABLE_TELEMETRY" value="true" />
+      <env name="ENDLESS_DISABLE_TELEMETRY" value="true" />
     </envs>
     <method v="2" />
   </configuration>

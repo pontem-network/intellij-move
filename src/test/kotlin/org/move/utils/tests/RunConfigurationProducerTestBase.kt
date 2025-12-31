@@ -6,8 +6,8 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
-import org.move.cli.runConfigurations.aptos.AptosConfigurationTypeBase
-import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
+import org.move.cli.runConfigurations.endless.EndlessConfigurationTypeBase
+import org.move.cli.runConfigurations.endless.cmd.EndlessCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.base.TestCase
@@ -20,7 +20,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
 
     protected fun checkNoConfigurationOnFsItem(fsItem: PsiFileSystemItem) {
         val configurationContext = ConfigurationContext(fsItem)
-        val configurations = configurationContext.aptosConfigurationsFromContext
+        val configurations = configurationContext.endlessConfigurationsFromContext
         check(configurations.isEmpty()) { "Found unexpected run configurations $configurations" }
     }
 
@@ -37,7 +37,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
             ?.ancestorOrSelf<T>()
             ?: error("Failed to find element of `${T::class.simpleName}` class at caret")
         val configurationContext = ConfigurationContext(element)
-        val configurations = configurationContext.aptosConfigurationsFromContext
+        val configurations = configurationContext.endlessConfigurationsFromContext
         check(configurations.isEmpty()) { "Found unexpected run configurations" }
     }
 
@@ -76,14 +76,14 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
     }
 
     protected fun doTestRemembersContext(
-        producer: RunConfigurationProducer<AptosCommandConfiguration>,
+        producer: RunConfigurationProducer<EndlessCommandConfiguration>,
         ctx1: PsiElement,
         ctx2: PsiElement
     ) {
         val contexts = listOf(ConfigurationContext(ctx1), ConfigurationContext(ctx2))
         val configsFromContext = contexts.map { it.configurationsFromContext!!.single() }
         configsFromContext.forEach { check(it.isProducedBy(producer.javaClass)) }
-        val configs = configsFromContext.map { it.configuration as AptosCommandConfiguration }
+        val configs = configsFromContext.map { it.configuration as EndlessCommandConfiguration }
         for (i in 0..1) {
             check(producer.isConfigurationFromContext(configs[i], contexts[i])) {
                 "Configuration created from context does not believe it"
@@ -95,6 +95,6 @@ abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectT
         }
     }
 
-    protected val ConfigurationContext.aptosConfigurationsFromContext get() =
-        this.configurationsFromContext.orEmpty().filter { it.configurationType is AptosConfigurationTypeBase }
+    protected val ConfigurationContext.endlessConfigurationsFromContext get() =
+        this.configurationsFromContext.orEmpty().filter { it.configurationType is EndlessConfigurationTypeBase }
 }

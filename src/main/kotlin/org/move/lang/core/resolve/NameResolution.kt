@@ -135,7 +135,7 @@ fun getEntriesFromWalkingScopes(scopeStart: MvElement, ns: NsSet): List<ScopeEnt
 }
 
 fun getModulesAsEntries(ctx: ResolutionContext, address: Address): List<ScopeEntry> {
-    // no Aptos project, cannot resolve modules
+    // no Endless project, cannot resolve modules
     val moveProject = ctx.moveProject ?: return emptyList()
     val searchScope = moveProject.searchScope()
 

@@ -41,7 +41,7 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
             fullWidthCell(additionalArguments)
                 .resizableColumn()
                 .comment(
-                    "Additional arguments to pass to <b>aptos move compile</b> / <b>aptos move lint</b>"
+                    "Additional arguments to pass to <b>endless move compile</b> / <b>endless move lint</b>"
                 )
                 .bind(
                     componentGet = { it.text },

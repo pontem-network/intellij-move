@@ -22,7 +22,7 @@
     </template>
 
     <template name="wd"
-              value="std::debug::print(&amp;aptos_std::string_utils::format1(&amp;b&quot;$VAR$ = {}&quot;, $VAR$));"
+              value="std::debug::print(&amp;endless_stdlib::string_utils::format1(&amp;b&quot;$VAR$ = {}&quot;, $VAR$));"
               description="debug print expression"
               toReformat="false"
               toShortenFQNames="true">

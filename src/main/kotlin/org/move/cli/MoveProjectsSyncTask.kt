@@ -35,8 +35,8 @@ import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
 import org.move.cli.manifest.TomlDependency
 import org.move.cli.manifest.TomlDependency.Git.Companion.moveHome
-import org.move.cli.runConfigurations.aptos.AptosExitStatus
-import org.move.cli.settings.getAptosCli
+import org.move.cli.runConfigurations.endless.EndlessExitStatus
+import org.move.cli.settings.getEndlessCli
 import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
@@ -56,7 +56,7 @@ class MoveProjectsSyncTask(
     parentDisposable: Disposable,
     private val future: CompletableFuture<List<MoveProject>>,
     private val reason: String?
-): Task.Backgroundable(project, "Reloading Aptos packages", true), Disposable {
+): Task.Backgroundable(project, "Reloading Endless packages", true), Disposable {
 
     init {
         Disposer.register(parentDisposable, this)
@@ -101,7 +101,7 @@ class MoveProjectsSyncTask(
         future.complete(refreshedProjects)
 
         val elapsed = System.currentTimeMillis() - before
-        LOG.logProjectsRefresh("finished Aptos projects Sync Task in $elapsed ms", reason)
+        LOG.logProjectsRefresh("finished Endless projects Sync Task in $elapsed ms", reason)
 
         Disposer.dispose(this)
     }
@@ -179,13 +179,13 @@ class MoveProjectsSyncTask(
             null,
             null,
             object: JComponent() {},
-            "Aptos"
+            "Endless"
         )
         buildContentDescriptor.isActivateToolWindowWhenFailed = true
         buildContentDescriptor.isActivateToolWindowWhenAdded = false
 //        buildContentDescriptor.isNavigateToError = project.rustSettings.autoShowErrorsInEditor
         val refreshAction = ActionManager.getInstance().getAction("Move.RefreshAllProjects")
-        val descriptor = DefaultBuildDescriptor(Any(), "Aptos", project.basePath!!, System.currentTimeMillis())
+        val descriptor = DefaultBuildDescriptor(Any(), "Endless", project.basePath!!, System.currentTimeMillis())
             .withContentDescriptor { buildContentDescriptor }
             .withRestartAction(refreshAction)
             .withRestartAction(StopAction(progress))

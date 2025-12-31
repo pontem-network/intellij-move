@@ -181,7 +181,7 @@ fun getQualifiedPathEntries(
             null -> {
                 // can be a module, try for named address as a qualifier
                 val addressName = qualifier.referenceName ?: return@buildList
-                // no Aptos project, cannot resolve by address
+                // no Endless project, cannot resolve by address
                 val moveProject = ctx.moveProject ?: return@buildList
                 // no such named address
                 val address = moveProject.getNamedAddress(addressName) ?: return@buildList
@@ -217,7 +217,7 @@ fun resolvePath(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
     val kind = ctx.path.pathKind(ctx.isCompletion)
     val entries = getPathResolveVariantsWithExpectedType(ctx, kind, expectedType)
         .filterByName(referenceName)
-    // There's a bug in the current Aptos compiler, where it resolves to the module function if available,
+    // There's a bug in the current Endless compiler, where it resolves to the module function if available,
     // even if there's a variable with the same name. This code is meant to copy this behaviour.
     // todo: drop it when the bug is fixed
     if (ctx.isCallExpr) {

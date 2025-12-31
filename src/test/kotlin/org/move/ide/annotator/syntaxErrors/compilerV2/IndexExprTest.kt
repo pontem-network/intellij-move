@@ -10,7 +10,7 @@ class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         module 0x1::m {
             fun main() {
                 let v = vector[1, 2];
-                <error descr="Index operator is not supported in Aptos Move V1 outside specs">v[1]</error>;
+                <error descr="Index operator is not supported in Endless Move V1 outside specs">v[1]</error>;
             }
         }        
     """)
@@ -20,7 +20,7 @@ class IndexExprTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         module 0x1::m {
             fun main() {
                 let v = vector[1, 2];
-                <error descr="Index operator is not supported in Aptos Move V1 outside specs">v[1]</error>;
+                <error descr="Index operator is not supported in Endless Move V1 outside specs">v[1]</error>;
             }
         }        
     """)

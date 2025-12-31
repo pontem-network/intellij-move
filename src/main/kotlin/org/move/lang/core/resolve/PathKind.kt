@@ -13,7 +13,7 @@ sealed class PathKind {
 
     abstract val ns: NsSet
 
-    // `use aptos_std::` where aptos_std is a existing named address in a project
+    // `use endless_stdlib::` where endless_stdlib is a existing named address in a project
     data class NamedAddress(val address: Address.Named): PathKind() {
         override val ns: NsSet get() = NONE
     }
@@ -41,14 +41,14 @@ sealed class PathKind {
         class Module(path: MvPath, qualifier: MvPath, ns: NsSet, val address: Address):
             QualifiedPath(path, qualifier, ns)
 
-        // `aptos_framework::foo` (where aptos_framework is known named address, but it can still be a module)
+        // `endless_framework::foo` (where endless_framework is known named address, but it can still be a module)
         class ModuleOrItem(path: MvPath, qualifier: MvPath, ns: NsSet, val address: Address):
             QualifiedPath(path, qualifier, ns)
 
         // bar in foo::bar, where foo is not a named address
         class ModuleItemOrEnumVariant(path: MvPath, qualifier: MvPath, ns: NsSet): QualifiedPath(path, qualifier, ns)
 
-        // bar in `0x1::foo::bar` or `aptos_std::foo::bar` (where aptos_std is known named address)
+        // bar in `0x1::foo::bar` or `endless_stdlib::foo::bar` (where endless_stdlib is known named address)
         class FQModuleItem(path: MvPath, qualifier: MvPath, ns: NsSet): QualifiedPath(path, qualifier, ns) {
             fun baseAddress(): Address? {
                 val base = this.path.basePath()
@@ -134,7 +134,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
                 val address = Address.Value(qualifierPathAddress.text)
                 return PathKind.QualifiedPath.Module(this, qualifier, MODULES, address)
             }
-            // aptos_framework::bar
+            // endless_framework::bar
             //                  ^
             moveProject != null && qualifierReferenceName != null -> {
                 val namedAddress = moveProject.getNamedAddress(qualifierReferenceName)

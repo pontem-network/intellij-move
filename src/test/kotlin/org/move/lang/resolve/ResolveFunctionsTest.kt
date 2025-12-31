@@ -322,16 +322,16 @@ class ResolveFunctionsTest: ResolveTestCase() {
     )
 
     // *
-    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
     fun `test resolve friend function with named address`() = checkByCode(
         """
-        module aptos_std::original {
-            friend aptos_std::m;
+        module endless_stdlib::original {
+            friend endless_stdlib::m;
             public(friend) fun call() {}
                              //X
         }
-        module aptos_std::m {
-            use aptos_std::original;
+        module endless_stdlib::m {
+            use endless_stdlib::original;
             fun main() {
                 original::call();
                          //^

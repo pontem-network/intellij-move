@@ -2,15 +2,45 @@
     require-restart="true"
 >
   <id>org.move.lang</id>
-  <name>Move on Aptos</name>
+  <name>Move on Endless</name>
 
-  <vendor>Pontem</vendor>
+  <vendor url="https://www.endless.link/" email="support@endless.link">Endless Labs</vendor>
 
   <description>
     <![CDATA[
-            <p>Support for Move on Aptos, smart-contract language for Aptos and other blockchains.</p>
+            <p><b>Move on Endless</b> - Professional IDE support for Move smart contract development on the Endless protocol.</p>
 
-            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
+            <p>Build, test, and deploy Move smart contracts with comprehensive tooling, intelligent code assistance,
+            and seamless integration with the Endless ecosystem.</p>
+
+            <p><b>Core Features:</b></p>
+            <ul>
+                <li><b>Full Language Support:</b> Advanced syntax highlighting, intelligent code completion, refactoring, and navigation</li>
+                <li><b>Endless CLI Integration:</b> Compile, test, and deploy smart contracts directly from the IDE</li>
+                <li><b>Real-time Analysis:</b> Instant error detection with Endless compiler integration and quick-fix suggestions</li>
+                <li><b>Testing Framework:</b> Integrated test runner with visual test results and coverage analysis</li>
+                <li><b>Code Intelligence:</b> Go to definition, find usages, type inference, and smart rename</li>
+                <li><b>Bytecode Tools:</b> Disassemble and analyze Move bytecode (.mv files)</li>
+                <li><b>Project Management:</b> Move.toml support with dependency management and workspace navigation</li>
+            </ul>
+
+            <p><b>AI-Powered Development (Coming Soon):</b></p>
+            <ul>
+                <li>AI-assisted code generation for Move smart contracts</li>
+                <li>Intelligent code suggestions and pattern recognition</li>
+                <li>Automated test case generation</li>
+                <li>Smart contract security analysis and vulnerability detection</li>
+            </ul>
+
+            <p><b>Resources:</b></p>
+            <p>
+                <a href="https://www.endless.link/">Endless Protocol</a> |
+                <a href="https://github.com/endless-labs/endless-move-framework">Move Framework</a> |
+                <a href="https://github.com/endless-labs/endless-release">Endless CLI</a> |
+                <a href="https://github.com/joeqzzuo/intellij-move">Plugin Repository</a>
+            </p>
+
+            <p><i>Powered by Endless Labs - Building the future of blockchain development</i></p>
         ]]>
   </description>
 
@@ -21,13 +51,13 @@
 
   <extensions defaultExtensionNs="com.intellij">
 
-    <fileType name="APTOS_BYTECODE"
+    <fileType name="MOVE_BYTECODE"
               extensions="mv"
-              implementationClass="org.move.bytecode.AptosBytecodeFileType"
+              implementationClass="org.move.bytecode.MoveBytecodeFileType"
               fieldName="INSTANCE" />
-    <filetype.decompiler filetype="APTOS_BYTECODE"
-                         implementationClass="org.move.bytecode.AptosBytecodeDecompiler" />
-    <editorNotificationProvider implementation="org.move.bytecode.AptosBytecodeNotificationProvider" />
+    <filetype.decompiler filetype="MOVE_BYTECODE"
+                         implementationClass="org.move.bytecode.MoveBytecodeDecompiler" />
+    <editorNotificationProvider implementation="org.move.bytecode.MoveBytecodeNotificationProvider" />
 
     <fileType name="Move"
               language="Move"
@@ -51,10 +81,10 @@
                     testServiceImplementation="org.move.cli.tests.NamedAddressServiceTestImpl" />
 
     <configurationType
-        implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
+        implementation="org.move.cli.runConfigurations.endless.EndlessCommandConfigurationType" />
 
     <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
+        implementation="org.move.cli.runConfigurations.producers.endless.EndlessTestCommandConfigurationProducer" />
     <runLineMarkerContributor language="Move"
                               implementationClass="org.move.ide.lineMarkers.CommandLineMarkerContributor" />
 
@@ -206,10 +236,10 @@
 
     <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
 
-    <toolWindow id="Aptos"
+    <toolWindow id="Endless"
                 anchor="right"
-                factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
-                icon="/icons/aptos.svg" />
+                factoryClass="org.move.cli.toolwindow.EndlessToolWindowFactory"
+                icon="/icons/endless.svg" />
 
     <statusBarWidgetFactory id="moveExternalLinterWidget"
                             implementation="org.move.cli.externalLinter.RsExternalLinterWidgetFactory"
@@ -323,8 +353,8 @@
     <!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
 
 
-    <projectConfigurable instance="org.move.cli.settings.PerProjectAptosConfigurable"
-                         displayName="Aptos"
+    <projectConfigurable instance="org.move.cli.settings.PerProjectEndlessConfigurable"
+                         displayName="Endless"
                          groupId="language"
                          id="language.move" />
 
@@ -354,9 +384,9 @@
     <notificationGroup id="Move Language" displayType="BALLOON" />
     <notificationGroup id="Move Compile Log" displayType="NONE" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.InvalidAptosCliConfigurationNotification" />
+        implementation="org.move.ide.notifications.InvalidEndlessCliConfigurationNotification" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.NoAptosProjectDetectedNotification" />
+        implementation="org.move.ide.notifications.NoEndlessProjectDetectedNotification" />
 
     <intentionAction>
       <language>Move</language>
@@ -403,26 +433,26 @@
                  defaultValue="3000"
                  restartRequired="false"
                  description="Show notification warning if the external linter is running longer than the set value (ms)" />
-    <registryKey key="org.move.aptos.bundled.force.supported"
+    <registryKey key="org.move.endless.bundled.force.supported"
                  defaultValue="false"
                  restartRequired="false"
-                 description="Force-enable support for pre-compiled bundled Aptos CLI (imitate non-MacOS)" />
-    <registryKey key="org.move.aptos.bundled.force.unsupported"
+                 description="Force-enable support for pre-compiled bundled Endless CLI (imitate non-MacOS)" />
+    <registryKey key="org.move.endless.bundled.force.unsupported"
                  defaultValue="false"
                  restartRequired="false"
-                 description="Force-disable support for pre-compiled bundled Aptos CLI (imitate MacOS)" />
+                 description="Force-disable support for pre-compiled bundled Endless CLI (imitate MacOS)" />
 
     <advancedSetting
-        id="org.move.aptos.test.tool.window"
+        id="org.move.endless.test.tool.window"
         default="false"
-        groupKey="advanced.setting.aptos.group"
-        descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
+        groupKey="advanced.setting.endless.group"
+        descriptionKey="advanced.setting.org.move.endless.test.tool.window.description"
     />
     <advancedSetting
-        id="org.move.aptos.compile.message.json"
+        id="org.move.endless.compile.message.json"
         default="true"
-        groupKey="advanced.setting.aptos.group"
-        descriptionKey="advanced.setting.org.move.aptos.compile.message.json.description"
+        groupKey="advanced.setting.endless.group"
+        descriptionKey="advanced.setting.org.move.endless.compile.message.json.description"
     />
 
   </extensions>
@@ -448,10 +478,10 @@
             text="Update Move Projects"
             class="org.move.ide.actions.RefreshMoveProjectsAction"
             icon="AllIcons.Actions.Refresh" />
-    <action id="Move.DownloadAptos"
-            text="Download Aptos CLI"
-            description="Download aptos-cli executable from Github"
-            class="org.move.ide.actions.DownloadAptosSDKAction"
+    <action id="Move.DownloadEndless"
+            text="Download Endless CLI"
+            description="Download endless-cli executable from Github"
+            class="org.move.ide.actions.DownloadEndlessSDKAction"
             icon="AllIcons.Actions.Download" />
 
     <action id="Move.RunExternalLinter"
@@ -462,17 +492,17 @@
             class="org.move.ide.actions.MoveEditSettingsAction"
             icon="AllIcons.General.Settings">
     </action>
-    <action id="Move.FetchAptosPackage"
-            class="org.move.bytecode.FetchAptosPackageAction"
+    <action id="Move.FetchEndlessPackage"
+            class="org.move.bytecode.FetchEndlessPackageAction"
             icon="AllIcons.Actions.Download">
     </action>
 
-    <action id="Move.DecompileAptosMvFile"
-            class="org.move.bytecode.DecompileAptosMvFileAction">
+    <action id="Move.DecompileMoveMvFile"
+            class="org.move.bytecode.DecompileMoveMvFileAction">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 
-    <group id="Move.Aptos">
+    <group id="Move.Endless">
       <reference id="Move.RefreshAllProjects" />
       <separator />
       <reference id="Move.RunExternalLinter" />
@@ -480,7 +510,7 @@
       <reference id="ExpandAll" />
       <reference id="CollapseAll" />
       <separator />
-      <reference id="Move.FetchAptosPackage" />
+      <reference id="Move.FetchEndlessPackage" />
       <separator />
       <reference id="Move.ShowSettings" />
     </group>

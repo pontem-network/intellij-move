@@ -16,7 +16,7 @@ fun getAppropriateMoveProject(dataContext: DataContext): MoveProject? {
         ?.let { moveProjectsService.findMoveProjectForFile(it) }
         ?.let { return it }
 
-//    return dataContext.getData(AptosToolWindow.SELECTED_CARGO_PROJECT)
+//    return dataContext.getData(EndlessToolWindow.SELECTED_CARGO_PROJECT)
 //        ?: moveProjectsService.allProjects.firstOrNull()
     return moveProjectsService.allProjects.firstOrNull()
 }

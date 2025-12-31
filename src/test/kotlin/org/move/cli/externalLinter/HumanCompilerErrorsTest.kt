@@ -1,6 +1,6 @@
 package org.move.cli.externalLinter
 
-import org.move.ide.annotator.externalLinter.HumanAptosCompilerError
+import org.move.ide.annotator.externalLinter.HumanEndlessCompilerError
 import org.move.ide.annotator.externalLinter.parseHumanCompilerErrors
 import org.move.utils.tests.MvTestBase
 
@@ -10,9 +10,9 @@ class HumanCompilerErrorsTest: MvTestBase() {
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Warning: language version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+UPDATING GIT DEPENDENCY https://github.com/endless-labs/endless-release.git
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 {
@@ -26,9 +26,9 @@ BUILDING move-test-location-example
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Warning: language version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+UPDATING GIT DEPENDENCY https://github.com/endless-labs/endless-release.git
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error: no function named `match` found
@@ -41,7 +41,7 @@ error: no function named `match` found
   "Error": "Move compilation failed: exiting with checking errors"
 }        
     """, listOf(
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 message = "no function named `match` found",
                 severityLevel = "error",
                 filename = "/home/mkurnikov/main/sources/main.move",
@@ -55,8 +55,8 @@ error: no function named `match` found
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Warning: language version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error: missing acquires annotation for `S`
@@ -71,7 +71,7 @@ error: missing acquires annotation for `S`
 "Error": "Move compilation failed: exiting with checking errors"
 }
     """, listOf(
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 "/home/mkurnikov/main/sources/main.move",
@@ -85,8 +85,8 @@ error: missing acquires annotation for `S`
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Warning: language version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error: missing acquires annotation for `S`
@@ -109,13 +109,13 @@ error: missing acquires annotation for `S`
   "Error": "Move compilation failed: exiting with checking errors"
 }        
     """, listOf(
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 filename = "/home/mkurnikov/main/sources/main.move",
                 location = "[(8, 9), (8, 13)]"
             ),
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 "missing acquires annotation for `S`",
                 "error",
                 filename = "/home/mkurnikov/main/sources/main2.move",
@@ -127,8 +127,8 @@ error: missing acquires annotation for `S`
     fun `test type error`() = doTest(
         """
 Compiling, may take a little while to download git dependencies...
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error[E04007]: incompatible types
@@ -141,7 +141,7 @@ error[E04007]: incompatible types
   │         Found: 'u8'. It is not compatible with the other type.
 }        
     """, listOf(
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 message = "incompatible types",
                 severityLevel = "error",
                 filename = "/home/mkurnikov/main/sources/main2.move",
@@ -165,7 +165,7 @@ error[E04007]: incompatible types
   "Error": "Move compilation failed: Compilation error"
 }
     """, listOf(
-            HumanAptosCompilerError.forTest(
+            HumanEndlessCompilerError.forTest(
                 message = "incompatible types",
                 severityLevel = "error",
                 filename = "/tmp/main/sources/main.move",
@@ -176,9 +176,9 @@ error[E04007]: incompatible types
 
     fun `test ability not satisfied`() = doTest("""
 Compiling, may take a little while to download git dependencies...
-UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+UPDATING GIT DEPENDENCY https://github.com/endless-labs/endless-release.git
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error[E05001]: ability constraint not satisfied
@@ -196,7 +196,7 @@ error[E05001]: ability constraint not satisfied
   "Error": "Move compilation failed: Compilation error"
 }
     """, listOf(
-        HumanAptosCompilerError.forTest(
+        HumanEndlessCompilerError.forTest(
             message = "ability constraint not satisfied",
             severityLevel = "error",
             filename = "/tmp/main/sources/main.move",
@@ -208,9 +208,9 @@ error[E05001]: ability constraint not satisfied
     fun `test ability not satisfied compiler v2`() = doTest("""
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+UPDATING GIT DEPENDENCY https://github.com/endless-labs/endless-release.git
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error: value of type `main2::S` does not have the `drop` ability
@@ -223,7 +223,7 @@ error: value of type `main2::S` does not have the `drop` ability
   "Error": "Move compilation failed: exiting with stackless-bytecode analysis errors"
 }
     """, listOf(
-        HumanAptosCompilerError.forTest(
+        HumanEndlessCompilerError.forTest(
             message = "value of type `main2::S` does not have the `drop` ability",
             severityLevel = "error",
             filename = "/tmp/main/sources/main2.move",
@@ -236,8 +236,8 @@ error: value of type `main2::S` does not have the `drop` ability
 Warning: compiler version `2.0-unstable` is experimental and should not be used in production
 Warning: language version `2.0-unstable` is experimental and should not be used in production
 Compiling, may take a little while to download git dependencies...
-INCLUDING DEPENDENCY AptosFramework
-INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY EndlessFramework
+INCLUDING DEPENDENCY EndlessStdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING move-test-location-example
 error: the function takes 0 arguments but 2 were provided
@@ -250,7 +250,7 @@ error: the function takes 0 arguments but 2 were provided
   "Error": "Move compilation failed: exiting with checking errors"
 }
     """, listOf(
-        HumanAptosCompilerError.forTest(
+        HumanEndlessCompilerError.forTest(
             message = "the function takes 0 arguments but 2 were provided",
             severityLevel = "error",
             filename = "/home/mkurnikov/code/move-test-location-example/sources/main2.move",
@@ -259,7 +259,7 @@ error: the function takes 0 arguments but 2 were provided
     )
     )
 
-    private fun doTest(compilerOutput: String, expectedMessages: List<HumanAptosCompilerError>) {
+    private fun doTest(compilerOutput: String, expectedMessages: List<HumanEndlessCompilerError>) {
         val messages = parseHumanCompilerErrors(compilerOutput.trimIndent().lines())
 
         val messageTestStrings = messages.map { it.toTestString() }

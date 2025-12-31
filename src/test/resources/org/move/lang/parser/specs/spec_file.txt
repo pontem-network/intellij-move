@@ -68,7 +68,7 @@ FILE
                       PsiElement(@)('@')
                       MvAddressRefImpl(ADDRESS_REF)
                         MvNamedAddressImpl(NAMED_ADDRESS)
-                          PsiElement(IDENTIFIER)('aptos_framework')
+                          PsiElement(IDENTIFIER)('endless_framework')
                 PsiElement())(')')
             PsiElement(.)('.')
             MvFieldLookupImpl(FIELD_LOOKUP)

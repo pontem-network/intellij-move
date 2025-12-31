@@ -31,7 +31,7 @@ class PublicPackageTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
     @MoveV2(enabled = false)
     fun `test cannot use public package in compiler v1`() = checkWarnings("""
         module 0x1::m {
-            <error descr="public(package) is not supported in Aptos Move V1">public(package)</error> fun call() {}
+            <error descr="public(package) is not supported in Endless Move V1">public(package)</error> fun call() {}
                          
         }        
     """)

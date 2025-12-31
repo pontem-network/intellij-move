@@ -8,7 +8,7 @@ module 0x1::dot_exprs {
 
         bin.field bin.field
 
-        bin. aptos_token::get_token();
+        bin. endless_token::get_token();
 
         bin. b"
         bin. x"

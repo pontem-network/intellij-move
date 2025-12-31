@@ -827,7 +827,7 @@ class ResolveSpecsTest: ResolveTestCase() {
             fun call(account: &signer) {}
                         //X
             spec call {
-                use aptos_framework::account;
+                use endless_framework::account;
                 signer::address_of(account);
                                   //^
             }

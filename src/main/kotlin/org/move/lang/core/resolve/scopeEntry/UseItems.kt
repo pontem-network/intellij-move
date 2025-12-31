@@ -89,7 +89,7 @@ val MvUseStmt.useItems: List<UseItem>
         val pathKind = rootUseSpeck.path.pathKind(isCompletion = false)
         when (pathKind) {
             // use 0x1::m;
-            // use aptos_std::m;
+            // use endless_stdlib::m;
             is PathKind.QualifiedPath.Module -> {
                 useItems.add(
                     UseItem(
@@ -102,8 +102,8 @@ val MvUseStmt.useItems: List<UseItem>
                 )
             }
             // use 0x1::m::call;
-            // use aptos_std::m::call as mycall;
-            // use aptos_std::m::Self;
+            // use endless_stdlib::m::call as mycall;
+            // use endless_stdlib::m::Self;
             is PathKind.QualifiedPath.FQModuleItem -> {
                 val moduleName = pathKind.qualifier.referenceName ?: return useItems
                 if (rootName == "Self") {

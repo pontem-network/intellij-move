@@ -1,15 +1,15 @@
 package org.move.cli.externalLinter
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.annotator.externalLinter.RsExternalLinterUtils.APTOS_TEST_MESSAGE
+import org.move.ide.annotator.externalLinter.RsExternalLinterUtils.EXTERNAL_LINTER_TEST_MESSAGE
 import org.move.utils.tests.MoveV2
 import org.move.utils.tests.WithAdvancedSetting
-import org.move.utils.tests.WithAptosCliTestBase
+import org.move.utils.tests.WithEndlessCliTestBase
 import kotlin.io.path.Path
 
-class MvExternalLinterPassTest: WithAptosCliTestBase(
+class MvExternalLinterPassTest: WithEndlessCliTestBase(
 //    Path(System.getProperty("user.home"))
-//        .resolve("code/aptos-core/target/release/aptos")
+//        .resolve("code/endless-release/target/release/endless")
 ) {
 
     override fun setUp() {
@@ -32,19 +32,19 @@ class MvExternalLinterPassTest: WithAptosCliTestBase(
         """
         module 0x1::main {
             fun main() {
-                1 + <error descr="$APTOS_TEST_MESSAGE">/*caret*/true</error>;
+                1 + <error descr="$EXTERNAL_LINTER_TEST_MESSAGE">/*caret*/true</error>;
             }
         }
     """, externalLinter = ExternalLinter.LINTER
     )
 
-//    @WithAdvancedSetting("org.move.aptos.compile.message.json", true)
+//    @WithAdvancedSetting("org.move.endless.compile.message.json", true)
 //    @MoveV2
 //    fun `test type error with json message format`() = doTest(
 //        """
 //        module 0x1::main {
 //            fun main() {
-//                <weak_warning descr="$APTOS_TEST_MESSAGE">/*caret*/*&1</weak_warning>;
+//                <weak_warning descr="$EXTERNAL_LINTER_TEST_MESSAGE">/*caret*/*&1</weak_warning>;
 //            }
 //        }
 //    """, externalLinter = ExternalLinter.LINTER

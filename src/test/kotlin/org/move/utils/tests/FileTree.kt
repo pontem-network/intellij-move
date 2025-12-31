@@ -132,22 +132,22 @@ dependencies: []
     fun build(builder: FileTreeBuilder.() -> Unit) = dir("build", builder)
     fun tests(builder: FileTreeBuilder.() -> Unit) = dir("tests", builder)
 
-    fun _aptos(builder: FileTreeBuilder.() -> Unit) = dir(".aptos", builder)
+    fun _endless(builder: FileTreeBuilder.() -> Unit) = dir(".endless", builder)
     fun config_yaml(@Language("YAML") code: String) = file("config.yaml", code)
 
-    fun _aptos_config_yaml(@Language("yaml") code: String) =
-        _aptos {
+    fun _endless_config_yaml(@Language("yaml") code: String) =
+        _endless {
             config_yaml(code)
         }
-    fun _aptos_config_yaml_with_profiles(profiles: List<String>) {
+    fun _endless_config_yaml_with_profiles(profiles: List<String>) {
         val profilesYaml = profiles.map { """
     $it:
         private_key: "0x4543a4d8eb859b4054b8508aaaa6edb0e9327336e53a8f0134133c4bac2a1354"
         public_key: "0x58af52ff0fbe1e4dd8eb7024b9ef713c68f91d565138b024d035771970dcf97e"
         account: 7f906a4591cfdddcc2c1efb06835ef3faa1feab27d799c24156d5462926fc415
-        rest_url: "https://fullnode.testnet.aptoslabs.com"
+        rest_url: "https://fullnode.testnet.endless.labs"
         """ }
-        _aptos {
+        _endless {
             config_yaml("""---
 profiles:
 ${profilesYaml.joinToString("\n")}

@@ -180,9 +180,9 @@ class OptimizeImportsTest : OptimizeImportsTestBase() {
             use BBB::M2::S2;
             use AAA::M1::S1;
             use AAA::M1::SS1;
-            use aptos_std::table;
-            use aptos_std::iter_table;
-            use aptos_framework::coin;
+            use endless_stdlib::table;
+            use endless_stdlib::iter_table;
+            use endless_framework::coin;
             #[test_only]
             use Std::Errors;
             use Std::Signer;
@@ -212,9 +212,9 @@ class OptimizeImportsTest : OptimizeImportsTestBase() {
         module 0x1::Main {
             use Std::Signer;
             use std::signature;
-            use aptos_std::iter_table;
-            use aptos_std::table;
-            use aptos_framework::coin;
+            use endless_stdlib::iter_table;
+            use endless_stdlib::table;
+            use endless_framework::coin;
         
             use AAA::M1::S1;
             use AAA::M1::SS1;

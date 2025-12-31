@@ -11,10 +11,10 @@ import com.intellij.codeInspection.actions.RunInspectionIntention
 import com.intellij.codeInspection.ex.InspectionManagerEx
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.profile.codeInspection.InspectionProjectProfileManager
-import org.move.cli.runConfigurations.aptos.RunAptosCommandActionBase
+import org.move.cli.runConfigurations.endless.RunEndlessCommandActionBase
 import org.move.ide.inspections.MvExternalLinterInspection
 
-class MvRunExternalLinterAction: RunAptosCommandActionBase("Run External Linter") {
+class MvRunExternalLinterAction: RunEndlessCommandActionBase("Run External Linter") {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 

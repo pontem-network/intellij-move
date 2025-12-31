@@ -137,9 +137,9 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     fun `test no vector completion in fq path`() = checkNoCompletion("""
         module 0x1::m {
             fun main() {
-                aptos::vec/*caret*/
+                endless::vec/*caret*/
             }
-        }        
+        }
     """)
 
     fun `test no vector lit in path qualifier`() = checkNoCompletion("""
@@ -159,9 +159,9 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     fun `test no assert! in fq path`() = checkNoCompletion("""
         module 0x1::m {
             fun main() {
-                aptos_framework::aptos::ass/*caret*/
+                endless_framework::endless::ass/*caret*/
             }
-        }        
+        }
     """)
 
     fun `test no assert! in path qualifier`() = checkNoCompletion("""

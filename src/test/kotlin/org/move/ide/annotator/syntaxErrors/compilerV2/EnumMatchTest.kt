@@ -8,7 +8,7 @@ class EnumMatchTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
     @MoveV2(false)
     fun `test enum is not supported in v1`() = checkWarnings("""
         module 0x1::m {
-            <error descr="Enums are not supported in Aptos Move V1">enum</error> S { One }
+            <error descr="Enums are not supported in Endless Move V1">enum</error> S { One }
             
         }        
     """)
@@ -26,7 +26,7 @@ class EnumMatchTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         module 0x1::m {
             struct S {}
             fun main(s: S) {
-                <error descr="Match expressions are not supported in Aptos Move V1">match</error> (s) {}
+                <error descr="Match expressions are not supported in Endless Move V1">match</error> (s) {}
             }            
         }        
     """)

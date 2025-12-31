@@ -9,9 +9,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.bytecode.createDisposableOnFileChange
-import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.endless.Endless
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings
-import org.move.cli.settings.aptos.AptosExecType
+import org.move.cli.settings.endless.EndlessExecType
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import java.nio.file.Path
@@ -27,9 +27,9 @@ class MvProjectSettingsService(
 ):
     MvProjectSettingsServiceBase<MoveProjectSettings>(project, MoveProjectSettings()) {
 
-    val aptosPath: String? get() = state.aptosPath
+    val endlessPath: String? get() = state.endlessPath
 
-//    val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
+//    val fetchEndlessDeps: Boolean get() = state.fetchEndlessDeps
 
     val disableTelemetry: Boolean get() = state.disableTelemetry
     val testsExtraArgs: List<String>
@@ -47,10 +47,10 @@ class MvProjectSettingsService(
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
-        var aptosPath: String? by string()
+        var endlessPath: String? by string()
 
         @AffectsMoveProjectsMetadata
-        var fetchAptosDeps: Boolean by property(false)
+        var fetchEndlessDeps: Boolean by property(false)
 
         var disableTelemetry: Boolean by property(true)
 
@@ -79,22 +79,22 @@ class MvProjectSettingsService(
 
 val Project.moveSettings: MvProjectSettingsService get() = service()
 
-val Project.aptosCliPath: Path?
+val Project.endlessCliPath: Path?
     get() {
         val settings = this.moveSettings
-        return AptosExecType.aptosCliPath(settings.aptosPath)
+        return EndlessExecType.endlessCliPath(settings.endlessPath)
     }
 
-fun Project.getAptosCli(
+fun Project.getEndlessCli(
     parentDisposable: Disposable? = null
-): Aptos? =
-    this.aptosCliPath?.let { Aptos(it, parentDisposable) }
+): Endless? =
+    this.endlessCliPath?.let { Endless(it, parentDisposable) }
 
-val Project.isAptosConfigured: Boolean get() = this.getAptosCli() != null
+val Project.isEndlessConfigured: Boolean get() = this.getEndlessCli() != null
 
-fun Project.getAptosCliDisposedOnFileChange(file: VirtualFile): Aptos? {
+fun Project.getEndlessCliDisposedOnFileChange(file: VirtualFile): Endless? {
     val anyChangeDisposable = this.createDisposableOnFileChange(file)
-    return this.getAptosCli(anyChangeDisposable)
+    return this.getEndlessCli(anyChangeDisposable)
 }
 
 fun Path?.isValidExecutable(): Boolean {

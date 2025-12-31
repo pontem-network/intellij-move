@@ -84,7 +84,7 @@ private fun List<MvModule>.filterByAddress(
     address: Address,
     isCompletion: Boolean
 ): List<MvModule> {
-    // if no Aptos project, then cannot match by address
+    // if no Endless project, then cannot match by address
     return this.filter { it.matchesByAddress(moveProject, address, isCompletion) }
 }
 

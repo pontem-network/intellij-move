@@ -12,10 +12,10 @@ import org.move.cli.settings.moveSettings
 abstract class CommandConfigurationProducerBase:
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? =
+    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): EndlessCommandLineFromContext? =
         fromLocation(location, climbUp)
 
-    abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext?
+    abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): EndlessCommandLineFromContext?
 
     override fun setupConfigurationFromContext(
         templateConfiguration: CommandConfigurationBase,
@@ -31,7 +31,7 @@ abstract class CommandConfigurationProducerBase:
 
         var environment = commandLine.environmentVariables.envs
         if (context.project.moveSettings.disableTelemetry) {
-            environment = environment + mapOf("APTOS_DISABLE_TELEMETRY" to "true")
+            environment = environment + mapOf("ENDLESS_DISABLE_TELEMETRY" to "true")
         }
         templateConfiguration.environmentVariables = EnvironmentVariablesData.create(environment, true)
         return true

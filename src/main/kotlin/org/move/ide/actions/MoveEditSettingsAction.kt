@@ -3,10 +3,10 @@ package org.move.ide.actions
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
-import org.move.cli.settings.PerProjectAptosConfigurable
+import org.move.cli.settings.PerProjectEndlessConfigurable
 import org.move.openapiext.showSettingsDialog
 
-class MoveEditSettingsAction : DumbAwareAction("Aptos Settings") {
+class MoveEditSettingsAction : DumbAwareAction("Endless Settings") {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -16,6 +16,6 @@ class MoveEditSettingsAction : DumbAwareAction("Aptos Settings") {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.showSettingsDialog<PerProjectAptosConfigurable>()
+        e.project?.showSettingsDialog<PerProjectEndlessConfigurable>()
     }
 }

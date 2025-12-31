@@ -22,7 +22,7 @@ class MvInspectionSuppressor: InspectionSuppressor {
     override fun getSuppressActions(element: PsiElement?, toolId: String): Array<out SuppressQuickFix> {
         val ancestors = element?.ancestors.orEmpty().filterIsInstance<MvDocAndAttributeOwner>()
         // todo: add suppression with comments for other inspections
-        if (toolId !in APTOS_LINTS) return emptyArray()
+        if (toolId !in ENDLESS_LINTS) return emptyArray()
         return ancestors.mapNotNull {
             when (it) {
                 is MvFunction -> {
@@ -52,14 +52,14 @@ class MvInspectionSuppressor: InspectionSuppressor {
     // special alternativeId for some inspection that could be suppressed by the attributes, in form of
     // lint::LINT_NAME, and it's suppressable by the #[lint::skip(LINT_NAME)]
     private fun isSuppressedByAttribute(element: MvDocAndAttributeOwner, toolId: String): Boolean {
-        if (toolId !in APTOS_LINTS) return false
+        if (toolId !in ENDLESS_LINTS) return false
         return element.queryAttributes
             .getAttrItemsByPath("lint::skip")
             .any { it.innerAttrItems.any { it.textMatches(toolId) } }
     }
 
     @Suppress("PrivatePropertyName")
-    private val APTOS_LINTS = setOf(MvNeedlessDerefRefInspection.LINT_ID)
+    private val ENDLESS_LINTS = setOf(MvNeedlessDerefRefInspection.LINT_ID)
 }
 
 private class SuppressInspectionWithAttributeFix(

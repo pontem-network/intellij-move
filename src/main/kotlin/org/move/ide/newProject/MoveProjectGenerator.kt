@@ -13,40 +13,40 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
 import org.move.cli.moveProjectsService
-import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.settings.aptos.AptosExecType
+import org.move.cli.runConfigurations.endless.Endless
+import org.move.cli.settings.endless.EndlessExecType
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.openapiext.openFileInEditor
 import org.move.stdext.unwrapOrThrow
 
-data class AptosProjectConfig(val aptosPath: String?)
+data class EndlessProjectConfig(val endlessPath: String?)
 
-class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
-                            CustomStepProjectGenerator<AptosProjectConfig> {
+class MoveProjectGenerator: DirectoryProjectGeneratorBase<EndlessProjectConfig>(),
+                            CustomStepProjectGenerator<EndlessProjectConfig> {
 
     private val disposable = service<PluginApplicationDisposable>()
 
-    override fun getName() = "Aptos"
-    override fun getLogo() = MoveIcons.APTOS_LOGO
-    override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = MoveProjectGeneratorPeer(disposable)
+    override fun getName() = "Endless"
+    override fun getLogo() = MoveIcons.ENDLESS_LOGO
+    override fun createPeer(): ProjectGeneratorPeer<EndlessProjectConfig> = MoveProjectGeneratorPeer(disposable)
 
     override fun generateProject(
         project: Project,
         baseDir: VirtualFile,
-        projectConfig: AptosProjectConfig,
+        projectConfig: EndlessProjectConfig,
         module: Module
     ) {
         val packageName = project.name
-        val aptosPath =
-            AptosExecType.aptosCliPath(projectConfig.aptosPath)
+        val endlessPath =
+            EndlessExecType.endlessCliPath(projectConfig.endlessPath)
                 ?: error("validated before")
-        val aptos = Aptos(aptosPath, disposable)
+        val endless = Endless(endlessPath, disposable)
         val moveTomlFile =
-            project.computeWithCancelableProgress("Generating Aptos project...") {
+            project.computeWithCancelableProgress("Generating Endless project...") {
                 val manifestFile =
-                    aptos.init(
+                    endless.init(
                         project,
                         rootDirectory = baseDir,
                         packageName = packageName
@@ -54,9 +54,9 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
                         .unwrapOrThrow() // TODO throw? really??
                 manifestFile
             }
-        // update settings (and refresh Aptos projects too)
+        // update settings (and refresh Endless projects too)
         project.moveSettings.modify {
-            it.aptosPath = projectConfig.aptosPath
+            it.endlessPath = projectConfig.endlessPath
         }
 
         // NOTE:
@@ -64,17 +64,17 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
         // are not created by the time those activities are executed
         project.openFileInEditor(moveTomlFile)
 
-        project.moveProjectsService.scheduleProjectsRefresh("After `aptos move init`")
+        project.moveProjectsService.scheduleProjectsRefresh("After `endless move init`")
     }
 
     override fun createStep(
-        projectGenerator: DirectoryProjectGenerator<AptosProjectConfig>,
-        callback: AbstractNewProjectStep.AbstractCallback<AptosProjectConfig>
+        projectGenerator: DirectoryProjectGenerator<EndlessProjectConfig>,
+        callback: AbstractNewProjectStep.AbstractCallback<EndlessProjectConfig>
     ): AbstractActionWithPanel =
         ConfigStep(projectGenerator)
 
-    class ConfigStep(generator: DirectoryProjectGenerator<AptosProjectConfig>):
-        ProjectSettingsStepBase<AptosProjectConfig>(
+    class ConfigStep(generator: DirectoryProjectGenerator<EndlessProjectConfig>):
+        ProjectSettingsStepBase<EndlessProjectConfig>(
             generator,
             AbstractNewProjectStep.AbstractCallback()
         )

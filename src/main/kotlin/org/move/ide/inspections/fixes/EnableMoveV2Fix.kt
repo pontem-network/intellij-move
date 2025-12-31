@@ -10,7 +10,7 @@ import org.move.ide.inspections.DiagnosticIntentionFix
 
 class EnableMoveV2Fix(element: PsiElement): DiagnosticIntentionFix<PsiElement>(element) {
 
-    override fun getText(): String = "Enable Aptos Move V2 in the settings"
+    override fun getText(): String = "Enable Endless Move V2 in the settings"
 
     override fun invoke(project: Project, file: PsiFile, element: PsiElement) {
         @Suppress("UnstableApiUsage")

@@ -7,21 +7,21 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
+import org.move.cli.runConfigurations.endless.cmd.EndlessCommandConfiguration
 import org.move.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
 
-fun Project.aptosCommandConfigurations(): List<AptosCommandConfiguration> =
+fun Project.endlessCommandConfigurations(): List<EndlessCommandConfiguration> =
     runManager.allConfigurationsList
-        .filterIsInstance<AptosCommandConfiguration>()
+        .filterIsInstance<EndlessCommandConfiguration>()
 
-fun Project.aptosCommandConfigurationsSettings(): List<RunnerAndConfigurationSettings> =
+fun Project.endlessCommandConfigurationsSettings(): List<RunnerAndConfigurationSettings> =
     runManager.allSettings
-        .filter { it.configuration is AptosCommandConfiguration }
+        .filter { it.configuration is EndlessCommandConfiguration }
 
-//fun Project.aptosBuildRunConfigurations(): List<MoveCommandConfiguration> =
-//    aptosCommandConfigurations().filter { it.command.startsWith("move compile") }
+//fun Project.endlessBuildRunConfigurations(): List<MoveCommandConfiguration> =
+//    endlessCommandConfigurations().filter { it.command.startsWith("move compile") }
 
 inline fun <reified T: Configurable> Project.showSettingsDialog() {
     ShowSettingsUtil.getInstance().showSettingsDialog(this, T::class.java)

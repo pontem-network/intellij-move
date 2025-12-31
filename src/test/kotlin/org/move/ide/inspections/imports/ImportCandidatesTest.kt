@@ -152,25 +152,25 @@ module 0x1::main {
     // TODO: test
 //    fun `test not duplicate public method from dependency package included twice with different versions`() =
 //        checkCandidates {
-//            dir("aptos_framework") {
-//                namedMoveToml("AptosFramework")
+//            dir("endless_framework") {
+//                namedMoveToml("EndlessFramework")
 //                sources {
 //                    main(
 //                        """
 //                        module 0x1::m {
-//                            public fun aptos_call() {}
+//                            public fun endless_call() {}
 //                        }
 //                    """
 //                    )
 //                }
 //            }
-//            dir("aptos_framework_new") {
-//                namedMoveToml("AptosFramework")
+//            dir("endless_framework_new") {
+//                namedMoveToml("EndlessFramework")
 //                sources {
 //                    main(
 //                        """
 //                        module 0x1::m {
-//                            public fun aptos_call() {}
+//                            public fun endless_call() {}
 //                        }
 //                    """
 //                    )
@@ -182,8 +182,8 @@ module 0x1::main {
 //                    [package]
 //                    name = "BinSteps"
 //
-//                    [dependencies.AptosFramework]
-//                    local = "../aptos_framework"
+//                    [dependencies.EndlessFramework]
+//                    local = "../endless_framework"
 //                """
 //                )
 //                sources { }
@@ -193,8 +193,8 @@ module 0x1::main {
 //                [package]
 //                name = "MyPackage"
 //
-//                [dependencies.AptosFramework]
-//                local = "./aptos_framework_new"
+//                [dependencies.EndlessFramework]
+//                local = "./endless_framework_new"
 //
 //                [dependencies.BinSteps]
 //                local = "./bin_steps"
@@ -205,8 +205,8 @@ module 0x1::main {
 //                    """
 //                    module 0x1::mm {
 //                        public fun main() {
-//                            aptos_call();
-//                            //^ [0x1::m::aptos_call]
+//                            endless_call();
+//                            //^ [0x1::m::endless_call]
 //                        }
 //                    }
 //                """

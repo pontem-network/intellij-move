@@ -17,7 +17,7 @@ fun prop(name: String): String =
 
 val shortPlatformVersion = prop("shortPlatformVersion")
 val createUseInstaller = prop("useInstaller").toBooleanStrict()
-val codeVersion = "1.47.0"
+val codeVersion = "2.0.0"
 
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
@@ -31,7 +31,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "2.2.20"
-    id("org.jetbrains.intellij.platform") version "2.9.0"
+    id("org.jetbrains.intellij.platform") version "2.10.5"
     id("org.jetbrains.grammarkit") version "2023.3.0.1"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -158,6 +158,8 @@ allprojects {
                 languageVersion.set(KotlinVersion.KOTLIN_2_1)
                 apiVersion.set(KotlinVersion.KOTLIN_2_1)
                 freeCompilerArgs.add("-Xjvm-default=all")
+                // Allow deprecated APIs for 2025.3 compatibility
+                allWarningsAsErrors.set(false)
             }
         }
 

@@ -2,7 +2,7 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.manifest.AptosConfigYaml
+import org.move.cli.manifest.EndlessConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.lang.core.psi.MvElement
 import org.move.lang.moveProject
@@ -33,17 +33,17 @@ data class MovePackage(
     val testsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("tests")
     val scriptsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("scripts")
 
-    val aptosConfigYaml: AptosConfigYaml?
+    val endlessConfigYaml: EndlessConfigYaml?
         get() {
             var root: VirtualFile? = contentRoot
             while (true) {
                 if (root == null) break
                 val candidatePath = root
-                    .findChild(".aptos")
+                    .findChild(".endless")
                     ?.takeIf { it.isDirectory }
                     ?.findChild("config.yaml")
                 if (candidatePath != null) {
-                    return AptosConfigYaml.fromPath(candidatePath.pathAsPath)
+                    return EndlessConfigYaml.fromPath(candidatePath.pathAsPath)
                 }
                 root = root.parent
             }

@@ -92,7 +92,7 @@ class AutoImportFixTreeProjectTest : InspectionProjectTestBase(MvUnresolvedRefer
     fun `test auto import from git dependency`() = checkAutoImportFixByText(
         {
             dotMove {
-                git("https://github.com/aptos-labs/hello.git", "main") {
+                git("https://github.com/endless-labs/hello.git", "main") {
                     namedMoveToml("MoveStdlib")
                     sources {
                         move(
@@ -111,7 +111,7 @@ class AutoImportFixTreeProjectTest : InspectionProjectTestBase(MvUnresolvedRefer
             [package]
             name = "MyModule"        
             [dependencies.MoveStdlib]
-            git = "https://github.com/aptos-labs/hello.git"
+            git = "https://github.com/endless-labs/hello.git"
             rev = "main"
             """
             )

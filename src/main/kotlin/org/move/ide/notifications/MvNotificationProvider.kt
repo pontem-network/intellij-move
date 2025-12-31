@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.move.bytecode.AptosBytecodeDecompiler
+import org.move.bytecode.MoveBytecodeDecompiler
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
@@ -56,11 +56,11 @@ abstract class MvNotificationProvider(protected val project: Project): EditorNot
     }
 }
 
-abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificationProvider(project) {
+abstract class MvEndlessEditorNotificationProvider(project: Project): MvNotificationProvider(project) {
 
     abstract val notificationProviderId: String
 
-    abstract fun createAptosNotificationPanel(file: VirtualFile, project: Project): EditorNotificationPanel?
+    abstract fun createEndlessNotificationPanel(file: VirtualFile, project: Project): EditorNotificationPanel?
 
     open val enableForScratchFiles: Boolean = false
     open val enableForDecompiledFiles: Boolean = false
@@ -84,7 +84,7 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
 
         if (!enableForDecompiledFiles) {
             // check whether file is a decompiler artifact
-            val decompiledArtifactsFolder = AptosBytecodeDecompiler.decompiledArtifactsFolder()
+            val decompiledArtifactsFolder = MoveBytecodeDecompiler.decompiledArtifactsFolder()
             // belongs to the decompiled artifacts directory
             if (nioFile.relativeToOrNull(decompiledArtifactsFolder) != null) return null
         }
@@ -92,7 +92,7 @@ abstract class MvAptosEditorNotificationProvider(project: Project): MvNotificati
         // explicitly disabled in file
         if (isNotificationDisabled(file)) return null
 
-        return createAptosNotificationPanel(file, project)
+        return createEndlessNotificationPanel(file, project)
     }
 
 }

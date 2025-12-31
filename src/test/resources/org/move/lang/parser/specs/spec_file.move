@@ -4,7 +4,7 @@ spec sender::my_module {
     }
 
     spec fun spec_now_microseconds(): u64 {
-        global<CurrentTimeMicroseconds>(@aptos_framework).microseconds
+        global<CurrentTimeMicroseconds>(@endless_framework).microseconds
     }
 
     /// Helper schema to specify that a function aborts if not in genesis.

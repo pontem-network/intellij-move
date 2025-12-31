@@ -1094,45 +1094,45 @@ class ResolveTypesTest : ResolveTestCase() {
         }        
     """)
 
-    @NamedAddress("aptos_std", "0x1")
-    @NamedAddress("aptos_framework", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
+    @NamedAddress("endless_framework", "0x1")
     fun `test resolve type imported with a different named address with same value`() = checkByCode("""
-        module aptos_std::m1 {
+        module endless_stdlib::m1 {
             struct Type { val: u8 }
                   //X
         }
-        module aptos_framework::m2 {
+        module endless_framework::m2 {
         }
         module 0x1::m {
-            use aptos_framework::m1::Type;
+            use endless_framework::m1::Type;
             fun main(s: Type) {}
                        //^
         }        
     """)
 
-    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
     fun `test resolve type imported with duplicate import`() = checkByCode("""
-        module aptos_std::m1 {
+        module endless_stdlib::m1 {
             struct Type { val: u8 }
                   //X
         }
         module 0x1::m {
-            use aptos_std::m1::Type;
-            use aptos_std::m1::Type;
+            use endless_stdlib::m1::Type;
+            use endless_stdlib::m1::Type;
             fun main(s: Type) {}
                        //^
         }        
     """)
 
-    @NamedAddress("aptos_std", "0x1")
+    @NamedAddress("endless_stdlib", "0x1")
     fun `test resolve module imported with duplicate import`() = checkByCode("""
-        module aptos_std::m1 {
+        module endless_stdlib::m1 {
             struct Type { val: u8 }
                   //X
         }
         module 0x1::m {
-            use aptos_std::m1;
-            use aptos_std::m1;
+            use endless_stdlib::m1;
+            use endless_stdlib::m1;
             fun main(s: m1::Type) {}
                            //^
         }        
