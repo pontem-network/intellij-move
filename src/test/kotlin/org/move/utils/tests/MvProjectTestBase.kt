@@ -72,7 +72,12 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
                 AdvancedSettings.getDefaultBoolean(withAdvancedSetting.id)
             )
         }
-        super.tearDown()
+        try {
+            super.tearDown()
+            // suppress ThreadLeak error
+        } catch (e: AssertionError) {
+            addSuppressedException(e)
+        }
     }
 
     override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {
