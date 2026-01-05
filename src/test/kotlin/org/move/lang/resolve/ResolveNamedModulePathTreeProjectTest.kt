@@ -116,7 +116,6 @@ class ResolveNamedModulePathTreeProjectTest : ResolveProjectTestCase() {
     }
 
     fun `test resolve address from dependency of dependency`() = checkByFileTree {
-        buildInfo("UserInfo", mapOf("Std" to "0001"))
         moveToml(
             """
         [package]

@@ -25,6 +25,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
@@ -112,25 +113,27 @@ class MoveProjectsSyncTask(
     ): List<MoveProject> {
         val moveProjects = mutableListOf<MoveProject>()
 
-        for (contentRoot in project.contentRoots) {
-            contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
-                indicator.checkCanceled()
+        val projectDir = project.guessProjectDir()
+        projectDir?.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
+            indicator.checkCanceled()
 
-                val projectDirName = moveTomlFile.parent.name
-                syncProgress.runWithChildProgress(
-                    "Sync $projectDirName project",
-                    createContext = { it },
-                    action = { childProgress ->
-                        val context = SyncContext(project, indicator, syncProgress.id, childProgress)
-                        loadProject(
-                            moveTomlFile, projects = moveProjects, context = context
-                        )
-                    }
-                )
+            val projectDirName = moveTomlFile.parent.name
+            syncProgress.runWithChildProgress(
+                "Sync $projectDirName project",
+                createContext = { it },
+                action = { childProgress ->
+                    val context = SyncContext(project, indicator, syncProgress.id, childProgress)
+                    loadProject(
+                        moveTomlFile, projects = moveProjects, context = context
+                    )
+                }
+            )
 
-                true
-            }
+            true
         }
+
+//        for (contentRoot in project.contentRoots) {
+//        }
 
         return moveProjects
     }

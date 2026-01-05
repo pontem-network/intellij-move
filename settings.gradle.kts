@@ -6,3 +6,8 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+dependencyResolutionManagement {
+    repositories {
+        maven("https://www.jetbrains.com/intellij-repository/releases")
+    }
+}
