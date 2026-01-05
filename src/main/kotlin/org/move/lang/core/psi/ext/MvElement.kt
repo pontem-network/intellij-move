@@ -19,9 +19,11 @@ fun MvElement.isInsideAssignmentLhs(): Boolean {
 }
 
 fun PsiFileSystemItem.findMoveProject(): MoveProject? {
-    if (this is MoveFile) return this.moveProject
-    val path = virtualFile.toNioPathOrNull() ?: return null
-    return project.moveProjectsService.findMoveProjectForPath(path)
+    return if (this is MoveFile) {
+        this.moveProject
+    } else {
+        project.moveProjectsService.findMoveProjectForFile(virtualFile)
+    }
 }
 
 val MvNamedElement.isMslOnlyItem: Boolean

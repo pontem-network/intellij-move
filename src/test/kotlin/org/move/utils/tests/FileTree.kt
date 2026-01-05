@@ -99,61 +99,9 @@ interface FileTreeBuilder {
 
     fun dotMove(builder: TreeBuilder = {}) = dir(".move", builder)
 
-    fun buildInfo(packageName: String, addresses: Map<String, String>, builder: TreeBuilder = {}) =
-        build {
-            dir(packageName) {
-                builder()
-                buildInfoYaml(addresses)
-            }
-        }
-
-    fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
-    fun buildInfoYaml(addresses: Map<String, String>) = buildInfoYaml(
-        """
-compiled_package_info:
-  address_alias_instantiation:
-${addresses.map { "    ${it.key}: \"${it.value}\"" }.joinToString("\n")}   
-  source_digest: 223A8C78902F806DE810C95988FDDD64D1418DA960621361AD5235D6E5AC654C
-  build_flags:
-    dev_mode: false
-    test_mode: false
-    generate_docs: true
-    generate_abis: true
-    install_dir: ~
-    force_recompilation: false
-    additional_named_addresses: {}
-    architecture: ~
-dependencies: []
-    """
-    )
-
     fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
     fun dependencies(builder: FileTreeBuilder.() -> Unit) = sources { dir("dependencies", builder) }
-    fun build(builder: FileTreeBuilder.() -> Unit) = dir("build", builder)
     fun tests(builder: FileTreeBuilder.() -> Unit) = dir("tests", builder)
-
-    fun _aptos(builder: FileTreeBuilder.() -> Unit) = dir(".aptos", builder)
-    fun config_yaml(@Language("YAML") code: String) = file("config.yaml", code)
-
-    fun _aptos_config_yaml(@Language("yaml") code: String) =
-        _aptos {
-            config_yaml(code)
-        }
-    fun _aptos_config_yaml_with_profiles(profiles: List<String>) {
-        val profilesYaml = profiles.map { """
-    $it:
-        private_key: "0x4543a4d8eb859b4054b8508aaaa6edb0e9327336e53a8f0134133c4bac2a1354"
-        public_key: "0x58af52ff0fbe1e4dd8eb7024b9ef713c68f91d565138b024d035771970dcf97e"
-        account: 7f906a4591cfdddcc2c1efb06835ef3faa1feab27d799c24156d5462926fc415
-        rest_url: "https://fullnode.testnet.aptoslabs.com"
-        """ }
-        _aptos {
-            config_yaml("""---
-profiles:
-${profilesYaml.joinToString("\n")}
-    """)
-        }
-    }
 }
 
 class FileTree(val rootDirInfo: Directory) {

@@ -10,9 +10,6 @@ import com.intellij.build.events.BuildEventsNls
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.progress.BuildProgress
 import com.intellij.build.progress.BuildProgressDescriptor
-import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessListener
-import com.intellij.execution.process.ProcessOutput
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -25,29 +22,19 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
 import org.move.cli.manifest.TomlDependency
-import org.move.cli.manifest.TomlDependency.Git.Companion.moveHome
-import org.move.cli.runConfigurations.aptos.AptosExitStatus
-import org.move.cli.settings.getAptosCli
-import org.move.cli.settings.moveSettings
-import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
-import org.move.openapiext.AnsiEscapedProcessAdapter
 import org.move.openapiext.TaskResult
-import org.move.openapiext.contentRoots
-import org.move.openapiext.runProcessWithGlobalProgress
 import org.move.stdext.iterateFiles
 import org.move.stdext.unwrapOrElse
 import org.move.stdext.withExtended
-import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 
@@ -112,25 +99,27 @@ class MoveProjectsSyncTask(
     ): List<MoveProject> {
         val moveProjects = mutableListOf<MoveProject>()
 
-        for (contentRoot in project.contentRoots) {
-            contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
-                indicator.checkCanceled()
+        val projectDir = project.guessProjectDir()
+        projectDir?.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
+            indicator.checkCanceled()
 
-                val projectDirName = moveTomlFile.parent.name
-                syncProgress.runWithChildProgress(
-                    "Sync $projectDirName project",
-                    createContext = { it },
-                    action = { childProgress ->
-                        val context = SyncContext(project, indicator, syncProgress.id, childProgress)
-                        loadProject(
-                            moveTomlFile, projects = moveProjects, context = context
-                        )
-                    }
-                )
+            val projectDirName = moveTomlFile.parent.name
+            syncProgress.runWithChildProgress(
+                "Sync $projectDirName project",
+                createContext = { it },
+                action = { childProgress ->
+                    val context = SyncContext(project, indicator, syncProgress.id, childProgress)
+                    loadProject(
+                        moveTomlFile, projects = moveProjects, context = context
+                    )
+                }
+            )
 
-                true
-            }
+            true
         }
+
+//        for (contentRoot in project.contentRoots) {
+//        }
 
         return moveProjects
     }

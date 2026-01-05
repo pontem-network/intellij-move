@@ -2,6 +2,7 @@ package org.move.ide.notifications
 
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.scratch.ScratchUtil
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project

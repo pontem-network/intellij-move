@@ -40,17 +40,6 @@ class MoveExternalSystemProjectAwareTest: MvProjectTestBase() {
     fun `test modifications`() {
         val testProject = testProject {
             namedMoveToml("RootPackage")
-            build {
-                dir("RootPackage") {
-                    buildInfoYaml(
-                        """
----
-compiled_package_info:
-  package_name: RootPackage
-"""
-                    )
-                }
-            }
             sources {
                 main(
                     """
