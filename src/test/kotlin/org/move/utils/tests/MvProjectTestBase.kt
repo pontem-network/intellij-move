@@ -72,12 +72,7 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
                 AdvancedSettings.getDefaultBoolean(withAdvancedSetting.id)
             )
         }
-        try {
-            super.tearDown()
-            // suppress ThreadLeak error
-        } catch (e: AssertionError) {
-            addSuppressedException(e)
-        }
+        super.tearDown()
     }
 
     override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {
@@ -88,11 +83,6 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         }
         super.runTestRunnable(testRunnable)
     }
-
-//    override fun tearDown() {
-////        isProjectInitialized = false
-//        super.tearDown()
-//    }
 
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)

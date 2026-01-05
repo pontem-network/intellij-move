@@ -10,12 +10,15 @@ jobs:
     tests:
         strategy:
             matrix:
-                gradle-properties-version: [ 251, 252 ]
-                platform-type: [ RR, PC ]
+                include:
+                    -   platform-version: 253
+                        platform-type: RR
+                    -   platform-version: 253
+                        platform-type: PY
 
         runs-on: ubuntu-latest
         env:
-            ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
+            ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.platform-version }}
             ORG_GRADLE_PROJECT_platformType: ${{ matrix.platform-type }}
 
         steps:
